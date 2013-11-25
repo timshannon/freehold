@@ -9,6 +9,7 @@ Used for doing dns lookups.  If domain ends with .bit namecoin lookup will
 be used.
 
 *get*
+
 	//get
 	{
 		"name" : "localhost"
