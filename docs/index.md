@@ -1,16 +1,23 @@
-#API
+API
+===
 
-##DNS - Namecoin Domain Name System
+DNS - Namecoin Domain Name System
+---------------------------------
 
-##Messaging - Bitmessage
+Messaging - Bitmessage
+----------------------
 
-##Storage
+Storage
+-------
 ###Public
 ###Private
 ###Friend
 
-##Application
+Application
+-----------
 
-##Authentication
+Authentication
+--------------
 
-##Core - Core / Global settings
+Core - Core / Global settings
+-----------------------------
