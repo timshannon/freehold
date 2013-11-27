@@ -47,12 +47,16 @@ Messaging - Bitmessage
 
 Storage
 -------
-###Public
-###Private
-###Friend
+- Public **/storage/public/**
+-	
+- *Private **/storage/private/**
+- *Friend **/storage/friend/**
 
 Application
 -----------
+
+Tasks
+-----
 
 Authentication
 --------------
