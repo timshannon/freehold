@@ -15,11 +15,11 @@ File
 * GET - Works just like you think it should. MIME Type is guessed unless otherwise specified
 	in the post.
 
-	```
+```
 	Example:
 
 	GET /v1/file/important_stuff/spreadsheet1.ods
-	```
+```
 
 * POST
 * PUT
