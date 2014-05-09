@@ -17,7 +17,8 @@ File
 
 	```Example:
 
-	GET /v1/file/important_stuff/spreadsheet1.ods```
+	GET /v1/file/important_stuff/spreadsheet1.ods
+	```
 
 * POST
 * PUT
