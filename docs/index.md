@@ -12,18 +12,18 @@ File
 ----
 ### /v1/file/<path to file>
 
-* GET - Works just like you think it should. MIME Type is guessed unless otherwise specified
+GET - Works just like you think it should. MIME Type is guessed unless otherwise specified
 	in the post.
 
 ```
-	Example:
+Example:
 
-	GET /v1/file/important_stuff/spreadsheet1.ods
+GET /v1/file/important_stuff/spreadsheet1.ods
 ```
 
-* POST
-* PUT
-* DELETE
+POST
+PUT
+DELETE
 
 
 DataStore
