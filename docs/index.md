@@ -16,6 +16,7 @@ File
 	in the post.
 
 	`Example:
+
 	GET /v1/file/important_stuff/spreadsheet1.ods`
 
 * POST
