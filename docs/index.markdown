@@ -100,6 +100,7 @@ POST "/v1/file/new-directory/"
 ------WebKitFormBoundary
 Content-Disposition: form-data; name="files[]"; filename="profile.jpg"
 Content-Type: image/jpeg
+...
 ------WebKitFormBoundary--
 
 Response (201):
@@ -249,10 +250,89 @@ DataStore
 ---------
 ### /v1/datastore/<path to datastore>/
 
-* GET
-* POST
-* PUT
-* DELETE
+A DataStore is file that contains collections of keys and their values. One datastore file has multiple collections,
+and one collection has multiple keys and their values.
+
+As with files, only Private can create new datastore files, and directories will be auto-created.  Empty directories will
+be automatically removed. Only Private can create new collections.
+
+Permissions are granted on per collection basis, NOT on a per file basis.  For instance, you can grant a Friend access to
+write to the *notes* collection in the *lab_work* datastore file, but you CANNOT grant a friend access to create new
+collections in the *lab_work* datastore.
+
+Permissions are designed to be simple so there is no granular control over what a group can, or cannot write to in a 
+given collection. If you grant a Friend access to Write to a collection, they can delete your records, and you can delete
+theirs.
+
+**POST**
+
+*Create a new datastore file*
+```
+POST /v1/datastore/personal/bookmarks.ds
+
+Response (201):
+{
+	status: "success",
+	data: {
+		url: "/v1/datastore/personal/bookmarks.ds"
+	}
+}
+```
+
+*Create a new datastore collection*
+```
+POST /v1/datastore/personal/bookmarks.ds
+{
+	collection: "documentation"
+}
+
+Response (201):
+{
+	status: "success",
+	data: {
+		url: "/v1/datastore/personal/bookmarks.ds"
+	}
+}
+```
+
+**GET**
+*Get a value from the collection* - data is equal to whatever value is put in the key
+```
+GET /v1/datastore/personal/bookmarks.ds
+{
+	collection: "documentation",
+	key: "http://golang.org/pkg"
+}
+
+Response (200):
+{
+	status: "success",
+	data: {
+		tags: "programming,golang,go,awesome"
+	}
+}
+```
+*Iterate through values in the collection*
+```
+GET /v1/datastore/personal/bookmarks.ds
+{
+	collection: "documentation",
+	iter: {
+		from: <key>,
+		to: <key>,
+		skip: <count>,
+		order: <asc | dsc>,
+		limit: <count>
+	}
+}
+
+
+```
+
+
+**PUT**
+
+**DELETE**
 
 * * *
 
