@@ -23,6 +23,15 @@ http status codes.
 * fail - There was a problem with the data submitted - client error - usually (400)
 * error - There was a problem on the server - server error - usually (500)
 
+Authentication will be done through the Basic HTTP Auth.
+```
+https://username:password@host.com/
+```
+Username is always required, and Password can be the users password, or a valid security token. See 
+Authentication section for more detail.
+
+If the Auth header isn't included in the request, then cookies will be checked for a valid session.
+The Auth header will always override any authentication via cookie.
 
 Storage
 =======
@@ -42,13 +51,14 @@ Authenticated access is granted either by having an active cookie with proper se
 or including an AuthToken field with the proper token in the request
 
 Application Specific Storage paths will be prefixed with the given applications identifier
-<appID>/v1/file/<path to file>
-<appID>/v1/datastore/<path to file>
+* <appID>/v1/file/<path to file>
+* <appID>/v1/datastore/<path to file>
+
 File
 ----
 ### /v1/file/<path to file>
 
-GET - Works just like you think it should. 
+**GET** - Works just like you think it should. 
 ```
 GET /v1/file/important-stuff/spreadsheet1.ods
 GET /v1/file/static/header.jpg
@@ -80,7 +90,8 @@ Response (200):
 	
 ```
 
-POST - Add a new file.  Any non existent folders in the path will be automatically created.
+
+**POST** - Add a new file.  Any non existent folders in the path will be automatically created.
 multipart/formdata are accepted.
 
 This example will create a new directory and put profile.jpg in it
@@ -113,9 +124,125 @@ Response (500):
 ```
 To replace an existing file, you'll need to delete the existing file first.
 
-PUT
+Multiple file posts will have multiple entries in the data field.
+```
+Response (201):
+{
+	status: "success",
+	data: [
+		{
+			url: "/v1/file/new-directory/profile.jpg"
+		},
+		{
+			url: "/v1/file/new-directory/header.jpg"
+		},
+		{
+			url: "/v1/file/new-directory/favicon.ico"
+		}
+	]
+}
 
-DELETE
+Error Response (500):
+{
+	status: "error",
+	data: {
+		message: "one or more file failed",
+		[
+			{
+				url: "/v1/file/new-directory/profile.jpg"
+			},
+			{
+				message: "file already exists"
+				url: "/v1/file/new-directory/header.jpg",
+			},
+			{
+				message: "not enough disk space",
+				url: "/v1/file/new-directory/wikipedia.zip"
+			}
+		]
+	}
+}
+```
+
+**PUT** - Updating existing files.  If the file is not found a 404 will be sent.
+
+*Setting File Permissions* - r=read  w=write
+```
+PUT "/v1/file/notes/history.txt"
+
+{
+	permissions: {
+		public: "",
+		friend: "rw"
+	}
+}
+
+Response (200):
+{
+	status: "success",
+	data: {
+		url: "/v1/file/blog/post.html"
+	}
+}
+```
+By default new files are private rw only. By not specifying private permissions the file retains its
+existing permissions for that group.
+
+*Set permissions for all files in a directory*
+```
+PUT "/v1/file/blog/published/"
+
+{
+	permissions: {
+		public: "r",
+		friend: "r"
+	}
+}
+
+Response (200):
+{
+	status: "success",
+	data: {
+		[
+			{url: "/v1/file/blog/2014-01-01.html"},
+			{url: "/v1/file/blog/2014-01-12.html"},
+			{url: "/v1/file/blog/2014-03-06.html"}
+		]
+	}
+}
+```
+
+**DELETE** - If the last file in a given folder is deleted, the folder is also deleted
+
+*Delete a single file*
+```
+DELETE "/v1/file/xml_SOAP_spec.doc"
+
+Response (200):
+{
+	status: "success",
+	data: {
+		url: "/v1/file/xml_SOAP_spec.doc"
+	}
+}
+```
+
+*Delete a folder and it's contents*
+```
+DELETE "/v1/file/3001_lolcat_pictures/"
+
+Response (200):
+{
+	status: "success",
+	data: {
+		[
+			{url: "/v1/file/3001_lolcat_pictures/funney_kitteh.jpg"},
+			{url: "/v1/file/3001_lolcat_pictures/funney_kitteh0sevn.jpg"},
+			{url: "/v1/file/3001_lolcat_pictures/funney_kitteh01.jpg"}
+		]
+	}
+}
+```
 
 
 DataStore
@@ -140,7 +267,7 @@ Tasks
 * * *
 Authentication
 ==============
-OATH2 if cookie does not eixst?
+token requests
 
 * * *
 
