@@ -836,7 +836,7 @@ Response (200):
 
 ### /v1/auth/session
 
-A session is refers to when the authentication is tracked via a cookie in the client's browser. Sessions
+A session refers to when the authentication is tracked via a cookie in the client's browser. Sessions
 only support POST to create a new one and DELETE to remove or logout of the session.  
 
 When a session is POSTed it creates a cookie with the user and unique session id in the client's browser.
