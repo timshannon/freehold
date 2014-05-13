@@ -290,13 +290,14 @@ Response (201):
 {
 	status: "success",
 	data: {
-		url: "/v1/datastore/personal/bookmarks.ds"
+		url: "/v1/datastore/personal/bookmarks.ds",
+		collection: "documentation"
 	}
 }
 ```
 
 **GET**
-*Get a value from the collection* - data is equal to whatever value is put in the key
+*Get a value from the collection* 
 ```
 GET /v1/datastore/personal/bookmarks.ds
 {
@@ -308,7 +309,10 @@ Response (200):
 {
 	status: "success",
 	data: {
-		tags: "programming,golang,go,awesome"
+		key: "http://golang.org/pkg",
+		value: {
+			tags: "programming,golang,go,awesome"
+		}
 	}
 }
 ```
@@ -321,33 +325,161 @@ GET /v1/datastore/personal/bookmarks.ds
 		from: <key>,
 		to: <key>,
 		skip: <count>,
-		order: <asc | dsc>,
+		order: <"asc" | "dsc">,
 		limit: <count>
 	}
 }
+```
+* from - defaults to minimum key in the collection
+* to - defaults to maximum key in the collection
+* skip - defaults to 0
+* order - defaults to asc
 
+*Example: Consider a collection with 50 items with keys 1 - 50*
 
+Get the 3rd page of 10 items per page in the collection
+```
+GET /v1/datastore/50items.ds
+{
+	collection: "testitems",
+	iter: {
+		skip: 30,
+		limit: 10
+	}
+}
+
+Response (200):
+{
+	status: "success",
+	data: {
+		[key: 31,	value: "Data"],
+		[key: 32,	value: "Data"],
+		[key: 33,	value: "Data"],
+		[key: 34,	value: "Data"],
+		[key: 35,	value: "Data"],
+		[key: 36,	value: "Data"],
+		[key: 37,	value: "Data"],
+		[key: 38,	value: "Data"],
+		[key: 39,	value: "Data"],
+		[key: 40,	value: "Data"]
+	}
+}
 ```
 
+*Get all the records where the key is greater than or equal 43*
+```
+GET /v1/datastore/50items.ds
+{
+	collection: "testitems",
+	iter: {
+		from: 43
+	}
+}
+
+Response (200):
+{
+	status: "success",
+	data: {
+		[key: 43,	value: "Data"],
+		[key: 44,	value: "Data"],
+		[key: 45,	value: "Data"],
+		[key: 46, "Data"],
+		[key: 47,	value: "Data"],
+		[key: 48,	value: "Data"],
+		[key: 49,	value: "Data"],
+		[key: 50,	value: "Data"]
+	}
+}
+```
+The underlying value of a key is an array of bytes, and it is important to understand that 30 != "30".
+The type of the PUT key prefixed in byte array so that it can be properly decoded on the way back.
+For this reason if you use different types of keys ordering and comparisons won't work the way you expect.
+
+In general it's best to use the same type of key for an entire collection and be careful not to combine
+things like strings ("1234") and numbers (1234).  The keys returned will always be the proper type of the
+keys inserted.
 
 **PUT**
+```
+PUT /v1/datastore/personal/bookmarks.ds
+{
+	collection: "documentation",
+	key: "http://golang.org/pkg"
+	value: {
+			tags: "programming,golang,go,awesome"
+	}
+}
 
-**DELETE**
+Response (200):
+{
+	status: "success",
+	data: {
+		key: "http://golang.org/pkg",
+	}
+}
+
+If the datastore file doesn't exist:
+Response (404):
+
+If the collection doesn't exist in the datastore:
+Response (200):
+{
+	status: "error",
+	data: {
+		message: "collection doesn't exist",
+		url: "/v1/datastore/personal/bookmarks.ds"
+		collection: "documentation"
+	}
+}
+```
+
+**DELETE** - Requires private permissions
+
+*Delete a datastore file*
+```
+DELETE /v1/datastore/personal/bookmarks.ds
+
+Response (200):
+{
+	status: "success",
+	data: {
+		url: "/v1/datastore/personal/bookmarks.ds"
+	}
+}
+```
+
+*Delete a datastore collection*
+```
+DELETE /v1/datastore/personal/bookmarks.ds
+{
+	collection: "documentation"
+}
+
+Response (200):
+{
+	status: "success",
+	data: {
+		url: "/v1/datastore/personal/bookmarks.ds",
+		collection: "documentation"
+	}
+}
+```
 
 * * *
 
-Application
+Authentication
+==============
+token requests
+
+* * *
+
+Applications
 ===========
 
 * * *
 
 Tasks
 =====
-
-* * *
-Authentication
-==============
-token requests
 
 * * *
 
