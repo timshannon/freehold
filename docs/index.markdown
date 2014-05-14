@@ -59,7 +59,7 @@ Authenticated access is granted either by having an active cookie with proper se
 or including an AuthToken field with the proper token in the request
 
 Application Specific Storage paths will be prefixed with the given applications identifier
-* <appID>/v1/file/<path to file>
+* <app-name>/v1/file/<path to file>
 * <appID>/v1/datastore/<path to file>
 
 File
@@ -631,7 +631,7 @@ Information on Users in the system.  Stored in the *user* collection of the core
 		password: <password>,
 		name: <name>,
 		email: <email>,
-		homeApp: <app-id>,
+		homeApp: <app-name>,
 		admin: <true | false>
 	}
 }
@@ -1070,6 +1070,29 @@ Response (200):
 
 Applications
 ============
+Applications are bundles of files in a zip file that only Admins can install.  Once installed
+they are available to all users in the system, and possibly (depending on how the app sets it's permissions)
+available to the public as well.
+
+The zip file must have a file called app.json in the following format:
+```
+{
+	id: "datastore-manager",
+	name: "Datastore Manager",
+	description: "Application for managing datastore files.",
+	author: "Tim Shannon - shannon.timothy@gmail.com",
+	root-file: "index.htm",
+}
+```
+* id - Path on which the application will be installed (https://host/<app-id>/). Must not match any existing installed
+applications, or any paths used by the freehold instance (i.e. /settings /auth, etc). ID's can contain paths themself
+to setup heirarchies of applications.
+* name - User visable name of the application
+* description - Description of what the application does
+* author - Who wrote the application
+* root-file - File to which users will be redirected to when accessing the apps root path: https://host/<app-id>
+
+
 
 * * *
 
