@@ -23,6 +23,10 @@ http status codes.
 * fail - There was a problem with the data submitted - client error - usually (400)
 * error - There was a problem on the server - server error - usually (500)
 
+If status != "success" look for `data.message`.  It will always be there in non-successful transmissions. 
+For multiple failures, there will be a top `data.message` and an `data.item[item#].message` for the individual 
+failures.
+
 Authentication will be done through the Basic HTTP Auth.
 ```
 https://username:password@host.com/
@@ -45,7 +49,8 @@ levels.
 
 Default permissions are Private R/W only.  Permissions only apply to an individual object 
 (File or Datastore).  There currently is no concept of Folder permissions, or inheritance.
-New Files or Datastores can only be created by the current authenticated user
+New Files or Datastores can only be created by the current authenticated user. Permissions can only
+be granted by the file owner.
 
 If a user doesn't have permissions to read a file they will get a 404 or a not exists error in the
 case of a datastore collection.
@@ -68,6 +73,27 @@ GET /v1/file/static/header.jpg
 GET /v1/file/blog/index.html
 ```
 
+*Get Permissions of a file* - the file data itself is not returned
+```
+GET /v1/file/important-stuff/spreadsheet1.ods
+{
+	permissions: {}
+}
+
+Response (200):
+{
+	status: "success",
+	data: {
+		name: "spreadsheet1.ods",
+		permissions: {
+			public: "",
+			friend: "r",
+			private: "rw"
+		}
+	}
+}
+```
+
 GET at a directory returns a list of its contents with absolute rooted urls to the items.
 ```
 GET /v1/file/family-pictures/
@@ -82,6 +108,25 @@ Response (200):
 	]
 }
 ```
+
+*Get Permissions of all files in a folder* - the file data itself is not returned
+```
+GET /v1/file/family-pictures/
+{
+	permissions: {}
+}
+
+Response (200):
+{
+	status: "success",
+	data: [
+		{name: "IMG01.jpg", permissions: {public: "",	friend: "r",	private: "rw"}},
+		{name: "IMG02.jpg", permissions: {public: "",	friend: "r",	private: "rw"}},
+		{name: "IMG03.jpg", permissions: {public: "",	friend: "r",	private: "rw"}},
+	]
+}
+```
+
 If a file called index. (.html, .markup, .jpg, etc) is found in the directory, it will be loaded automatically
 at directory GET calls.
 
@@ -145,7 +190,7 @@ Error Response (500):
 	status: "error",
 	data: {
 		message: "one or more file failed",
-		[
+		items: [
 			{
 				url: "/v1/file/new-directory/profile.jpg"
 			},
@@ -260,6 +305,10 @@ collections in the *lab_work* datastore.
 Permissions are designed to be simple so there is no granular control over what a group can, or cannot write to in a 
 given collection. If you grant a Friend access to Write to a collection, they can delete your records, and you can delete
 theirs.
+
+Public write access to a datastore collection are automatically rate-limited based on ip address.  Limites can be configured
+with a Core Setting.  This allows an application to setup scenarios like Comments where public users can leave comments,
+but the rate limiting should prevent spammy users.
 
 **POST**
 
@@ -541,8 +590,8 @@ Data used for the running of the freehold instance are stored in the *core* data
 modified via specific REST requests and not directly. It contains data used for authentication, authorization, session data, 
 permissions, and settings.
 
-The core datastore has a different permissions model than normal datastores.  In this case modifying the core datastore can only
-be done by a user who is marked as an *Administrator*.
+The core datastore has a different permissions model than normal datastores. Permissions are granted based on the type of 
+request made.
 
 The first user created in the system is automatically an administrator.  Only other administrators can make an existing user an
 administrator.  Once a user is made an administrator it cannot be removed by other administrators, but it can be reliquished by
@@ -844,7 +893,8 @@ If any request is GETed with a valid session (i.e. no Header Authentication), th
 the header of that request (X-CSRFToken), and that token, must be sent with any PUT, POST, or DELETE requests
 sent from the session, or they will fail.
 
-If a user requests a new session, all previous sessions for the user are expired.
+If a user requests a new session, all previous sessions for the user are expired.  If a user logs out / deletes
+a session all previous sessions are expired.  This all-for-one behavior can be changed with a Core Setting.
 
 If a user has tries to make an unauthenticated requested, i.e. no header auth, and no valid session cookie,
 they will be automatically redirected to the default home app's login screen (see settings to change this).
@@ -918,24 +968,119 @@ Response (200):
 }
 ```
 
+* * *
+
+Core Settings
+=============================
+Freehold tries to have sane default settings that you can adjust as needed.  This will hopefully make the instance
+easy to setup and get running, yet allow the admin to modify it's operation to their own needs.
+
+Only Admin users can change settings, but all authenticated (non-public) users can view the current settings in
+the system.
+
+Individual user's settings should be managed on a per application basis in the given applications datastore.
+
+### /v1/settings
+
+```
+{
+	collection: "settings",
+	key: <setting id>,
+	value: {
+		description: <setting description>,
+		value: <setting value>
+	}
+}
+```
+
+**GET**
+
+*List All settings* - All authenticated users
+```
+GET /v1/settings
+
+Response (200):
+{
+	status: "success",
+	data: [
+		{
+			setting: "public-rate-limit", 
+			description: "Number of writes per minute per user for a single collection", 
+			value: 5
+		},
+		{
+			setting: "default-home-app", 
+			description: "Default application used as the home app, where logins are redirected to.", 
+			value: "core-home"
+		}
+	]
+}
+```
+
+*List a specific settings* - All authenticated users
+```
+GET /v1/settings
+{
+	setting: "public-rate-limit"
+}
+
+Response (200):
+{
+	status: "success",
+	data: {
+			setting: "public-rate-limit", 
+			description: "Number of writes per minute per user for a single collection", 
+			value: 5
+	}
+}
+```
+
+**PUT**
+
+*Set a Setting* - Admins only
+```
+PUT /v1/settings
+{
+	setting: "public-rate-limit",
+	value: 10
+}
+
+Response (200):
+{
+	status: "success",
+}
+```
+
+**DELETE**
+
+*Default a Setting* - Remove any user set value, and use initial defaults - Admins only
+```
+DELETE /v1/settings
+{
+	setting: "public-rate-limit",
+}
+
+Response (200):
+{
+	status: "success",
+}
+```
 
 * * *
 
 Applications
-===========
+============
+
+* * *
+
+Messaging 
+======================
+TODO: XMPP?
 
 * * *
 
 Tasks
 =====
+TODO
 
-* * *
-
-Core - Core / Global settings
-=============================
-default home app
-
-Messaging 
-======================
-XMPP?
 
