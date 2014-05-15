@@ -1095,16 +1095,16 @@ The application zip file must have a file called app.json in the following forma
 	icon: "v1/file/images/ds-icon.png"
 }
 ```
-* id - Path on which the application will be installed (https://host/<app-id>/). Must not match any existing installed
+* id - Path on which the application will be installed (`https://host/<app-id>/`). Must not match any existing installed
 applications, or any paths used by the freehold instance (i.e. /settings /auth, etc). 
 * name - User visable name of the application
 * description - Description of what the application does
 * author - Who wrote the application
-* root - File to which users will be redirected to when accessing the apps root path: https://host/<app-id>
+* root - File to which users will be redirected to when accessing the apps root path: `https://host/<app-id>`
 * icon - Image file usually used in the home app for displaying in the link to a given application
 
 Paths to the root file and icon files are relative to the application, so 
-"v1/file/images/ds-icon.png" refers to https://host/<app-id>/v1/file/images/ds-icon.png.
+"v1/file/images/ds-icon.png" refers to `https://host/<app-id>/v1/file/images/ds-icon.png`.
 
 *Datastore definition of Applications* - Only stores currently installed applications.  If an application is
 removed, it's deleted from the application collection.
