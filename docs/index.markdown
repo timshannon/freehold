@@ -1012,6 +1012,11 @@ Response (200):
 			setting: "default-home-app", 
 			description: "Default application used as the home app, where logins are redirected to.", 
 			value: "core-home"
+		},
+		{
+			setting: "application-allow-web-install", 
+			description: "Whether or not applications can be installed from urls.", 
+			value: false
 		}
 	]
 }
@@ -1074,36 +1079,180 @@ Applications are bundles of files in a zip file that only Admins can install.  O
 they are available to all users in the system, and possibly (depending on how the app sets it's permissions)
 available to the public as well.
 
-The zip file must have a file called app.json in the following format:
+By default application zip files must be present on the server running the freehold instance before they can
+be installed. Any .zip file in the folder *<freehold executable>/apps/available/* will be listed as an application
+available to install. Remote, or web installs (installations from arbitrary urls) can be allowed by changing the
+global setting *application-allow-web-install* to *true*.
+
+The application zip file must have a file called app.json in the following format:
 ```
 {
 	id: "datastore-manager",
 	name: "Datastore Manager",
 	description: "Application for managing datastore files.",
 	author: "Tim Shannon - shannon.timothy@gmail.com",
-	root-file: "index.htm",
+	root: "index.htm",
+	icon: "v1/file/images/ds-icon.png"
 }
 ```
 * id - Path on which the application will be installed (https://host/<app-id>/). Must not match any existing installed
-applications, or any paths used by the freehold instance (i.e. /settings /auth, etc). ID's can contain paths themself
-to setup heirarchies of applications.
+applications, or any paths used by the freehold instance (i.e. /settings /auth, etc). 
 * name - User visable name of the application
 * description - Description of what the application does
 * author - Who wrote the application
-* root-file - File to which users will be redirected to when accessing the apps root path: https://host/<app-id>
+* root - File to which users will be redirected to when accessing the apps root path: https://host/<app-id>
+* icon - Image file usually used in the home app for displaying in the link to a given application
 
+Paths to the root file and icon files are relative to the application, so 
+"v1/file/images/ds-icon.png" refers to https://host/<app-id>/v1/file/images/ds-icon.png.
+
+*Datastore definition of Applications* - Only stores currently installed applications.  If an application is
+removed, it's deleted from the application collection.
+```
+{
+	collection: "application",
+	key: <app id>,
+	value: {
+		name: <name of the application>,
+		description: <description>,
+		author: <author>,
+		root: <root file>,
+		icon: <icon file>
+	}
+}
+```
+
+**GET**
+
+*List All Applications* - All authenticated users
+```
+GET /v1/application
+
+Response (200):
+{
+	status: "success",
+	data: [
+		{
+			id: "datastore-manager",
+			name: "Datastore Manager",
+			description: "Application for managing datastore files.",
+			author: "Tim Shannon - shannon.timothy@gmail.com",
+			root: "index.htm",
+			icon: "v1/file/images/ds-icon.png"
+		},
+		{
+			id: "core-home",
+			name: "Home",
+			description: "Freehold Homepage",
+			author: "Tim Shannon - shannon.timothy@gmail.com",
+			root: "index.htm",
+			icon: "v1/file/images/home.png"
+		}
+	]
+}
+```
+
+*List a specific application* - All authenticated users
+```
+GET /v1/application
+{
+	id: "core-home"
+}
+
+Response (200):
+{
+	status: "success",
+	data: {
+			id: "core-home",
+			name: "Home",
+			description: "Freehold Homepage",
+			author: "Tim Shannon - shannon.timothy@gmail.com",
+			root: "index.htm",
+			icon: "v1/file/images/home.png"
+		}
+}
+```
+
+*List Applications available for install* - Admins only
+```
+GET /v1/application/available
+
+Response (200):
+{
+	status: "success",
+	data: [
+		{
+			id: "blog",
+			name: "Blog",
+			description: "Software for writing and publish a blog to the public",
+			author: "Tim Shannon - shannon.timothy@gmail.com",
+			root: "index.htm",
+			icon: "v1/file/images/blog.png"
+		},
+		{
+			id: "gallery",
+			name: "Gallery",
+			description: "Application for showing image files in a gallery format",
+			author: "Tim Shannon - shannon.timothy@gmail.com",
+			root: "index.htm",
+			icon: "v1/file/images/gallery.png"
+		}
+}
+```
+
+**POST**
+
+*Install an Application* - Admins only - 
+Files must be in *<freehold executable>/apps/available/* or (if web-install is enabled) a valid
+url.
+```
+POST /v1/application
+{
+	file: "blog.zip"
+}
+
+Response (200):
+{
+	status: "success",
+	data: {
+			id: "blog",
+			name: "Blog",
+			description: "Software for writing and publish a blog to the public",
+			author: "Tim Shannon - shannon.timothy@gmail.com",
+			root: "index.htm",
+			icon: "v1/file/images/blog.png"
+	}
+}
+```
+
+**DELETE**
+
+*Uninstall an Application* - Admins only
+```
+DELETE /v1/application
+{
+	id: "blog" 
+} 
+
+Response (200):
+{
+	status: "success"
+}
+```
 
 
 * * *
 
 Messaging 
 ======================
-TODO: XMPP?
+TODO: XMPP, client?  Server would be nice too.
 
 * * *
 
 Tasks
 =====
 TODO
+Scheduled REST API calls. Anything you want your freehold instance to do
+when you're not logged on.
 
 
