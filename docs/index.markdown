@@ -1204,7 +1204,7 @@ Response (200):
 
 *Install an Application* - Admins only - 
 Files must be in *<freehold executable>/apps/available/* or (if web-install is enabled) a valid
-url.
+url.  
 ```
 POST /v1/application
 {
@@ -1217,6 +1217,32 @@ Response (200):
 	data: {
 			id: "blog",
 			name: "Blog",
+			description: "Software for writing and publish a blog to the public",
+			author: "Tim Shannon - shannon.timothy@gmail.com",
+			root: "index.htm",
+			icon: "v1/file/images/blog.png"
+	}
+}
+```
+
+**PUT**
+
+*Upgrade an Application* - Admins only - 
+Files must be in *<freehold executable>/apps/available/* or (if web-install is enabled) a valid
+url. POSTing the same application that is already installed will fail.  PUTing it will replace
+the existing application with the new files from the install file.
+```
+PUT /v1/application
+{
+	file: "blog.zip"
+}
+
+Response (200):
+{
+	status: "success",
+	data: {
+			id: "blog",
+			name: "Blog V2",
 			description: "Software for writing and publish a blog to the public",
 			author: "Tim Shannon - shannon.timothy@gmail.com",
 			root: "index.htm",
