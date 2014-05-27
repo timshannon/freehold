@@ -44,17 +44,12 @@ func GenerateCert(host, organization string, validFrom time.Time, validFor time.
 		return errors.New("Host must be specified")
 	}
 
-	priv, err := rsa.GenerateKey(rand.Reader, *rsaBits)
+	priv, err := rsa.GenerateKey(rand.Reader, rsaBits)
 	if err != nil {
-		return errors.New("failed to generate private key: " + err)
+		return errors.New("failed to generate private key: " + err.Error())
 	}
 
-	var notBefore time.Time
-	if validFrom == 0 {
-		notBefore = time.Now()
-	} else {
-		notBefore = validFrom
-	}
+	var notBefore time.Time = validFrom
 
 	notAfter := notBefore.Add(validFor)
 
@@ -93,20 +88,21 @@ func GenerateCert(host, organization string, validFrom time.Time, validFor time.
 
 	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &priv.PublicKey, priv)
 	if err != nil {
-		return errors.New("Failed to create certificate: " + err)
+		return errors.New("Failed to create certificate: " + err.Error())
 	}
 
 	certOut, err := os.Create(certFile)
 	if err != nil {
-		return errors.New("failed to open cert.pem for writing: " + err)
+		return errors.New("failed to open cert.pem for writing: " + err.Error())
 	}
 	pem.Encode(certOut, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
 	certOut.Close()
 
 	keyOut, err := os.OpenFile(keyFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
-		return errors.New("failed to open key.pem for writing: " + err)
+		return errors.New("failed to open key.pem for writing: " + err.Error())
 	}
 	pem.Encode(keyOut, &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(priv)})
 	keyOut.Close()
+	return nil
 }
