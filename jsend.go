@@ -12,9 +12,9 @@ const (
 )
 
 type JSend struct {
-	Status  string      `json: "status"`
-	Data    interface{} `json: "data,omitempty"`
-	Message string      `json: "message,omitempty"`
+	Status  string      `json:"status"`
+	Data    interface{} `json:"data,omitempty"`
+	Message string      `json:"message,omitempty"`
 }
 
 //respondJsend marshalls the input into a json byte array

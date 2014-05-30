@@ -16,9 +16,9 @@ const (
 )
 
 type FHFile struct {
-	Name        string     `json: "name,omitempty"`
-	Url         string     `json: "url,omitempty"`
-	Permissions Permission `json: "permissions,omitempty`
+	Name        string     `json:"name,omitempty"`
+	Url         string     `json:"url,omitempty"`
+	Permissions Permission `json:"permissions,omitempty"`
 }
 
 // filePath retrieves the path to the file on the server that
@@ -68,18 +68,55 @@ func serveDir(w http.ResponseWriter, r *http.Request, file *os.File) {
 	}
 
 	//Serve dir
+	dir := file.Name()
+
+	if errHandled(err, w) {
+		return
+	}
+	files, err := file.Readdirnames(0)
+	if errHandled(err, w) {
+		return
+	}
+
+	fileList := make([]FHFile, len(files))
+
+	for i := range files {
+		if strings.TrimRight(files[i], path.Ext(files[i])) == "index" {
+			indexFile, err := os.Open(path.Join(dir, files[i]))
+			defer indexFile.Close()
+
+			if errHandled(err, w) {
+				return
+			}
+			indexInfo, err := file.Stat()
+			if errHandled(err, w) {
+				return
+			}
+			serveFile(w, r, indexFile, indexInfo)
+			return
+		}
+
+		fileList[i] = FHFile{
+			Name: files[i],
+			Url:  path.Join(r.URL.Path, files[i]),
+			//Permissions: , //TODO
+		}
+	}
+	respondJsend(w, &JSend{
+		Status: statusSuccess,
+		Data:   fileList,
+	})
 }
 
 func serveFile(w http.ResponseWriter, r *http.Request, file *os.File, info os.FileInfo) {
 	if path.Ext(file.Name()) == typeMarkdown {
-		//TODO: Cache result and check modtime?
+		//TODO: Cache result and check modtime? Might be overkill.
 		buf, err := ioutil.ReadAll(file)
 		if errHandled(err, w) {
 			return
 		}
 
-		w.Header().Set("Cache-Control", "no-cache")
-		w.Header().Set("Content-Type", "text/html")
+		//TODO: Core css
 		w.Write(blackfriday.MarkdownCommon(buf))
 		return
 	}
@@ -90,7 +127,7 @@ func serveFile(w http.ResponseWriter, r *http.Request, file *os.File, info os.Fi
 }
 
 func docsGet(w http.ResponseWriter, r *http.Request) {
-	file, err := os.Open("./docs/")
+	file, err := os.Open(path.Join("./", r.URL.Path))
 	defer file.Close()
 
 	if os.IsNotExist(err) {
