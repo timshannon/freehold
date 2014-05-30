@@ -23,7 +23,7 @@ func setupRoutes() {
 	})
 
 	rootHandler.Handle("/docs/", &methodHandler{
-		get: fileGet,
+		get: docsGet,
 	})
 
 }
