@@ -51,12 +51,12 @@ func main() {
 		if port == "" {
 			port = "80"
 		}
-		err = http.ListenAndServe(address+":"+port, nil)
+		err = http.ListenAndServe(address+":"+port, rootHandler)
 	} else {
 		if port == "" {
 			port = "443"
 		}
-		err = http.ListenAndServeTLS(address+":"+port, certFile, keyFile, nil)
+		err = http.ListenAndServeTLS(address+":"+port, certFile, keyFile, rootHandler)
 	}
 
 	if err != nil {

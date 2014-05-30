@@ -1286,6 +1286,62 @@ Response (200):
 }
 ```
 
+* * *
+
+Logs 
+======================
+By default only server errors are logged, but core settings can be changed to log other things such as access,
+failed authentication attempts, etc.
+
+```
+{
+	collection: "log",
+	key: <timestamp>,
+	value: {
+		type: <log type>,
+		log: <log entry>
+	}
+}
+```
+
+**GET**
+
+*List Logs* - Admins only
+```
+GET /v1/log
+{
+	iter: {
+		from: <timestamp>,
+		to: <timestamp>,
+		skip: <count>,
+		order: <"asc" | "dsc">,
+		limit: <count>
+	}
+}
+
+Response (200):
+{
+	status: "success",
+	data: [
+		{
+			when: "2014-04-23T18:25:43.511Z",
+			type: "error",
+			log: "Can't write file wikipedia.zip due to lack of disk space."
+		},
+		{
+			when: "2014-04-14T18:25:43.511Z",
+			type: "authentication",
+			log: "User tshannon failed to log in."
+		},
+		{
+			when: "2014-05-14T18:25:43.511Z",
+			type: "authentication",
+			log: "An expired security token for user tshannon with an id of aaabbbccc was used"
+		},
+	]
+}
+```
+
 
 * * *
 
