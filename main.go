@@ -40,12 +40,31 @@ func main() {
 	keyFile := cfg.String("keyFile", "")
 
 	if selfSign {
-		if !fileExists(defaultCertFile) || !fileExists(defaultKeyFile) {
-			cert.GenerateCert(address, "freehold-self-signing", time.Now(), 365*24*time.Hour, false, 2048,
-				defaultCertFile, defaultKeyFile)
+		if certFile == "" || keyFile == "" {
+			cfg.SetValue("certificateFile", defaultCertFile)
+			cfg.SetValue("keyFile", defaultKeyFile)
+			cfg.Write()
+			certFile = defaultCertFile
+			keyFile = defaultKeyFile
 		}
-		certFile = defaultCertFile
-		keyFile = defaultKeyFile
+		if !fileExists(certFile) || !fileExists(keyFile) {
+			host := address
+
+			if host == "" {
+				host, err = os.Hostname()
+				if err != nil {
+					panic("Can't get hostname for self-signed hosting, specify an address in settings.json. Error: " +
+						err.Error())
+				}
+			}
+
+			err = cert.GenerateCert(host, "freehold-self-signing", time.Now(), 365*24*time.Hour, false, 2048,
+				certFile, keyFile)
+			if err != nil {
+				panic("Error generating self-signed cert: " + err.Error())
+			}
+		}
+
 	}
 	if certFile == "" || keyFile == "" {
 		if port == "" {
