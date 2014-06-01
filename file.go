@@ -12,7 +12,8 @@ import (
 
 const (
 	fileDir      = "./file/"
-	typeMarkdown = ".markdown"
+	markdownType = ".markdown"
+	markdownCss  = "/v1/file/core/css/markdown.css" //Don't like hardcoding path to v1 resource
 )
 
 type FHFile struct {
@@ -109,15 +110,12 @@ func serveDir(w http.ResponseWriter, r *http.Request, file *os.File) {
 }
 
 func serveFile(w http.ResponseWriter, r *http.Request, file *os.File, info os.FileInfo) {
-	if path.Ext(file.Name()) == typeMarkdown {
-		//TODO: Cache result and check modtime? Might be overkill.
-		buf, err := ioutil.ReadAll(file)
+	if path.Ext(file.Name()) == markdownType {
+		buf, err := writeMarkdown(file)
 		if errHandled(err, w) {
 			return
 		}
-
-		//TODO: Core css
-		w.Write(blackfriday.MarkdownCommon(buf))
+		w.Write(buf)
 		return
 	}
 
@@ -140,4 +138,35 @@ func docsGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	serveDir(w, r, file)
+}
+
+func writeMarkdown(file *os.File) ([]byte, error) {
+	//TODO: Cache result and check modtime? Might be overkill.
+	buf, err := ioutil.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
+
+	//blackfriday.MarkdownCommon with custom CSS
+	// set up the HTML renderer
+	htmlFlags := 0
+	htmlFlags |= blackfriday.HTML_USE_XHTML
+	htmlFlags |= blackfriday.HTML_USE_SMARTYPANTS
+	htmlFlags |= blackfriday.HTML_SMARTYPANTS_FRACTIONS
+	htmlFlags |= blackfriday.HTML_SMARTYPANTS_LATEX_DASHES
+	htmlFlags |= blackfriday.HTML_COMPLETE_PAGE
+	renderer := blackfriday.HtmlRenderer(htmlFlags,
+		strings.TrimRight(file.Name(), markdownType), markdownCss)
+
+	// set up the parser
+	extensions := 0
+	extensions |= blackfriday.EXTENSION_NO_INTRA_EMPHASIS
+	extensions |= blackfriday.EXTENSION_TABLES
+	extensions |= blackfriday.EXTENSION_FENCED_CODE
+	extensions |= blackfriday.EXTENSION_AUTOLINK
+	extensions |= blackfriday.EXTENSION_STRIKETHROUGH
+	extensions |= blackfriday.EXTENSION_SPACE_HEADERS
+	extensions |= blackfriday.EXTENSION_HEADER_IDS
+
+	return blackfriday.Markdown(buf, renderer, extensions), nil
 }
