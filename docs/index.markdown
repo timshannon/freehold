@@ -52,15 +52,15 @@ Default permissions are Private R/W only.  Permissions only apply to an individu
 New Files or Datastores can only be created by the current authenticated user. Permissions can only
 be granted by the file owner.
 
-If a user doesn't have permissions to read a file they will get a 404 or a not exists error in the
-case of a datastore collection.
+If a user doesn't have permissions to read a file they will get a 404.
 
 Authenticated access is granted either by having an active cookie with proper session credentials
 or including an AuthToken field with the proper token in the request
 
 Application Specific Storage paths will be prefixed with the given applications identifier
-* <app-name>/v1/file/<path to file>
-* <appID>/v1/datastore/<path to file>
+
+* `app-id`/v1/file/`path to file`
+* `app-id`/v1/datastore/`path to file`
 
 File
 ----
@@ -290,25 +290,27 @@ Response (200):
 
 DataStore
 ---------
-### /v1/datastore/<path to datastore>/
+### /v1/datastore/`path to datastore`/
 
-A DataStore is file that contains collections of keys and their values. One datastore file has multiple collections,
-and one collection has multiple keys and their values.
+A DataStore is file that contains a collection of keys and their values. 
 
-As with files, only Private can create new datastore files, and directories will be auto-created.  Empty directories will
-be automatically removed. Only Private can create new collections.
+As with files, only authenticated users can create new datastore files, and directories will be auto-created.  
+Empty directories will be automatically removed. 
 
-Permissions are granted on per collection basis, NOT on a per file basis.  For instance, you can grant a Friend access to
-write to the *notes* collection in the *lab_work* datastore file, but you CANNOT grant a friend access to create new
-collections in the *lab_work* datastore.
+Permissions are granted on per file basis just like a regular file.  If an application wants to have separate data for
+separate users, it will need to create separate datastore files with separate permissions.
 
 Permissions are designed to be simple so there is no granular control over what a group can, or cannot write to in a 
-given collection. If you grant a Friend access to Write to a collection, they can delete your records, and you can delete
+given datastore. If you grant a Friend access to Write to a datastore, they can delete your records, and you can delete
 theirs.
 
-Public write access to a datastore collection are automatically rate-limited based on ip address.  Limites can be configured
+Public write access to a datastore is automatically rate-limited based on ip address.  Limits can be configured
 with a Core Setting.  This allows an application to setup scenarios like Comments where public users can leave comments,
 but the rate limiting should prevent spammy users.
+
+Public read access can read keys but not download the entire datastore file.
+
+Currently the datastore is backed by https://github.com/cznic/kv, but other storage backends could be used as well.
 
 **POST**
 
@@ -325,48 +327,19 @@ Response (201):
 }
 ```
 
-*Create a new datastore collection*
-```
-POST /v1/datastore/personal/bookmarks.ds
-{
-	collection: "documentation"
-}
-
-Response (201):
-{
-	status: "success",
-	data: {
-		url: "/v1/datastore/personal/bookmarks.ds",
-		collection: "documentation"
-	}
-}
-```
-
 **GET**
 
-*Get a list of collections in a datastore file*
+*Download the entire datastore file (for sharing, backups, etc)*
 ```
 GET /v1/datastore/personal/bookmarks.ds
 
-Response (200):
-{
-	status: "success",
-	data: {
-		url: "/v1/datastore/personal/bookmarks.ds",
-		collections: [
-			"documenation",
-			"time-suck",
-			"links-i-found-on-reddit"
-		]
-	}
-}
+Response (200): bookmarks.ds file
 ```
 
-*Get a value from the collection* 
+*Get a value from the datastore* 
 ```
 GET /v1/datastore/personal/bookmarks.ds
 {
-	collection: "documentation",
 	key: "http://golang.org/pkg"
 }
 
@@ -385,28 +358,31 @@ Response (200):
 ```
 GET /v1/datastore/personal/bookmarks.ds
 {
-	collection: "documentation",
 	iter: {
 		from: <key>,
 		to: <key>,
 		skip: <count>,
 		order: <"asc" | "dsc">,
-		limit: <count>
+		limit: <count>,
+		regexp: <regular expression to match against key>
 	}
 }
 ```
+All fields are optional with the defaults below:
+
 * from - defaults to minimum key in the collection
 * to - defaults to maximum key in the collection
 * skip - defaults to 0
 * order - defaults to asc
+* limit - defaults to returning all records
+* regexp - defaults to matching all keys
 
-*Example: Consider a collection with 50 items with keys 1 - 50*
+*Example: Consider a datastore with 50 items with keys 1 - 50*
 
-Get the 3rd page of 10 items per page in the collection
+Get the 3rd page of 10 items per page in the datastore
 ```
 GET /v1/datastore/50items.ds
 {
-	collection: "testitems",
 	iter: {
 		skip: 30,
 		limit: 10
@@ -435,7 +411,6 @@ Response (200):
 ```
 GET /v1/datastore/50items.ds
 {
-	collection: "testitems",
 	iter: {
 		from: 43
 	}
@@ -456,13 +431,13 @@ Response (200):
 	}
 }
 ```
-Both *from* and *to* and inclusive of the specified key in their range.
+Both *from* and *to* are inclusive of the specified key in their range.
 
 The underlying value of a key is an array of bytes, and it is important to understand that 30 != "30".
 The type of the PUT key prefixed in byte array so that it can be properly decoded on the way back.
 For this reason if you use different types of keys ordering and comparisons won't work the way you expect.
 
-In general it's best to use the same type of key for an entire collection and be careful not to combine
+In general it's best to use the same type of key for an entire store and be careful not to combine
 things like strings ("1234") and numbers (1234).  The keys returned will always be the proper type of the
 keys inserted.
 
@@ -470,7 +445,6 @@ keys inserted.
 ```
 PUT /v1/datastore/personal/bookmarks.ds
 {
-	collection: "documentation",
 	key: "http://golang.org/pkg"
 	value: {
 			tags: "programming,golang,go,awesome"
@@ -487,25 +461,13 @@ Response (200):
 
 If the datastore file doesn't exist:
 Response (404):
-
-If the collection doesn't exist in the datastore:
-Response (200):
-{
-	status: "error",
-	data: {
-		message: "collection doesn't exist",
-		url: "/v1/datastore/personal/bookmarks.ds"
-		collection: "documentation"
-	}
-}
 ```
 
-*Set Permissions for a collection*
+*Set Permissions for a datastore*
 ```
 PUT "/v1/datastore/passwords.ds"
 
 {
-	collection: "shared",
 	permissions: {
 		public: "",
 		friend: "rw"
@@ -517,38 +479,10 @@ Response (200):
 	status: "success",
 	data: {
 		url: "/v1/datastore/passwords.ds",
-		collection: "shared"
 	}
 }
 
 ```
-
-*Set Permissions for all collection in a datastore file*
-```
-PUT /v1/datastore/private/top-secret.ds
-
-{
-	permissions: {
-		public: "",
-		friend: "",
-		private: "rw"
-	}
-}
-
-Response (200):
-{
-	status: "success",
-	data: {
-		url: "/v1/datastore/private/top-secret.ds"
-		collections: [
-			"links",
-			"passwords",
-			"certificates"
-		]
-	}
-}
-```
-
 
 **DELETE** - Requires private permissions
 
@@ -561,23 +495,6 @@ Response (200):
 	status: "success",
 	data: {
 		url: "/v1/datastore/personal/bookmarks.ds"
-	}
-}
-```
-
-*Delete a datastore collection*
-```
-DELETE /v1/datastore/personal/bookmarks.ds
-{
-	collection: "documentation"
-}
-
-Response (200):
-{
-	status: "success",
-	data: {
-		url: "/v1/datastore/personal/bookmarks.ds",
-		collection: "documentation"
 	}
 }
 ```
@@ -622,10 +539,10 @@ Authentication and Session data are stored in the core datastore, and accessed v
 
 ### /v1/auth/user
 
-Information on Users in the system.  Stored in the *user* collection of the core datastore.
+Information on Users in the system.  Stored in the core *user* datastore.
 ```
+user.ds
 {
-	collection: "user",
 	key: <username>,
 	value: {
 		password: <password>,
