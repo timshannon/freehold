@@ -327,6 +327,24 @@ Response (201):
 }
 ```
 
+Post will also accept a multipart file upload like a regular file if the file of content type application/freehold-datastore. This will allow for uploading backups of other user's datastore files.
+```
+POST "/v1/datastore/backups/"
+------WebKitFormBoundary
+Content-Disposition: form-data; name="files[]"; filename="bookmarks_backup.ds"
+Content-Type: application/freehold-datastore
+...
+------WebKitFormBoundary--
+
+Response (201):
+{
+	status: "success",
+	data: {
+		url: "/v1/file/new-directory/profile.jpg"
+	}
+}
+```
+
 **GET**
 
 *Download the entire datastore file (for sharing, backups, etc)*
@@ -541,7 +559,7 @@ Authentication and Session data are stored in the core datastore, and accessed v
 
 Information on Users in the system.  Stored in the core *user* datastore.
 ```
-user.ds
+core/user.ds
 {
 	key: <username>,
 	value: {
@@ -695,8 +713,8 @@ their permissions but only if the resource path matches the one for the token.  
 to grant public access temporarily to private files.
 
 ```
+core/token.ds
 {
-	collection: "token",
 	key: <user>_<token>,
 	value: {
 		expires: <expiration date>,
@@ -827,8 +845,8 @@ only support POST to create a new one and DELETE to remove or logout of the sess
 
 When a session is POSTed it creates a cookie with the user and unique session id in the client's browser.
 If any request is GETed with a valid session (i.e. no Header Authentication), then a CSRF token is put in 
-the header of that request (X-CSRFToken), and that token, must be sent with any PUT, POST, or DELETE requests
-sent from the session, or they will fail.
+the header of that request (X-CSRFToken), and that token, **must be sent with any PUT, POST, or DELETE requests
+sent from the session, or they will fail**.
 
 If a user requests a new session, all previous sessions for the user are expired.  If a user logs out / deletes
 a session all previous sessions are expired.  This all-for-one behavior can be changed with a Core Setting.
@@ -837,8 +855,8 @@ If a user has tries to make an unauthenticated requested, i.e. no header auth, a
 they will be automatically redirected to the default home app's login screen (see settings to change this).
 
 ```
+core/session.ds
 {
-	collection: "session",
 	key: <user>_<session-id>,
 	value: {
 		expires: <expiration date>,
@@ -917,11 +935,13 @@ the system.
 
 Individual user's settings should be managed on a per application basis in the given applications datastore.
 
+Settings are intended to take effect immediately unless otherwise noted in the setting's description.
+
 ### /v1/settings
 
 ```
+core/settings.ds
 {
-	collection: "settings",
 	key: <setting id>,
 	value: {
 		description: <setting description>,
@@ -942,7 +962,7 @@ Response (200):
 	data: [
 		{
 			setting: "public-rate-limit", 
-			description: "Number of writes per minute per user for a single collection", 
+			description: "Number of writes per minute per user for a single collection (can be decimal)", 
 			value: 5
 		},
 		{
@@ -1044,10 +1064,10 @@ Paths to the root file and icon files are relative to the application, so
 "v1/file/images/ds-icon.png" refers to `https://host/<app-id>/v1/file/images/ds-icon.png`.
 
 *Datastore definition of Applications* - Only stores currently installed applications.  If an application is
-removed, it's deleted from the application collection.
+removed, it's deleted from the datastore.
 ```
+core/application.ds
 {
-	collection: "application",
 	key: <app id>,
 	value: {
 		name: <name of the application>,
@@ -1211,8 +1231,8 @@ By default only server errors are logged, but core settings can be changed to lo
 failed authentication attempts, etc.
 
 ```
+core/log.ds
 {
-	collection: "log",
 	key: <timestamp>,
 	value: {
 		type: <log type>,
@@ -1272,6 +1292,6 @@ Tasks
 =====
 TODO
 Scheduled REST API calls. Anything you want your freehold instance to do
-when you're not logged on.
+when you're not logged on. But how to handle the results?  Piping multiple tasks?  Store in a common datastore for use later?
 
 
