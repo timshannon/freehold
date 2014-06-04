@@ -10,5 +10,6 @@ func errHandled(err error, w http.ResponseWriter) bool {
 		Status:  statusError,
 		Message: err.Error(),
 	})
+	logError(err)
 	return true
 }

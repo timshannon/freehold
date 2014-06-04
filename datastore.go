@@ -15,7 +15,7 @@ type FHIter struct {
 	Limit  int         `json:"limit,omitempty"`
 	Regexp string      `json:"regexp,omitempty"`
 
-	ds datastore.Datastore
+	ds datastore.Datastore `json:"-"`
 }
 
 type KeyValue struct {
@@ -28,30 +28,27 @@ func openCoreDS(filename string) datastore.Datastore {
 	if os.IsNotExist(err) {
 		err = datastore.Create(filename)
 		if err != nil {
-			//TODO: Log error
-			return nil
+			logError(err)
+			panic("Error opening core datastore: " + err.Error())
 		}
 		ds, err = datastore.Open(filename)
 	}
 
 	if err != nil {
-		//TODO: Log error
-		return nil
+		logError(err)
+		panic("Error opening core datastore: " + err.Error())
 	}
 	return ds
 }
 
-// m is an internal only shortcut for marshalling an arbitrary value.
-// It will panic if it can't be marshalled
-func m(key interface{}) []byte {
-	buf, err := json.Marshal(key)
-	if err != nil {
-		panic("Error marshalling key: " + err.Error())
-	}
-	return buf
-}
-
 // iter returns a json []byte result of the iterater
 func (i *FHIter) iter() []byte {
+	//TODO
+	return nil
+}
+
+func setDatastoreTimeout() {
+	//TODO
+	//datastore.SetFileTimeout(
 
 }
