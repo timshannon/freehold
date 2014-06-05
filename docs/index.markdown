@@ -86,6 +86,7 @@ Response (200):
 	data: {
 		name: "spreadsheet1.ods",
 		permissions: {
+			owner: "tshannon",
 			public: "",
 			friend: "r",
 			private: "rw"
@@ -120,9 +121,9 @@ Response (200):
 {
 	status: "success",
 	data: [
-		{name: "IMG01.jpg", permissions: {public: "",	friend: "r",	private: "rw"}},
-		{name: "IMG02.jpg", permissions: {public: "",	friend: "r",	private: "rw"}},
-		{name: "IMG03.jpg", permissions: {public: "",	friend: "r",	private: "rw"}},
+		{name: "IMG01.jpg", permissions: {owner: "tshannon", public: "",	friend: "r",	private: "rw"}},
+		{name: "IMG02.jpg", permissions: {owner: "tshannon", public: "",	friend: "r",	private: "rw"}},
+		{name: "IMG03.jpg", permissions: {owner: "tshannon", public: "",	friend: "r",	private: "rw"}},
 	]
 }
 ```
@@ -215,6 +216,7 @@ PUT "/v1/file/notes/history.txt"
 
 {
 	permissions: {
+		owner: "tshannon",
 		public: "",
 		friend: "rw"
 	}
@@ -237,6 +239,7 @@ PUT "/v1/file/blog/published/"
 
 {
 	permissions: {
+		owner: "tshannon",
 		public: "r",
 		friend: "r"
 	}
@@ -487,6 +490,7 @@ PUT "/v1/datastore/passwords.ds"
 
 {
 	permissions: {
+		owner: "tshannon",
 		public: "",
 		friend: "rw"
 	}
@@ -767,7 +771,7 @@ Response (200):
 }
 ```
 
-*Generate new token with expiration* - ISO8601 format (.toJSON())
+*Generate new token with expiration* - ISO8601 format / RFC3339 (.toJSON())
 ```
 POST /v1/auth/token
 {

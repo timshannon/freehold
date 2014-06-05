@@ -16,7 +16,7 @@ const (
 	markdownCss  = "/v1/file/core/css/markdown.css" //Don't like hardcoding path to v1 resource
 )
 
-type FHFile struct {
+type File struct {
 	Name        string     `json:"name,omitempty"`
 	Url         string     `json:"url,omitempty"`
 	Permissions Permission `json:"permissions,omitempty"`
@@ -79,7 +79,7 @@ func serveDir(w http.ResponseWriter, r *http.Request, file *os.File) {
 		return
 	}
 
-	fileList := make([]FHFile, len(files))
+	fileList := make([]File, len(files))
 
 	for i := range files {
 		if strings.TrimRight(files[i], path.Ext(files[i])) == "index" {
@@ -97,7 +97,7 @@ func serveDir(w http.ResponseWriter, r *http.Request, file *os.File) {
 			return
 		}
 
-		fileList[i] = FHFile{
+		fileList[i] = File{
 			Name: files[i],
 			Url:  path.Join(r.URL.Path, files[i]),
 			//Permissions: , //TODO
