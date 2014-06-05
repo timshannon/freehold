@@ -2,18 +2,19 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 )
 
 const settingDS = "core/settings.ds"
 
-type FHSetting struct {
+type Setting struct {
 	Description string      `json:"description,omitempty"`
 	Value       interface{} `json:"value,omitempty"`
 
 	setFunc func() `json:"-"` //optional function to call when a setting is set
 }
 
-func setting(settingName string) (*FHSetting, error) {
+func setting(settingName string) (*Setting, error) {
 	ds := openCoreDS(settingDS)
 	var value []byte
 
@@ -26,7 +27,7 @@ func setting(settingName string) (*FHSetting, error) {
 		return nil, err
 	}
 
-	var result *FHSetting
+	var result *Setting
 
 	if value == nil {
 		return settingDefault(settingName), nil
@@ -69,7 +70,7 @@ func setSetting(settingName string, value interface{}) error {
 func settingValue(settingName string) interface{} {
 	s, err := setting(settingName)
 	if err != nil {
-		//TODO: Log Error
+		logError(errors.New("Error getting setting " + settingName + ": " + err.Error()))
 		return settingDefault(settingName).Value
 	}
 	return s.Value

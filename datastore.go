@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"os"
+	"time"
 
 	"bitbucket.org/tshannon/freehold/datastore"
 )
@@ -48,7 +49,5 @@ func (i *FHIter) iter() []byte {
 }
 
 func setDatastoreTimeout() {
-	//TODO
-	//datastore.SetFileTimeout(
-
+	datastore.SetFileTimeout(time.Duration(settingInt("DatastoreFileTimeout")) * time.Second)
 }
