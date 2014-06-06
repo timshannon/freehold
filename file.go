@@ -20,6 +20,7 @@ type File struct {
 	Name        string     `json:"name,omitempty"`
 	Url         string     `json:"url,omitempty"`
 	Permissions Permission `json:"permissions,omitempty"`
+	Size        int64      `json:"size,omitempty"`
 }
 
 // filePath retrieves the path to the file on the server that
@@ -33,6 +34,7 @@ func fileGet(w http.ResponseWriter, r *http.Request) {
 	file, err := os.Open(filePath(r))
 	defer file.Close()
 
+	authUser(r)
 	//TODO: Permissions
 	//If no permissions return not authorized
 
@@ -74,7 +76,7 @@ func serveDir(w http.ResponseWriter, r *http.Request, file *os.File) {
 	if errHandled(err, w) {
 		return
 	}
-	files, err := file.Readdirnames(0)
+	files, err := file.Readdir(0)
 	if errHandled(err, w) {
 		return
 	}
@@ -82,24 +84,26 @@ func serveDir(w http.ResponseWriter, r *http.Request, file *os.File) {
 	fileList := make([]File, len(files))
 
 	for i := range files {
-		if strings.TrimRight(files[i], path.Ext(files[i])) == "index" {
-			indexFile, err := os.Open(path.Join(dir, files[i]))
+		if strings.TrimRight(files[i].Name(), path.Ext(files[i].Name())) == "index" {
+			indexFile, err := os.Open(path.Join(dir, files[i].Name()))
 			defer indexFile.Close()
 
 			if errHandled(err, w) {
 				return
 			}
-			indexInfo, err := file.Stat()
-			if errHandled(err, w) {
-				return
-			}
-			serveFile(w, r, indexFile, indexInfo)
+			serveFile(w, r, indexFile, files[i])
 			return
 		}
 
+		var size int64
+		if !files[i].IsDir() {
+			size = files[i].Size()
+		}
+
 		fileList[i] = File{
-			Name: files[i],
-			Url:  path.Join(r.URL.Path, files[i]),
+			Name: files[i].Name(),
+			Url:  path.Join(r.URL.Path, files[i].Name()),
+			Size: size,
 			//Permissions: , //TODO
 		}
 	}

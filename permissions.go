@@ -46,6 +46,23 @@ func permissions(resource string) (*Permission, error) {
 }
 
 func setPermissions(resource string, permissions *Permission) error {
-	//TODO:
+	ds := openCoreDS(permissionsDS)
+	key, err := json.Marshal(resource)
+	if err != nil {
+		logError(err)
+		return err
+	}
+
+	value, err := json.Marshal(permissions)
+	if err != nil {
+		logError(err)
+		return err
+	}
+
+	err = ds.Put(key, value)
+	if err != nil {
+		logError(err)
+		return err
+	}
 	return nil
 }
