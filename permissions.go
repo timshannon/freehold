@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"strings"
 )
 
 const (
@@ -46,6 +47,10 @@ func permissions(resource string) (*Permission, error) {
 }
 
 func setPermissions(resource string, permissions *Permission) error {
+	strings.ToLower(permissions.Private)
+	strings.ToLower(permissions.Friend)
+	strings.ToLower(permissions.Public)
+
 	ds := openCoreDS(permissionsDS)
 	key, err := json.Marshal(resource)
 	if err != nil {
@@ -65,4 +70,42 @@ func setPermissions(resource string, permissions *Permission) error {
 		return err
 	}
 	return nil
+}
+
+func (p *Permission) canPermission(permType rune, u *User) bool {
+	if u == nil { //public
+		if strings.ContainsRune(p.Public, permType) {
+			return true
+		}
+		return false
+	}
+	if p.isOwner(u) {
+		if strings.ContainsRune(p.Private, permType) {
+			return true
+		}
+		return false
+	}
+
+	//authenticated friend
+	if strings.ContainsRune(p.Friend, permType) {
+		return true
+	}
+	return false
+
+}
+
+func (p *Permission) canRead(u *User) bool {
+	return p.canPermission('r', u)
+}
+
+func (p *Permission) canWrite(u *User) bool {
+	return p.canPermission('w', u)
+}
+
+func (p *Permission) isOwner(u *User) bool {
+	if p.Owner == u.username {
+		return true
+	}
+
+	return false
 }

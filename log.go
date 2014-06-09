@@ -44,6 +44,9 @@ func logEntry(Type string, entry string) {
 	}
 }
 
+// logError logs and error to the core log datastore.  For core code the rule for error logging
+// is to not log it until it's "bubbled up to the top".  Meaning using only the http handler
+// will log the error.  This is to prevent the same error from being logged a bunch of times.
 func logError(err error) {
 	if !settingBool("LogErrors") {
 		return

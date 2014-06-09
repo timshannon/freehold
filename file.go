@@ -31,24 +31,23 @@ func filePath(r *http.Request) string {
 }
 
 func fileGet(w http.ResponseWriter, r *http.Request) {
-	file, err := os.Open(filePath(r))
-	defer file.Close()
-
-	authUser(r)
-	//TODO: Permissions
-	//If no permissions return not authorized
-
-	if os.IsNotExist(err) {
-		//TODO: Setting for 404 path
-		http.NotFound(w, r)
-		return
-	}
-
+	user, err := authUser(r)
 	if errHandled(err, w) {
 		return
 	}
 
-	serveDir(w, r, file)
+	file, err := os.Open(filePath(r))
+	defer file.Close()
+	if errHandled(err, w) {
+		return
+	}
+
+	if os.IsNotExist(err) {
+		four04(w, r)
+		return
+	}
+
+	serveDir(w, r, file, user)
 }
 
 func filePost(w http.ResponseWriter, r *http.Request) {
@@ -60,13 +59,21 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 func fileDelete(w http.ResponseWriter, r *http.Request) {
 }
 
-func serveDir(w http.ResponseWriter, r *http.Request, file *os.File) {
+func serveDir(w http.ResponseWriter, r *http.Request, file *os.File, user *User) {
 	info, err := file.Stat()
 	if errHandled(err, w) {
 		return
 	}
 
 	if !info.IsDir() {
+		prm, err := permissions(r.URL.Path)
+		if errHandled(err, w) {
+			return
+		}
+		if !prm.canRead(user) {
+			four04(w, r)
+			return
+		}
 		serveFile(w, r, file, info)
 	}
 
@@ -87,6 +94,7 @@ func serveDir(w http.ResponseWriter, r *http.Request, file *os.File) {
 		if strings.TrimRight(files[i].Name(), path.Ext(files[i].Name())) == "index" {
 			indexFile, err := os.Open(path.Join(dir, files[i].Name()))
 			defer indexFile.Close()
+			//TODO: Permissions
 
 			if errHandled(err, w) {
 				return
@@ -114,6 +122,7 @@ func serveDir(w http.ResponseWriter, r *http.Request, file *os.File) {
 }
 
 func serveFile(w http.ResponseWriter, r *http.Request, file *os.File, info os.FileInfo) {
+
 	if path.Ext(file.Name()) == markdownType {
 		buf, err := writeMarkdown(file)
 		if errHandled(err, w) {
@@ -133,15 +142,16 @@ func docsGet(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 
 	if os.IsNotExist(err) {
-		//TODO: Setting for 404 path
-		http.NotFound(w, r)
+		four04(w, r)
 		return
 	}
 
 	if errHandled(err, w) {
 		return
 	}
-	serveDir(w, r, file)
+
+	//TODO: Permissions on core files
+	serveDir(w, r, file, nil)
 }
 
 func writeMarkdown(file *os.File) ([]byte, error) {

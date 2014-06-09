@@ -12,7 +12,7 @@ const (
 	authLogType = "authentication"
 )
 
-var ErrLogonFailure = errors.New("Invalid user and / or password")
+var ErrLogonFailure = publicError(errors.New("Invalid user and / or password"))
 
 type User struct {
 	username string `json:"-"`
@@ -23,11 +23,10 @@ type User struct {
 	Admin    bool   `json:"admin,omitempty"`
 }
 
-func user(username string) (*User, error) {
+func getUser(username string) (*User, error) {
 	ds := openCoreDS(userDS)
 	key, err := json.Marshal(username)
 	if err != nil {
-		logError(err)
 		return nil, err
 	}
 
@@ -36,7 +35,6 @@ func user(username string) (*User, error) {
 
 	err = ds.Get(key, value)
 	if err != nil {
-		logError(err)
 		return nil, err
 	}
 	if value == nil {
@@ -45,7 +43,6 @@ func user(username string) (*User, error) {
 
 	err = json.Unmarshal(value, usr)
 	if err != nil {
-		logError(err)
 		return nil, err
 	}
 	usr.username = username
@@ -61,19 +58,16 @@ func (u *User) update() error {
 	ds := openCoreDS(userDS)
 	key, err := json.Marshal(u.username)
 	if err != nil {
-		logError(err)
 		return err
 	}
 
 	value, err := json.Marshal(u)
 	if err != nil {
-		logError(err)
 		return err
 	}
 
 	err = ds.Put(key, value)
 	if err != nil {
-		logError(err)
 		return err
 	}
 	return nil
@@ -81,17 +75,15 @@ func (u *User) update() error {
 
 func (u *User) SetPassword(password string) error {
 	if len(password) < settingInt("MinPasswordLength") {
-		return errors.New("Password isn't long enough.")
+		return publicError(errors.New("Password isn't long enough."))
 	}
 	encPass, err := bcrypt.GenerateFromPassword([]byte(password), settingInt("PasswordBcryptWorkFactor"))
 	if err != nil {
-		logError(err)
 		return err
 	}
 	u.Password = encPass
 	err = u.update()
 	if err != nil {
-		logError(err)
 		return err
 	}
 

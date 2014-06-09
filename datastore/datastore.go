@@ -93,7 +93,6 @@ func (o *openedFiles) close(name string) {
 		err := db.Close()
 
 		if err != nil {
-			logError(err) //close is detached from sender, so no nice way to return an error
 		}
 
 	}
