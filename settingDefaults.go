@@ -52,6 +52,19 @@ func init() {
 			Description: "Logs when a user changes their password.",
 			Value:       false,
 		},
+		"404Path": &Setting{
+			Description: "Path to a standard 404 page.",
+			Value:       "/v1/file/core/404.html",
+		},
+		"Log404": &Setting{
+			Description: "Logs when an attempted is made to access an invalid resource.",
+			Value:       false,
+		},
+		"FullClientErrors": &Setting{
+			Description: "If FullClientErrors is true, then the complete internal error will be " +
+				"returned to the client. This can expose information about your internal system to " +
+				"the public, but can be useful when troubleshooting issues, or developign applications.",
+			Value: false,
+		},
 	}
-
 }

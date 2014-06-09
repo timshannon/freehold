@@ -25,7 +25,7 @@ func respondJsend(w http.ResponseWriter, response *JSend) {
 
 	result, err := json.Marshal(response)
 	if err != nil {
-		//TODO: Error Logging
+		logError(err)
 		result, _ = json.Marshal(&JSend{
 			Status:  statusError,
 			Message: "An internal error occurred, and we'll look into it.",
