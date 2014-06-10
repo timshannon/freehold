@@ -1,0 +1,6 @@
+.*\.swp$
+freehold
+.*\.cert$
+.*\.key$
+.*\.pem$
+settings.json

@@ -19,11 +19,17 @@ const (
 	defaultKeyFile  = "key.pem"
 )
 
-var selfSign bool = false
+var flagSelfSign bool = false
+var flagAdmin string = ""
+var flagAdminPass string = ""
 
 func init() {
-	flag.BoolVar(&selfSign, "selfsign", false, "Generate a self-signed certificate, and host using it."+
-		"If "+defaultCertFile+", or "+defaultKeyFile+"already exists, they will not be overridden.")
+	flag.BoolVar(&flagSelfSign, "selfsign", false, "Generate a self-signed certificate, and host using it."+
+		"If "+defaultCertFile+", or "+defaultKeyFile+" already exists, they will not be overridden.")
+	flag.StringVar(&flagAdmin, "admin", "", "Creates an admin user in the system with the passed in userid. "+
+		"An admin is only added if the core/user datastore doesn't exist.")
+	flag.StringVar(&flagAdminPass, "adminPass", "", "Sets the password for the admin user passed in with the "+
+		"admin option.")
 }
 
 func main() {
@@ -31,7 +37,7 @@ func main() {
 
 	cfg, err := config.LoadOrCreate("settings.json")
 	if err != nil {
-		panic("Error loading settings.json file: " + err.Error())
+		halt("Error loading settings.json file: " + err.Error())
 	}
 
 	address := cfg.String("address", "")
@@ -39,7 +45,17 @@ func main() {
 	certFile := cfg.String("certificateFile", "")
 	keyFile := cfg.String("keyFile", "")
 
-	if selfSign {
+	if flagAdmin != "" {
+		if flagAdminPass == "" {
+			halt("You must specify admin and adminPass")
+		}
+		err := makeFirstAdmin(flagAdmin, flagAdminPass)
+		if err != nil {
+			halt("Error creating first admin from command line: " + err.Error())
+		}
+	}
+
+	if flagSelfSign {
 		if certFile == "" || keyFile == "" {
 			cfg.SetValue("certificateFile", defaultCertFile)
 			cfg.SetValue("keyFile", defaultKeyFile)
@@ -53,7 +69,7 @@ func main() {
 			if host == "" {
 				host, err = os.Hostname()
 				if err != nil {
-					panic("Can't get hostname for self-signed hosting, specify an address in settings.json. Error: " +
+					halt("Can't get hostname for self-signed hosting, specify an address in settings.json. Error: " +
 						err.Error())
 				}
 			}
@@ -61,7 +77,7 @@ func main() {
 			err = cert.GenerateCert(host, "freehold-self-signing", time.Now(), 365*24*time.Hour, false, 2048,
 				certFile, keyFile)
 			if err != nil {
-				panic("Error generating self-signed cert: " + err.Error())
+				halt("Error generating self-signed cert: " + err.Error())
 			}
 		}
 
@@ -75,11 +91,12 @@ func main() {
 		if port == "" {
 			port = "443"
 		}
+		//SSL added and removed here :-)
 		err = http.ListenAndServeTLS(address+":"+port, certFile, keyFile, rootHandler)
 	}
 
 	if err != nil {
-		panic("Error Starting freehold instance: " + err.Error())
+		halt("Error Starting freehold instance: " + err.Error())
 	}
 
 }

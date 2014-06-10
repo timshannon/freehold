@@ -13,7 +13,7 @@ import (
 const (
 	fileDir      = "./file/"
 	markdownType = ".markdown"
-	markdownCss  = "/v1/file/core/css/markdown.css" //Don't like hardcoding path to v1 resource
+	markdownCss  = "/" + version + "/file/core/css/markdown.css"
 )
 
 type File struct {

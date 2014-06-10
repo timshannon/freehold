@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"os"
+	"path"
 	"time"
 
 	"bitbucket.org/tshannon/freehold/datastore"
@@ -27,22 +28,24 @@ type KeyValue struct {
 func openCoreDS(filename string) datastore.Datastore {
 	ds, err := datastore.Open(filename)
 	if os.IsNotExist(err) {
+		err = os.MkdirAll(path.Dir(filename), 0666)
+		if err != nil {
+			halt("Error creating core datastore folder at: " + path.Dir(filename))
+		}
 		err = datastore.Create(filename)
 		if err != nil {
-			logError(err)
-			panic("Error opening core datastore: " + err.Error())
+			halt("Error creating core datastore: " + err.Error())
 		}
 		ds, err = datastore.Open(filename)
 	}
 
 	if err != nil {
-		logError(err)
-		panic("Error opening core datastore: " + err.Error())
+		halt("Error opening core datastore: " + err.Error())
 	}
 	return ds
 }
 
-// iter returns a json []byte result of the iterater
+// iter returns a json encoded []byte result of the iterator
 func (i *FHIter) iter() []byte {
 	//TODO
 	return nil

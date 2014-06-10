@@ -18,6 +18,14 @@ type Permission struct {
 }
 
 func permissions(resource string) (*Permission, error) {
+	//Docs are open to public
+	if isDocPath(resource) {
+		return &Permission{
+			Owner:  "",
+			Public: "r",
+		}, nil
+
+	}
 	ds := openCoreDS(permissionsDS)
 	key, err := json.Marshal(resource)
 	if err != nil {
@@ -47,10 +55,10 @@ func permissions(resource string) (*Permission, error) {
 }
 
 func setPermissions(resource string, permissions *Permission) error {
-	strings.ToLower(permissions.Private)
-	strings.ToLower(permissions.Friend)
-	strings.ToLower(permissions.Public)
-
+	err := permissions.validate()
+	if err != nil {
+		return err
+	}
 	ds := openCoreDS(permissionsDS)
 	key, err := json.Marshal(resource)
 	if err != nil {
@@ -70,6 +78,33 @@ func setPermissions(resource string, permissions *Permission) error {
 		return err
 	}
 	return nil
+}
+
+func (p *Permission) validate() error {
+	strings.ToLower(p.Private)
+	strings.ToLower(p.Friend)
+	strings.ToLower(p.Public)
+	if !validPermission(p.Private) {
+		return publicError(errors.New("Invalid Private permission. Value must be blank, r, w, or rw"))
+	}
+	if !validPermission(p.Friend) {
+		return publicError(errors.New("Invalid Friend permission. Value must be blank, r, w, or rw"))
+	}
+
+	if !validPermission(p.Public) {
+		return publicError(errors.New("Invalid Public permission. Value must be blank, r, w, or rw"))
+	}
+	return nil
+}
+
+func validPermission(permission string) bool {
+	switch permission {
+	case "", "r", "w", "rw":
+		return true
+	default:
+		return false
+	}
+
 }
 
 func (p *Permission) canPermission(permType rune, u *User) bool {
@@ -108,4 +143,9 @@ func (p *Permission) isOwner(u *User) bool {
 	}
 
 	return false
+}
+
+func isDocPath(resource string) bool {
+	root, _ := splitRootAndPath(resource)
+	return root == "docs"
 }

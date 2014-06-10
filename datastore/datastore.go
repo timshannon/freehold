@@ -26,9 +26,17 @@ type timeoutLock struct {
 var timeout timeoutLock
 var files openedFiles
 
+var options = &kv.Options{
+	VerifyDbAfterOpen:  true,
+	VerifyDbAfterClose: true,
+}
+
 func init() {
 	timeout = timeoutLock{RWMutex: sync.RWMutex{}, duration: 1 * time.Minute}
-	files = openedFiles{RWMutex: sync.RWMutex{}}
+	files = openedFiles{
+		RWMutex: sync.RWMutex{},
+		files:   make(map[string]*DS),
+	}
 }
 
 // SetFileTimeout sets when the file will automatically close
@@ -58,7 +66,6 @@ type openedFiles struct {
 // Open opens an existing datastore file
 func (o *openedFiles) open(name string) (*DS, error) {
 	o.RLock()
-	defer o.RUnlock()
 	if ds, ok := o.files[name]; ok {
 		err := ds.reset()
 		if err != nil {
@@ -66,10 +73,11 @@ func (o *openedFiles) open(name string) (*DS, error) {
 		}
 		return ds, nil
 	}
+	o.RUnlock()
 	o.Lock()
 	defer o.Unlock()
 
-	db, err := kv.Open(name, nil)
+	db, err := kv.Open(name, options)
 	if err != nil {
 		return nil, err
 	}
