@@ -17,10 +17,11 @@ var ErrLogonFailure = publicError(errors.New("Invalid user and / or password"))
 type User struct {
 	username string `json:"-"`
 
-	Name     string `json:"name,omitempty"`
-	Password []byte `json:"password,omitempty"`
-	HomeApp  string `json:"name,omitempty"`
-	Admin    bool   `json:"admin,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Password    string `json:"password,omitempty"`
+	EncPassword []byte `json:"encPassword,omitempty"`
+	HomeApp     string `json:"name,omitempty"`
+	Admin       bool   `json:"admin,omitempty"`
 }
 
 func getUser(username string) (*User, error) {
@@ -50,6 +51,31 @@ func getUser(username string) (*User, error) {
 	return usr, nil
 }
 
+func newUser(u *User) error {
+	//Check if user exists
+	ds := openCoreDS(userDS)
+	key, err := json.Marshal(u.username)
+	if err != nil {
+		return err
+	}
+
+	var value []byte
+
+	err = ds.Get(key, value)
+	if err != nil {
+		return err
+	}
+	if value != nil {
+		return publicError(errors.New("User already exists"))
+	}
+
+	err = u.setPassword(u.Password)
+	if err != nil {
+		return err
+	}
+	return u.update()
+}
+
 func (u *User) update() error {
 	if u.username == "" {
 		return errors.New("Invalid user")
@@ -73,15 +99,12 @@ func (u *User) update() error {
 	return nil
 }
 
-func (u *User) SetPassword(password string) error {
-	if len(password) < settingInt("MinPasswordLength") {
-		return publicError(errors.New("Password isn't long enough."))
-	}
-	encPass, err := bcrypt.GenerateFromPassword([]byte(password), settingInt("PasswordBcryptWorkFactor"))
+func (u *User) updatePassword(password string) error {
+	err := u.setPassword(password)
 	if err != nil {
 		return err
 	}
-	u.Password = encPass
+
 	err = u.update()
 	if err != nil {
 		return err
@@ -90,6 +113,19 @@ func (u *User) SetPassword(password string) error {
 	if settingBool("LogPasswordChange") {
 		logEntry(authLogType, "User "+u.username+" has changed their password.")
 	}
+	return nil
+}
+
+func (u *User) setPassword(password string) error {
+	if len(password) < settingInt("MinPasswordLength") {
+		return publicError(errors.New("Password isn't long enough."))
+	}
+	encPass, err := bcrypt.GenerateFromPassword([]byte(password), settingInt("PasswordBcryptWorkFactor"))
+	if err != nil {
+		return err
+	}
+	u.EncPassword = encPass
+	u.Password = ""
 	return nil
 }
 
@@ -106,7 +142,7 @@ func (u *User) login(password string) error {
 		return ErrLogonFailure
 	}
 
-	err := bcrypt.CompareHashAndPassword(u.Password, []byte(password))
+	err := bcrypt.CompareHashAndPassword(u.EncPassword, []byte(password))
 	if err != nil {
 		if err == bcrypt.ErrMismatchedHashAndPassword {
 			if settingBool("LogFailedAuth") {

@@ -1,6 +1,10 @@
 package datastore
 
-import "github.com/cznic/kv"
+import (
+	"os"
+
+	"github.com/cznic/kv"
+)
 
 // Datastore is the interface that is needed to run a freehold instance an any datastores in it
 type Datastore interface {
@@ -16,12 +20,22 @@ type Iterator interface {
 	Err() error
 }
 
-//Replace Create and Open with any store that satisfies Datastore and Iterator interface
+//Replace Create, Open, and Delete with any store that satisfies Datastore and Iterator interface
 
 // Create creates a new datastore file
 func Create(name string) error {
-	_, err := kv.Create(name, nil)
-	return err
+	db, err := kv.Create(name, options)
+	if err != nil {
+		return err
+	}
+	return db.Close()
+}
+
+// Delete deletes a datastore file
+func Delete(name string) error {
+	files.close(name)
+	return os.Remove(name)
+
 }
 
 // Open opens an existing datastore file, if the file is currently open
