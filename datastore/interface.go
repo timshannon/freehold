@@ -24,7 +24,8 @@ type Iterator interface {
 
 // Create creates a new datastore file
 func Create(name string) error {
-	db, err := kv.Create(name, options)
+	option := options()
+	db, err := kv.Create(name, option)
 	if err != nil {
 		return err
 	}

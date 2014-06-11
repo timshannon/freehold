@@ -13,6 +13,8 @@ func settingDefault(settingName string) *Setting {
 }
 
 func init() {
+	//NOTE: Settings are stored as JSON in the datastore, so all ints should be defined as floats
+	// otherwise typed settings<Type> calls will panic
 	settingDefaults = map[string]Setting{
 		"LogErrors": Setting{
 			Description: "Whether or not errors will be logged in the core/log datastore.",
@@ -28,17 +30,17 @@ func init() {
 				"automatically closed. The higher the timeout the more resources needed to hold " +
 				"open more files.  The lower the timeout the more clients will be waiting on " +
 				"locked files to be opened.",
-			Value:   60,
+			Value:   float64(60),
 			setFunc: setDatastoreTimeout,
 		},
 		"MinPasswordLength": Setting{
 			Description: "Minimum length of new passwords.",
-			Value:       8,
+			Value:       float64(8),
 		},
 		"PasswordBcryptWorkFactor": Setting{
 			Description: "Work factor used for encrypting passwords.  The higher the value the longer " +
 				"it takes to encrypt a password and the safer the password is from dictionary attacks.",
-			Value: bcrypt.DefaultCost,
+			Value: float64(bcrypt.DefaultCost),
 		},
 		"LogFailedAuth": Setting{
 			Description: "Whether or not to log failed authentication attempts.",
