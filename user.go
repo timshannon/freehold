@@ -12,7 +12,7 @@ const (
 	authLogType = "authentication"
 )
 
-var ErrLogonFailure = publicError(errors.New("Invalid user and / or password"))
+var ErrLogonFailure = pubErr(errors.New("Invalid user and / or password"))
 
 type User struct {
 	username string `json:"-"`
@@ -66,7 +66,7 @@ func newUser(u *User) error {
 		return err
 	}
 	if value != nil {
-		return publicError(errors.New("User already exists"))
+		return pubErr(errors.New("User already exists"))
 	}
 
 	err = u.setPassword(u.Password)
@@ -118,7 +118,7 @@ func (u *User) updatePassword(password string) error {
 
 func (u *User) setPassword(password string) error {
 	if len(password) < settingInt("MinPasswordLength") {
-		return publicError(errors.New("Password isn't long enough."))
+		return pubErr(errors.New("Password isn't long enough."))
 	}
 	encPass, err := bcrypt.GenerateFromPassword([]byte(password), settingInt("PasswordBcryptWorkFactor"))
 	if err != nil {

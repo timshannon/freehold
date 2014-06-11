@@ -48,7 +48,7 @@ levels.
 Default permissions are Private R/W only.  Permissions only apply to an individual object 
 (File or Datastore).  There currently is no concept of Folder permissions, or inheritance.
 New Files or Datastores can only be created by the current authenticated user. Permissions can only
-be granted by the file owner.
+be granted by the file owner.  Whether or not a folder exists is only known to authenticated users.
 
 If a user doesn't have permissions to read a file they will get a 404.
 

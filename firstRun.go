@@ -12,7 +12,7 @@ const coreFilePath = "./file/core/"
 // on all of the core resources
 func makeFirstAdmin(username, password string) error {
 	if fileExists(userDS) {
-		return publicError(errors.New("The freehold " + userDS + " datastore has already been initiated, " +
+		return pubErr(errors.New("The freehold " + userDS + " datastore has already been initiated, " +
 			"and the First Admin has already been created. Another cannot be created using this method."))
 
 	}
@@ -56,9 +56,10 @@ func setPermissionOnFolder(dirPath string, permission *Permission) error {
 			if err != nil {
 				return err
 			}
+			continue
 		}
 
-		err = setPermissions(path.Join(version, dirPath, files[i].Name()), permission)
+		err = setPermissions(path.Join("/", version, dirPath, files[i].Name()), permission)
 		if err != nil {
 			return err
 		}

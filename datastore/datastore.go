@@ -4,6 +4,7 @@
 package datastore
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"log/syslog"
@@ -144,6 +145,8 @@ func (d *DS) Get(key, result []byte) error {
 		return err
 	}
 	result, err = d.DB.Get(result, key)
+	fmt.Println("Get Key: ", string(key))
+	fmt.Println("Get Value: ", string(result))
 	return err
 }
 
@@ -152,6 +155,9 @@ func (d *DS) Put(key, value []byte) error {
 	if err != nil {
 		return err
 	}
+
+	fmt.Println("Put Key: ", string(key))
+	fmt.Println("Put Value: ", string(value))
 	return d.DB.Set(key, value)
 }
 

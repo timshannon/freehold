@@ -5,7 +5,13 @@ import (
 	"net/http"
 )
 
-type publicError error
+type publicError struct {
+	error
+}
+
+func pubErr(err error) error {
+	return publicError{err}
+}
 
 func errHandled(err error, w http.ResponseWriter) bool {
 	if err == nil {
@@ -17,11 +23,13 @@ func errHandled(err error, w http.ResponseWriter) bool {
 		switch err.(type) {
 		case nil:
 			return false
-		case publicError:
+		case *publicError:
 			errMsg = err.Error()
 		default:
 			errMsg = "An internal error has occurred"
 		}
+	} else {
+		errMsg = err.Error()
 	}
 	respondJsend(w, &JSend{
 		Status:  statusError,
