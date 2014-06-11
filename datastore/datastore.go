@@ -7,6 +7,8 @@ import (
 	"io"
 	"log"
 	"log/syslog"
+	"os"
+	"os/signal"
 	"sync"
 	"time"
 
@@ -15,7 +17,8 @@ import (
 
 type DS struct {
 	*kv.DB
-	timeout *time.Timer
+	filePath string
+	timeout  *time.Timer
 }
 
 type timeoutLock struct {
@@ -26,9 +29,12 @@ type timeoutLock struct {
 var timeout timeoutLock
 var files openedFiles
 
-var options = &kv.Options{
-	VerifyDbAfterOpen:  true,
-	VerifyDbAfterClose: true,
+func options() *kv.Options {
+
+	return &kv.Options{
+		VerifyDbAfterOpen:  true,
+		VerifyDbAfterClose: true,
+	}
 }
 
 func init() {
@@ -37,6 +43,20 @@ func init() {
 		RWMutex: sync.RWMutex{},
 		files:   make(map[string]*DS),
 	}
+
+	//Capture program shutdown, finish closing datastore files
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	go func() {
+		for sig := range c {
+			if sig == os.Interrupt {
+				for k := range files.files {
+					files.close(k)
+				}
+				os.Exit(1)
+			}
+		}
+	}()
 }
 
 // SetFileTimeout sets when the file will automatically close
@@ -67,28 +87,31 @@ type openedFiles struct {
 func (o *openedFiles) open(name string) (*DS, error) {
 	o.RLock()
 	if ds, ok := o.files[name]; ok {
+		o.RUnlock()
 		err := ds.reset()
 		if err != nil {
 			return nil, err
 		}
 		return ds, nil
 	}
-	o.RUnlock()
-	o.Lock()
-	defer o.Unlock()
 
-	db, err := kv.Open(name, options)
+	o.RUnlock()
+	db, err := kv.Open(name, options())
 	if err != nil {
 		return nil, err
 	}
 
 	ds := &DS{
-		DB: db,
+		DB:       db,
+		filePath: name,
 		timeout: time.AfterFunc(Timeout(), func() {
 			o.close(name)
 		}),
 	}
+
+	o.Lock()
 	o.files[name] = ds
+	o.Unlock()
 	return ds, nil
 }
 
@@ -108,9 +131,8 @@ func (o *openedFiles) close(name string) {
 
 func (d *DS) reset() error {
 	if !d.timeout.Reset(Timeout()) {
-		//TODO: Test if Name can be retrieved after file is closed, if not, store it on DS
 		var err error
-		d.DB, err = kv.Open(d.Name(), nil)
+		d.DB, err = kv.Open(d.filePath, nil)
 		return err
 	}
 	return nil

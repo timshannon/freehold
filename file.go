@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -71,6 +72,7 @@ func serveDir(w http.ResponseWriter, r *http.Request, file *os.File, user *User)
 			return
 		}
 		if !prm.canRead(user) {
+			fmt.Println("Can't read: ", r.URL.Path)
 			four04(w, r)
 			return
 		}

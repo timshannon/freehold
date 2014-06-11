@@ -77,6 +77,7 @@ func setPermissions(resource string, permissions *Permission) error {
 		logError(err)
 		return err
 	}
+
 	return nil
 }
 

@@ -16,7 +16,7 @@ type Log struct {
 }
 
 func logEntry(Type string, entry string) {
-	ds := openCoreDS(settingDS)
+	ds := openCoreDS(logDS)
 	key, err := json.Marshal(time.Now().Format(time.RFC3339))
 	if err != nil {
 		logSyslogError(errors.New("Error can't log entry to freehold instance. Entry: " +

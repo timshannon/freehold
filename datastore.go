@@ -26,9 +26,8 @@ type KeyValue struct {
 }
 
 func openCoreDS(filename string) datastore.Datastore {
-	ds, err := datastore.Open(filename)
-	if os.IsNotExist(err) {
-		err = os.MkdirAll(path.Dir(filename), 0666)
+	if !fileExists(filename) {
+		err := os.MkdirAll(path.Dir(filename), 0777)
 		if err != nil {
 			halt("Error creating core datastore folder at: " + path.Dir(filename))
 		}
@@ -36,9 +35,9 @@ func openCoreDS(filename string) datastore.Datastore {
 		if err != nil {
 			halt("Error creating core datastore: " + err.Error())
 		}
-		ds, err = datastore.Open(filename)
 	}
 
+	ds, err := datastore.Open(filename)
 	if err != nil {
 		halt("Error opening core datastore: " + err.Error())
 	}
