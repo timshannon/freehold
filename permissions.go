@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"net/http"
 	"strings"
 )
 
@@ -37,6 +39,9 @@ func permissions(resource string) (*Permission, error) {
 	var perm *Permission
 
 	err = ds.Get(key, value)
+
+	//TODO: wtf?
+	fmt.Println("Permissions Value: ", string(value))
 	if err != nil {
 		logError(err)
 		return nil, err
@@ -86,14 +91,14 @@ func (p *Permission) validate() error {
 	strings.ToLower(p.Friend)
 	strings.ToLower(p.Public)
 	if !validPermission(p.Private) {
-		return publicError(errors.New("Invalid Private permission. Value must be blank, r, w, or rw"))
+		return pubErr(errors.New("Invalid Private permission. Value must be blank, r, w, or rw"))
 	}
 	if !validPermission(p.Friend) {
-		return publicError(errors.New("Invalid Friend permission. Value must be blank, r, w, or rw"))
+		return pubErr(errors.New("Invalid Friend permission. Value must be blank, r, w, or rw"))
 	}
 
 	if !validPermission(p.Public) {
-		return publicError(errors.New("Invalid Public permission. Value must be blank, r, w, or rw"))
+		return pubErr(errors.New("Invalid Public permission. Value must be blank, r, w, or rw"))
 	}
 	return nil
 }
@@ -150,3 +155,36 @@ func isDocPath(resource string) bool {
 	root, _ := splitRootAndPath(resource)
 	return root == "docs"
 }
+
+func canReadRequest(w http.ResponseWriter, r *http.Request, user *User) bool {
+	prm, err := permissions(r.URL.Path)
+	if errHandled(err, w) {
+		return false
+	}
+	if !prm.canRead(user) {
+		four04(w, r)
+		return false
+	}
+
+	return true
+}
+
+//func canWriteRequest(w http.ResponseWriter, r *http.Request, user *User) bool {
+//prm, err := permissions(r.URL.Path)
+//if errHandled(err, w) {
+//return false
+//}
+//if !prm.canWrite(user) {
+//if !prm.canRead(user) {
+//four04(w, r)
+//return false
+//}
+////user can read but not write, let them know the
+////file exists but they don't have permissions
+//errHandled(pubErr(errors.New("You do not have permissions to update "+
+//"the file "+r.URL.Path+".")), w)
+//return false
+//}
+
+//return true
+//}

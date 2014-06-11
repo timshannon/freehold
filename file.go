@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -18,10 +17,10 @@ const (
 )
 
 type File struct {
-	Name        string     `json:"name,omitempty"`
-	Url         string     `json:"url,omitempty"`
-	Permissions Permission `json:"permissions,omitempty"`
-	Size        int64      `json:"size,omitempty"`
+	Name        string      `json:"name,omitempty"`
+	Url         string      `json:"url,omitempty"`
+	Permissions *Permission `json:"permissions,omitempty"`
+	Size        int64       `json:"size,omitempty"`
 }
 
 // filePath retrieves the path to the file on the server that
@@ -52,6 +51,11 @@ func fileGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func filePost(w http.ResponseWriter, r *http.Request) {
+	//TODO: handle having a user creating a new file that already exists
+	// but they don't have permissions to know that the file already exists
+	// show them an error without exposing the fact that a file already exists
+	// Maybe it's ok for Friends to know that a file exists even though they can't
+	// read it?
 }
 
 func filePut(w http.ResponseWriter, r *http.Request) {
@@ -72,10 +76,10 @@ func serveDir(w http.ResponseWriter, r *http.Request, file *os.File, user *User)
 			return
 		}
 		if !prm.canRead(user) {
-			fmt.Println("Can't read: ", r.URL.Path)
 			four04(w, r)
 			return
 		}
+
 		serveFile(w, r, file, info)
 	}
 
@@ -94,27 +98,49 @@ func serveDir(w http.ResponseWriter, r *http.Request, file *os.File, user *User)
 
 	for i := range files {
 		if strings.TrimRight(files[i].Name(), path.Ext(files[i].Name())) == "index" {
-			indexFile, err := os.Open(path.Join(dir, files[i].Name()))
-			defer indexFile.Close()
-			//TODO: Permissions
-
+			prm, err := permissions(path.Join(r.URL.Path, files[i].Name()))
 			if errHandled(err, w) {
 				return
 			}
-			serveFile(w, r, indexFile, files[i])
-			return
+			if prm.canRead(user) {
+				indexFile, err := os.Open(path.Join(dir, files[i].Name()))
+				defer indexFile.Close()
+
+				if errHandled(err, w) {
+					return
+				}
+				serveFile(w, r, indexFile, files[i])
+				return
+			} else {
+				//We already know the index file shouldnt' be added
+				// to the file list, so skip to the next one
+				continue
+			}
 		}
 
 		var size int64
-		if !files[i].IsDir() {
+		var prm *Permission
+		if files[i].IsDir() {
+			if user == nil {
+				//Public can't view the existence of directories
+				continue
+			}
+		} else {
 			size = files[i].Size()
+			prm, err := permissions(path.Join(r.URL.Path, files[i].Name()))
+			if errHandled(err, w) {
+				return
+			}
+			if !prm.canRead(user) {
+				continue
+			}
 		}
 
 		fileList[i] = File{
-			Name: files[i].Name(),
-			Url:  path.Join(r.URL.Path, files[i].Name()),
-			Size: size,
-			//Permissions: , //TODO
+			Name:        files[i].Name(),
+			Url:         path.Join(r.URL.Path, files[i].Name()),
+			Size:        size,
+			Permissions: prm,
 		}
 	}
 	respondJsend(w, &JSend{
