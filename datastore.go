@@ -17,7 +17,7 @@ type FHIter struct {
 	Limit  int         `json:"limit,omitempty"`
 	Regexp string      `json:"regexp,omitempty"`
 
-	ds datastore.Datastore `json:"-"`
+	ds datastore.Datastorer `json:"-"`
 }
 
 type KeyValue struct {
@@ -25,7 +25,7 @@ type KeyValue struct {
 	Value json.RawMessage
 }
 
-func openCoreDS(filename string) datastore.Datastore {
+func openCoreDS(filename string) datastore.Datastorer {
 	if !fileExists(filename) {
 		err := os.MkdirAll(path.Dir(filename), 0777)
 		if err != nil {

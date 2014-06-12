@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 )
@@ -35,13 +34,10 @@ func permissions(resource string) (*Permission, error) {
 		return nil, err
 	}
 
-	var value []byte
-	var perm *Permission
+	perm := &Permission{}
 
-	err = ds.Get(key, value)
+	value, err := ds.Get(key)
 
-	//TODO: wtf?
-	fmt.Println("Permissions Value: ", string(value))
 	if err != nil {
 		logError(err)
 		return nil, err
