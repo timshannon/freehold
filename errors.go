@@ -45,6 +45,6 @@ func four04(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusNotFound)
-	r.URL.Path = settingString("404Path") //not sure if this works
-	fileGet(w, r)
+	//FIXME
+	//settingString("404Path")
 }

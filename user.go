@@ -31,10 +31,9 @@ func getUser(username string) (*User, error) {
 		return nil, err
 	}
 
-	var value []byte
 	var usr *User
 
-	err = ds.Get(key, value)
+	value, err := ds.Get(key)
 	if err != nil {
 		return nil, err
 	}
@@ -59,9 +58,7 @@ func newUser(u *User) error {
 		return err
 	}
 
-	var value []byte
-
-	err = ds.Get(key, value)
+	value, err := ds.Get(key)
 	if err != nil {
 		return err
 	}

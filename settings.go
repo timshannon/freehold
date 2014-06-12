@@ -16,13 +16,12 @@ type Setting struct {
 
 func setting(settingName string) (*Setting, error) {
 	ds := openCoreDS(settingDS)
-	var value []byte
 
 	key, err := json.Marshal(settingName)
 	if err != nil {
 		return nil, err
 	}
-	err = ds.Get(key, value)
+	value, err := ds.Get(key)
 	if err != nil {
 		return nil, err
 	}

@@ -4,7 +4,6 @@
 package datastore
 
 import (
-	"fmt"
 	"io"
 	"log"
 	"log/syslog"
@@ -139,15 +138,13 @@ func (d *DS) reset() error {
 	return nil
 }
 
-func (d *DS) Get(key, result []byte) error {
+func (d *DS) Get(key []byte) ([]byte, error) {
 	err := d.reset()
 	if err != nil {
-		return err
+		return nil, err
 	}
-	result, err = d.DB.Get(result, key)
-	fmt.Println("Get Key: ", string(key))
-	fmt.Println("Get Value: ", string(result))
-	return err
+	result, err := d.DB.Get(nil, key)
+	return result, err
 }
 
 func (d *DS) Put(key, value []byte) error {
@@ -156,8 +153,6 @@ func (d *DS) Put(key, value []byte) error {
 		return err
 	}
 
-	fmt.Println("Put Key: ", string(key))
-	fmt.Println("Put Value: ", string(value))
 	return d.DB.Set(key, value)
 }
 
@@ -190,23 +185,32 @@ func (d *DS) Iter(from, to []byte) (Iterator, error) {
 type KvIterator struct {
 	ds *DS
 	*kv.Enumerator
-	to  []byte
-	err error
+	to    []byte
+	key   []byte
+	value []byte
+	err   error
 }
 
-func (i *KvIterator) Next(key, value []byte) bool {
+func (i *KvIterator) Next() bool {
 	err := i.ds.reset()
 	if err != nil {
-		i.err = err
 		return false
 	}
 
-	key, value, err = i.Enumerator.Next()
+	i.key, i.value, err = i.Enumerator.Next()
 	if err == io.EOF {
 		return false
 	}
 	i.err = err
 	return true
+}
+
+func (i *KvIterator) Key() []byte {
+	return i.key
+}
+
+func (i *KvIterator) Value() []byte {
+	return i.value
 }
 
 func (i *KvIterator) Err() error {

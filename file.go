@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -38,12 +39,11 @@ func fileGet(w http.ResponseWriter, r *http.Request) {
 
 	file, err := os.Open(filePath(r))
 	defer file.Close()
-	if errHandled(err, w) {
-		return
-	}
-
 	if os.IsNotExist(err) {
 		four04(w, r)
+		return
+	}
+	if errHandled(err, w) {
 		return
 	}
 
@@ -85,6 +85,7 @@ func serveDir(w http.ResponseWriter, r *http.Request, file *os.File, user *User)
 
 	//Serve dir
 	dir := file.Name()
+	fmt.Println("In Directory: ", dir)
 
 	if errHandled(err, w) {
 		return
@@ -94,7 +95,7 @@ func serveDir(w http.ResponseWriter, r *http.Request, file *os.File, user *User)
 		return
 	}
 
-	fileList := make([]File, len(files))
+	fileList := make([]File, 0, len(files))
 
 	for i := range files {
 		if strings.TrimRight(files[i].Name(), path.Ext(files[i].Name())) == "index" {
@@ -136,12 +137,12 @@ func serveDir(w http.ResponseWriter, r *http.Request, file *os.File, user *User)
 			}
 		}
 
-		fileList[i] = File{
+		fileList = append(fileList, File{
 			Name:        files[i].Name(),
 			Url:         path.Join(r.URL.Path, files[i].Name()),
 			Size:        size,
 			Permissions: prm,
-		}
+		})
 	}
 	respondJsend(w, &JSend{
 		Status: statusSuccess,
@@ -178,7 +179,6 @@ func docsGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//TODO: Permissions on core files
 	serveDir(w, r, file, nil)
 }
 
