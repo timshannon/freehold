@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"net/http"
 	"strings"
 )
 
@@ -145,24 +144,6 @@ func (p *Permission) isOwner(u *User) bool {
 	}
 
 	return false
-}
-
-func isDocPath(resource string) bool {
-	root, _ := splitRootAndPath(resource)
-	return root == "docs"
-}
-
-func canReadRequest(w http.ResponseWriter, r *http.Request, user *User) bool {
-	prm, err := permissions(r.URL.Path)
-	if errHandled(err, w) {
-		return false
-	}
-	if !prm.canRead(user) {
-		four04(w, r)
-		return false
-	}
-
-	return true
 }
 
 //func canWriteRequest(w http.ResponseWriter, r *http.Request, user *User) bool {

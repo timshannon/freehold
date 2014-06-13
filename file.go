@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -12,7 +11,6 @@ import (
 )
 
 const (
-	fileDir      = "./file/"
 	markdownType = ".markdown"
 	markdownCss  = "/" + version + "/file/core/css/markdown.css"
 )
@@ -27,8 +25,7 @@ type File struct {
 // filePath retrieves the path to the file on the server that
 // the request URL refers to
 func filePath(r *http.Request) string {
-	_, pattern, root := rootHandler.Handler(r)
-	return path.Join(fileDir, root, strings.TrimLeft(r.URL.Path, pattern))
+	return urlPathToFile(r.URL.Path)
 }
 
 func fileGet(w http.ResponseWriter, r *http.Request) {
@@ -81,11 +78,10 @@ func serveDir(w http.ResponseWriter, r *http.Request, file *os.File, user *User)
 		}
 
 		serveFile(w, r, file, info)
+		return
 	}
 
-	//Serve dir
 	dir := file.Name()
-	fmt.Println("In Directory: ", dir)
 
 	if errHandled(err, w) {
 		return
@@ -163,11 +159,10 @@ func serveFile(w http.ResponseWriter, r *http.Request, file *os.File, info os.Fi
 
 	http.ServeContent(w, r, file.Name(), info.ModTime(), file)
 	return
-
 }
 
 func docsGet(w http.ResponseWriter, r *http.Request) {
-	file, err := os.Open(path.Join("./", r.URL.Path))
+	file, err := os.Open(filePath(r))
 	defer file.Close()
 
 	if os.IsNotExist(err) {

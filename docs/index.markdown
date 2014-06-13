@@ -55,7 +55,7 @@ If a user doesn't have permissions to read a file they will get a 404.
 Authenticated access is granted either by having an active cookie with proper session credentials
 or including an AuthToken field with the proper token in the request
 
-Application Specific Storage paths will be prefixed with the given applications identifier
+Application Specific Storage paths will be prefixed with the given applications identifier.
 
 * `app-id`/v1/file/`path to file`
 * `app-id`/v1/datastore/`path to file`
@@ -862,7 +862,7 @@ only support POST to create a new one and DELETE to remove or logout of the sess
 
 When a session is POSTed it creates a cookie with the user and unique session id in the client's browser.
 If any request is GETed with a valid session (i.e. no Header Authentication), then a CSRF token is put in 
-the header of that request (X-CSRFToken), and that token, **must be sent with any PUT, POST, or DELETE requests
+the header of that request (X-CSRFToken), and that token, **must be sent back via the same header with any PUT, POST, or DELETE requests
 sent from the session, or they will fail**.
 
 If a user requests a new session, all previous sessions for the user are expired.  If a user logs out / deletes
@@ -1070,7 +1070,7 @@ The application zip file must have a file called app.json in the following forma
 }
 ```
 * id - Path on which the application will be installed (`https://host/<app-id>/`). Must not match any existing installed
-applications, or any paths used by the freehold instance (i.e. /settings /auth, etc). 
+applications, or any paths used by the freehold instance (i.e. /v1 /v2, etc). 
 * name - User visable name of the application
 * description - Description of what the application does
 * author - Who wrote the application
