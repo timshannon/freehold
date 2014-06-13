@@ -3,11 +3,24 @@ package main
 import (
 	"fmt"
 	"os"
+	"path"
 	"strings"
 )
 
-const version = "v1"
+var versions = map[string]struct{}{"v1": struct{}{}}
 
+const (
+	version      = "v1"
+	docsDir      = "./docs/"
+	fileDir      = "./files/"
+	datastoreDir = "./datastores/"
+	appDir       = "./apps/"
+)
+
+// splitRootAndPath splits the first item in a path from the rest
+// /v1/file/test.txt:
+// root = "v1"
+// path = "/file/test.txt"
 func splitRootAndPath(pattern string) (root, path string) {
 	if pattern == "" {
 		panic("Invalid pattern")
@@ -25,4 +38,34 @@ func splitRootAndPath(pattern string) (root, path string) {
 func halt(msg string) {
 	fmt.Fprintln(os.Stderr, msg)
 	os.Exit(2)
+}
+
+func isDocPath(resource string) bool {
+	root, _ := splitRootAndPath(resource)
+	return root == "docs"
+}
+
+// urlPathToFile takes a url path and returns the path to the file
+// on the os filesystem
+// url path format will usually be
+// /<version>/<type of resource>/<path to resource>/
+func urlPathToFile(urlPath string) string {
+	root, respath := splitRootAndPath(urlPath)
+	if _, ok := versions[root]; !ok {
+		if strings.ToLower(root) == "docs" {
+			return path.Join(docsDir, respath)
+		}
+		//TODO: is app
+	}
+	//strip off version
+	root, respath = splitRootAndPath(respath)
+	switch strings.ToLower(root) {
+	case "file":
+		return path.Join(fileDir, respath)
+	case "datastore":
+		return path.Join(datastoreDir, respath)
+	default:
+		//shouldn't happen unless mux handlers are improperly defined
+		panic("unhandled path")
+	}
 }

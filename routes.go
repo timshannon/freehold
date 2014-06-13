@@ -2,8 +2,13 @@ package main
 
 import (
 	"net/http"
+	"os"
 
 	"bitbucket.org/tshannon/treemux"
+)
+
+const (
+	defaultRoot = "/" + version + "/file/core/index.html"
 )
 
 var rootHandler *treemux.Mux
@@ -14,6 +19,10 @@ func init() {
 
 func setupRoutes() {
 	rootHandler = treemux.NewServeMux()
+
+	rootHandler.Handle("/", &methodHandler{
+		get: rootGet,
+	})
 
 	rootHandler.Handle("/v1/file/", &methodHandler{
 		get:    fileGet,
@@ -37,16 +46,16 @@ type methodHandler struct {
 
 func (m *methodHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if m.get == nil {
-		m.get = http.NotFound
+		m.get = four04
 	}
 	if m.post == nil {
-		m.post = http.NotFound
+		m.post = four04
 	}
 	if m.put == nil {
-		m.put = http.NotFound
+		m.put = four04
 	}
 	if m.delete == nil {
-		m.delete = http.NotFound
+		m.delete = four04
 	}
 	switch r.Method {
 	case "GET":
@@ -62,7 +71,39 @@ func (m *methodHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		m.delete(w, r)
 		return
 	default:
-		http.NotFound(w, r)
+		four04(w, r)
 		return
 	}
+}
+
+func rootGet(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		four04(w, r)
+		return
+	}
+	user, err := authUser(r)
+	if errHandled(err, w) {
+		return
+	}
+
+	var homeFile string
+	if user != nil {
+		homeFile = user.HomeApp
+	}
+	if homeFile == "" {
+		homeFile = settingString("PublicRootFile")
+	}
+
+	file, err := os.Open(urlPathToFile(homeFile))
+	defer file.Close()
+
+	if os.IsNotExist(err) {
+		four04(w, r)
+		return
+	}
+	if errHandled(err, w) {
+		return
+	}
+
+	serveDir(w, r, file, user)
 }

@@ -27,23 +27,58 @@ func authUser(r *http.Request) (*User, error) {
 		}
 		u = split[0]
 		pass = split[1]
+
+		if u == "" {
+			//public access
+			return nil, nil
+		}
+
+		user, err := getUser(u)
+		if err != nil {
+			return nil, err
+		}
+
+		err = user.login(pass)
+		if err != nil {
+			return nil, err
+		}
+		return user, nil
+
 	}
 
-	//TODO: Check for session cookie
+	//Check for session cookie
+	ses, err := session(r)
+	if err != nil {
+		return nil, err
+	}
 
-	if u == "" {
-		//public access
+	if ses == nil {
+		//No session cookie
+		// public access
 		return nil, nil
 	}
 
-	user, err := getUser(u)
-	if err != nil {
-		return nil, err
+	if ses.IsExpired() {
+		return nil, pubErr(errors.New("Your session has expired"))
 	}
 
-	err = user.login(pass)
+	// Check for CSRF token
+	err = checkCSRF(r, ses)
 	if err != nil {
 		return nil, err
 	}
-	return user, nil
+	return ses.User()
+}
+
+func checkCSRF(r *http.Request, s *Session) error {
+	if r.Method != "GET" {
+		if s.IsExpired() {
+			return pubErr(errors.New("Your session has expired"))
+		}
+		reqToken := r.Header.Get("X-CSRFToken")
+		if reqToken != s.CSRFToken {
+			return pubErr(errors.New("Invalid CSRFToken"))
+		}
+	}
+	return nil
 }

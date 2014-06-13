@@ -3,6 +3,11 @@ package main
 import (
 	"errors"
 	"net/http"
+	"os"
+)
+
+const (
+	default404Path = "/" + version + "/file/core/404.html"
 )
 
 type publicError struct {
@@ -26,11 +31,12 @@ func errHandled(err error, w http.ResponseWriter) bool {
 		case *publicError:
 			errMsg = err.Error()
 		default:
-			errMsg = "An internal error has occurred"
+			errMsg = "An internal server error has occurred"
 		}
 	} else {
 		errMsg = err.Error()
 	}
+	w.WriteHeader(http.StatusInternalServerError)
 	respondJsend(w, &JSend{
 		Status:  statusError,
 		Message: errMsg,
@@ -43,8 +49,39 @@ func four04(w http.ResponseWriter, r *http.Request) {
 	if settingBool("Log404") {
 		logError(errors.New("Resource not found: " + r.URL.String()))
 	}
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+
+	prm, err := permissions(settingString("404File"))
+	if err != nil {
+		logError(err)
+		http.NotFound(w, r)
+		return
+	}
+	if !prm.canRead(nil) {
+		logError(errors.New("The 404File setting is pointing at a non-public file: " +
+			settingString("404File")))
+		http.NotFound(w, r)
+		return
+	}
+
+	file, err := os.Open(urlPathToFile(settingString("404File")))
+	defer file.Close()
+	if err != nil {
+		logError(err)
+		http.NotFound(w, r)
+		return
+	}
+
+	info, err := file.Stat()
+	if err != nil {
+		logError(err)
+		http.NotFound(w, r)
+		return
+	}
+
 	w.WriteHeader(http.StatusNotFound)
-	//FIXME
-	//settingString("404Path")
+	//TODO: serverFile writes another header status and throws a warning
+	// in the console.  Do we care?  The correct status gets sent to the client.
+	// Is it worth replicating all that good code for serving up a file just so
+	// a message doesn't show up in the console?
+	serveFile(w, r, file, info)
 }

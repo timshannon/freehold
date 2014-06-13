@@ -54,9 +54,9 @@ func init() {
 			Description: "Logs when a user changes their password.",
 			Value:       false,
 		},
-		"404Path": Setting{
+		"404File": Setting{
 			Description: "Path to a standard 404 page.",
-			Value:       "/v1/file/core/404.html",
+			Value:       default404Path,
 		},
 		"Log404": Setting{
 			Description: "Logs when an attempted is made to access an invalid resource.",
@@ -67,6 +67,16 @@ func init() {
 				"returned to the client. This can expose information about your internal system to " +
 				"the public, but can be useful when troubleshooting issues, or developign applications.",
 			Value: false,
+		},
+		"PublicRootFile": Setting{
+			Description: "Path to a file that unauthenticated users get served when hitting the root of " +
+				"the host: https://domain.com/.  Must be a file with public permissions.",
+			Value: defaultRoot,
+		},
+		"MaxOpenSessions": Setting{
+			Description: "The maximum number of open / non-expired user sessions a user can have. When a user " +
+				"reaches this limit, the oldest non-expired session will be expired.",
+			Value: float64(2),
 		},
 	}
 }

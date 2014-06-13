@@ -6,7 +6,7 @@ import (
 	"path"
 )
 
-const coreFilePath = "./file/core/"
+const coreFilePath = fileDir + "core/"
 
 // makeFirstAdmin is used to make the first admin user, then set the default starting permissions
 // on all of the core resources
