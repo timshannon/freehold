@@ -155,3 +155,8 @@ func (u *User) login(password string) error {
 
 	return nil
 }
+
+func (u *User) clearPassword() {
+	u.Password = ""
+	u.EncPassword = nil
+}

@@ -1,7 +1,10 @@
 package main
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
+	"io"
 	"os"
 	"path"
 	"strings"
@@ -68,4 +71,16 @@ func urlPathToFile(urlPath string) string {
 		//shouldn't happen unless mux handlers are improperly defined
 		panic("unhandled path")
 	}
+}
+
+//Returns a random value of the bit length passed in
+func random(bits int) string {
+	result := make([]byte, bits/4)
+	_, err := io.ReadFull(rand.Reader, result)
+	if err != nil {
+		panic(fmt.Sprintf("Error generating random values: %v", err))
+	}
+
+	return base64.StdEncoding.EncodeToString(result)
+
 }

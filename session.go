@@ -9,7 +9,8 @@ import (
 )
 
 const (
-	sessionDS = "core/session.ds"
+	sessionDS  = "core/session.ds"
+	cookieName = "freehold_session"
 )
 
 type Session struct {
@@ -21,7 +22,7 @@ type Session struct {
 }
 
 func session(r *http.Request) (*Session, error) {
-	cookie, err := r.Cookie("freehold_session")
+	cookie, err := r.Cookie(cookieName)
 	if err == http.ErrNoCookie {
 		return nil, nil
 	}
@@ -57,20 +58,53 @@ func session(r *http.Request) (*Session, error) {
 	return session, nil
 }
 
-func (s *Session) IsExpired() bool {
+func newSession(auth *Auth, base *Session) (*http.Cookie, error) {
+	if auth.User == nil || auth.AuthType == authTypeToken {
+		return nil, errors.New("Invalid authentication")
+	}
+
+	sessionId := random(128)
+	base.CSRFToken = random(256)
+
+	key := auth.User.username + "_" + sessionId
+
+	cookie := &http.Cookie{
+		Name:     cookieName,
+		Value:    key,
+		HttpOnly: true,
+		Path:     "/",
+		Secure:   isSSL,
+	}
+	if base.Expires != "" {
+		cookie.Expires = base.expireTime()
+	}
+
+	//TODO: Check for sessionLimit
+}
+
+func (s *Session) isExpired() bool {
 	if s.Expires == "" {
 		return true
+	}
+
+	t := s.expireTime()
+	return t.Before(time.Now())
+}
+
+func (s *Session) expireTime() time.Time {
+	if s.Expires == "" {
+		return time.Unix(0, 0)
 	}
 
 	t, err := time.Parse(time.RFC3339, s.Expires)
 	if err != nil {
 		logError(errors.New("Error parsing session expiration: " + err.Error()))
-		return true
+		return time.Unix(0, 0)
 	}
-	return t.Before(time.Now())
+	return t
 }
 
-func (s *Session) User() (*User, error) {
+func (s *Session) user() (*User, error) {
 	if s.IsExpired() || s.userName == "" {
 		errors.New("Invalid Session")
 	}
@@ -81,3 +115,17 @@ func (s *Session) User() (*User, error) {
 //TODO: When creating a cookie with no expiration (i.e. expires at session)
 // set the session expiration out 1 day so it expires eventually evenif the
 // browser or user doesn't clean up the cookie properly.
+
+func sessionGet(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func sessionPost(w http.ResponseWriter, r *http.Request) {
+}
+
+func sessionPut(w http.ResponseWriter, r *http.Request) {
+}
+
+func sessionDelete(w http.ResponseWriter, r *http.Request) {
+
+}

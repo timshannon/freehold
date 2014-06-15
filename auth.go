@@ -14,11 +14,9 @@ const (
 )
 
 type Auth struct {
+	AuthType string `json:"authType"`
 	*User
-	AuthType   string `json:"authType"`
-	Expires    string `json:"expires,omitempty"`
-	Resource   string `json:"resource,omitempty"`
-	Permission string `json:"permission,omitempty"`
+	*Token
 }
 
 // authenticate authenticates an http request in one of 2 ways
@@ -105,4 +103,17 @@ func checkCSRF(r *http.Request, s *Session) error {
 		}
 	}
 	return nil
+}
+
+func authGet(w http.ResponseWriter, r *http.Request) {
+	auth, err := authenticate(r)
+	if errHandled(err, w) {
+		return
+	}
+	auth.clearPassword()
+
+	respondJsend(w, &JSend{
+		Status: statusSuccess,
+		Data:   auth,
+	})
 }
