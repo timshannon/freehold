@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"log/syslog"
 	"time"
@@ -54,6 +55,7 @@ func logError(err error) {
 	if settingBool("LogErrorsToSyslog") {
 		logSyslogError(err)
 	}
+	fmt.Println("Error: ", err)
 	logEntry("error", err.Error())
 }
 

@@ -2,7 +2,7 @@ package main
 
 import (
 	"net/http"
-	"os"
+	"text/template"
 
 	"bitbucket.org/tshannon/treemux"
 )
@@ -21,7 +21,8 @@ func setupRoutes() {
 	rootHandler = treemux.NewServeMux()
 
 	rootHandler.Handle("/", &methodHandler{
-		get: rootGet,
+		get:  rootGet,
+		post: rootPost,
 	})
 
 	rootHandler.Handle("/v1/file/", &methodHandler{
@@ -77,6 +78,14 @@ func (m *methodHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func rootGet(w http.ResponseWriter, r *http.Request) {
+	if firstRun {
+		t, err := template.New("firstRun").Parse(firstRunAdminPage)
+		if err != nil {
+			panic("First Run admin template cannot be parsed!")
+		}
+		t.Execute(w, nil)
+		return
+	}
 	if r.URL.Path != "/" {
 		four04(w, r)
 		return
@@ -90,20 +99,29 @@ func rootGet(w http.ResponseWriter, r *http.Request) {
 	if user != nil {
 		homeFile = user.HomeApp
 	}
+
 	if homeFile == "" {
 		homeFile = settingString("PublicRootFile")
 	}
 
-	file, err := os.Open(urlPathToFile(homeFile))
-	defer file.Close()
+	serveResource(w, r, homeFile, user)
+}
 
-	if os.IsNotExist(err) {
+//Only used on first login
+func rootPost(w http.ResponseWriter, r *http.Request) {
+	if !firstRun {
 		four04(w, r)
-		return
 	}
-	if errHandled(err, w) {
+	usrErr := makeFirstAdmin(r.FormValue("username"), r.FormValue("password"))
+
+	if usrErr != nil {
+		t, err := template.New("firstRun").Parse(firstRunAdminPage)
+		if err != nil {
+			panic("First Run admin template cannot be parsed!")
+		}
+		t.Execute(w, usrErr.Error())
 		return
 	}
 
-	serveDir(w, r, file, user)
+	http.Redirect(w, r, "/", http.StatusFound)
 }
