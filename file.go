@@ -22,29 +22,13 @@ type File struct {
 	Size        int64       `json:"size,omitempty"`
 }
 
-// filePath retrieves the path to the file on the server that
-// the request URL refers to
-func filePath(r *http.Request) string {
-	return urlPathToFile(r.URL.Path)
-}
-
 func fileGet(w http.ResponseWriter, r *http.Request) {
 	user, err := authUser(r)
 	if errHandled(err, w) {
 		return
 	}
 
-	file, err := os.Open(filePath(r))
-	defer file.Close()
-	if os.IsNotExist(err) {
-		four04(w, r)
-		return
-	}
-	if errHandled(err, w) {
-		return
-	}
-
-	serveDir(w, r, file, user)
+	serveResource(w, r, r.URL.Path, user)
 }
 
 func filePost(w http.ResponseWriter, r *http.Request) {
@@ -61,14 +45,26 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 func fileDelete(w http.ResponseWriter, r *http.Request) {
 }
 
-func serveDir(w http.ResponseWriter, r *http.Request, file *os.File, user *User) {
+func serveResource(w http.ResponseWriter, r *http.Request, resource string, user *User) {
+	file, err := os.Open(urlPathToFile(resource))
+	defer file.Close()
+
+	if os.IsNotExist(err) {
+		four04(w, r)
+		return
+	}
+
+	if errHandled(err, w) {
+		return
+	}
+
 	info, err := file.Stat()
 	if errHandled(err, w) {
 		return
 	}
 
 	if !info.IsDir() {
-		prm, err := permissions(r.URL.Path)
+		prm, err := permissions(resource)
 		if errHandled(err, w) {
 			return
 		}
@@ -95,7 +91,7 @@ func serveDir(w http.ResponseWriter, r *http.Request, file *os.File, user *User)
 
 	for i := range files {
 		if strings.TrimRight(files[i].Name(), path.Ext(files[i].Name())) == "index" {
-			prm, err := permissions(path.Join(r.URL.Path, files[i].Name()))
+			prm, err := permissions(path.Join(resource, files[i].Name()))
 			if errHandled(err, w) {
 				return
 			}
@@ -124,7 +120,7 @@ func serveDir(w http.ResponseWriter, r *http.Request, file *os.File, user *User)
 			}
 		} else {
 			size = files[i].Size()
-			prm, err := permissions(path.Join(r.URL.Path, files[i].Name()))
+			prm, err := permissions(path.Join(resource, files[i].Name()))
 			if errHandled(err, w) {
 				return
 			}
@@ -135,7 +131,7 @@ func serveDir(w http.ResponseWriter, r *http.Request, file *os.File, user *User)
 
 		fileList = append(fileList, File{
 			Name:        files[i].Name(),
-			Url:         path.Join(r.URL.Path, files[i].Name()),
+			Url:         path.Join(resource, files[i].Name()),
 			Size:        size,
 			Permissions: prm,
 		})
@@ -162,19 +158,7 @@ func serveFile(w http.ResponseWriter, r *http.Request, file *os.File, info os.Fi
 }
 
 func docsGet(w http.ResponseWriter, r *http.Request) {
-	file, err := os.Open(filePath(r))
-	defer file.Close()
-
-	if os.IsNotExist(err) {
-		four04(w, r)
-		return
-	}
-
-	if errHandled(err, w) {
-		return
-	}
-
-	serveDir(w, r, file, nil)
+	serveResource(w, r, r.URL.Path, nil)
 }
 
 func writeMarkdown(file *os.File) ([]byte, error) {

@@ -14,7 +14,7 @@ func settingDefault(settingName string) *Setting {
 
 func init() {
 	//NOTE: Settings are stored as JSON in the datastore, so all ints should be defined as floats
-	// otherwise typed settings<Type> calls will panic
+	// otherwise settingInt or settingFloat calls will panic
 	settingDefaults = map[string]Setting{
 		"LogErrors": Setting{
 			Description: "Whether or not errors will be logged in the core/log datastore.",
@@ -76,7 +76,7 @@ func init() {
 		"MaxOpenSessions": Setting{
 			Description: "The maximum number of open / non-expired user sessions a user can have. When a user " +
 				"reaches this limit, the oldest non-expired session will be expired.",
-			Value: float64(2),
+			Value: float64(2), //TODO: Implement
 		},
 	}
 }

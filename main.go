@@ -45,6 +45,8 @@ func main() {
 	certFile := cfg.String("certificateFile", "")
 	keyFile := cfg.String("keyFile", "")
 
+	firstRun = !fileExists(userDS)
+
 	if flagAdmin != "" {
 		if flagAdminPass == "" {
 			halt("You must specify admin and adminPass")

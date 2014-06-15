@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"io"
 	"net/http"
 	"os"
 )
@@ -79,9 +80,6 @@ func four04(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNotFound)
-	//TODO: serverFile writes another header status and throws a warning
-	// in the console.  Do we care?  The correct status gets sent to the client.
-	// Is it worth replicating all that good code for serving up a file just so
-	// a message doesn't show up in the console?
-	serveFile(w, r, file, info)
+	//Have to do this manually so 404 Status Code is preserved
+	io.CopyN(w, file, info.Size())
 }
