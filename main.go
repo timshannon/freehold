@@ -22,6 +22,7 @@ const (
 var flagSelfSign bool = false
 var flagAdmin string = ""
 var flagAdminPass string = ""
+var isSSL bool = false
 
 func init() {
 	flag.BoolVar(&flagSelfSign, "selfsign", false, "Generate a self-signed certificate, and host using it. "+
@@ -93,6 +94,7 @@ func main() {
 		if port == "" {
 			port = "443"
 		}
+		isSSL = true
 		//SSL added and removed here :-)
 		err = http.ListenAndServeTLS(address+":"+port, certFile, keyFile, rootHandler)
 	}

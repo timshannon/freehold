@@ -559,7 +559,7 @@ Authentication and Session data are stored in the core datastore, and accessed v
 
 ### /v1/auth/
 
-Information about the current authentication.
+Information about the current authenticated user.
 ```
 {
 		user: <current user>, 
@@ -748,13 +748,14 @@ longer be valid.
 Security tokens can be granted for specific resources and specific permissions (equal lower than the existing access). 
 In this case the user generating the token grants their permissions but only if the resource path matches the one for the token.  This would be a way to grant public access temporarily to private files.
 
-//TODO Temporary urls.  Not all browsers support `https://user:pass@domain.org` syntax.
+//TODO Temporary urls.  
 
 ```
 core/token.ds
 {
 	key: <user>_<token>,
 	value: {
+		name: <name / reason for token>,
 		expires: <expiration date>,
 		resource: <resource path>,
 		permission: {<permission>}
@@ -772,9 +773,9 @@ Response (200):
 {
 	status: "success",
 	data: [
-		{token: "aaaaaaaaaaaaaaaaaaaaa"},
-		{token: "bbbbbbbbbbbbbbbbbbbbb", expires: "2044-04-23T18:25:43.511Z"},
-		{token: "ccccccccccccccccccccc", expires: "2014-08-18T00:00:00.000Z", resource: "/v1/file/public/checkthisout.torrent"},
+		{token: "aaaaaaaaaaaaaaaaaaaaa", name: "android phone"},
+		{token: "bbbbbbbbbbbbbbbbbbbbb", name: "testing", expires: "2044-04-23T18:25:43.511Z"},
+		{token: "ccccccccccccccccccccc", name: "temp torrent share", expires: "2014-08-18T00:00:00.000Z", resource: "/v1/file/public/checkthisout.torrent"},
 	]
 }
 ```
@@ -789,7 +790,7 @@ GET /v1/auth/token
 Response (200):
 {
 	status: "success",
-	data: {token: "bbbbbbbbbbbbbbbbbbbbb", expires: "2044-04-23T18:25:43.511Z"}
+	data: {token: "bbbbbbbbbbbbbbbbbbbbb", name: "desktop file sync", expires: "2044-04-23T18:25:43.511Z"}
 }
 ```
 
@@ -798,11 +799,14 @@ Response (200):
 *Generate new token with no expiration*
 ```
 POST /v1/auth/token
+{
+	name: "Full Sync Access"
+}
 
-Response (200):
+Response (201):
 {
 	status: "success",
-	data: {token: "fffffffffffffffffffff"}
+	data: {token: "fffffffffffffffffffff", name: "Full Sync Access"}
 }
 ```
 
@@ -810,13 +814,14 @@ Response (200):
 ```
 POST /v1/auth/token
 {
+	name: "Temporary full access",
 	expires: "2044-04-23T18:25:43.511Z"
 }
 
-Response (200):
+Response (201):
 {
 	status: "success",
-	data: {token: "kkkkkkkkkkkkkkkkkkkkk", expires: "2044-04-23T18:25:43.511Z"}
+	data: {token: "kkkkkkkkkkkkkkkkkkkkk", name: "Temporary full access", expires: "2044-04-23T18:25:43.511Z"}
 }
 ```
 
@@ -824,13 +829,14 @@ Response (200):
 ```
 POST /v1/auth/token
 {
+	name: "Public comments",
 	resource: "/v1/datastore/comments.ds"
 }
 
-Response (200):
+Response (201):
 {
 	status: "success",
-	data: {token: "lllllllllllllllllllll", resource: "/v1/datastore/comments.ds"}
+	data: {token: "lllllllllllllllllllll", name: "Public comments", resource: "/v1/datastore/comments.ds"}
 }
 ```
 
@@ -838,15 +844,16 @@ Response (200):
 ```
 POST /v1/auth/token
 {
+	name: "Read Only comments",
 	resource: "/v1/datastore/readonly.ds",
 	permission: "r"
 
 }
 
-Response (200):
+Response (201):
 {
 	status: "success",
-	data: {token: "lllllllllllllllllllll", resource: "/v1/datastore/comments.ds"}
+	data: {token: "lllllllllllllllllllll", name: "Read Only comments", resource: "/v1/datastore/comments.ds"}
 }
 ```
 
@@ -872,7 +879,7 @@ Response (200):
 ```
 PUT /v1/auth/token
 {
-	token: "kkkkkkkkkkkkkkkkkkkkk",
+	token: "kkkkkkkkkkkkkkkkkkkkk"
 }
 
 Response (200):
@@ -880,6 +887,21 @@ Response (200):
 	status: "success",
 }
 ```
+
+*Rename Token*
+```
+PUT /v1/auth/token
+{
+	token: "kkkkkkkkkkkkkkkkkkkkk",
+	name: "Desktop Sync"
+}
+
+Response (200):
+{
+	status: "success",
+}
+```
+
 
 **DELETE**
 ```
@@ -943,7 +965,7 @@ Response (200):
 
 *Creates a new session and writes a cookie to hold it* 
 
- This session expires at the end of the browser's session
+ This session cookie expires at the end of the browser's session
 ```
 POST /v1/auth/session
 
@@ -1223,7 +1245,7 @@ POST /v1/application
 	file: "blog.zip"
 }
 
-Response (200):
+Response (201):
 {
 	status: "success",
 	data: {
