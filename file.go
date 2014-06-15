@@ -23,12 +23,12 @@ type File struct {
 }
 
 func fileGet(w http.ResponseWriter, r *http.Request) {
-	user, err := authUser(r)
+	auth, err := authenticate(r)
 	if errHandled(err, w) {
 		return
 	}
 
-	serveResource(w, r, r.URL.Path, user)
+	serveResource(w, r, r.URL.Path, auth)
 }
 
 func filePost(w http.ResponseWriter, r *http.Request) {
@@ -45,7 +45,12 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 func fileDelete(w http.ResponseWriter, r *http.Request) {
 }
 
-func serveResource(w http.ResponseWriter, r *http.Request, resource string, user *User) {
+func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth *Auth) {
+	if auth != nil && auth.Resource != "" && auth.Resource != resource {
+		four04(w, r)
+		return
+	}
+
 	file, err := os.Open(urlPathToFile(resource))
 	defer file.Close()
 
@@ -68,7 +73,7 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, user
 		if errHandled(err, w) {
 			return
 		}
-		if !prm.canRead(user) {
+		if !prm.canRead(auth) {
 			four04(w, r)
 			return
 		}
@@ -95,7 +100,7 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, user
 			if errHandled(err, w) {
 				return
 			}
-			if prm.canRead(user) {
+			if prm.canRead(auth) {
 				indexFile, err := os.Open(path.Join(dir, files[i].Name()))
 				defer indexFile.Close()
 
@@ -114,7 +119,7 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, user
 		var size int64
 		var prm *Permission
 		if files[i].IsDir() {
-			if user == nil {
+			if auth == nil {
 				//Public can't view the existence of directories
 				continue
 			}
@@ -124,7 +129,7 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, user
 			if errHandled(err, w) {
 				return
 			}
-			if !prm.canRead(user) {
+			if !prm.canRead(auth) {
 				continue
 			}
 		}

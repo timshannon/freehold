@@ -24,7 +24,7 @@ var flagAdmin string = ""
 var flagAdminPass string = ""
 
 func init() {
-	flag.BoolVar(&flagSelfSign, "selfsign", false, "Generate a self-signed certificate, and host using it."+
+	flag.BoolVar(&flagSelfSign, "selfsign", false, "Generate a self-signed certificate, and host using it. "+
 		"If "+defaultCertFile+", or "+defaultKeyFile+" already exists, they will not be overridden.")
 	flag.StringVar(&flagAdmin, "admin", "", "Creates an admin user in the system with the passed in userid. "+
 		"An admin is only added if the core/user datastore doesn't exist.")

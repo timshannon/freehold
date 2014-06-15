@@ -7,13 +7,25 @@ import (
 	"strings"
 )
 
-// authUser authenticates an http request in one of 2 ways
+const (
+	authTypeBasic   = "basic"
+	authTypeSession = "session"
+	authTypeToken   = "token"
+)
+
+type Auth struct {
+	*User
+	AuthType   string `json:"authType"`
+	Expires    string `json:"expires,omitempty"`
+	Resource   string `json:"resource,omitempty"`
+	Permission string `json:"permission,omitempty"`
+}
+
+// authenticate authenticates an http request in one of 2 ways
 // Checks for basic http authentication where the password is either the user's password
 // or a valid security token, or the user has an valid cookie based session. It returns
-// the authenticated user, or an error
-func authUser(r *http.Request) (*User, error) {
-	var u, pass string
-
+// the auth type containing the user / permissions, or an error
+func authenticate(r *http.Request) (*Auth, error) {
 	headerInfo := r.Header.Get("Authorization")
 	if headerInfo != "" {
 		userPass, err := base64.StdEncoding.DecodeString(headerInfo)
@@ -25,8 +37,8 @@ func authUser(r *http.Request) (*User, error) {
 			err = errors.New("Error, malformed basic auth header.")
 			return nil, err
 		}
-		u = split[0]
-		pass = split[1]
+		u := split[0]
+		pass := split[1]
 
 		if u == "" {
 			//public access
@@ -38,12 +50,16 @@ func authUser(r *http.Request) (*User, error) {
 			return nil, err
 		}
 
+		//TODO: security tokens
+
 		err = user.login(pass)
 		if err != nil {
 			return nil, err
 		}
-		return user, nil
-
+		return &Auth{
+			User:     user,
+			AuthType: authTypeBasic,
+		}, nil
 	}
 
 	//Check for session cookie
@@ -67,7 +83,15 @@ func authUser(r *http.Request) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-	return ses.User()
+
+	user, err := ses.User()
+	if err != nil {
+		return nil, err
+	}
+	return &Auth{
+		User:     user,
+		AuthType: authTypeSession,
+	}, nil
 }
 
 func checkCSRF(r *http.Request, s *Session) error {

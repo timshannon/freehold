@@ -90,21 +90,21 @@ func rootGet(w http.ResponseWriter, r *http.Request) {
 		four04(w, r)
 		return
 	}
-	user, err := authUser(r)
+	auth, err := authenticate(r)
 	if errHandled(err, w) {
 		return
 	}
 
 	var homeFile string
-	if user != nil {
-		homeFile = user.HomeApp
+	if auth != nil {
+		homeFile = auth.User.HomeApp
 	}
 
 	if homeFile == "" {
 		homeFile = settingString("PublicRootFile")
 	}
 
-	serveResource(w, r, homeFile, user)
+	serveResource(w, r, homeFile, auth)
 }
 
 //Only used on first login

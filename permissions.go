@@ -108,34 +108,29 @@ func validPermission(permission string) bool {
 
 }
 
-func (p *Permission) canPermission(permType rune, u *User) bool {
-	if u == nil { //public
-		if strings.ContainsRune(p.Public, permType) {
-			return true
-		}
-		return false
+func (p *Permission) canPermission(permType rune, auth *Auth) bool {
+	if auth == nil { //public
+		return strings.ContainsRune(p.Public, permType)
 	}
-	if p.isOwner(u) {
-		if strings.ContainsRune(p.Private, permType) {
-			return true
-		}
-		return false
+	//check for security token
+	if auth.Permission != "" {
+		return strings.ContainsRune(auth.Permission, permType)
+
+	}
+	if p.isOwner(auth.User) {
+		return strings.ContainsRune(p.Private, permType)
 	}
 
 	//authenticated friend
-	if strings.ContainsRune(p.Friend, permType) {
-		return true
-	}
-	return false
-
+	return strings.ContainsRune(p.Friend, permType)
 }
 
-func (p *Permission) canRead(u *User) bool {
-	return p.canPermission('r', u)
+func (p *Permission) canRead(auth *Auth) bool {
+	return p.canPermission('r', auth)
 }
 
-func (p *Permission) canWrite(u *User) bool {
-	return p.canPermission('w', u)
+func (p *Permission) canWrite(auth *Auth) bool {
+	return p.canPermission('w', auth)
 }
 
 func (p *Permission) isOwner(u *User) bool {
