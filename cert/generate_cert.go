@@ -29,6 +29,8 @@ import (
 //isCA      = flag.Bool("ca", false, "whether this cert should be its own Certificate Authority")
 //rsaBits   = flag.Int("rsa-bits", 2048, "Size of RSA key to generate")
 //)
+//TODO: Unique serial number from CA (firefox error):
+// 	Your certificate contains the same serial number as another certificate issued by the certificate authority. Please get a new certificate containing a unique serial number.
 
 func GenerateCert(host, organization string, validFrom time.Time, validFor time.Duration, isCA bool, rsaBits int,
 	certFile string, keyFile string) error {

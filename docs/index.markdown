@@ -555,6 +555,45 @@ More info on this under Sessions.
 Authentication and Session data are stored in the core datastore, and accessed via the path
 */v1/auth/*.
 
+
+
+### /v1/auth/
+
+Information about the current authentication.
+```
+{
+		user: <current user>, 
+		name: <current user's name>, 
+		email: <current user's email address>,
+		homeApp: <current user's home app>,
+		admin: <Is the current user an admin>,
+		authType: <"session" | "token" | "basic",
+		expires: <expiration of access, if it exists>,
+		resource: <specified auth resource (token only)>,
+		permissions: <specified auth permissions (token only)>
+}
+
+```
+
+**GET**
+```
+GET /v1/auth
+
+Response (200):
+{
+	status: "success",
+	data: {
+			user: "tshannon", 
+			name: "Tim Shannon", 
+			email: "shannon.timothy@gmail.com",
+			homeApp: "core-home",
+			admin: true,
+			authType: "session",
+			expires: "2044-04-23T18:25:43.511Z"
+	}
+}
+```
+
 ### /v1/auth/user
 
 Information on Users in the system.  Stored in the core *user* datastore.
@@ -718,7 +757,7 @@ core/token.ds
 	value: {
 		expires: <expiration date>,
 		resource: <resource path>,
-		permissions: {<permissions}
+		permission: {<permission>}
 	}
 }
 ```
@@ -800,7 +839,7 @@ Response (200):
 POST /v1/auth/token
 {
 	resource: "/v1/datastore/readonly.ds",
-	permissions: "r"
+	permission: "r"
 
 }
 
@@ -865,11 +904,10 @@ If any request is GETed with a valid session (i.e. no Header Authentication), th
 the header of that request (X-CSRFToken), and that token, **must be sent back via the same header with any PUT, POST, or DELETE requests
 sent from the session, or they will fail**.
 
-If a user requests a new session, all previous sessions for the user are expired.  If a user logs out / deletes
-a session all previous sessions are expired.  This all-for-one behavior can be changed with a Core Setting.
+There is a core setting for maximum number of open sessions a user can have.  Once that limit is reached, the oldest session is automatically expired.
 
-If a user has tries to make an unauthenticated requested, i.e. no header auth, and no valid session cookie,
-they will be automatically redirected to the default home app's login screen (see settings to change this).
+If a user has tries to make an unauthenticated requested, i.e. no header auth, and no session cookie,
+they will be automatically redirected to the default home app's login screen (see settings to change this). If a session cookie is found, but expired, an error is returned.  Usually an application will handle the session expiration by showing a logon prompt on the current page to allow the user to re-authenticate.
 
 ```
 core/session.ds
