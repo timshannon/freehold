@@ -939,6 +939,7 @@ core/session.ds
 		expires: <expiration date>,
 		CSRFToken: <CSRF Token>,
 		ipAddress: <ip address>
+		created: <date session was created>
 	}
 }
 ```
@@ -953,10 +954,10 @@ Response (200):
 {
 	status: "success",
 	data: [
-		{session: "bbbbbbbbbbbbbbbbbbbbb", CSRFToken: "12345677", expires: "2014-04-23T18:25:43.511Z"},
-		{session: "ccccccccccccccccccccc", CSRFToken: "12345677"},
-		{session: "lllllllllllllllllllll", CSRFToken: "12345677", expires: "1900-00-00T00:00:00.000Z"},
-		{session: "222222222222222222222", CSRFToken: "12345677", expires: "1900-00-00T00:00:00.000Z"}
+		{session: "bbbbbbbbbbbbbbbbbbbbb", CSRFToken: "12345677", expires: "2014-04-23T18:25:43.511Z", ipAddress: "127.0.0.1", created: "2014-04-20T18:25:43.511Z"},
+		{session: "ccccccccccccccccccccc", CSRFToken: "12345677", ipAddress: "127.0.0.1", created: "2014-04-20T18:25:43.511Z"},
+		{session: "lllllllllllllllllllll", CSRFToken: "12345677", expires: "1900-00-00T00:00:00.000Z", ipAddress: "127.0.0.1", created: "2014-04-20T18:25:43.511Z"},
+		{session: "222222222222222222222", CSRFToken: "12345677", expires: "1900-00-00T00:00:00.000Z", ipAddress: "127.0.0.1", created: "2014-04-20T18:25:43.511Z"},
 	]
 }
 ```
