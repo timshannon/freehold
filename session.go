@@ -77,9 +77,14 @@ func newSession(auth *Auth, base *Session) (*http.Cookie, error) {
 	}
 	if base.Expires != "" {
 		cookie.Expires = base.expireTime()
+	} else {
+		//Browser should clean up expired cookie, but just incase
+		// we'll expire the session in 1 day
+		base.Expires = time.Now().Add(24 * time.Hour)
 	}
 
 	//TODO: Check for sessionLimit
+	return nil, nil
 }
 
 func (s *Session) isExpired() bool {
@@ -105,7 +110,7 @@ func (s *Session) expireTime() time.Time {
 }
 
 func (s *Session) user() (*User, error) {
-	if s.IsExpired() || s.userName == "" {
+	if s.isExpired() || s.userName == "" {
 		errors.New("Invalid Session")
 	}
 

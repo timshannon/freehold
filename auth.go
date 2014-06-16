@@ -72,7 +72,7 @@ func authenticate(r *http.Request) (*Auth, error) {
 		return nil, nil
 	}
 
-	if ses.IsExpired() {
+	if ses.isExpired() {
 		return nil, pubErr(errors.New("Your session has expired"))
 	}
 
@@ -82,7 +82,7 @@ func authenticate(r *http.Request) (*Auth, error) {
 		return nil, err
 	}
 
-	user, err := ses.User()
+	user, err := ses.user()
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func authenticate(r *http.Request) (*Auth, error) {
 
 func checkCSRF(r *http.Request, s *Session) error {
 	if r.Method != "GET" {
-		if s.IsExpired() {
+		if s.isExpired() {
 			return pubErr(errors.New("Your session has expired"))
 		}
 		reqToken := r.Header.Get("X-CSRFToken")
