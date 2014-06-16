@@ -15,8 +15,16 @@ type publicError struct {
 	error
 }
 
+type publicFail struct { //returns 400
+	error
+}
+
 func pubErr(err error) error {
 	return publicError{err}
+}
+
+func pubFail(err error) error {
+	return publicFail{err}
 }
 
 func errHandled(err error, w http.ResponseWriter) bool {
@@ -24,22 +32,34 @@ func errHandled(err error, w http.ResponseWriter) bool {
 		return false
 	}
 
+	status := statusError
+
 	var errMsg string
-	if !settingBool("FullClientErrors") {
-		switch err.(type) {
-		case nil:
-			return false
-		case *publicError:
+	switch err := err.(type) {
+	case nil:
+		return false
+	case publicError:
+		status = statusError
+		errMsg = err.Error()
+	case publicFail:
+		status = statusFail
+		errMsg = err.Error()
+	default:
+		status = statusError
+		if settingBool("FullClientErrors") {
 			errMsg = err.Error()
-		default:
+		} else {
 			errMsg = "An internal server error has occurred"
 		}
-	} else {
-		errMsg = err.Error()
 	}
-	w.WriteHeader(http.StatusInternalServerError)
+
+	if status == statusFail {
+		w.WriteHeader(http.StatusBadRequest)
+	} else {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 	respondJsend(w, &JSend{
-		Status:  statusError,
+		Status:  status,
 		Message: errMsg,
 	})
 	logError(err)

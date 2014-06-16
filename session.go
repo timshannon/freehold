@@ -38,7 +38,7 @@ func session(r *http.Request) (*Session, error) {
 		return nil, err
 	}
 
-	var session *Session
+	session := &Session{}
 
 	value, err := ds.Get(key)
 	if err != nil {
@@ -176,17 +176,20 @@ func enforceSessionLimit(username string) error {
 	}
 
 	iter, err := ds.Iter(from, nil)
+	if err != nil {
+		return err
+	}
 
 	var sessions []*Session
 	var key string
-	var s *Session
+	s := &Session{}
 
 	for iter.Next() {
 		if iter.Err() != nil {
 			return iter.Err()
 		}
 
-		err = json.Unmarshal(iter.Key(), key)
+		err = json.Unmarshal(iter.Key(), &key)
 		if err != nil {
 			return err
 		}
@@ -205,10 +208,7 @@ func enforceSessionLimit(username string) error {
 			}
 			continue
 		}
-		err = json.Unmarshal(iter.Key(), s.key)
-		if err != nil {
-			return err
-		}
+		s.key = key
 		sessions = append(sessions, s)
 	}
 

@@ -78,5 +78,9 @@ func init() {
 				"reaches this limit, the oldest non-expired session will be expired.",
 			Value: float64(2),
 		},
+		"DefaultHomeApp": Setting{
+			Description: "Default home app set for new users who's home app was not specified.",
+			Value:       "core-home",
+		},
 	}
 }

@@ -12,7 +12,7 @@ const (
 	authLogType = "authentication"
 )
 
-var ErrLogonFailure = pubErr(errors.New("Invalid user and / or password"))
+var ErrLogonFailure = pubFail(errors.New("Invalid user and / or password"))
 
 type User struct {
 	username string `json:"-"`
@@ -31,7 +31,7 @@ func getUser(username string) (*User, error) {
 		return nil, err
 	}
 
-	var usr *User
+	usr := &User{}
 
 	value, err := ds.Get(key)
 	if err != nil {
@@ -56,6 +56,10 @@ func newUser(u *User) error {
 	key, err := json.Marshal(u.username)
 	if err != nil {
 		return err
+	}
+
+	if u.HomeApp == "" {
+		u.HomeApp = settingString("DefaultHomeApp")
 	}
 
 	value, err := ds.Get(key)
