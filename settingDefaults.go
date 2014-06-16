@@ -76,7 +76,7 @@ func init() {
 		"MaxOpenSessions": Setting{
 			Description: "The maximum number of open / non-expired user sessions a user can have. When a user " +
 				"reaches this limit, the oldest non-expired session will be expired.",
-			Value: float64(2), //TODO: Implement
+			Value: float64(2),
 		},
 	}
 }

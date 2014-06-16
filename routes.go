@@ -38,7 +38,6 @@ func setupRoutes() {
 	rootHandler.Handle("/v1/auth/session", &methodHandler{
 		get:    sessionGet,
 		post:   sessionPost,
-		put:    sessionPut,
 		delete: sessionDelete,
 	})
 

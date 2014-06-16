@@ -38,7 +38,7 @@ func getUser(username string) (*User, error) {
 		return nil, err
 	}
 	if value == nil {
-		return nil, errors.New("User does not exist.")
+		return nil, ErrLogonFailure
 	}
 
 	err = json.Unmarshal(value, usr)

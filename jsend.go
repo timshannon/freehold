@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -32,4 +33,13 @@ func respondJsend(w http.ResponseWriter, response *JSend) {
 		})
 	}
 	w.Write(result)
+}
+
+func parseJson(r *http.Request, result interface{}) error {
+	buff, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return err
+	}
+
+	return json.Unmarshal(buff, result)
 }

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"sort"
 	"strings"
 	"time"
 )
@@ -14,11 +15,12 @@ const (
 )
 
 type Session struct {
-	userName string `json:"-"`
+	key string `json:"-"`
 
 	Expires   string `json:"expires,omitempty"`
 	CSRFToken string `json:"CSRFToken,omitempty"`
 	IpAddress string `json:"ipAddress,omitempty"`
+	Created   string `json:"created,omitempty"`
 }
 
 func session(r *http.Request) (*Session, error) {
@@ -52,8 +54,7 @@ func session(r *http.Request) (*Session, error) {
 		return nil, err
 	}
 
-	cVal := strings.Split(cookie.Value, "_")
-	session.userName = cVal[0]
+	session.key = cookie.Value
 
 	return session, nil
 }
@@ -66,11 +67,11 @@ func newSession(auth *Auth, base *Session) (*http.Cookie, error) {
 	sessionId := random(128)
 	base.CSRFToken = random(256)
 
-	key := auth.User.username + "_" + sessionId
+	base.key = auth.User.username + "_" + sessionId
 
 	cookie := &http.Cookie{
 		Name:     cookieName,
-		Value:    key,
+		Value:    base.key,
 		HttpOnly: true,
 		Path:     "/",
 		Secure:   isSSL,
@@ -80,11 +81,39 @@ func newSession(auth *Auth, base *Session) (*http.Cookie, error) {
 	} else {
 		//Browser should clean up expired cookie, but just incase
 		// we'll expire the session in 1 day
-		base.Expires = time.Now().Add(24 * time.Hour)
+		base.Expires = time.Now().Add(24 * time.Hour).Format(time.RFC3339)
+	}
+	base.Created = time.Now().Format(time.RFC3339)
+
+	ds := openCoreDS(sessionDS)
+	jKey, err := json.Marshal(base.key)
+	if err != nil {
+		return nil, err
+	}
+	value, err := json.Marshal(base)
+	if err != nil {
+		return nil, err
 	}
 
-	//TODO: Check for sessionLimit
-	return nil, nil
+	err = ds.Put(jKey, value)
+	if err != nil {
+		return nil, err
+	}
+
+	err = enforceSessionLimit(auth.User.username)
+	if err != nil {
+		return nil, err
+	}
+
+	return cookie, nil
+}
+
+func (s *Session) username() string {
+	return strings.Split(s.key, "_")[0]
+}
+
+func (s *Session) id() string {
+	return strings.Split(s.key, "_")[1]
 }
 
 func (s *Session) isExpired() bool {
@@ -109,28 +138,97 @@ func (s *Session) expireTime() time.Time {
 	return t
 }
 
+func (s *Session) checkCSRF(r *http.Request) error {
+	if r.Method != "GET" {
+		if s.isExpired() {
+			return pubErr(errors.New("Your session has expired"))
+		}
+		reqToken := r.Header.Get("X-CSRFToken")
+		if reqToken != s.CSRFToken {
+			return pubErr(errors.New("Invalid CSRFToken"))
+		}
+	}
+	return nil
+}
+
 func (s *Session) user() (*User, error) {
-	if s.isExpired() || s.userName == "" {
+	if s.isExpired() || s.username() == "" {
 		errors.New("Invalid Session")
 	}
 
-	return getUser(s.userName)
+	return getUser(s.username())
 }
 
-//TODO: When creating a cookie with no expiration (i.e. expires at session)
-// set the session expiration out 1 day so it expires eventually evenif the
-// browser or user doesn't clean up the cookie properly.
-
-func sessionGet(w http.ResponseWriter, r *http.Request) {
-
+func (s *Session) expire() error {
+	ds := openCoreDS(sessionDS)
+	key, err := json.Marshal(s.key)
+	if err != nil {
+		return err
+	}
+	return ds.Delete(key)
 }
 
-func sessionPost(w http.ResponseWriter, r *http.Request) {
+func enforceSessionLimit(username string) error {
+	ds := openCoreDS(sessionDS)
+	from, err := json.Marshal(username)
+	if err != nil {
+		return err
+	}
+
+	iter, err := ds.Iter(from, nil)
+
+	var sessions []*Session
+	var key string
+	var s *Session
+
+	for iter.Next() {
+		if iter.Err() != nil {
+			return iter.Err()
+		}
+
+		err = json.Unmarshal(iter.Key(), key)
+		if err != nil {
+			return err
+		}
+		err = json.Unmarshal(iter.Value(), s)
+		if err != nil {
+			return err
+		}
+
+		if strings.Split(key, "_")[0] != username {
+			break
+		}
+		if s.isExpired() {
+			err = ds.Delete(iter.Key())
+			if err != nil {
+				return err
+			}
+			continue
+		}
+		err = json.Unmarshal(iter.Key(), s.key)
+		if err != nil {
+			return err
+		}
+		sessions = append(sessions, s)
+	}
+
+	over := len(sessions) - settingInt("MaxOpenSessions")
+	if over > 0 {
+		//Remove oldest sessions
+		sort.Sort(SessionByCreated(sessions))
+		toRemove := sessions[len(sessions)-over:]
+		for i := range toRemove {
+			err = toRemove[i].expire()
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
-func sessionPut(w http.ResponseWriter, r *http.Request) {
-}
+type SessionByCreated []*Session
 
-func sessionDelete(w http.ResponseWriter, r *http.Request) {
-
-}
+func (s SessionByCreated) Len() int           { return len(s) }
+func (s SessionByCreated) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+func (s SessionByCreated) Less(i, j int) bool { return s[i].Created < s[j].Created }

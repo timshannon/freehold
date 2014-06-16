@@ -6,10 +6,8 @@
 
 	<!-- Bootstrap -->
 	<link href="/v1/file/core/css/bootstrap.min.css" rel="stylesheet" media="screen">
-	<link href="/v1/file/core/css/ts.css" rel="stylesheet" media="screen">
 
 	<link rel="shortcut icon" href="/v1/file/core/images/favicon.ico">
-
 </head>
 <body>
 <nav class="navbar navbar-default" role="navigation">
@@ -47,6 +45,12 @@
 <script language="Javascript">
 $(document).ready(function() { 
 	$( "#login" ).submit(function( event ) {
+		$.ajax({
+				type: "POST",
+				url: "/v1/auth/session",
+				username: $("#username").val(),
+				password: $("#password").val(),
+		});
 		event.preventDefault();
 	});
 

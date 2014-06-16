@@ -24,6 +24,7 @@ type Auth struct {
 // or a valid security token, or the user has an valid cookie based session. It returns
 // the auth type containing the user / permissions, or an error
 func authenticate(r *http.Request) (*Auth, error) {
+	//TODO: Is basic auth defined as user:password@host or Authorization header?
 	headerInfo := r.Header.Get("Authorization")
 	if headerInfo != "" {
 		userPass, err := base64.StdEncoding.DecodeString(headerInfo)
@@ -77,7 +78,7 @@ func authenticate(r *http.Request) (*Auth, error) {
 	}
 
 	// Check for CSRF token
-	err = checkCSRF(r, ses)
+	err = ses.checkCSRF(r)
 	if err != nil {
 		return nil, err
 	}
@@ -90,19 +91,6 @@ func authenticate(r *http.Request) (*Auth, error) {
 		User:     user,
 		AuthType: authTypeSession,
 	}, nil
-}
-
-func checkCSRF(r *http.Request, s *Session) error {
-	if r.Method != "GET" {
-		if s.isExpired() {
-			return pubErr(errors.New("Your session has expired"))
-		}
-		reqToken := r.Header.Get("X-CSRFToken")
-		if reqToken != s.CSRFToken {
-			return pubErr(errors.New("Invalid CSRFToken"))
-		}
-	}
-	return nil
 }
 
 func authGet(w http.ResponseWriter, r *http.Request) {
