@@ -24,16 +24,22 @@ type Auth struct {
 // or a valid security token, or the user has an valid cookie based session. It returns
 // the auth type containing the user / permissions, or an error
 func authenticate(r *http.Request) (*Auth, error) {
-	//TODO: Is basic auth defined as user:password@host or Authorization header?
 	headerInfo := r.Header.Get("Authorization")
 	if headerInfo != "" {
-		userPass, err := base64.StdEncoding.DecodeString(headerInfo)
-		if err != nil {
+		authInfo := strings.TrimLeft(headerInfo, "Basic ")
+		if len(authInfo) == len(headerInfo) {
+			err := pubFail(errors.New("Error, malformed basic auth header."))
 			return nil, err
 		}
-		split := strings.Split(string(userPass), ":")
+		userPass, err := base64.StdEncoding.DecodeString(authInfo)
+		if err != nil {
+			logError(err)
+			err = pubFail(errors.New("Error, malformed basic auth header."))
+			return nil, err
+		}
+		split := strings.SplitN(string(userPass), ":", 2)
 		if len(split) != 2 {
-			err = errors.New("Error, malformed basic auth header.")
+			err = pubFail(errors.New("Error, malformed basic auth header."))
 			return nil, err
 		}
 		u := split[0]

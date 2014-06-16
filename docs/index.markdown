@@ -1141,6 +1141,8 @@ applications, or any paths used by the freehold instance (i.e. /v1 /v2, etc).
 Paths to the root file and icon files are relative to the application, so 
 "v1/file/images/ds-icon.png" refers to `https://host/<app-id>/v1/file/images/ds-icon.png`.
 
+TODO: Installation / First time setup script.  Same mechanism for tasks?
+
 *Datastore definition of Applications* - Only stores currently installed applications.  If an application is
 removed, it's deleted from the datastore.
 ```

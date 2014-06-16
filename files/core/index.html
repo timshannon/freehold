@@ -20,6 +20,7 @@
 <div class="well">
 	<h3>Log In</h3>
 	<form class="form" role="form" id="login" name="login">
+	<span id="err" class="hidden label label-danger"></span>
 		<div class="form-group">
 			<label class="sr-only" for="username">Username</label>	
 			<input class="form-control" id="username" name="username" placeholder="Enter username">
@@ -30,7 +31,7 @@
 		</div>
 		<div class="checkbox">
 			<label>
-				<input type="checkbox" id="rememberMe" name="rememberMe"> Remember me
+				<input type="checkbox" id="rememberMe" name="rememberMe" checked="checked"> Remember me
 			</label>
 		</div>
 		<button type="submit" class="btn btn-default">Log In</button>
@@ -44,14 +45,49 @@
 <script src="/v1/file/core/js/bootstrap.min.js"></script>
 <script language="Javascript">
 $(document).ready(function() { 
+
+function err(msg) {
+	$("#err").removeClass("hidden").text(msg);
+}
+
+function clearErr() {
+	$("#err").addClass("hidden").text("");
+}
+
 	$( "#login" ).submit(function( event ) {
+		clearErr();
+		event.preventDefault();
+		var data = {}
+
+		if ($("#rememberMe").prop("checked")) {
+			var today = new Date(Date.now());
+			today.setDate(today.getDate() + 15); 	
+			data = {
+				expires: today
+			}
+		}
+		if ($("#username").val() === "") { 
+			err("Username is required");
+			return;
+		}
+
 		$.ajax({
 				type: "POST",
 				url: "/v1/auth/session",
-				username: $("#username").val(),
-				password: $("#password").val(),
+				beforeSend: function (xhr) {
+					xhr.setRequestHeader ("Authorization", "Basic "+btoa($("#username").val()+":"+$("#password").val()));
+				},
+				dataType: "json",
+				data: JSON.stringify(data),
+				complete: function (xhr) {
+					var result = JSON.parse(xhr.responseText);
+					if (result.status == "success") {
+						location.reload();
+					} else {
+						err(result.message);
+					}
+				},
 		});
-		event.preventDefault();
 	});
 
 });

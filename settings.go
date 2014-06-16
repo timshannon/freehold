@@ -26,7 +26,7 @@ func setting(settingName string) (*Setting, error) {
 		return nil, err
 	}
 
-	var result *Setting
+	result := &Setting{}
 
 	if value == nil {
 		return settingDefault(settingName), nil

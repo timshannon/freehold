@@ -33,6 +33,10 @@ func sessionPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.SetCookie(w, cookie)
+	w.WriteHeader(http.StatusCreated)
+	respondJsend(w, &JSend{
+		Status: statusSuccess,
+	})
 }
 
 func sessionDelete(w http.ResponseWriter, r *http.Request) {
