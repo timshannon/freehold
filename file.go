@@ -23,7 +23,7 @@ type File struct {
 }
 
 func fileGet(w http.ResponseWriter, r *http.Request) {
-	auth, err := authenticate(r)
+	auth, err := authenticate(w, r)
 	if errHandled(err, w) {
 		return
 	}
@@ -46,9 +46,11 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 }
 
 func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth *Auth) {
-	if auth != nil && auth.Resource != "" && auth.Resource != resource {
-		four04(w, r)
-		return
+	if auth != nil && auth.Token != nil {
+		if auth.Resource != resource {
+			four04(w, r)
+			return
+		}
 	}
 
 	file, err := os.Open(urlPathToFile(resource))

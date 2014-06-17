@@ -17,13 +17,14 @@ type Auth struct {
 	AuthType string `json:"authType"`
 	*User
 	*Token
+	*Session `json:"-"`
 }
 
 // authenticate authenticates an http request in one of 2 ways
 // Checks for basic http authentication where the password is either the user's password
 // or a valid security token, or the user has an valid cookie based session. It returns
 // the auth type containing the user / permissions, or an error
-func authenticate(r *http.Request) (*Auth, error) {
+func authenticate(w http.ResponseWriter, r *http.Request) (*Auth, error) {
 	headerInfo := r.Header.Get("Authorization")
 	if headerInfo != "" {
 		authInfo := strings.TrimLeft(headerInfo, "Basic ")
@@ -62,8 +63,8 @@ func authenticate(r *http.Request) (*Auth, error) {
 			return nil, err
 		}
 		return &Auth{
-			User:     user,
 			AuthType: authTypeBasic,
+			User:     user,
 		}, nil
 	}
 
@@ -84,7 +85,7 @@ func authenticate(r *http.Request) (*Auth, error) {
 	}
 
 	// Check for CSRF token
-	err = ses.checkCSRF(r)
+	err = ses.handleCSRF(w, r)
 	if err != nil {
 		return nil, err
 	}
@@ -94,17 +95,20 @@ func authenticate(r *http.Request) (*Auth, error) {
 		return nil, err
 	}
 	return &Auth{
-		User:     user,
 		AuthType: authTypeSession,
+		User:     user,
+		Session:  ses,
 	}, nil
 }
 
 func authGet(w http.ResponseWriter, r *http.Request) {
-	auth, err := authenticate(r)
+	auth, err := authenticate(w, r)
 	if errHandled(err, w) {
 		return
 	}
-	auth.clearPassword()
+	if auth != nil {
+		auth.clearPassword()
+	}
 
 	respondJsend(w, &JSend{
 		Status: statusSuccess,

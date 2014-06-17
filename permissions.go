@@ -113,7 +113,7 @@ func (p *Permission) canPermission(permType rune, auth *Auth) bool {
 		return strings.ContainsRune(p.Public, permType)
 	}
 	//check for security token
-	if auth.Permission != "" {
+	if auth.Token != nil && auth.Permission != "" {
 		return strings.ContainsRune(auth.Permission, permType)
 
 	}
