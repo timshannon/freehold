@@ -22,7 +22,7 @@ func rootGet(w http.ResponseWriter, r *http.Request) {
 		four04(w, r)
 		return
 	}
-	auth, err := authenticate(r)
+	auth, err := authenticate(w, r)
 	if errHandled(err, w) {
 		return
 	}

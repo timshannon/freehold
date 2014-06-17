@@ -24,21 +24,18 @@ type Session struct {
 }
 
 func session(r *http.Request) (*Session, error) {
-	cookie, err := r.Cookie(cookieName)
-	if err == http.ErrNoCookie {
+	session := &Session{}
+
+	session.key = sessionCookieValue(r)
+	if session.key == "" {
 		return nil, nil
-	}
-	if err != nil {
-		return nil, err
 	}
 
 	ds := openCoreDS(sessionDS)
-	key, err := json.Marshal(cookie.Value)
+	key, err := json.Marshal(session.key)
 	if err != nil {
 		return nil, err
 	}
-
-	session := &Session{}
 
 	value, err := ds.Get(key)
 	if err != nil {
@@ -54,9 +51,23 @@ func session(r *http.Request) (*Session, error) {
 		return nil, err
 	}
 
-	session.key = cookie.Value
-
 	return session, nil
+}
+
+// Gets the cookie value for the freehold session cookie, and
+// ignores empty values
+func sessionCookieValue(r *http.Request) string {
+	cookies := r.Cookies()
+	cValue := ""
+
+	for i := range cookies {
+		if cookies[i].Name == cookieName {
+			if cookies[i].Value != "" {
+				cValue = cookies[i].Value
+			}
+		}
+	}
+	return cValue
 }
 
 func newSession(auth *Auth, base *Session) (*http.Cookie, error) {
@@ -65,7 +76,7 @@ func newSession(auth *Auth, base *Session) (*http.Cookie, error) {
 	}
 
 	sessionId := random(128)
-	base.CSRFToken = random(256)
+	base.CSRFToken = random(128)
 
 	base.key = auth.User.username + "_" + sessionId
 
@@ -138,7 +149,20 @@ func (s *Session) expireTime() time.Time {
 	return t
 }
 
-func (s *Session) checkCSRF(r *http.Request) error {
+func (s *Session) createdTime() time.Time {
+	if s.Created == "" {
+		return time.Unix(0, 0)
+	}
+
+	t, err := time.Parse(time.RFC3339, s.Created)
+	if err != nil {
+		logError(errors.New("Error parsing session expiration: " + err.Error()))
+		return time.Unix(0, 0)
+	}
+	return t
+}
+
+func (s *Session) handleCSRF(w http.ResponseWriter, r *http.Request) error {
 	if r.Method != "GET" {
 		if s.isExpired() {
 			return pubErr(errors.New("Your session has expired"))
@@ -147,7 +171,12 @@ func (s *Session) checkCSRF(r *http.Request) error {
 		if reqToken != s.CSRFToken {
 			return pubErr(errors.New("Invalid CSRFToken"))
 		}
+		return nil
 	}
+
+	//Get requests, put CSRF token in header
+	w.Header().Add("X-CSRFToken", s.CSRFToken)
+
 	return nil
 }
 
@@ -181,24 +210,24 @@ func enforceSessionLimit(username string) error {
 	}
 
 	var sessions []*Session
-	var key string
-	s := &Session{}
 
 	for iter.Next() {
+
+		s := &Session{}
 		if iter.Err() != nil {
 			return iter.Err()
 		}
 
-		err = json.Unmarshal(iter.Key(), &key)
-		if err != nil {
-			return err
-		}
 		err = json.Unmarshal(iter.Value(), s)
 		if err != nil {
 			return err
 		}
+		err = json.Unmarshal(iter.Key(), &s.key)
+		if err != nil {
+			return err
+		}
 
-		if strings.Split(key, "_")[0] != username {
+		if s.username() != username {
 			break
 		}
 		if s.isExpired() {
@@ -208,15 +237,16 @@ func enforceSessionLimit(username string) error {
 			}
 			continue
 		}
-		s.key = key
 		sessions = append(sessions, s)
 	}
 
 	over := len(sessions) - settingInt("MaxOpenSessions")
+
 	if over > 0 {
 		//Remove oldest sessions
 		sort.Sort(SessionByCreated(sessions))
-		toRemove := sessions[len(sessions)-over:]
+
+		toRemove := sessions[:over]
 		for i := range toRemove {
 			err = toRemove[i].expire()
 			if err != nil {
@@ -231,4 +261,4 @@ type SessionByCreated []*Session
 
 func (s SessionByCreated) Len() int           { return len(s) }
 func (s SessionByCreated) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
-func (s SessionByCreated) Less(i, j int) bool { return s[i].Created < s[j].Created }
+func (s SessionByCreated) Less(i, j int) bool { return s[i].createdTime().Before(s[j].createdTime()) }

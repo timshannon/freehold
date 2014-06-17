@@ -194,6 +194,7 @@ type KvIterator struct {
 func (i *KvIterator) Next() bool {
 	err := i.ds.reset()
 	if err != nil {
+		i.err = err
 		return false
 	}
 

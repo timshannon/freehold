@@ -13,38 +13,134 @@
 <nav class="navbar navbar-default" role="navigation">
 	<div class="navbar-header">
 		<a class="navbar-brand" href="/">freehold</a>
+		<button type="button" id="loginButton" class="public btn btn-default navbar-btn">Log in</button>
+		<button type="button" id="logoutButton" class="authenticated btn btn-default navbar-btn">Log Out</button>
 	</div>
 </nav>
 
+<!-- Modal -->
+<div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="loginModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="loginModalLabel">Log in</h4>
+      </div>
+      <div class="modal-body">
+			<!--content-->
+
+				<form class="form" role="form" id="login" name="login">
+				<span id="err" class="hidden label label-danger"></span>
+					<div class="form-group">
+						<label class="sr-only" for="username">Username</label>	
+						<input class="form-control" id="username" name="username" placeholder="Enter username">
+					</div>
+					<div class="form-group">
+						<label class="sr-only" for="password">Password</label>
+						<input type="password" class="form-control" id="password" name="password" placeholder="Password">
+					</div>
+					<div class="checkbox">
+						<label>
+							<input type="checkbox" id="rememberMe" name="rememberMe" checked="checked"> Remember me
+						</label>
+					</div>
+					<button type="submit" class="btn btn-default">Log In</button>
+				</form>
+
+			<!--content-->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="container">
-<div class="well">
-	<h3>Log In</h3>
-	<form class="form" role="form" id="login" name="login">
-	<span id="err" class="hidden label label-danger"></span>
-		<div class="form-group">
-			<label class="sr-only" for="username">Username</label>	
-			<input class="form-control" id="username" name="username" placeholder="Enter username">
-		</div>
-		<div class="form-group">
-			<label class="sr-only" for="password">Password</label>
-			<input type="password" class="form-control" id="password" name="password" placeholder="Password">
-		</div>
-		<div class="checkbox">
-			<label>
-				<input type="checkbox" id="rememberMe" name="rememberMe" checked="checked"> Remember me
-			</label>
-		</div>
-		<button type="submit" class="btn btn-default">Log In</button>
-	</form>
+<!--public-->
+<div class="public jumbotron">
+	<h1> Public </h1>
+</div>
+
+<!--authenticated-->
+<div class="authenticated">
+	<h1>Authenticated</h1>
 </div>
 </div>
 
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 <script src="/v1/file/core/js/jquery-2.1.1.min.js"></script>
-<!-- Include all compiled plugins (below), or include individual files as needed -->
 <script src="/v1/file/core/js/bootstrap.min.js"></script>
 <script language="Javascript">
+var CSRFToken = ""
 $(document).ready(function() { 
+
+checkAuth();
+
+$("#loginButton").click(function() {
+		clearErr()
+		$("#loginModal").modal();			
+});
+
+
+$( "#login" ).submit(function( event ) {
+	clearErr();
+	event.preventDefault();
+	var data = {}
+
+	if ($("#rememberMe").prop("checked")) {
+		var today = new Date(Date.now());
+		today.setDate(today.getDate() + 15); 	
+		data = {
+			expires: today
+		}
+	}
+	if ($("#username").val() === "") { 
+		err("Username is required");
+		return;
+	}
+
+	$.ajax({
+			type: "POST",
+			url: "/v1/auth/session",
+			beforeSend: function (xhr) {
+				xhr.setRequestHeader ("Authorization", "Basic "+btoa($("#username").val()+":"+$("#password").val()));
+			},
+			dataType: "json",
+			data: JSON.stringify(data),
+			complete: function (xhr) {
+				var result = JSON.parse(xhr.responseText);
+				if (result.status == "success") {
+					location.reload();
+				} else {
+					err(result.message);
+				}
+			},
+	});
+});
+
+$("#logoutButton").click(function() {
+	$.ajax({
+			type: "DELETE",
+			url: "/v1/auth/session",
+			dataType: "json",
+			beforeSend: function (xhr) {
+				xhr.setRequestHeader ("X-CSRFToken", CSRFToken);
+			},
+			complete: function (xhr) {
+				var result = JSON.parse(xhr.responseText);
+				if (result.status == "success") {
+					location.reload();
+				} else {
+					alert(result.message);
+				}
+			},
+	});
+
+});
+
+
+});
 
 function err(msg) {
 	$("#err").removeClass("hidden").text(msg);
@@ -54,44 +150,25 @@ function clearErr() {
 	$("#err").addClass("hidden").text("");
 }
 
-	$( "#login" ).submit(function( event ) {
-		clearErr();
-		event.preventDefault();
-		var data = {}
-
-		if ($("#rememberMe").prop("checked")) {
-			var today = new Date(Date.now());
-			today.setDate(today.getDate() + 15); 	
-			data = {
-				expires: today
-			}
-		}
-		if ($("#username").val() === "") { 
-			err("Username is required");
-			return;
-		}
-
-		$.ajax({
-				type: "POST",
-				url: "/v1/auth/session",
-				beforeSend: function (xhr) {
-					xhr.setRequestHeader ("Authorization", "Basic "+btoa($("#username").val()+":"+$("#password").val()));
-				},
+function checkAuth() {
+	//check if authenticated
+	$.ajax({
+				type: "GET",
+				url: "/v1/auth",
 				dataType: "json",
-				data: JSON.stringify(data),
 				complete: function (xhr) {
+					CSRFToken = xhr.getResponseHeader("X-CSRFToken");
 					var result = JSON.parse(xhr.responseText);
-					if (result.status == "success") {
-						location.reload();
+					if (result.status == "success" && result.data) {
+						$(".public").addClass("hidden");
+						$(".authenticated").removeClass("hidden");
 					} else {
-						err(result.message);
-					}
+						$(".authenticated").addClass("hidden");
+						$(".public").removeClass("hidden");
+					}					
 				},
 		});
-	});
-
-});
-
+}
 </script>
 </body>
 </html>
