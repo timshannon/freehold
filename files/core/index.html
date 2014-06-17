@@ -13,8 +13,8 @@
 <nav class="navbar navbar-default" role="navigation">
 	<div class="navbar-header">
 		<a class="navbar-brand" href="/">freehold</a>
-		<button type="button" id="loginButton" class="public btn btn-default navbar-btn">Log in</button>
-		<button type="button" id="logoutButton" class="authenticated btn btn-default navbar-btn">Log Out</button>
+		<button type="button" id="loginButton" class="public hidden btn btn-default navbar-btn">Log in</button>
+		<button type="button" id="logoutButton" class="authenticated hidden btn btn-default navbar-btn">Log Out</button>
 	</div>
 </nav>
 
@@ -58,12 +58,24 @@
 
 <div class="container">
 <!--public-->
-<div class="public jumbotron">
-	<h1> Public </h1>
+<div class="public hidden jumbotron">
+	<h1> Welcome! </h1>
+	<p>This is the default <i><b>freehold</b> </i>landing page.</p>
+	<p>
+		Freehold is an open source webserver where you can store and control your own data.
+		It aims to be easy to host, secure, easy to use and easy to build on top of. If you disagree,
+		then please check out the <a href="http://bitbucket.org/tshannon/freehold">project</a>, open an 
+		<a href="https://bitbucket.org/tshannon/freehold/issues">issue</a>, and help make it better.
+	</p>
+	<p>
+		Or check out the <a href="/docs/">documentation</a> and build an application.  It uses a simple
+		REST API that allows you to easily access your data from any device or software.
+	</p>
+
 </div>
 
 <!--authenticated-->
-<div class="authenticated">
+<div class="authenticated hidden">
 	<h1>Authenticated</h1>
 </div>
 </div>

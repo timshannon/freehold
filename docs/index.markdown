@@ -214,7 +214,6 @@ PUT "/v1/file/notes/history.txt"
 
 {
 	permissions: {
-		owner: "tshannon",
 		public: "",
 		friend: "rw"
 	}
@@ -1116,8 +1115,8 @@ available to the public as well.
 
 By default application zip files must be present on the server running the freehold instance before they can
 be installed. Any .zip file in the folder *<freehold executable>/apps/available/* will be listed as an application
-available to install. Remote, or web installs (installations from arbitrary urls) can be allowed by changing the
-global setting *application-allow-web-install* to *true*.
+available to install. Remote installs (installations from local resources such as /v1/file/) can be allowed by changing the
+global setting *RemoteAppInstall* to *true*.  Web installs can be allowed by changing the global setting *WebAppInstall*.
 
 The application zip file must have a file called app.json in the following format:
 ```
@@ -1141,7 +1140,7 @@ applications, or any paths used by the freehold instance (i.e. /v1 /v2, etc).
 Paths to the root file and icon files are relative to the application, so 
 "v1/file/images/ds-icon.png" refers to `https://host/<app-id>/v1/file/images/ds-icon.png`.
 
-TODO: Installation / First time setup script.  Same mechanism for tasks?
+TODO: Installation / First time setup script.  Same mechanism for tasks? Or just let applications handle this upon first being run?
 
 *Datastore definition of Applications* - Only stores currently installed applications.  If an application is
 removed, it's deleted from the datastore.
@@ -1372,6 +1371,23 @@ Tasks
 =====
 TODO
 Scheduled REST API calls. Anything you want your freehold instance to do
-when you're not logged on. But how to handle the results?  Piping multiple tasks?  Store in a common datastore for use later?
+when you're not logged on. But how to handle the results?  Piping multiple tasks? Ranging over results? Store in a common datastore for use later?  Don't allow GETs?  Or just scrap the whole idea?
+
+```
+{
+	name: "Set Permissions",
+	type: "PUT",
+	url: "/v1/file/test.txt",
+	data: {
+		
+	}
+}
+
+```
 
 
+* * *
+
+Calendar
+========
+TODO: built in calendar functionality, exports to ical would be nice.
