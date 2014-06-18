@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -29,6 +30,7 @@ func fileGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	serveResource(w, r, r.URL.Path, auth)
+
 }
 
 func filePost(w http.ResponseWriter, r *http.Request) {
@@ -70,6 +72,15 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 		return
 	}
 
+	pReq, err := isPermissionsRequest(r)
+	if errHandled(err, w) {
+		return
+	}
+
+	if pReq {
+		fmt.Println("Is Permissions request")
+	}
+
 	if !info.IsDir() {
 		prm, err := permissions(resource)
 		if errHandled(err, w) {
@@ -77,6 +88,19 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 		}
 		if !prm.canRead(auth) {
 			four04(w, r)
+			return
+		}
+
+		if pReq {
+			respondJsend(w, &JSend{
+				Status: statusSuccess,
+				Data: &File{
+					Name:        file.Name(),
+					Permissions: prm,
+					Url:         path.Join(resource, file.Name()),
+					Size:        info.Size(),
+				},
+			})
 			return
 		}
 
@@ -97,7 +121,7 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 	fileList := make([]File, 0, len(files))
 
 	for i := range files {
-		if strings.TrimRight(files[i].Name(), path.Ext(files[i].Name())) == "index" {
+		if strings.TrimRight(files[i].Name(), path.Ext(files[i].Name())) == "index" && !pReq {
 			prm, err := permissions(path.Join(resource, files[i].Name()))
 			if errHandled(err, w) {
 				return
@@ -138,15 +162,32 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 
 		fileList = append(fileList, File{
 			Name:        files[i].Name(),
+			Permissions: prm,
 			Url:         path.Join(resource, files[i].Name()),
 			Size:        size,
-			Permissions: prm,
 		})
 	}
 	respondJsend(w, &JSend{
 		Status: statusSuccess,
 		Data:   fileList,
 	})
+}
+
+func isPermissionsRequest(r *http.Request) (bool, error) {
+	req := &File{}
+	err := parseJson(r, req)
+	if err != nil {
+		return false, err
+	}
+
+	//TODO: Request not coming in properly?
+
+	fmt.Println("Permissions: ", req.Permissions)
+	if req.Permissions != nil {
+		return true, nil
+	}
+
+	return false, nil
 }
 
 func serveFile(w http.ResponseWriter, r *http.Request, file *os.File, info os.FileInfo) {

@@ -76,7 +76,31 @@
 
 <!--authenticated-->
 <div class="authenticated hidden">
-	<h1>Authenticated</h1>
+	<h1>Authenticated Testing</h1>
+	<form class="form" role="form" id="resttest" name="resttest">
+		<div class="form-inline form-group">
+			<select class="form-control" id="method" name="method" placeholder="method">
+			<option value="GET">GET</option>
+			<option value="POST">POST</option>
+			<option value="PUT">PUT</option>
+			<option value="DELETE">DELETE</option>
+			</select>
+		</div>
+		<div class="form-group">
+			<input class="form-control" id="url" name="url" placeholder="url">
+		</div>
+		<div class="form-group">
+			<textarea rows="10" class="form-control" id="request" name="request" placeholder="request data"></textarea>
+		</div>
+
+		<div class="form-group">
+		<button type="submit" class="btn btn-default">submit</button>
+		</div>
+		<div class="form-group">
+		<textarea class="form-control" id="result" name="result"  rows="10" placeholder="result"></textarea>
+		</div>
+
+	</form>
 </div>
 </div>
 
@@ -151,7 +175,27 @@ $("#logoutButton").click(function() {
 
 });
 
+//testing
+$( "#resttest" ).submit(function( event ) {
+	event.preventDefault();
 
+console.log("request: " + JSON.stringify($("#request").val()));
+	$.ajax({
+			type: $("#method").val(),
+			url: $("#url").val(),
+			beforeSend: function (xhr) {
+				xhr.setRequestHeader ("X-CSRFToken", CSRFToken);
+			},
+			dataType: "json",
+			data: JSON.stringify($("#request").val()),
+			complete: function (xhr) {
+				$("#result").val(xhr.responseText);
+			},
+	});
+
+
+});
+	
 });
 
 function err(msg) {

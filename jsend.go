@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 )
@@ -40,6 +41,12 @@ func parseJson(r *http.Request, result interface{}) error {
 	if err != nil {
 		return err
 	}
+	if len(buff) == 0 {
+		fmt.Println("Empty request")
+		return nil
+	}
+
+	fmt.Println("Request: ", string(buff))
 
 	return json.Unmarshal(buff, result)
 }
