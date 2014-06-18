@@ -127,10 +127,19 @@ Response (200):
 ```
 
 If a file called index. (.html, .markup, .jpg, etc) is found in the directory, it will be loaded automatically
-at directory GET calls.
+at directory GET calls if nothing is requested.
 
 If a GET is called against a file of extension type *.markdown* the markdown will automatically be
 rendered as html (thanks to https://github.com/russross/blackfriday) such as with this file.
+
+If you want to get the directory listing in a folder that contains and index file, request the permissions of that folder.
+
+```
+GET /v1/file/
+{
+	permissions: {}
+}
+```
 
 **POST** - Add a new file.  Any non existent folders in the path will be automatically created.
 multipart/formdata are accepted.
@@ -1116,7 +1125,7 @@ available to the public as well.
 By default application zip files must be present on the server running the freehold instance before they can
 be installed. Any .zip file in the folder *<freehold executable>/apps/available/* will be listed as an application
 available to install. Remote installs (installations from local resources such as /v1/file/) can be allowed by changing the
-global setting *RemoteAppInstall* to *true*.  Web installs can be allowed by changing the global setting *WebAppInstall*.
+global setting *FileAppInstall* to *true*.  Web installs can be allowed by changing the global setting *WebAppInstall*.
 
 The application zip file must have a file called app.json in the following format:
 ```
@@ -1140,7 +1149,8 @@ applications, or any paths used by the freehold instance (i.e. /v1 /v2, etc).
 Paths to the root file and icon files are relative to the application, so 
 "v1/file/images/ds-icon.png" refers to `https://host/<app-id>/v1/file/images/ds-icon.png`.
 
-TODO: Installation / First time setup script.  Same mechanism for tasks? Or just let applications handle this upon first being run?
+While not part of the server side installation, if you include an install.js file at the root of your application, the core home application will present an install button once the application is enabled.  You can use this file to do any one-time setup required like setting permissions on files (as they will be defaulted to private upon install), or creating any necessary datastores.
+
 
 *Datastore definition of Applications* - Only stores currently installed applications.  If an application is
 removed, it's deleted from the datastore.
@@ -1364,27 +1374,6 @@ Response (200):
 Messaging 
 ======================
 TODO: XMPP, client?  Server would be nice too.
-
-* * *
-
-Tasks
-=====
-TODO
-Scheduled REST API calls. Anything you want your freehold instance to do
-when you're not logged on. But how to handle the results?  Piping multiple tasks? Ranging over results? Store in a common datastore for use later?  Don't allow GETs?  Or just scrap the whole idea?
-
-```
-{
-	name: "Set Permissions",
-	type: "PUT",
-	url: "/v1/file/test.txt",
-	data: {
-		
-	}
-}
-
-```
-
 
 * * *
 
