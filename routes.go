@@ -23,8 +23,12 @@ func setupRoutes() {
 	rootHandler.Handle("/v1/file/", &methodHandler{
 		get:    fileGet,
 		post:   filePost,
-		put:    filePut,
 		delete: fileDelete,
+	})
+
+	rootHandler.Handle("/v1/properties/", &methodHandler{
+		get: propertiesGet,
+		put: propertiesPut,
 	})
 
 	rootHandler.Handle("/docs/", &methodHandler{

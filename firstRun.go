@@ -23,14 +23,16 @@ func makeFirstAdmin(username, password string) error {
 		username: username,
 		Password: password,
 	}
-	err := setCoreDefaultPermissions(username)
+	err := newUser(admin)
 	if err != nil {
 		return err
 	}
-	err = newUser(admin)
+
+	err = setCoreDefaultPermissions(username)
 	if err != nil {
 		return err
 	}
+
 	firstRun = false
 	return nil
 }
@@ -38,7 +40,7 @@ func makeFirstAdmin(username, password string) error {
 // setCoreDefaultPermissions sets the initial starting permissions for all necessary core resources
 func setCoreDefaultPermissions(owner string) error {
 	//core files
-	return setPermissionOnFolder(coreFilePath, &Permission{
+	return recurseSetPermissionOnFolder(coreFilePath, &Permission{
 		Owner:   owner,
 		Public:  "r",
 		Friend:  "r",
@@ -46,7 +48,7 @@ func setCoreDefaultPermissions(owner string) error {
 	})
 }
 
-func setPermissionOnFolder(urlPath string, permission *Permission) error {
+func recurseSetPermissionOnFolder(urlPath string, permission *Permission) error {
 	filePath := urlPathToFile(urlPath)
 	dir, err := os.Open(filePath)
 	if err != nil {
@@ -61,7 +63,7 @@ func setPermissionOnFolder(urlPath string, permission *Permission) error {
 	for i := range files {
 		fileUrl := path.Join(urlPath, files[i].Name())
 		if files[i].IsDir() {
-			err = setPermissionOnFolder(fileUrl, permission)
+			err = recurseSetPermissionOnFolder(fileUrl, permission)
 			if err != nil {
 				return err
 			}

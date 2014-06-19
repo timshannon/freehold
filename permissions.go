@@ -11,11 +11,13 @@ const (
 )
 
 type Permission struct {
-	Owner   string `json:"owner"`
+	Owner   string `json:"owner,omitempty"`
 	Public  string `json:"public,omitempty"`
 	Friend  string `json:"friend,omitempty"`
 	Private string `json:"private,omitempty"`
 }
+
+//TODO: handle empty strings for PUT requests, i.e. pointers to strings?
 
 func permissions(resource string) (*Permission, error) {
 	//Docs are open to public
@@ -56,6 +58,12 @@ func permissions(resource string) (*Permission, error) {
 
 func setPermissions(resource string, permissions *Permission) error {
 	err := permissions.validate()
+
+	_, err = getUser(permissions.Owner)
+	if err == ErrLogonFailure {
+		return errors.New("Set permission failed because owner isn't a valid user.")
+	}
+
 	if err != nil {
 		return err
 	}
@@ -86,14 +94,14 @@ func (p *Permission) validate() error {
 	strings.ToLower(p.Friend)
 	strings.ToLower(p.Public)
 	if !validPermission(p.Private) {
-		return pubErr(errors.New("Invalid Private permission. Value must be blank, r, w, or rw"))
+		return pubFail(errors.New("Invalid Private permission. Value must be blank, r, w, or rw"))
 	}
 	if !validPermission(p.Friend) {
-		return pubErr(errors.New("Invalid Friend permission. Value must be blank, r, w, or rw"))
+		return pubFail(errors.New("Invalid Friend permission. Value must be blank, r, w, or rw"))
 	}
 
 	if !validPermission(p.Public) {
-		return pubErr(errors.New("Invalid Public permission. Value must be blank, r, w, or rw"))
+		return pubFail(errors.New("Invalid Public permission. Value must be blank, r, w, or rw"))
 	}
 	return nil
 }
@@ -140,23 +148,3 @@ func (p *Permission) isOwner(u *User) bool {
 
 	return false
 }
-
-//func canWriteRequest(w http.ResponseWriter, r *http.Request, user *User) bool {
-//prm, err := permissions(r.URL.Path)
-//if errHandled(err, w) {
-//return false
-//}
-//if !prm.canWrite(user) {
-//if !prm.canRead(user) {
-//four04(w, r)
-//return false
-//}
-////user can read but not write, let them know the
-////file exists but they don't have permissions
-//errHandled(pubErr(errors.New("You do not have permissions to update "+
-//"the file "+r.URL.Path+".")), w)
-//return false
-//}
-
-//return true
-//}

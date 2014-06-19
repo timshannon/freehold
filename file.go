@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -16,13 +15,6 @@ const (
 	markdownCss  = "/" + version + "/file/core/css/markdown.css"
 )
 
-type File struct {
-	Name        string      `json:"name,omitempty"`
-	Url         string      `json:"url,omitempty"`
-	Permissions *Permission `json:"permissions,omitempty"`
-	Size        int64       `json:"size,omitempty"`
-}
-
 func fileGet(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
 	if errHandled(err, w) {
@@ -30,7 +22,6 @@ func fileGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	serveResource(w, r, r.URL.Path, auth)
-
 }
 
 func filePost(w http.ResponseWriter, r *http.Request) {
@@ -48,13 +39,6 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 }
 
 func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth *Auth) {
-	if auth != nil && auth.Token != nil {
-		if auth.Resource != resource {
-			four04(w, r)
-			return
-		}
-	}
-
 	file, err := os.Open(urlPathToFile(resource))
 	defer file.Close()
 
@@ -72,35 +56,14 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 		return
 	}
 
-	pReq, err := isPermissionsRequest(r)
-	if errHandled(err, w) {
-		return
-	}
-
-	if pReq {
-		fmt.Println("Is Permissions request")
-	}
-
 	if !info.IsDir() {
-		prm, err := permissions(resource)
+		ok, _, err := canRead(auth, resource)
+
 		if errHandled(err, w) {
 			return
 		}
-		if !prm.canRead(auth) {
+		if !ok {
 			four04(w, r)
-			return
-		}
-
-		if pReq {
-			respondJsend(w, &JSend{
-				Status: statusSuccess,
-				Data: &File{
-					Name:        file.Name(),
-					Permissions: prm,
-					Url:         path.Join(resource, file.Name()),
-					Size:        info.Size(),
-				},
-			})
 			return
 		}
 
@@ -110,23 +73,26 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 
 	dir := file.Name()
 
-	if errHandled(err, w) {
-		return
-	}
 	files, err := file.Readdir(0)
 	if errHandled(err, w) {
 		return
 	}
 
-	fileList := make([]File, 0, len(files))
+	canReadDir := false
 
 	for i := range files {
-		if strings.TrimRight(files[i].Name(), path.Ext(files[i].Name())) == "index" && !pReq {
-			prm, err := permissions(path.Join(resource, files[i].Name()))
-			if errHandled(err, w) {
-				return
-			}
-			if prm.canRead(auth) {
+		if files[i].IsDir() {
+			continue
+		}
+		ok, _, err := canRead(auth, path.Join(resource, files[i].Name()))
+		if errHandled(err, w) {
+			return
+		}
+		if ok {
+			//If a user can read one file in a dir, then they can know of the existence
+			// of the dir
+			canReadDir = true
+			if strings.TrimRight(files[i].Name(), path.Ext(files[i].Name())) == "index" {
 				indexFile, err := os.Open(path.Join(dir, files[i].Name()))
 				defer indexFile.Close()
 
@@ -135,59 +101,24 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 				}
 				serveFile(w, r, indexFile, files[i])
 				return
-			} else {
-				//We already know the index file shouldnt' be added
-				// to the file list, so skip to the next one
-				continue
-			}
-		}
 
-		var size int64
-		var prm *Permission
-		if files[i].IsDir() {
-			if auth == nil {
-				//Public can't view the existence of directories
-				continue
 			}
+			continue
 		} else {
-			size = files[i].Size()
-			prm, err := permissions(path.Join(resource, files[i].Name()))
-			if errHandled(err, w) {
-				return
-			}
-			if !prm.canRead(auth) {
-				continue
-			}
+			four04(w, r)
+			return
 		}
-
-		fileList = append(fileList, File{
-			Name:        files[i].Name(),
-			Permissions: prm,
-			Url:         path.Join(resource, files[i].Name()),
-			Size:        size,
-		})
-	}
-	respondJsend(w, &JSend{
-		Status: statusSuccess,
-		Data:   fileList,
-	})
-}
-
-func isPermissionsRequest(r *http.Request) (bool, error) {
-	req := &File{}
-	err := parseJson(r, req)
-	if err != nil {
-		return false, err
 	}
 
-	//TODO: Request not coming in properly?
-
-	fmt.Println("Permissions: ", req.Permissions)
-	if req.Permissions != nil {
-		return true, nil
+	if canReadDir {
+		//No index file found, redirect to properties
+		http.Redirect(w, r, strings.Replace(r.URL.Path, "/v1/file/", "/v1/properties/file/", 1), http.StatusFound)
+		return
 	}
 
-	return false, nil
+	// Is a dir lookup, but user doesn't have access to any files in the dir.  Give them a 404
+	// instead of a redirect
+	four04(w, r)
 }
 
 func serveFile(w http.ResponseWriter, r *http.Request, file *os.File, info os.FileInfo) {
