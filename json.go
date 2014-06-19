@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 	"io/ioutil"
 	"net/http"
 )
@@ -42,11 +42,22 @@ func parseJson(r *http.Request, result interface{}) error {
 		return err
 	}
 	if len(buff) == 0 {
-		fmt.Println("Empty request")
-		return nil
+		if r.Method != "GET" {
+			return nil
+		}
+		//Browsers will send GET request body as URL parms
+		// We'll support either, but the request body will
+		// take precedent
+		buff = []byte(r.URL.RawQuery)
 	}
 
-	fmt.Println("Request: ", string(buff))
-
-	return json.Unmarshal(buff, result)
+	err = json.Unmarshal(buff, result)
+	switch err := err.(type) {
+	case nil:
+		return nil
+	case *json.SyntaxError, *json.UnmarshalTypeError:
+		return pubFail(errors.New("Request contains invalid JSON"))
+	default:
+		return err
+	}
 }

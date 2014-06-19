@@ -115,3 +115,36 @@ func authGet(w http.ResponseWriter, r *http.Request) {
 		Data:   auth,
 	})
 }
+
+func canRead(auth *Auth, resource string) (bool, *Permission, error) {
+	if auth != nil && auth.tokenRestricted(resource) {
+		return false, nil, nil
+	}
+	prm, err := permissions(resource)
+	if err != nil {
+		return false, nil, err
+	}
+	return prm.canRead(auth), prm, nil
+}
+
+func canWrite(auth *Auth, resource string) (bool, *Permission, error) {
+	if auth != nil && auth.tokenRestricted(resource) {
+		return false, nil, nil
+	}
+	prm, err := permissions(resource)
+	if err != nil {
+		return false, nil, err
+	}
+	return prm.canWrite(auth), prm, nil
+}
+
+// tokenRestricted is whether or not a token exists and does not
+// allow access to the resource
+func (a *Auth) tokenRestricted(resource string) bool {
+	if a.Token != nil {
+		if a.Resource != resource {
+			return true
+		}
+	}
+	return false
+}

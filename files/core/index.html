@@ -178,8 +178,7 @@ $("#logoutButton").click(function() {
 //testing
 $( "#resttest" ).submit(function( event ) {
 	event.preventDefault();
-
-console.log("request: " + JSON.stringify($("#request").val()));
+console.log($("#request").val());
 	$.ajax({
 			type: $("#method").val(),
 			url: $("#url").val(),
@@ -187,7 +186,7 @@ console.log("request: " + JSON.stringify($("#request").val()));
 				xhr.setRequestHeader ("X-CSRFToken", CSRFToken);
 			},
 			dataType: "json",
-			data: JSON.stringify($("#request").val()),
+			data: JSON.stringify({permissions: {}}),
 			complete: function (xhr) {
 				$("#result").val(xhr.responseText);
 			},

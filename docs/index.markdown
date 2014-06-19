@@ -35,6 +35,8 @@ Authentication section for more detail.
 If the Auth header isn't included in the request, then cookies will be checked for a valid session.
 The Auth header will always override any authentication via cookie.
 
+GET requests with a JSON payload will be accepted both in the request body or as a parameter `https://host/v1/file/?<jsonpayload>`. For writing applications, making an AJAX GET request with a JSON payload should just work. 
+
 Storage
 =======
 You can store data either in files directly or in a key / value DataStore.
@@ -58,6 +60,7 @@ or including an AuthToken field with the proper token in the request
 Application Specific Storage paths will be prefixed with the given applications identifier.
 
 * `app-id`/v1/file/`path to file`
+* `app-id`/v1/properties/file/`path to file`
 * `app-id`/v1/datastore/`path to file`
 
 File
@@ -71,75 +74,10 @@ GET /v1/file/static/header.jpg
 GET /v1/file/blog/index.html
 ```
 
-*Get Permissions of a file* - the file data itself is not returned
-```
-GET /v1/file/important-stuff/spreadsheet1.ods
-{
-	permissions: {}
-}
-
-Response (200):
-{
-	status: "success",
-	data: {
-		name: "spreadsheet1.ods",
-		permissions: {
-			owner: "tshannon",
-			public: "",
-			friend: "r",
-			private: "rw"
-		}
-	}
-}
-```
-
-GET at a directory returns a list of its contents with absolute rooted urls to the items and file size in bytes.
-```
-GET /v1/file/family-pictures/
-
-Response (200):
-{
-	status: "success",
-	data: [
-			{name: "IMG01.jpg",	url: "/v1/file/family-pictures/IMG01.jpg", size: 1048579},
-			{name: "IMG02.jpg", url: "/v1/file/family-pictures/IMG02.jpg", size: 1029310},
-			{name: "IMG03.jpg",	url: "/v1/file/family-pictures/IMG03.jpg" size: 1038536},
-	]
-}
-```
-
-*Get Permissions of all files in a folder* - the file data itself is not returned
-```
-GET /v1/file/family-pictures/
-{
-	permissions: {}
-}
-
-Response (200):
-{
-	status: "success",
-	data: [
-		{name: "IMG01.jpg", permissions: {owner: "tshannon", public: "",	friend: "r",	private: "rw"}},
-		{name: "IMG02.jpg", permissions: {owner: "tshannon", public: "",	friend: "r",	private: "rw"}},
-		{name: "IMG03.jpg", permissions: {owner: "tshannon", public: "",	friend: "r",	private: "rw"}},
-	]
-}
-```
-
-If a file called index. (.html, .markup, .jpg, etc) is found in the directory, it will be loaded automatically
-at directory GET calls if nothing is requested.
+GET at a directory redirects to the /v1/properties/file/ listing of the directory. If a file called index. (.html, .markup, .jpg, etc) is found in the directory, it will be loaded automatically instead of redirecting to /v1/properties/file/.
 
 If a GET is called against a file of extension type *.markdown* the markdown will automatically be
 rendered as html (thanks to https://github.com/russross/blackfriday) such as with this file.
-
-If you want to get the directory listing in a folder that contains and index file, request the permissions of that folder.
-
-```
-GET /v1/file/
-{
-	permissions: {}
-}
-```
 
 **POST** - Add a new file.  Any non existent folders in the path will be automatically created.
 multipart/formdata are accepted.
@@ -197,7 +135,7 @@ Error Response (500):
 {
 	status: "error",
 	data: {
-		message: "one or more file failed",
+		message: "one or more files failed",
 		items: [
 			{
 				url: "/v1/file/new-directory/profile.jpg"
@@ -210,55 +148,6 @@ Error Response (500):
 				message: "not enough disk space",
 				url: "/v1/file/new-directory/wikipedia.zip"
 			}
-		]
-	}
-}
-```
-
-**PUT** - Updating existing files.  If the file is not found a 404 will be sent.
-
-*Setting File Permissions* - r=read  w=write
-```
-PUT "/v1/file/notes/history.txt"
-
-{
-	permissions: {
-		public: "",
-		friend: "rw"
-	}
-}
-
-Response (200):
-{
-	status: "success",
-	data: {
-		url: "/v1/file/blog/post.html"
-	}
-}
-```
-By default new files are private rw only. By not specifying private permissions the file retains its
-existing permissions for that group.
-
-*Set permissions for all files in a directory*
-```
-PUT "/v1/file/blog/published/"
-
-{
-	permissions: {
-		owner: "tshannon",
-		public: "r",
-		friend: "r"
-	}
-}
-
-Response (200):
-{
-	status: "success",
-	data: {
-		[
-			{url: "/v1/file/blog/2014-01-01.html"},
-			{url: "/v1/file/blog/2014-01-12.html"},
-			{url: "/v1/file/blog/2014-03-06.html"}
 		]
 	}
 }
@@ -490,27 +379,6 @@ If the datastore file doesn't exist:
 Response (404):
 ```
 
-*Set Permissions for a datastore*
-```
-PUT "/v1/datastore/passwords.ds"
-
-{
-	permissions: {
-		owner: "tshannon",
-		public: "",
-		friend: "rw"
-	}
-}
-
-Response (200):
-{
-	status: "success",
-	data: {
-		url: "/v1/datastore/passwords.ds",
-	}
-}
-
-```
 
 **DELETE** - Requires private permissions
 
@@ -526,6 +394,153 @@ Response (200):
 	}
 }
 ```
+
+File Properties
+----
+### /v1/properties/file/<path to file>
+or
+### /v1/properties/datastore/<path to datastore>
+
+Properties mirrors the same paths as /v1/file/ or /v1/datastore/ but instead shows meta data on the files instead of retrieving the files themselves.  This allows us to take advantage of browser caching for serving files without interfering with making GET requests to retrieve information on the files themselves.  It also allows for a way to retrieve folder listings for folders which contain index files.
+
+If a user has permissions to the /v1/file/ or /v1/datastore/ it has permissions to the /v1/properties/ path as well.
+
+**GET** - Get Info on a given file; permissions, size in bytes, etc.
+```
+GET /v1/properties/file/important-stuff/spreadsheet1.ods
+
+Response (200):
+{
+	status: "success",
+	data: {
+		name: "spreadsheet1.ods",
+		url: "/v1/file/important-stuff/spreadsheet1.ods"
+		size: 1048579,
+		permissions: {
+			owner: "tshannon",
+			public: "",
+			friend: "r",
+			private: "rw"
+		}
+	}
+}
+
+
+GET /v1/properties/datastore/personal/bookmarks.ds
+
+Response (200):
+{
+	status: "success",
+	data: {
+		name: "bookmarks.ds",
+		url: "/v1/datastore/personal/bookmarks.ds"
+		size: 148579,
+		permissions: {
+			owner: "tshannon",
+			public: "",
+			friend: "r",
+			private: "rw"
+		}
+	}
+}
+```
+
+If a GET request is made at a folder, the file info for the list of files in the folder is returned.
+
+*Get Permissions of all files in a folder*
+```
+GET /v1/properties/file/family-pictures/
+
+Response (200):
+{
+	status: "success",
+	data: [
+		{	name: "IMG01.jpg", 
+			url: "/v1/file/family-pictures/IMG01.jpg", size: 1048579,
+			permissions: {owner: "tshannon", public: "",	friend: "r",	private: "rw"}},
+		{name: "IMG02.jpg", 
+			url: "/v1/file/family-pictures/IMG02.jpg", size: 1029310,
+			permissions: {owner: "tshannon", public: "",	friend: "r",	private: "rw"}},
+		{name: "IMG03.jpg", 
+			url: "/v1/file/family-pictures/IMG03.jpg" size: 1038536,
+			permissions: {owner: "tshannon", public: "",	friend: "r",	private: "rw"}},
+	]
+}
+
+
+```
+
+**PUT** - Updating existing file info.  If the file is not found a 404 will be sent.
+
+*Setting File Permissions* - r=read  w=write
+```
+PUT "/v1/properties/file/notes/history.txt"
+
+{
+	permissions: {
+		public: "",
+		friend: "rw"
+	}
+}
+
+Response (200):
+{
+	status: "success",
+	data: {
+		url: "/v1/file/blog/post.html"
+	}
+}
+```
+By default new files are private rw only. By not specifying private permissions the file retains its
+existing permissions for that group.
+
+*Set permissions for all files in a directory*
+```
+PUT "/v1/properties/file/blog/published/"
+
+{
+	permissions: {
+		owner: "tshannon",
+		public: "r",
+		friend: "r"
+	}
+}
+
+Response (200):
+{
+	status: "success",
+	data: {
+		[
+			{url: "/v1/file/blog/2014-01-01.html"},
+			{url: "/v1/file/blog/2014-01-12.html"},
+			{url: "/v1/file/blog/2014-03-06.html"}
+		]
+	}
+}
+```
+
+*Set Permissions for a datastore*
+```
+PUT "/v1/properties/datastore/passwords.ds"
+
+{
+	permissions: {
+		owner: "tshannon",
+		public: "",
+		friend: ""
+	}
+}
+
+Response (200):
+{
+	status: "success",
+	data: {
+		url: "/v1/datastore/passwords.ds",
+	}
+}
+
+```
+
 
 * * *
 

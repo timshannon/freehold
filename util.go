@@ -67,6 +67,19 @@ func urlPathToFile(urlPath string) string {
 		return path.Join(fileDir, respath)
 	case "datastore":
 		return path.Join(datastoreDir, respath)
+	case "properties":
+		root, respath = splitRootAndPath(respath)
+		switch strings.ToLower(root) {
+		case "file":
+			return path.Join(fileDir, respath)
+		case "datastore":
+			return path.Join(datastoreDir, respath)
+		default:
+			//TODO: Core datastore properties?  Size?
+			// How to handle permissions?
+			return path.Join(fileDir, respath)
+		}
+
 	default:
 		//shouldn't happen unless mux handlers are improperly defined
 		panic("unhandled path")
