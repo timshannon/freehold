@@ -52,14 +52,15 @@ func parseJson(r *http.Request, result interface{}) error {
 		buff = []byte(r.URL.RawQuery)
 	}
 
-	fmt.Println("buff: ", string(buff))
-
 	err = json.Unmarshal(buff, result)
 	switch err := err.(type) {
 	case nil:
 		return nil
-	case *json.SyntaxError, *json.UnmarshalTypeError:
-		return pubFail(errors.New("Request contains invalid JSON"))
+	case *json.SyntaxError:
+		return pubFail(errors.New("Request contains invalid JSON: " + err.Error()))
+	case *json.UnmarshalTypeError:
+		fmt.Println(err.Error())
+		return pubFail(errors.New("Request contains a JSON structure that doesn't match the expected structure."))
 	default:
 		return err
 	}

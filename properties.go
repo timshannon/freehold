@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 	"path"
@@ -109,23 +108,31 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func propertiesPut(w http.ResponseWriter, r *http.Request) {
-	toSet := &Properties{}
+type PropertyInput struct {
+	Permissions *PermissionsInput `json:"permissions,omitempty"`
+}
 
-	err := parseJson(r, toSet)
+func propertiesPut(w http.ResponseWriter, r *http.Request) {
+	input := &PropertyInput{}
+
+	err := parseJson(r, input)
 	if errHandled(err, w) {
 		return
 	}
 
-	fmt.Println("Property: ", toSet.Permissions)
-	return
+	resource := resPathFromProperty(r.URL.Path)
 
-	if toSet.Permissions == nil {
-		//do nothing? or Fail with invalid syntax?
+	if input.Permissions == nil {
+		//return failure?
 		return
 	}
 
-	if errHandled(toSet.Permissions.validate(), w) {
+	newprm, err := input.Permissions.makePermission(resource)
+	if errHandled(err, w) {
+		return
+	}
+
+	if errHandled(newprm.validate(), w) {
 		return
 	}
 
@@ -134,7 +141,6 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resource := resPathFromProperty(r.URL.Path)
 	file, err := os.Open(urlPathToFile(resource))
 	defer file.Close()
 
@@ -171,7 +177,7 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err = setPermissions(resource, toSet.Permissions)
+		err = setPermissions(resource, newprm)
 		if errHandled(err, w) {
 			return
 		}
@@ -202,7 +208,7 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 			}
 
 			if ok {
-				setPermissions(child, toSet.Permissions)
+				setPermissions(child, newprm)
 				fileList = append(fileList, Properties{
 					Name: files[i].Name(),
 					Url:  child,
