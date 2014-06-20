@@ -17,7 +17,38 @@ type Permission struct {
 	Private string `json:"private,omitempty"`
 }
 
+type PermissionsInput struct {
+	Owner   *string `json:"owner,omitempty"`
+	Public  *string `json:"public,omitempty"`
+	Friend  *string `json:"friend,omitempty"`
+	Private *string `json:"private,omitempty"`
+}
+
 //TODO: handle empty strings for PUT requests, i.e. pointers to strings?
+
+// makePermission translates a partial permissions input to a full permissions type
+// by filling in the unspecfied entries from the datastore
+func (pi *PermissionsInput) makePermission(resource string) (*Permission, error) {
+	prm, err := permissions(resource)
+	if err != nil {
+		return nil, err
+	}
+
+	if pi.Owner != nil {
+		prm.Owner = *pi.Owner
+	}
+	if pi.Public != nil {
+		prm.Public = *pi.Public
+	}
+	if pi.Friend != nil {
+		prm.Friend = *pi.Friend
+	}
+	if pi.Private != nil {
+		prm.Private = *pi.Private
+	}
+
+	return prm, nil
+}
 
 func permissions(resource string) (*Permission, error) {
 	//Docs are open to public
