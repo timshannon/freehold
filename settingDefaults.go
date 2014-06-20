@@ -92,5 +92,14 @@ func init() {
 				" i.e http://github.com/developer/app/app.zip",
 			Value: false,
 		},
+		"MaxUploadMemory": Setting{ //TODO:
+			Description: "Maximum amount of memory (in bytes) to be used for file uploads. After max memory " +
+				"is reached, temporary files are used to hold the rest of the upload.",
+			Value: float64(10 * 1024 * 1024), //10MB
+		},
+		"MaxUploadSize": Setting{ //TODO:
+			Description: "Max file size in bytes allowed to be uploaded.  Less than zero means no limit. ",
+			Value:       float64(-1),
+		},
 	}
 }

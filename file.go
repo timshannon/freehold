@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -31,7 +32,15 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 	// Maybe it's ok for Friends to know that a file exists even though they can't
 	// read it?
 
-	//TODO: Only authenticated users can created
+	auth, err := authenticate(w, r)
+	if errHandled(err, w) {
+		return
+	}
+	if auth == nil {
+		errHandled(pubFail(errors.New("You must log in before posting a file.")), w)
+		return
+	}
+
 }
 
 func fileDelete(w http.ResponseWriter, r *http.Request) {
