@@ -117,7 +117,9 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("Property: ", toSet)
+	fmt.Println("Property: ", toSet.Permissions)
+	return
+
 	if toSet.Permissions == nil {
 		//do nothing? or Fail with invalid syntax?
 		return
