@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 )
 
 type Properties struct {
@@ -49,7 +50,8 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 		if errHandled(err, w) {
 			return
 		}
-		if !ok {
+		if !ok || auth == nil {
+			//Public can't view permissions
 			four04(w, r)
 			return
 		}
@@ -57,7 +59,7 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 		respondJsend(w, &JSend{
 			Status: statusSuccess,
 			Data: &Properties{
-				Name:        file.Name(),
+				Name:        filepath.Base(file.Name()),
 				Permissions: prm,
 				Url:         resource,
 				Size:        info.Size(),
@@ -90,7 +92,10 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 			if !ok {
 				continue
 			}
-			prm = p
+			if auth != nil {
+				//PUBLIC can't view permissions
+				prm = p
+			}
 		}
 
 		fileList = append(fileList, Properties{
@@ -120,19 +125,8 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resource := resPathFromProperty(r.URL.Path)
-
 	if input.Permissions == nil {
 		//return failure?
-		return
-	}
-
-	newprm, err := input.Permissions.makePermission(resource)
-	if errHandled(err, w) {
-		return
-	}
-
-	if errHandled(newprm.validate(), w) {
 		return
 	}
 
@@ -141,6 +135,7 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	resource := resPathFromProperty(r.URL.Path)
 	file, err := os.Open(urlPathToFile(resource))
 	defer file.Close()
 
@@ -159,12 +154,17 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !info.IsDir() {
-		ok, prm, err := canWrite(auth, resource)
-
+		newprm, err := input.Permissions.makePermission(resource)
 		if errHandled(err, w) {
 			return
 		}
-		if !ok {
+
+		prm, err := permissions(resource)
+		if errHandled(err, w) {
+			return
+		}
+
+		if !prm.isOwner(auth.User) {
 			if !prm.canRead(auth) {
 				four04(w, r)
 				return
@@ -172,7 +172,7 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 
 			respondJsend(w, &JSend{
 				Status:  statusFail,
-				Message: "You do not have write permissisions on this resource.",
+				Message: "You do not have owner permissions on this resource.",
 			})
 			return
 		}
@@ -198,29 +198,61 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fileList := make([]Properties, 0, len(files))
+	var errors []ErrorItem
+	var status string = statusSuccess
 
 	for i := range files {
 		if !files[i].IsDir() {
+
 			child := path.Join(resource, files[i].Name())
-			ok, _, err := canWrite(auth, child)
+			newprm, err := input.Permissions.makePermission(child)
+			if errHandled(err, w) {
+				return
+			}
+			prm, err := permissions(child)
 			if errHandled(err, w) {
 				return
 			}
 
-			if ok {
-				setPermissions(child, newprm)
+			if prm.isOwner(auth.User) {
+				err = setPermissions(child, newprm)
+				if err != nil {
+					errStatus, errMsg := errorMessage(err)
+					errors = append(errors, ErrorItem{
+						Message: errMsg,
+						Data: Properties{
+							Name: files[i].Name(),
+							Url:  child,
+						},
+					})
+					status = errStatus
+					continue
+				}
 				fileList = append(fileList, Properties{
 					Name: files[i].Name(),
 					Url:  child,
 				})
+			} else {
+				if !prm.canRead(auth) {
+					continue
+				}
+
+				status = statusFail
+				errors = append(errors, ErrorItem{
+					Message: "You do not have owner permissions on this resource.",
+					Data: Properties{
+						Name: files[i].Name(),
+						Url:  child,
+					},
+				})
+
 			}
-			//if they don't have permissions to set all files in folder
-			// don't fail, just quitely pass over them?
 		}
 	}
 
 	respondJsend(w, &JSend{
-		Status: statusSuccess,
+		Status: status,
 		Data:   fileList,
+		Errors: errors,
 	})
 }

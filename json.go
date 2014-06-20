@@ -18,6 +18,12 @@ type JSend struct {
 	Status  string      `json:"status"`
 	Data    interface{} `json:"data,omitempty"`
 	Message string      `json:"message,omitempty"`
+	Errors  []ErrorItem `json:"errors,omitempty"`
+}
+
+type ErrorItem struct {
+	Message string      `json:"message,omitempty"`
+	Data    interface{} `json:"data,omitempty"`
 }
 
 //respondJsend marshalls the input into a json byte array

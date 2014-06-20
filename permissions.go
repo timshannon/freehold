@@ -24,8 +24,6 @@ type PermissionsInput struct {
 	Private *string `json:"private,omitempty"`
 }
 
-//TODO: handle empty strings for PUT requests, i.e. pointers to strings?
-
 // makePermission translates a partial permissions input to a full permissions type
 // by filling in the unspecfied entries from the datastore
 func (pi *PermissionsInput) makePermission(resource string) (*Permission, error) {
@@ -47,6 +45,10 @@ func (pi *PermissionsInput) makePermission(resource string) (*Permission, error)
 		prm.Private = *pi.Private
 	}
 
+	err = prm.validate()
+	if err != nil {
+		return nil, err
+	}
 	return prm, nil
 }
 
@@ -75,7 +77,9 @@ func permissions(resource string) (*Permission, error) {
 		return nil, err
 	}
 	if value == nil {
-		return nil, errors.New("Permissions not found for resource: " + resource)
+		logError(errors.New("Permissions not found for resource: " + resource))
+
+		return perm, nil
 	}
 
 	err = json.Unmarshal(value, perm)

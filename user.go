@@ -135,7 +135,7 @@ func (u *User) login(password string) error {
 		return ErrLogonFailure
 	}
 
-	//TODO: Rate limit login attempts
+	//TODO: Rate limit login attempts? Or rate limit all public requests?
 	if len(password) < settingInt("MinPasswordLength") {
 		if settingBool("LogFailedAuth") {
 			logEntry(authLogType, "User "+u.username+" has failed a login attempt.")
