@@ -27,23 +27,18 @@ func pubFail(err error) error {
 	return publicFail{err}
 }
 
-func errHandled(err error, w http.ResponseWriter) bool {
-	if err == nil {
-		return false
-	}
-
-	status := statusError
-
-	var errMsg string
+func errorMessage(err error) (status, errMsg string) {
 	switch err := err.(type) {
 	case nil:
-		return false
+		return "", ""
 	case publicError:
 		status = statusError
 		errMsg = err.Error()
+		return
 	case publicFail:
 		status = statusFail
 		errMsg = err.Error()
+		return
 	default:
 		status = statusError
 		if settingBool("FullClientErrors") {
@@ -51,8 +46,16 @@ func errHandled(err error, w http.ResponseWriter) bool {
 		} else {
 			errMsg = "An internal server error has occurred"
 		}
+		return
+	}
+}
+
+func errHandled(err error, w http.ResponseWriter) bool {
+	if err == nil {
+		return false
 	}
 
+	status, errMsg := errorMessage(err)
 	if status == statusFail {
 		w.WriteHeader(http.StatusBadRequest)
 	} else {

@@ -30,12 +30,12 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 	// show them an error without exposing the fact that a file already exists
 	// Maybe it's ok for Friends to know that a file exists even though they can't
 	// read it?
-}
 
-func filePut(w http.ResponseWriter, r *http.Request) {
+	//TODO: Only authenticated users can created
 }
 
 func fileDelete(w http.ResponseWriter, r *http.Request) {
+	//TODO: Only owners can delete
 }
 
 func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth *Auth) {

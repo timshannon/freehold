@@ -24,7 +24,7 @@ http status codes.
 * error - There was a problem on the server - server error - usually (500)
 
 If status != "success" look for `data.message`.  It will always be there in non-successful transmissions. 
-For multiple failures, there will be a top `data.message` and an `data.item[item#].message` for the individual 
+For multiple failures, there will be a top `data.message` and an `data.errors[item#].message` for the individual 
 failures.
 
 Authentication will be done through the Basic HTTP Auth in the header
@@ -50,7 +50,7 @@ levels.
 Default permissions are Private R/W only.  Permissions only apply to an individual object 
 (File or Datastore).  There currently is no concept of Folder permissions, or inheritance.
 New Files or Datastores can only be created by the current authenticated user. Permissions can only
-be granted by the file owner.  Whether or not a folder exists is only known to authenticated users.
+be granted by the file owner.  Whether or not a folder exists is only known to authenticated users. Files can only be deleted by their owners.
 
 If a user doesn't have permissions to read a file they will get a 404.
 
@@ -134,26 +134,22 @@ Response (201):
 Error Response (500):
 {
 	status: "error",
-	data: {
-		message: "one or more files failed",
-		items: [
-			{
-				url: "/v1/file/new-directory/profile.jpg"
-			},
-			{
-				message: "file already exists"
-				url: "/v1/file/new-directory/header.jpg",
-			},
-			{
-				message: "not enough disk space",
-				url: "/v1/file/new-directory/wikipedia.zip"
-			}
-		]
-	}
+	message: "one or more files failed",
+	data: [
+			{	url: "/v1/file/new-directory/profile.jpg"}
+	],
+	errors: [
+		{	message: "file already exists",
+			data: {	url: "/v1/file/new-directory/header.jpg"}
+		},
+		{	message: "not enough disk space",	
+			data: {url: "/v1/file/new-directory/wikipedia.zip"}
+		}
+	]
 }
 ```
 
-**DELETE** - If the last file in a given folder is deleted, the folder is also deleted
+**DELETE** - If the last file in a given folder is deleted, the folder is also deleted. Can only be done by file owners.
 
 *Delete a single file*
 ```
@@ -380,9 +376,9 @@ Response (404):
 ```
 
 
-**DELETE** - Requires private permissions
+**DELETE** 
 
-*Delete a datastore file*
+*Delete a datastore file* - Requires private/owner permissions
 ```
 DELETE /v1/datastore/personal/bookmarks.ds
 
@@ -395,6 +391,20 @@ Response (200):
 }
 ```
 
+*Delete a datastore entry* - Requires write permissions
+```
+DELETE /v1/datastore/personal/bookmarks.ds
+{
+	key: "http://golang.org/pkg",
+}
+
+Response (200):
+{
+	status: "success"
+}
+```
+
+
 File Properties
 ----
 ### /v1/properties/file/<path to file>
@@ -403,7 +413,7 @@ or
 
 Properties mirrors the same paths as /v1/file/ or /v1/datastore/ but instead shows meta data on the files instead of retrieving the files themselves.  This allows us to take advantage of browser caching for serving files without interfering with making GET requests to retrieve information on the files themselves.  It also allows for a way to retrieve folder listings for folders which contain index files.
 
-If a user has permissions to the /v1/file/ or /v1/datastore/ it has permissions to the /v1/properties/ path as well.
+If a user has permissions to the /v1/file/ or /v1/datastore/ it has permissions to the /v1/properties/ path as well.  However PUTting permissions requires Private/owner permissions.  Reading permissions requires read access, but permissions requests are not allowed for public access.
 
 **GET** - Get Info on a given file; permissions, size in bytes, etc.
 ```
