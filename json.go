@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 )
@@ -50,6 +51,8 @@ func parseJson(r *http.Request, result interface{}) error {
 		// take precedent
 		buff = []byte(r.URL.RawQuery)
 	}
+
+	fmt.Println("buff: ", string(buff))
 
 	err = json.Unmarshal(buff, result)
 	switch err := err.(type) {
