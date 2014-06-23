@@ -59,6 +59,13 @@ func logError(err error) {
 	logEntry("error", err.Error())
 }
 
+func logFail(err error) {
+	if !settingBool("LogFailures") {
+		return
+	}
+	logEntry("failure", err.Error())
+}
+
 func logSyslogError(err error) {
 	lWriter, err := syslog.New(syslog.LOG_ERR, "freehold")
 	if err != nil {

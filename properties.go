@@ -14,6 +14,11 @@ type Properties struct {
 	Size        int64       `json:"size,omitempty"`
 }
 
+//TODO: Encryption
+// PGP with sane defaults
+// Settings will allow you to change default hash, cypher, compression, etc
+// Store encryption settings with file?
+
 func resPathFromProperty(propertyPath string) string {
 	version, resource := splitRootAndPath(propertyPath)
 	_, resource = splitRootAndPath(resource)
@@ -199,7 +204,7 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 
 	fileList := make([]Properties, 0, len(files))
 	var errors []ErrorItem
-	var status string = statusSuccess
+	status := statusSuccess
 
 	for i := range files {
 		if !files[i].IsDir() {
@@ -217,15 +222,10 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 			if prm.isOwner(auth.User) {
 				err = setPermissions(child, newprm)
 				if err != nil {
-					errStatus, errMsg := errorMessage(err)
-					errors = append(errors, ErrorItem{
-						Message: errMsg,
-						Data: Properties{
-							Name: files[i].Name(),
-							Url:  child,
-						},
-					})
+					errStatus, item := fileErrorItem(err, files[i].Name(), child)
+					errors = append(errors, item)
 					status = errStatus
+
 					continue
 				}
 				fileList = append(fileList, Properties{
@@ -255,4 +255,15 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 		Data:   fileList,
 		Errors: errors,
 	})
+}
+
+func fileErrorItem(err error, name, url string) (status string, item ErrorItem) {
+	status, errMsg := errorMessage(err)
+	return status, ErrorItem{
+		Message: errMsg,
+		Data: Properties{
+			Name: name,
+			Url:  url,
+		},
+	}
 }

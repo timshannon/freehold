@@ -415,6 +415,8 @@ Properties mirrors the same paths as /v1/file/ or /v1/datastore/ but instead sho
 
 If a user has permissions to the /v1/file/ or /v1/datastore/ it has permissions to the /v1/properties/ path as well.  However PUTting permissions requires Private/owner permissions.  Reading permissions requires read access, but permissions requests are not allowed for public access.
 
+TODO: Encryption. Requires key passed in header
+
 **GET** - Get Info on a given file; permissions, size in bytes, etc.
 ```
 GET /v1/properties/file/important-stuff/spreadsheet1.ods
@@ -570,7 +572,7 @@ the user themself.
 * * *
 
 Authentication
-==============
+--------------
 Authentication will be done through the Basic HTTP Auth set in the request header.
 
 Username is always required, and Password can be the users password, or a valid security token.
@@ -1037,7 +1039,7 @@ Response (200):
 * * *
 
 Core Settings
-=============================
+-----------------------------
 Freehold tries to have sane default settings that you can adjust as needed.  This will hopefully make the instance
 easy to setup and get running, yet allow the admin to modify it's operation to their own needs.
 
@@ -1142,7 +1144,7 @@ Response (200):
 * * *
 
 Applications
-============
+------------
 Applications are bundles of files in a zip file that only Admins can install.  Once installed
 they are available to all users in the system, and possibly (depending on how the app sets it's permissions)
 available to the public as well.
@@ -1396,9 +1398,25 @@ Response (200):
 
 * * *
 
-Messaging 
+Communication
 ======================
+/v1/com/
+--------
+
+/v1/com/xmpp
+------------
+
 TODO: XMPP, client?  Server would be nice too.
+
+/v1/com/webrtc
+-------------
+
+TODO: WebRTC backend
+
+/v1/com/irc
+------------
+
+TODO: IRC client
 
 * * *
 

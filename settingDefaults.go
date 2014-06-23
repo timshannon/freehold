@@ -20,6 +20,11 @@ func init() {
 			Description: "Whether or not errors will be logged in the core/log datastore.",
 			Value:       true,
 		},
+		"LogFailures": Setting{
+			Description: "Whether or not input failures will be logged in the core/log datastore. " +
+				"This would include items such as malformed json requests.",
+			Value: true,
+		},
 		"LogErrorsToSyslog": Setting{
 			Description: "Whether or not errors will be logged in the OS's error log.",
 			Value:       false,
@@ -92,14 +97,10 @@ func init() {
 				" i.e http://github.com/developer/app/app.zip",
 			Value: false,
 		},
-		"MaxUploadMemory": Setting{ //TODO:
+		"MaxUploadMemory": Setting{
 			Description: "Maximum amount of memory (in bytes) to be used for file uploads. After max memory " +
 				"is reached, temporary files are used to hold the rest of the upload.",
 			Value: float64(10 * 1024 * 1024), //10MB
-		},
-		"MaxUploadSize": Setting{ //TODO:
-			Description: "Max file size in bytes allowed to be uploaded.  Less than zero means no limit. ",
-			Value:       float64(-1),
 		},
 	}
 }

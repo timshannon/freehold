@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -41,10 +42,204 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	r.ParseMultipartForm(settingInt64("MaxUploadMemory"))
+
+	mp := r.MultipartForm
+
+	var fileList []Properties
+	var errors []ErrorItem
+	status := statusSuccess
+
+	for _, files := range mp.File {
+		for i := range files {
+			resource := path.Join(r.URL.Path, files[i].Filename)
+			filename := urlPathToFile(resource)
+
+			//write file
+			file, err := files[i].Open()
+			defer file.Close()
+
+			if err != nil {
+				errStatus, item := fileErrorItem(err, filename, resource)
+				errors = append(errors, item)
+				status = errStatus
+
+				continue
+			}
+			bytes, err := ioutil.ReadAll(file)
+			if err != nil {
+				errStatus, item := fileErrorItem(err, filename, resource)
+				errors = append(errors, item)
+				status = errStatus
+
+				continue
+			}
+			newFile, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+			if err != nil {
+				errStatus, item := fileErrorItem(pubErr(err), filename, resource)
+				errors = append(errors, item)
+				status = errStatus
+
+				continue
+			}
+
+			n, err := newFile.Write(bytes)
+			if err == nil && n < len(bytes) {
+				err = io.ErrShortWrite
+			}
+			if err1 := newFile.Close(); err == nil {
+				err = err1
+			}
+			if err != nil {
+				errStatus, item := fileErrorItem(err, filename, resource)
+				errors = append(errors, item)
+				status = errStatus
+
+				continue
+			}
+
+			err = setPermissions(resource, &Permission{
+				Owner:   auth.User.username,
+				Public:  "",
+				Friend:  "",
+				Private: "rw",
+			})
+			if err != nil {
+				errStatus, item := fileErrorItem(err, filename, resource)
+				errors = append(errors, item)
+				status = errStatus
+
+				continue
+			}
+
+			fileList = append(fileList, Properties{
+				Name: filename,
+				Url:  resource,
+			})
+		}
+	}
+
+	respondJsend(w, &JSend{
+		Status: status,
+		Data:   fileList,
+		Errors: errors,
+	})
+
 }
 
 func fileDelete(w http.ResponseWriter, r *http.Request) {
 	//TODO: Only owners can delete
+	//TODO: If last file in a folder is deleted, delete the folder
+
+	auth, err := authenticate(w, r)
+	if errHandled(err, w) {
+		return
+	}
+	if auth == nil {
+		errHandled(pubFail(errors.New("You must log in before deleting a file.")), w)
+		return
+	}
+
+	resource := r.URL.Path
+	file, err := os.Open(urlPathToFile(resource))
+	defer file.Close()
+
+	if os.IsNotExist(err) {
+		four04(w, r)
+		return
+	}
+
+	if errHandled(err, w) {
+		return
+	}
+
+	info, err := file.Stat()
+	if errHandled(err, w) {
+		return
+	}
+
+	if !info.IsDir() {
+		prm, err := permissions(resource)
+		if errHandled(err, w) {
+			return
+		}
+
+		if !prm.isOwner(auth.User) {
+			if !prm.canRead(auth) {
+				four04(w, r)
+				return
+			}
+
+			respondJsend(w, &JSend{
+				Status:  statusFail,
+				Message: "You do not have owner permissions on this resource.",
+			})
+			return
+		}
+		os.Remove(urlPathToFile(resource))
+		//delete file
+		return
+	}
+
+	files, err := file.Readdir(0)
+	if errHandled(err, w) {
+		return
+	}
+
+	fileList := make([]Properties, 0, len(files))
+	var errors []ErrorItem
+	status := statusSuccess
+	dir := file.Name()
+
+	for i := range files {
+		if !files[i].IsDir() {
+			child := path.Join(resource, files[i].Name())
+
+			prm, err := permissions(child)
+			if errHandled(err, w) {
+				return
+			}
+
+			if prm.isOwner(auth.User) {
+				os.Remove(path.Join(dir, files[i].Name()))
+
+				fileList = append(fileList, Properties{
+					Name: files[i].Name(),
+					Url:  child,
+				})
+			} else {
+				if !prm.canRead(auth) {
+					continue
+				}
+
+				status = statusFail
+				errors = append(errors, ErrorItem{
+					Message: "You do not have owner permissions on this resource.",
+					Data: Properties{
+						Name: files[i].Name(),
+						Url:  child,
+					},
+				})
+
+			}
+		}
+	}
+
+	respondJsend(w, &JSend{
+		Status: status,
+		Data:   fileList,
+		Errors: errors,
+	})
+
+	//Check if folder is now empty and clean it up
+	files, err = file.Readdir(0)
+	if err != nil {
+		logError(err)
+		return
+	}
+	if len(files) == 0 {
+		os.Remove(file.Name())
+	}
 }
 
 func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth *Auth) {
