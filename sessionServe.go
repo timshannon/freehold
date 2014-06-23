@@ -1,6 +1,9 @@
 package main
 
-import "net/http"
+import (
+	"errors"
+	"net/http"
+)
 
 func sessionGet(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
@@ -20,6 +23,12 @@ func sessionPost(w http.ResponseWriter, r *http.Request) {
 	}
 	if auth == nil {
 		four04(w, r)
+		return
+	}
+
+	//Sessions can only be created with basic auth type
+	if auth.AuthType != authTypeBasic {
+		errHandled(pubErr(errors.New("Sessions can only be requested using basic authentication")), w)
 		return
 	}
 
