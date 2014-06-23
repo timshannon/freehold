@@ -83,6 +83,10 @@ func settingInt(settingName string) int {
 	return int(settingValue(settingName).(float64))
 }
 
+func settingInt64(settingName string) int64 {
+	return int64(settingValue(settingName).(float64))
+}
+
 func settingString(settingName string) string {
 	return settingValue(settingName).(string)
 }

@@ -34,13 +34,16 @@ func errorMessage(err error) (status, errMsg string) {
 	case publicError:
 		status = statusError
 		errMsg = err.Error()
+		logError(err)
 		return
 	case publicFail:
 		status = statusFail
 		errMsg = err.Error()
+		logFail(err)
 		return
 	default:
 		status = statusError
+		logError(err)
 		if settingBool("FullClientErrors") {
 			errMsg = err.Error()
 		} else {
@@ -65,7 +68,6 @@ func errHandled(err error, w http.ResponseWriter) bool {
 		Status:  status,
 		Message: errMsg,
 	})
-	logError(err)
 	return true
 }
 
