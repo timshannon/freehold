@@ -20,9 +20,15 @@ type Properties struct {
 // Store encryption settings with file?
 
 func resPathFromProperty(propertyPath string) string {
-	version, resource := splitRootAndPath(propertyPath)
-	_, resource = splitRootAndPath(resource)
-	return path.Join("/", version, resource)
+	root, resource := splitRootAndPath(propertyPath)
+	if isVersion(root) {
+		//strip out properties from path
+		_, resource = splitRootAndPath(resource)
+		return path.Join("/", root, resource)
+	}
+	//must be app path
+	resource = resPathFromProperty(resource)
+	return path.Join("/", root, resource)
 }
 
 func propertiesGet(w http.ResponseWriter, r *http.Request) {

@@ -54,36 +54,40 @@ func isDocPath(resource string) bool {
 // /<version>/<type of resource>/<path to resource>/
 func urlPathToFile(urlPath string) string {
 	root, respath := splitRootAndPath(urlPath)
-	if _, ok := versions[root]; !ok {
+
+	//strip off version and check if valid
+	if !isVersion(root) {
+		//not a version prefix
 		if strings.ToLower(root) == "docs" {
 			return path.Join(docsDir, respath)
 		}
-		//TODO: is app
+
+		//Is app path and root is app-id
+		return path.Join(appDir, root, v1FilePath(respath))
 	}
-	//strip off version
-	root, respath = splitRootAndPath(respath)
+	return v1FilePath(respath)
+}
+
+func v1FilePath(resourcePath string) string {
+	root, respath := splitRootAndPath(resourcePath)
 	switch strings.ToLower(root) {
 	case "file":
 		return path.Join(fileDir, respath)
 	case "datastore":
 		return path.Join(datastoreDir, respath)
 	case "properties":
-		root, respath = splitRootAndPath(respath)
-		switch strings.ToLower(root) {
-		case "file":
-			return path.Join(fileDir, respath)
-		case "datastore":
-			return path.Join(datastoreDir, respath)
-		default:
-			//TODO: Core datastore properties?  Size?
-			// How to handle permissions?
-			return path.Join(fileDir, respath)
-		}
-
+		return v1FilePath(respath)
 	default:
-		//shouldn't happen unless mux handlers are improperly defined
-		panic("unhandled path")
+		//invalid path
+		return ""
 	}
+}
+
+func isVersion(version string) bool {
+	//TODO: Check for all possible versions?
+	// make sure apps can be registered on possible future version endpoints?
+	_, ok := versions[version]
+	return ok
 }
 
 //Returns a random value of the bit length passed in

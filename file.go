@@ -360,7 +360,7 @@ func writeMarkdown(file *os.File) ([]byte, error) {
 	htmlFlags |= blackfriday.HTML_SMARTYPANTS_LATEX_DASHES
 	htmlFlags |= blackfriday.HTML_COMPLETE_PAGE
 	renderer := blackfriday.HtmlRenderer(htmlFlags,
-		strings.TrimRight(file.Name(), markdownType), markdownCss)
+		strings.TrimRight(file.Name(), markdownType), settingString("MarkdownCSSFile"))
 
 	// set up the parser
 	extensions := 0

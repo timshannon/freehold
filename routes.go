@@ -7,6 +7,7 @@ import (
 )
 
 var rootHandler *treemux.Mux
+var appHandler *treemux.Mux
 
 func init() {
 	setupRoutes()
@@ -43,6 +44,25 @@ func setupRoutes() {
 		get:    sessionGet,
 		post:   sessionPost,
 		delete: sessionDelete,
+	})
+
+	//apps
+	appHandler = treemux.NewServeMux()
+	rootHandler.SetChild(appHandler)
+
+	appHandler.Handle("/", &methodHandler{
+		get: appRootGet,
+	})
+
+	appHandler.Handle("/v1/file/", &methodHandler{
+		get:    fileGet,
+		post:   filePost,
+		delete: fileDelete,
+	})
+
+	appHandler.Handle("/v1/properties/", &methodHandler{
+		get: propertiesGet,
+		put: propertiesPut,
 	})
 
 }

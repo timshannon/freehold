@@ -23,7 +23,7 @@ func init() {
 		"LogFailures": Setting{
 			Description: "Whether or not input failures will be logged in the core/log datastore. " +
 				"This would include items such as malformed json requests.",
-			Value: true,
+			Value: false,
 		},
 		"LogErrorsToSyslog": Setting{
 			Description: "Whether or not errors will be logged in the OS's error log.",
@@ -101,6 +101,10 @@ func init() {
 			Description: "Maximum amount of memory (in bytes) to be used for file uploads. After max memory " +
 				"is reached, temporary files are used to hold the rest of the upload.",
 			Value: float64(10 * 1024 * 1024), //10MB
+		},
+		"MarkdownCSSFile": Setting{
+			Description: "Path to css file used for displaying markdown files.",
+			Value:       markdownCss,
 		},
 	}
 }
