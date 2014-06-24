@@ -58,6 +58,10 @@ func parseJson(r *http.Request, result interface{}) error {
 		buff = []byte(r.URL.RawQuery)
 	}
 
+	if len(buff) == 0 {
+		return nil
+	}
+
 	err = json.Unmarshal(buff, result)
 	switch err := err.(type) {
 	case nil:
