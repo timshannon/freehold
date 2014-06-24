@@ -6,7 +6,49 @@ import (
 	"path"
 )
 
+type ApplicationInput struct {
+	Id   *string `json:"id,omitempty"`
+	File *string `json:"id,omitempty"`
+}
+
 func appGet(w http.ResponseWriter, r *http.Request) {
+	auth, err := authenticate(w, r)
+	if errHandled(err, w) {
+		return
+	}
+	if auth == nil {
+		four04(w, r)
+		return
+	}
+
+	input := &ApplicationInput{}
+	err = parseJson(r, input)
+	if errHandled(err, w) {
+		return
+	}
+
+	if input.Id != nil {
+		app, err := getApp(*input.Id)
+		if errHandled(err, w) {
+			return
+		}
+		respondJsend(w, &JSend{
+			Status: statusSuccess,
+			Data:   app,
+		})
+		return
+	}
+
+	apps, err := getAllApps()
+	if errHandled(err, w) {
+		return
+	}
+	respondJsend(w, &JSend{
+		Status: statusSuccess,
+		Data:   apps,
+	})
+	return
+
 }
 
 func appPost(w http.ResponseWriter, r *http.Request) {
@@ -40,9 +82,12 @@ func appRootGet(w http.ResponseWriter, r *http.Request) {
 
 	root := app.Root
 	if root == "" {
-		logError(errors.New("App " + app.id + " has not root specified."))
-		root = path.Join("/", app.id, version, "file")
+		logError(errors.New("App " + app.Id + " has not root specified."))
+		root = path.Join("/", app.Id, version, "file")
 	}
 
 	serveResource(w, r, root, auth)
+}
+
+func appAvailableGet(w http.ResponseWriter, r *http.Request) {
 }

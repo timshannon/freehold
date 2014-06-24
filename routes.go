@@ -46,6 +46,17 @@ func setupRoutes() {
 		delete: sessionDelete,
 	})
 
+	rootHandler.Handle("/v1/application", &methodHandler{
+		get:    appGet,
+		post:   appPost,
+		put:    appPut,
+		delete: appDelete,
+	})
+
+	rootHandler.Handle("/v1/application/available", &methodHandler{
+		get: appAvailableGet,
+	})
+
 	//apps
 	appHandler = treemux.NewServeMux()
 	rootHandler.SetChild(appHandler)
