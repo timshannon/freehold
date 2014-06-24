@@ -20,23 +20,23 @@ type publicFail struct { //returns 400
 }
 
 func pubErr(err error) error {
-	return publicError{err}
+	return &publicError{err}
 }
 
 func pubFail(err error) error {
-	return publicFail{err}
+	return &publicFail{err}
 }
 
 func errorMessage(err error) (status, errMsg string) {
 	switch err := err.(type) {
 	case nil:
 		return "", ""
-	case publicError:
+	case *publicError:
 		status = statusError
 		errMsg = err.Error()
 		logError(err)
 		return
-	case publicFail:
+	case *publicFail:
 		status = statusFail
 		errMsg = err.Error()
 		logFail(err)

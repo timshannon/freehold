@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 )
 
 const (
@@ -54,8 +55,13 @@ func parseJson(r *http.Request, result interface{}) error {
 		}
 		//Browsers will send GET request body as URL parms
 		// We'll support either, but the request body will
-		// take precedent
-		buff = []byte(r.URL.RawQuery)
+		// take precedence
+		v, err := url.QueryUnescape(r.URL.RawQuery)
+		if err != nil {
+			return pubFail(err)
+		}
+
+		buff = []byte(v)
 	}
 
 	if len(buff) == 0 {

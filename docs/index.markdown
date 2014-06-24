@@ -1151,8 +1151,7 @@ available to the public as well.
 
 By default application zip files must be present on the server running the freehold instance before they can
 be installed. Any .zip file in the folder *<freehold executable>/apps/available/* will be listed as an application
-available to install. Remote installs (installations from local resources such as /v1/file/) can be allowed by changing the
-global setting *FileAppInstall* to *true*.  Web installs can be allowed by changing the global setting *WebAppInstall*.
+available to install. Installation of non-local applications can be accomplished by changing the setting **AllowWebAppInstall**, and making POST of that file to /v1/application/available.  This will download the application file to the server and make it available for install.  Note, this should only be done if you trust the source of the application file.
 
 The application zip file must have a file called app.json in the following format:
 ```
@@ -1276,8 +1275,8 @@ Response (200):
 **POST**
 
 *Install an Application* - Admins only - 
-Files must be in *<freehold executable>/apps/available/* or (if web-install is enabled) a valid
-url.  
+Files must be in *<freehold executable>/apps/available/* 
+
 ```
 POST /v1/application
 {
@@ -1297,6 +1296,30 @@ Response (201):
 	}
 }
 ```
+
+*Get a remote application file and make it available for install* - Admins only
+```
+POST /v1/application/available
+{
+	file: "https://github.com/developer/freehold-blog/blog.zip"
+}
+
+Response (201):
+{
+	status: "success",
+	data: {
+			id: "blog",
+			name: "Blog",
+			description: "Software for writing and publish a blog to the public",
+			author: "Tim Shannon - shannon.timothy@gmail.com",
+			root: "index.htm",
+			icon: "v1/file/images/blog.png"
+	}
+}
+```
+
+
+
 
 **PUT**
 

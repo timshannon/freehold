@@ -13,11 +13,12 @@ import (
 var versions = map[string]struct{}{"v1": struct{}{}}
 
 const (
-	version      = "v1"
-	docsDir      = "./docs/"
-	fileDir      = "./files/"
-	datastoreDir = "./datastores/"
-	appDir       = "./apps/"
+	version         = "v1"
+	docsDir         = "./docs/"
+	fileDir         = "./files/"
+	datastoreDir    = "./datastores/"
+	appDir          = "./apps/"
+	availableAppDir = appDir + "available/"
 )
 
 // splitRootAndPath splits the first item in a path from the rest
