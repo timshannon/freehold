@@ -4,3 +4,4 @@ freehold
 .*\.key$
 .*\.pem$
 settings.json
+core/*

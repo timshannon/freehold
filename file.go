@@ -42,6 +42,13 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//check if authentication is via a token with specific access to a resource
+	if auth.tokenRestricted(r.URL.Path) {
+		errHandled(pubFail(errors.New("You must have proper credentials before posting a file.")), w)
+		return
+
+	}
+
 	r.ParseMultipartForm(settingInt64("MaxUploadMemory"))
 
 	mp := r.MultipartForm
@@ -66,44 +73,8 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 
 				continue
 			}
-			bytes, err := ioutil.ReadAll(file)
-			if err != nil {
-				errStatus, item := fileErrorItem(err, filename, resource)
-				errors = append(errors, item)
-				status = errStatus
 
-				continue
-			}
-			newFile, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
-			if err != nil {
-				errStatus, item := fileErrorItem(pubErr(err), filename, resource)
-				errors = append(errors, item)
-				status = errStatus
-
-				continue
-			}
-
-			n, err := newFile.Write(bytes)
-			if err == nil && n < len(bytes) {
-				err = io.ErrShortWrite
-			}
-			if err1 := newFile.Close(); err == nil {
-				err = err1
-			}
-			if err != nil {
-				errStatus, item := fileErrorItem(err, filename, resource)
-				errors = append(errors, item)
-				status = errStatus
-
-				continue
-			}
-
-			err = setPermissions(resource, &Permission{
-				Owner:   auth.User.username,
-				Public:  "",
-				Friend:  "",
-				Private: "rw",
-			})
+			err = writeFile(file, filename)
 			if err != nil {
 				errStatus, item := fileErrorItem(err, filename, resource)
 				errors = append(errors, item)
@@ -128,9 +99,6 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func fileDelete(w http.ResponseWriter, r *http.Request) {
-	//TODO: Only owners can delete
-	//TODO: If last file in a folder is deleted, delete the folder
-
 	auth, err := authenticate(w, r)
 	if errHandled(err, w) {
 		return
@@ -141,6 +109,13 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resource := r.URL.Path
+
+	//If access is granted via token check if token grants owner level permissions
+	if auth.AuthType == authTypeToken && !auth.Token.isOwner() {
+		errHandled(pubFail(errors.New("You must log in before deleting a file.")), w)
+		return
+	}
+
 	file, err := os.Open(urlPathToFile(resource))
 	defer file.Close()
 
@@ -373,4 +348,30 @@ func writeMarkdown(file *os.File) ([]byte, error) {
 	extensions |= blackfriday.EXTENSION_HEADER_IDS
 
 	return blackfriday.Markdown(buf, renderer, extensions), nil
+}
+
+func writeFile(reader io.Reader, filename string) error {
+	bytes, err := ioutil.ReadAll(reader)
+	if err != nil {
+		return err
+	}
+	newFile, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+	if os.IsExist(err) {
+		return pubErr(err)
+	}
+	if err != nil {
+		return err
+	}
+
+	n, err := newFile.Write(bytes)
+	if err == nil && n < len(bytes) {
+		err = io.ErrShortWrite
+	}
+	if err1 := newFile.Close(); err == nil {
+		err = err1
+	}
+	if err != nil {
+		return err
+	}
+	return nil
 }

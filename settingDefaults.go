@@ -87,12 +87,7 @@ func init() {
 			Description: "Default home app set for new users who's home app was not specified.",
 			Value:       "core-home",
 		},
-		"FileAppInstall": Setting{ //TODO:
-			Description: "Whether or not applications are allowed to be installed from any arbitary file " +
-				"path on the host.  i.e /v1/file/applications/app.zip",
-			Value: false,
-		},
-		"WebAppInstall": Setting{ //TODO:
+		"AllowWebAppInstall": Setting{
 			Description: "Whether or not applications are allowed to be installed from any arbitary url. " +
 				" i.e http://github.com/developer/app/app.zip",
 			Value: false,
@@ -105,6 +100,10 @@ func init() {
 		"MarkdownCSSFile": Setting{
 			Description: "Path to css file used for displaying markdown files.",
 			Value:       markdownCss,
+		},
+		"HttpClientTimeout": Setting{
+			Description: "Timeout in seconds of requests made by the http client (like fetching an application zip file).",
+			Value:       float64(15),
 		},
 	}
 }

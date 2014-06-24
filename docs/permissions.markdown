@@ -20,3 +20,10 @@ There are some implicit permissions that are gained by the nature of the access 
 * Set Permissions - Only the Private user (owner) of the file can set permissions on a file
 * Read Permissions - If user has rights to read a file, then they can view the permissions on a file, unless they are public. Or in other words non-authenticated users cannot ever view file permissions.
 * Viewing the existence of a folder - Permissions are granted at a file level, and there is no concept of inheritance from a parent folder.  In order to prevent unwanted information to leak publicly, the existence of folders is not visible to public users.  Authenticated users can however see if a folder exists even if they do not have access to anything in the folder.
+
+
+Other implicit permissions are built into freehold, and apply to the core operations of the instance.
+* Posting a session - Authenticated users
+* Viewing installed applications - Authenticated users
+* Viewing available applications - Admins
+* Installing new applications - Admins

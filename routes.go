@@ -54,7 +54,8 @@ func setupRoutes() {
 	})
 
 	rootHandler.Handle("/v1/application/available", &methodHandler{
-		get: appAvailableGet,
+		get:  appAvailableGet,
+		post: appAvailablePost,
 	})
 
 	//apps
