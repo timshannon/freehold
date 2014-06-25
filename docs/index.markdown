@@ -621,7 +621,7 @@ Response (200):
 			user: "tshannon", 
 			name: "Tim Shannon", 
 			email: "shannon.timothy@gmail.com",
-			homeApp: "core-home",
+			homeApp: "home",
 			admin: true,
 			authType: "session",
 			expires: "2044-04-23T18:25:43.511Z"
@@ -660,14 +660,14 @@ Response (200):
 			user: "tshannon", 
 			name: "Tim Shannon", 
 			email: "shannon.timothy@gmail.com",
-			homeApp: "core-home",
+			homeApp: "home",
 			admin: true
 		},
 		{
 			user: "otheruser", 
 			name: "Other User", 
 			email: "other.user@gmail.com",
-			homeApp: "core-home",
+			homeApp: "home",
 			admin: false
 		}
 	]
@@ -688,7 +688,7 @@ Response (200):
 		user: "tshannon", 
 		name: "Tim Shannon", 
 		email: "shannon.timothy@gmail.com",
-		homeApp: "core-home",
+		homeApp: "home",
 		admin: true
 	}	
 }
@@ -704,7 +704,7 @@ POST /v1/auth/user
 	password: "CorrectHorseBatteryStaple",
 	name: "New User", 
 	email: "new.user@gmail.com",
-	homeApp: "core-home",
+	homeApp: "home",
 	admin: false
 }
 
@@ -723,7 +723,7 @@ PUT /v1/auth/user
 	password: "CorrectHorseBatteryStaple",
 	name: "New User", 
 	email: "new.user@gmail.com",
-	homeApp: "core-home",
+	homeApp: "home",
 }
 
 Response (200):
@@ -1081,7 +1081,7 @@ Response (200):
 		{
 			setting: "default-home-app", 
 			description: "Default application used as the home app, where logins are redirected to.", 
-			value: "core-home"
+			value: "home"
 		},
 		{
 			setting: "application-allow-web-install", 
@@ -1175,7 +1175,7 @@ applications, or any paths used by the freehold instance (i.e. /v1 /v2, etc).
 Paths to the root file and icon files are relative to the application, so 
 "v1/file/images/ds-icon.png" refers to `https://host/<app-id>/v1/file/images/ds-icon.png`.
 
-While not part of the server side installation, if you include an install.js file at the root of your application, the core home application will present an install button once the application is enabled.  You can use this file to do any one-time setup required like setting permissions on files (as they will be defaulted to private upon install), or creating any necessary datastores.
+While not part of the server side installation, if you include an install.html file at the root of your application, the core home application will present that page once the application is enabled.  Usually this page will consist of an install button, but it can contain whatever you need it to.  You can use this file to do any one-time setup required like setting permissions on files (as they will be defaulted to private upon install), or creating any necessary datastores.
 
 
 *Datastore definition of Applications* - Only stores currently installed applications.  If an application is
@@ -1213,7 +1213,7 @@ Response (200):
 			icon: "v1/file/images/ds-icon.png"
 		},
 		{
-			id: "core-home",
+			id: "home",
 			name: "Home",
 			description: "Freehold Homepage",
 			author: "Tim Shannon - shannon.timothy@gmail.com",
@@ -1228,14 +1228,14 @@ Response (200):
 ```
 GET /v1/application
 {
-	id: "core-home"
+	id: "home"
 }
 
 Response (200):
 {
 	status: "success",
 	data: {
-			id: "core-home",
+			id: "home",
 			name: "Home",
 			description: "Freehold Homepage",
 			author: "Tim Shannon - shannon.timothy@gmail.com",
@@ -1307,14 +1307,7 @@ POST /v1/application/available
 Response (201):
 {
 	status: "success",
-	data: {
-			id: "blog",
-			name: "Blog",
-			description: "Software for writing and publish a blog to the public",
-			author: "Tim Shannon - shannon.timothy@gmail.com",
-			root: "index.htm",
-			icon: "v1/file/images/blog.png"
-	}
+	data: "https://github.com/developer/freehold-blog/blog.zip"
 }
 ```
 

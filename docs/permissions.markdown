@@ -27,3 +27,6 @@ Other implicit permissions are built into freehold, and apply to the core operat
 * Viewing installed applications - Authenticated users
 * Viewing available applications - Admins
 * Installing new applications - Admins
+* Posting an external application file - Admins
+* Uninstalling an Application - Admins
+* Upgrading an application - Admins

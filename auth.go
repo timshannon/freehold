@@ -148,3 +148,47 @@ func (a *Auth) tokenRestricted(resource string) bool {
 	}
 	return false
 }
+
+// authedForAdmin checks if the current user
+// is admin and handles a bunch of commonly used responses if not
+// If is admin, returns true
+func authedForAdmin(w http.ResponseWriter, r *http.Request) (*Auth, bool) {
+	auth, err := authenticate(w, r)
+	if errHandled(err, w) {
+		return nil, false
+	}
+	if auth == nil {
+		four04(w, r)
+		return nil, false
+	}
+
+	if auth.AuthType == authTypeToken && !auth.Token.isOwner() {
+		four04(w, r)
+		return nil, false
+	}
+	if !auth.User.Admin {
+		four04(w, r)
+		return nil, false
+	}
+
+	return auth, true
+}
+
+func authedForOwner(w http.ResponseWriter, r *http.Request) (*Auth, bool) {
+	auth, err := authenticate(w, r)
+	if errHandled(err, w) {
+		return nil, false
+	}
+	if auth == nil {
+		errHandled(pubFail(errors.New("You must log in before deleting a file.")), w)
+		return nil, false
+	}
+
+	//If access is granted via token check if token grants owner level permissions
+	if auth.AuthType == authTypeToken && !auth.Token.isOwner() {
+		errHandled(pubFail(errors.New("You must log in before deleting a file.")), w)
+		return nil, false
+	}
+
+	return auth, true
+}

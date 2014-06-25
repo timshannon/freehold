@@ -20,6 +20,7 @@ var (
 		"See the AllowWebAppInstall Setting for more information."))
 	ErrAppNotFound = pubErr(errors.New("Invalid application file path. Application file not found."))
 	ErrAppInvalid  = pubErr(errors.New("Application file is an invalid format and cannot be installed."))
+	ErrInvalidId   = pubErr(errors.New("Invalid App id"))
 )
 
 type App struct {
@@ -90,6 +91,82 @@ func getAllApps() ([]*App, error) {
 	return apps, nil
 }
 
+func installApp(filepath string) (*App, error) {
+	app, err := appInfoFromZip(filepath)
+	if err != nil {
+		return nil, err
+	}
+
+	a, err := getApp(app.Id)
+	if err != nil {
+		return nil, err
+	}
+	if a != nil {
+		return nil, pubFail(errors.New("An app with id " + app.Id + " is already installed"))
+	}
+
+	installDir := path.Join(appDir, app.Id)
+	r, err := appFileReader(filepath)
+	defer r.Close()
+	if err != nil {
+		return nil, err
+	}
+	for _, f := range r.File {
+		fr, err := f.Open()
+		if err != nil {
+			fr.Close()
+			logError(err)
+			return nil, ErrAppInvalid
+		}
+		err = writeFile(fr, path.Join(installDir, f.Name))
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	ds := openCoreDS(appDS)
+
+	key, err := json.Marshal(app.Id)
+	value, err := json.Marshal(app)
+
+	err = ds.Put(key, value)
+	if err != nil {
+		return nil, err
+	}
+	return app, nil
+}
+
+func upgradeApp(filepath string) (*App, error) {
+	app, err := appInfoFromZip(filepath)
+	if err != nil {
+		return nil, err
+	}
+
+	err = uninstallApp(app.Id)
+	if err != nil {
+		return nil, err
+	}
+	app, err = installApp(filepath)
+	if err != nil {
+		return nil, err
+	}
+	return app, nil
+
+}
+
+func uninstallApp(appid string) error {
+	app, err := getApp(appid)
+	if err != nil {
+		return err
+	}
+
+	if app == nil {
+		return ErrInvalidId
+	}
+
+	return os.RemoveAll(path.Join(appDir, appid))
+}
+
 func getAppsFromDir(dir string) ([]*App, []ErrorItem, error) {
 	file, err := os.Open(dir)
 	defer file.Close()
@@ -140,37 +217,48 @@ func getAppsFromDir(dir string) ([]*App, []ErrorItem, error) {
 
 func appInfoFromZip(file string) (*App, error) {
 	r, err := appFileReader(file)
+	defer r.Close()
 	if err != nil {
 		return nil, err
 	}
 	for _, f := range r.File {
 		if f.Name == "app.json" {
-			app := &App{}
-			rc, err := f.Open()
-			defer r.Close()
-
-			if err != nil {
-				return nil, err
-			}
-			buff, err := ioutil.ReadAll(rc)
-			if err != nil {
-				return nil, err
-			}
-			err = json.Unmarshal(buff, app)
-			switch err := err.(type) {
-			case *json.SyntaxError:
-				return nil, pubFail(errors.New("app.json file contains invalid JSON: " + err.Error()))
-			case *json.UnmarshalTypeError:
-				return nil, pubFail(errors.New("app.json file contains a JSON structure that " +
-					"doesn't match the expected structure."))
-			}
-			if err != nil {
-				return nil, err
-			}
-			return app, nil
+			return appInfoFromJsonFile(f)
 		}
 	}
 	return nil, ErrAppInvalid
+}
+
+func appInfoFromJsonFile(f *zip.File) (*App, error) {
+	app := &App{}
+	rc, err := f.Open()
+	defer rc.Close()
+
+	if err != nil {
+		return nil, err
+	}
+	buff, err := ioutil.ReadAll(rc)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(buff, app)
+	switch err := err.(type) {
+	case *json.SyntaxError:
+		return nil, pubFail(errors.New("app.json file contains invalid JSON: " + err.Error()))
+	case *json.UnmarshalTypeError:
+		return nil, pubFail(errors.New("app.json file contains a JSON structure that " +
+			"doesn't match the expected structure."))
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	if app.Id == "" {
+		return nil, ErrInvalidId
+	}
+
+	return app, nil
+
 }
 
 func appFileReader(zippath string) (*zip.ReadCloser, error) {
@@ -205,7 +293,6 @@ func appFileFromUrl(url string) (string, error) {
 		Timeout: time.Duration(settingInt("HttpClientTimeout")) * time.Second,
 	}
 	r, err := client.Get(url)
-	defer r.Body.Close()
 
 	if err != nil {
 		return "", err
