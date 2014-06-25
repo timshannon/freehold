@@ -1,311 +1,225 @@
 package main
 
 import (
-	"archive/zip"
-	"encoding/json"
 	"errors"
-	"io/ioutil"
 	"net/http"
-	"os"
 	"path"
-	"time"
 )
 
-const (
-	appDS = "core/app.ds"
-)
-
-var (
-	ErrNoWebInstall = pubErr(errors.New("Web based application installs are not allowed on this instance. " +
-		"See the AllowWebAppInstall Setting for more information."))
-	ErrAppNotFound = pubErr(errors.New("Invalid application file path. Application file not found."))
-	ErrAppInvalid  = pubErr(errors.New("Application file is an invalid format and cannot be installed."))
-	ErrInvalidId   = pubErr(errors.New("Invalid App id"))
-)
-
-type App struct {
-	Id          string `json:"id,omitempty"`
-	Name        string `json:"name,omitempty"`
-	Description string `json:"description,omitempty"`
-	Author      string `json:"author,omitempty"`
-	Root        string `json:"root,omitempty"`
-	Icon        string `json:"icon,omitempty"`
+type ApplicationInput struct {
+	Id   *string `json:"id,omitempty"`
+	File *string `json:"file,omitempty"`
 }
 
-func getApp(id string) (*App, error) {
-	ds := openCoreDS(appDS)
-	key, err := json.Marshal(id)
-	if err != nil {
-		return nil, err
+func appGet(w http.ResponseWriter, r *http.Request) {
+	auth, err := authenticate(w, r)
+	if errHandled(err, w) {
+		return
+	}
+	if auth == nil {
+		four04(w, r)
+		return
 	}
 
-	app := &App{}
-
-	value, err := ds.Get(key)
-	if err != nil {
-		return nil, err
-	}
-	if value == nil {
-		return nil, nil
+	input := &ApplicationInput{}
+	err = parseJson(r, input)
+	if errHandled(err, w) {
+		return
 	}
 
-	err = json.Unmarshal(value, app)
-	if err != nil {
-		return nil, err
-	}
-
-	app.Id = id
-
-	return app, nil
-}
-
-func getAllApps() ([]*App, error) {
-	ds := openCoreDS(appDS)
-
-	iter, err := ds.Iter(nil, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	var apps []*App
-
-	for iter.Next() {
-		if iter.Err() != nil {
-			return nil, iter.Err()
+	if input.Id != nil {
+		app, err := getApp(*input.Id)
+		if errHandled(err, w) {
+			return
 		}
 
-		app := &App{}
-		err = json.Unmarshal(iter.Value(), app)
-		if err != nil {
-			return nil, err
+		if app == nil {
+			four04(w, r)
+			return
 		}
-
-		err = json.Unmarshal(iter.Key(), app.Id)
-		if err != nil {
-			return nil, err
-		}
-
-		apps = append(apps, app)
+		respondJsend(w, &JSend{
+			Status: statusSuccess,
+			Data:   app,
+		})
+		return
 	}
 
-	return apps, nil
-}
-
-func installApp(filepath string) (*App, error) {
-	app, err := appInfoFromZip(filepath)
-	if err != nil {
-		return nil, err
+	apps, err := getAllApps()
+	if errHandled(err, w) {
+		return
 	}
-
-	a, err := getApp(app.Id)
-	if err != nil {
-		return nil, err
-	}
-	if a != nil {
-		return nil, pubFail(errors.New("An app with id " + app.Id + " is already installed"))
-	}
-
-	installDir := path.Join(appDir, app.Id)
-	r, err := appFileReader(filepath)
-	defer r.Close()
-	if err != nil {
-		return nil, err
-	}
-	for _, f := range r.File {
-		fr, err := f.Open()
-		if err != nil {
-			fr.Close()
-			logError(err)
-			return nil, ErrAppInvalid
-		}
-		err = writeFile(fr, path.Join(installDir, f.Name))
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	ds := openCoreDS(appDS)
-
-	key, err := json.Marshal(app.Id)
-	value, err := json.Marshal(app)
-
-	err = ds.Put(key, value)
-	if err != nil {
-		return nil, err
-	}
-	return app, nil
-}
-
-func upgradeApp(filepath string) (*App, error) {
-	app, err := appInfoFromZip(filepath)
-	if err != nil {
-		return nil, err
-	}
-
-	err = uninstallApp(app.Id)
-	if err != nil {
-		return nil, err
-	}
-	app, err = installApp(filepath)
-	if err != nil {
-		return nil, err
-	}
-	return app, nil
+	respondJsend(w, &JSend{
+		Status: statusSuccess,
+		Data:   apps,
+	})
+	return
 
 }
 
-func uninstallApp(appid string) error {
-	app, err := getApp(appid)
-	if err != nil {
-		return err
+func appPost(w http.ResponseWriter, r *http.Request) {
+	if _, ok := authedForAdmin(w, r); !ok {
+		return
 	}
 
+	input := &ApplicationInput{}
+	err := parseJson(r, input)
+	if errHandled(err, w) {
+		return
+	}
+	if input.File == nil {
+		respondJsend(w, &JSend{
+			Status:  statusFail,
+			Message: "JSON request must contain file property",
+		})
+		return
+	}
+
+	app, err := installApp(*input.File)
+	if errHandled(err, w) {
+		return
+	}
+	respondJsend(w, &JSend{
+		Status: statusSuccess,
+		Data:   app,
+	})
+
+}
+
+func appPut(w http.ResponseWriter, r *http.Request) {
+	if _, ok := authedForAdmin(w, r); !ok {
+		return
+	}
+
+	input := &ApplicationInput{}
+	err := parseJson(r, input)
+	if errHandled(err, w) {
+		return
+	}
+	if input.File == nil {
+		respondJsend(w, &JSend{
+			Status:  statusFail,
+			Message: "JSON request must contain file property",
+		})
+		return
+	}
+	app, err := upgradeApp(*input.File)
+	if errHandled(err, w) {
+		return
+	}
+	respondJsend(w, &JSend{
+		Status: statusSuccess,
+		Data:   app,
+	})
+}
+
+func appDelete(w http.ResponseWriter, r *http.Request) {
+	if _, ok := authedForAdmin(w, r); !ok {
+		return
+	}
+
+	input := &ApplicationInput{}
+	err := parseJson(r, input)
+	if errHandled(err, w) {
+		return
+	}
+
+	if input.Id == nil {
+		respondJsend(w, &JSend{
+			Status:  statusFail,
+			Message: "JSON request must contain the id property",
+		})
+		return
+	}
+
+	err = uninstallApp(*input.Id)
+	if errHandled(err, w) {
+		return
+	}
+
+	respondJsend(w, &JSend{
+		Status: statusSuccess,
+	})
+}
+
+func appRootGet(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		four04(w, r)
+		return
+	}
+	auth, err := authenticate(w, r)
+	if errHandled(err, w) {
+		return
+	}
+
+	app, err := getApp(appHandler.Root(r))
+	if errHandled(err, w) {
+		return
+	}
 	if app == nil {
-		return ErrInvalidId
+		four04(w, r)
+		return
 	}
 
-	return os.RemoveAll(path.Join(appDir, appid))
+	root := app.Root
+	if root == "" {
+		logError(errors.New("App " + app.Id + " has not root specified."))
+		root = path.Join("/", app.Id, version, "file")
+	}
+
+	serveResource(w, r, root, auth)
 }
 
-func getAppsFromDir(dir string) ([]*App, []ErrorItem, error) {
-	file, err := os.Open(dir)
-	defer file.Close()
-	if err != nil {
-		return nil, nil, err
-	}
-	info, err := file.Stat()
-	if err != nil {
-		return nil, nil, err
-	}
-	if !info.IsDir() {
-		return nil, nil, errors.New("Passed dir is not a directory.")
+func appAvailableGet(w http.ResponseWriter, r *http.Request) {
+	if _, ok := authedForAdmin(w, r); !ok {
+		return
 	}
 
-	files, err := file.Readdir(0)
-	if err != nil {
-		return nil, nil, err
+	apps, errors, err := getAppsFromDir(availableAppDir)
+	if errHandled(err, w) {
+		return
 	}
 
-	var apps []*App
-	var errList []ErrorItem
-	for _, f := range files {
-		child := path.Join(dir, f.Name())
-		if f.IsDir() {
-			childApps, childerr, err := getAppsFromDir(child)
-			apps = append(apps, childApps...)
-			errList = append(errList, childerr...)
-			if err != nil {
-				return apps, childerr, err
-			}
-			continue
-		}
-		app, err := appInfoFromZip(child)
-		if err != nil {
-			_, errMsg := errorMessage(err)
-			errList = append(errList, ErrorItem{
-				Message: errMsg,
-				Data:    child,
-			})
-			continue
-
-		}
-		apps = append(apps, app)
+	if len(errors) > 0 {
+		respondJsend(w, &JSend{
+			Status: statusError,
+			Data:   apps,
+			Errors: errors,
+		})
+		return
 	}
 
-	return apps, errList, nil
+	respondJsend(w, &JSend{
+		Status: statusSuccess,
+		Data:   apps,
+	})
 }
 
-func appInfoFromZip(file string) (*App, error) {
-	r, err := appFileReader(file)
-	defer r.Close()
-	if err != nil {
-		return nil, err
-	}
-	for _, f := range r.File {
-		if f.Name == "app.json" {
-			return appInfoFromJsonFile(f)
-		}
-	}
-	return nil, ErrAppInvalid
-}
-
-func appInfoFromJsonFile(f *zip.File) (*App, error) {
-	app := &App{}
-	rc, err := f.Open()
-	defer rc.Close()
-
-	if err != nil {
-		return nil, err
-	}
-	buff, err := ioutil.ReadAll(rc)
-	if err != nil {
-		return nil, err
-	}
-	err = json.Unmarshal(buff, app)
-	switch err := err.(type) {
-	case *json.SyntaxError:
-		return nil, pubFail(errors.New("app.json file contains invalid JSON: " + err.Error()))
-	case *json.UnmarshalTypeError:
-		return nil, pubFail(errors.New("app.json file contains a JSON structure that " +
-			"doesn't match the expected structure."))
-	}
-	if err != nil {
-		return nil, err
+func appAvailablePost(w http.ResponseWriter, r *http.Request) {
+	if _, ok := authedForAdmin(w, r); !ok {
+		return
 	}
 
-	if app.Id == "" {
-		return nil, ErrInvalidId
+	input := &ApplicationInput{}
+	err := parseJson(r, input)
+	if errHandled(err, w) {
+		return
+	}
+	if input.File == nil {
+		respondJsend(w, &JSend{
+			Status:  statusFail,
+			Message: "JSON request must contain file property",
+		})
+		return
 	}
 
-	return app, nil
-
-}
-
-func appFileReader(zippath string) (*zip.ReadCloser, error) {
-	if zippath == "" {
-		return nil, pubErr(errors.New("Invalid application path."))
+	file, err := appFileFromUrl(*input.File)
+	if errHandled(err, w) {
+		return
 	}
+	respondJsend(w, &JSend{
+		Status: statusSuccess,
+		Data:   file,
+	})
+	return
 
-	filepath := path.Join(availableAppDir, zippath)
-
-	if filepath == "" {
-		return nil, pubErr(errors.New("Invalid application path."))
-	}
-
-	r, err := zip.OpenReader(filepath)
-	if os.IsNotExist(err) {
-		return nil, ErrAppNotFound
-	}
-
-	if err != nil {
-		logError(err)
-		return nil, ErrAppInvalid
-	}
-	return r, nil
-}
-
-func appFileFromUrl(url string) (string, error) {
-	if !settingBool("AllowWebAppInstall") {
-		return "", ErrNoWebInstall
-	}
-
-	client := &http.Client{
-		Timeout: time.Duration(settingInt("HttpClientTimeout")) * time.Second,
-	}
-	r, err := client.Get(url)
-
-	if err != nil {
-		return "", err
-	}
-
-	if r.StatusCode != http.StatusOK {
-		return "", pubErr(errors.New("Unable to retrieve app file from url: " + r.Status))
-	}
-
-	filename := path.Base(url)
-	err = writeFile(r.Body, path.Join(availableAppDir, filename))
-	if err != nil {
-		return "", err
-	}
-	return filename, nil
 }
