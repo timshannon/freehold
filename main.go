@@ -106,8 +106,8 @@ func main() {
 }
 
 func fileExists(fileName string) bool {
-	file, err := os.Open(fileName)
-	file.Close()
-
-	return err == nil || !os.IsNotExist(err)
+	if _, err := os.Stat(filename); err == nil {
+		return true
+	}
+	return false
 }

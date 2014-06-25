@@ -7,24 +7,15 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-)
 
-const (
-	statusSuccess = "success"
-	statusError   = "error"
-	statusFail    = "fail"
+	"bitbucket.org/tshannon/freehold/err"
 )
 
 type JSend struct {
-	Status  string      `json:"status"`
-	Data    interface{} `json:"data,omitempty"`
-	Message string      `json:"message,omitempty"`
-	Errors  []ErrorItem `json:"errors,omitempty"`
-}
-
-type ErrorItem struct {
-	Message string      `json:"message,omitempty"`
-	Data    interface{} `json:"data,omitempty"`
+	Status  string          `json:"status"`
+	Data    interface{}     `json:"data,omitempty"`
+	Message string          `json:"message,omitempty"`
+	Errors  []err.ErrorItem `json:"errors,omitempty"`
 }
 
 //respondJsend marshalls the input into a json byte array
