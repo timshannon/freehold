@@ -141,8 +141,8 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	auth, ok := authedForOwner(w, r)
+	if !ok {
 		return
 	}
 

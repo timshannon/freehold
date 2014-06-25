@@ -64,7 +64,6 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 
 			//write file
 			file, err := files[i].Open()
-			defer file.Close()
 
 			if err != nil {
 				errStatus, item := fileErrorItem(err, filename, resource)
@@ -99,22 +98,12 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func fileDelete(w http.ResponseWriter, r *http.Request) {
-	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
-		return
-	}
-	if auth == nil {
-		errHandled(pubFail(errors.New("You must log in before deleting a file.")), w)
+	auth, ok := authedForOwner(w, r)
+	if !ok {
 		return
 	}
 
 	resource := r.URL.Path
-
-	//If access is granted via token check if token grants owner level permissions
-	if auth.AuthType == authTypeToken && !auth.Token.isOwner() {
-		errHandled(pubFail(errors.New("You must log in before deleting a file.")), w)
-		return
-	}
 
 	file, err := os.Open(urlPathToFile(resource))
 	defer file.Close()
@@ -350,6 +339,7 @@ func writeMarkdown(file *os.File) ([]byte, error) {
 	return blackfriday.Markdown(buf, renderer, extensions), nil
 }
 
+//writeFile writes the contents of the reader, and closes it
 func writeFile(reader io.Reader, filename string) error {
 	bytes, err := ioutil.ReadAll(reader)
 	if err != nil {

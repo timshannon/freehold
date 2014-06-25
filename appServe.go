@@ -57,13 +57,88 @@ func appGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func appPost(w http.ResponseWriter, r *http.Request) {
+	if _, ok := authedForAdmin(w, r); !ok {
+		return
+	}
+
+	input := &ApplicationInput{}
+	err := parseJson(r, input)
+	if errHandled(err, w) {
+		return
+	}
+	if input.File == nil {
+		respondJsend(w, &JSend{
+			Status:  statusFail,
+			Message: "JSON request must contain file property",
+		})
+		return
+	}
+
+	app, err := installApp(*input.File)
+	if errHandled(err, w) {
+		return
+	}
+	respondJsend(w, &JSend{
+		Status: statusSuccess,
+		Data:   app,
+	})
+
 }
 
 func appPut(w http.ResponseWriter, r *http.Request) {
+	if _, ok := authedForAdmin(w, r); !ok {
+		return
+	}
 
+	input := &ApplicationInput{}
+	err := parseJson(r, input)
+	if errHandled(err, w) {
+		return
+	}
+	if input.File == nil {
+		respondJsend(w, &JSend{
+			Status:  statusFail,
+			Message: "JSON request must contain file property",
+		})
+		return
+	}
+	app, err := upgradeApp(*input.File)
+	if errHandled(err, w) {
+		return
+	}
+	respondJsend(w, &JSend{
+		Status: statusSuccess,
+		Data:   app,
+	})
 }
 
 func appDelete(w http.ResponseWriter, r *http.Request) {
+	if _, ok := authedForAdmin(w, r); !ok {
+		return
+	}
+
+	input := &ApplicationInput{}
+	err := parseJson(r, input)
+	if errHandled(err, w) {
+		return
+	}
+
+	if input.Id == nil {
+		respondJsend(w, &JSend{
+			Status:  statusFail,
+			Message: "JSON request must contain the id property",
+		})
+		return
+	}
+
+	err = uninstallApp(*input.Id)
+	if errHandled(err, w) {
+		return
+	}
+
+	respondJsend(w, &JSend{
+		Status: statusSuccess,
+	})
 }
 
 func appRootGet(w http.ResponseWriter, r *http.Request) {
@@ -95,23 +170,8 @@ func appRootGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func appAvailableGet(w http.ResponseWriter, r *http.Request) {
-	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	if _, ok := authedForAdmin(w, r); !ok {
 		return
-	}
-	if auth == nil {
-		four04(w, r)
-		return
-	}
-
-	if auth.AuthType == authTypeToken && !auth.Token.isOwner() {
-		four04(w, r)
-		return
-	}
-	if !auth.User.Admin {
-		four04(w, r)
-		return
-
 	}
 
 	apps, errors, err := getAppsFromDir(availableAppDir)
@@ -135,27 +195,12 @@ func appAvailableGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func appAvailablePost(w http.ResponseWriter, r *http.Request) {
-	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	if _, ok := authedForAdmin(w, r); !ok {
 		return
-	}
-	if auth == nil {
-		four04(w, r)
-		return
-	}
-
-	if auth.AuthType == authTypeToken && !auth.Token.isOwner() {
-		four04(w, r)
-		return
-	}
-	if !auth.User.Admin {
-		four04(w, r)
-		return
-
 	}
 
 	input := &ApplicationInput{}
-	err = parseJson(r, input)
+	err := parseJson(r, input)
 	if errHandled(err, w) {
 		return
 	}
