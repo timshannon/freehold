@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"bitbucket.org/tshannon/freehold/datastore"
+	"bitbucket.org/tshannon/freehold/fail"
 )
 
 const (
@@ -20,11 +21,11 @@ const (
 )
 
 var (
-	ErrNoWebInstall = pubErr(errors.New("Web based application installs are not allowed on this instance. " +
-		"See the AllowWebAppInstall Setting for more information."))
-	ErrAppNotFound = pubErr(errors.New("Invalid application file path. Application file not found."))
-	ErrAppInvalid  = pubErr(errors.New("Application file is an invalid format and cannot be installed."))
-	ErrInvalidId   = pubErr(errors.New("Invalid App id"))
+	FailNoWebInstall = fail.New("Web based application installs are not allowed on this instance. "+
+		"See the AllowWebAppInstall Setting for more information.", nil)
+	FailAppNotFound = fail.New("Invalid application file path. Application file not found.", nil)
+	FailAppInvalid  = fail.New("Application file is an invalid format and cannot be installed.", nil)
+	FailInvalidId   = fail.New("Invalid App id", nil)
 )
 
 type App struct {
@@ -112,7 +113,7 @@ func Install(filepath string) (*App, error) {
 		return nil, err
 	}
 	if a != nil {
-		return nil, pubFail(errors.New("An app with id " + app.Id + " is already installed"))
+		return nil, fail.New("An app with the same id is already installed", app)
 	}
 
 	installDir := path.Join(appDir, app.Id)
@@ -171,7 +172,7 @@ func Uninstall(appid string) error {
 	}
 
 	if app == nil {
-		return ErrInvalidId
+		return fail.New(ErrInvalidId.Error(), appid)
 	}
 
 	return os.RemoveAll(path.Join(appDir, appid))

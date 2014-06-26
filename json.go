@@ -8,14 +8,20 @@ import (
 	"net/http"
 	"net/url"
 
-	"bitbucket.org/tshannon/freehold/err"
+	"bitbucket.org/tshannon/freehold/fail"
+)
+
+const (
+	statusSuccess = "success"
+	statusError   = "error"
+	statusFail    = "fail"
 )
 
 type JSend struct {
-	Status  string          `json:"status"`
-	Data    interface{}     `json:"data,omitempty"`
-	Message string          `json:"message,omitempty"`
-	Errors  []err.ErrorItem `json:"errors,omitempty"`
+	Status   string      `json:"status"`
+	Data     interface{} `json:"data,omitempty"`
+	Message  string      `json:"message,omitempty"`
+	Failures []fail.Fail `json:"failures,omitempty"`
 }
 
 //respondJsend marshalls the input into a json byte array

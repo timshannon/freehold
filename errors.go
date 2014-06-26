@@ -5,27 +5,53 @@ import (
 	"io"
 	"net/http"
 	"os"
+
+	"bitbucket.org/tshannon/freehold/fail"
 )
 
 const (
 	default404Path = "/" + version + "/file/core/404.html"
 )
 
+func errorMessage(err error) (status, errMsg string) {
+
+}
+
 func errHandled(err error, w http.ResponseWriter) bool {
 	if err == nil {
 		return false
 	}
 
-	status, errMsg := errorMessage(err)
+	var status, errMsg string
+
+	switch err := err.(type) {
+	case *fail.Fail:
+		status = statusFail
+		logFail(err)
+	default:
+		status = statusError
+		logError(err)
+		if settingBool("FullClientErrors") {
+			errMsg = err.Error()
+		} else {
+			errMsg = "An internal server error has occurred"
+		}
+	}
+
 	if status == statusFail {
 		w.WriteHeader(http.StatusBadRequest)
+		respondJsend(w, &JSend{
+			Status: status,
+			Data:   err.(fail.Fail),
+		})
 	} else {
 		w.WriteHeader(http.StatusInternalServerError)
+		respondJsend(w, &JSend{
+			Status:  status,
+			Message: errMsg,
+		})
 	}
-	respondJsend(w, &JSend{
-		Status:  status,
-		Message: errMsg,
-	})
+
 	return true
 }
 
