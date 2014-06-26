@@ -98,20 +98,20 @@ func (p *Permission) validate() error {
 	strings.ToLower(p.Private)
 	strings.ToLower(p.Friend)
 	strings.ToLower(p.Public)
-	if !validPermission(p.Private) {
+	if !Valid(p.Private) {
 		return fail.New("Invalid Private permission. Value must be blank, r, w, or rw", p)
 	}
-	if !validPermission(p.Friend) {
+	if !Valid(p.Friend) {
 		return fail.New("Invalid Friend permission. Value must be blank, r, w, or rw", p)
 	}
 
-	if !validPermission(p.Public) {
+	if !Valid(p.Public) {
 		return fail.New("Invalid Public permission. Value must be blank, r, w, or rw", p)
 	}
 	return nil
 }
 
-func validPermission(permission string) bool {
+func Valid(permission string) bool {
 	switch permission {
 	case "", "r", "w", "rw":
 		return true

@@ -166,6 +166,8 @@ func (u *User) Login(password string) error {
 	if setting.Bool("LogSuccessAuth") {
 		log.NewEntry(authLogType, "User "+u.username+" has logged in successfully.")
 	}
+	//done with password, clear it
+	u.clearPassword()
 
 	return nil
 }
