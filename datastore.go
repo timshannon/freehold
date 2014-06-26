@@ -6,5 +6,3 @@ type KeyValue struct {
 	Key   datastore.Key
 	Value datastore.Value
 }
-
-//setdatastoretimeout

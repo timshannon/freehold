@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"encoding/json"
 	"errors"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -12,20 +13,22 @@ import (
 
 	"bitbucket.org/tshannon/freehold/datastore"
 	"bitbucket.org/tshannon/freehold/fail"
+	"bitbucket.org/tshannon/freehold/log"
+	"bitbucket.org/tshannon/freehold/setting"
 )
 
 const (
-	APPDS           = "core/app.ds"
+	DS              = "core/app.ds"
 	APPDIR          = "./apps/"
 	AVAILABLEAPPDIR = APPDIR + "available/"
 )
 
 var (
-	FailNoWebInstall = fail.New("Web based application installs are not allowed on this instance. "+
-		"See the AllowWebAppInstall Setting for more information.", nil)
-	FailAppNotFound = fail.New("Invalid application file path. Application file not found.", nil)
-	FailAppInvalid  = fail.New("Application file is an invalid format and cannot be installed.", nil)
-	FailInvalidId   = fail.New("Invalid App id", nil)
+	FailNoWebInstall = errors.New("Web based application installs are not allowed on this instance. " +
+		"See the AllowWebAppInstall Setting for more information.")
+	FailAppNotFound = errors.New("Invalid application file path. Application file not found.")
+	FailAppInvalid  = errors.New("Application file is an invalid format and cannot be installed.")
+	FailInvalidId   = errors.New("Invalid App id")
 )
 
 type App struct {
@@ -38,9 +41,9 @@ type App struct {
 }
 
 func Get(id string) (*App, error) {
-	ds, err := datastore.OpenCoreDS(appDS)
+	ds, err := datastore.OpenCoreDS(DS)
 	if err != nil {
-		return nil, error
+		return nil, err
 	}
 	key, err := json.Marshal(id)
 	if err != nil {
@@ -68,7 +71,7 @@ func Get(id string) (*App, error) {
 }
 
 func GetAll() ([]*App, error) {
-	ds, err := openCoreDS(appDS)
+	ds, err := datastore.OpenCoreDS(DS)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +111,7 @@ func Install(filepath string) (*App, error) {
 		return nil, err
 	}
 
-	a, err := getApp(app.Id)
+	a, err := Get(app.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +119,7 @@ func Install(filepath string) (*App, error) {
 		return nil, fail.New("An app with the same id is already installed", app)
 	}
 
-	installDir := path.Join(appDir, app.Id)
+	installDir := path.Join(APPDIR, app.Id)
 	r, err := appFileReader(filepath)
 	defer r.Close()
 	if err != nil {
@@ -126,8 +129,8 @@ func Install(filepath string) (*App, error) {
 		fr, err := f.Open()
 		if err != nil {
 			fr.Close()
-			logError(err)
-			return nil, ErrAppInvalid
+			log.Error(err)
+			return nil, fail.NewFromErr(FailAppInvalid, filepath)
 		}
 		err = writeFile(fr, path.Join(installDir, f.Name))
 		if err != nil {
@@ -135,7 +138,10 @@ func Install(filepath string) (*App, error) {
 		}
 	}
 
-	ds := openCoreDS(appDS)
+	ds, err := datastore.OpenCoreDS(DS)
+	if err != nil {
+		return nil, err
+	}
 
 	key, err := json.Marshal(app.Id)
 	value, err := json.Marshal(app)
@@ -157,7 +163,7 @@ func Upgrade(filepath string) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	app, err = installApp(filepath)
+	app, err = Install(filepath)
 	if err != nil {
 		return nil, err
 	}
@@ -172,13 +178,17 @@ func Uninstall(appid string) error {
 	}
 
 	if app == nil {
-		return fail.New(ErrInvalidId.Error(), appid)
+		return fail.NewFromErr(FailInvalidId, appid)
 	}
 
-	return os.RemoveAll(path.Join(appDir, appid))
+	return os.RemoveAll(path.Join(APPDIR, appid))
 }
 
-func getAppsFromDir(dir string) ([]*App, []ErrorItem, error) {
+func Available() ([]*App, []*fail.Fail, error) {
+	return getAppsFromDir(AVAILABLEAPPDIR)
+}
+
+func getAppsFromDir(dir string) ([]*App, []*fail.Fail, error) {
 	file, err := os.Open(dir)
 	defer file.Close()
 	if err != nil {
@@ -198,32 +208,30 @@ func getAppsFromDir(dir string) ([]*App, []ErrorItem, error) {
 	}
 
 	var apps []*App
-	var errList []ErrorItem
+	var failures []*fail.Fail
 	for _, f := range files {
 		child := path.Join(dir, f.Name())
 		if f.IsDir() {
-			childApps, childerr, err := getAppsFromDir(child)
+			childApps, childfail, err := getAppsFromDir(child)
 			apps = append(apps, childApps...)
-			errList = append(errList, childerr...)
+			failures = append(failures, childfail...)
 			if err != nil {
-				return apps, childerr, err
+				return apps, childfail, err
 			}
 			continue
 		}
 		app, err := appInfoFromZip(child)
 		if err != nil {
-			_, errMsg := errorMessage(err)
-			errList = append(errList, ErrorItem{
-				Message: errMsg,
-				Data:    child,
-			})
-			continue
-
+			if fail.IsFail(err) {
+				failures = append(failures, err.(*fail.Fail))
+				continue
+			}
+			return apps, failures, err
 		}
 		apps = append(apps, app)
 	}
 
-	return apps, errList, nil
+	return apps, failures, nil
 }
 
 func appInfoFromZip(file string) (*App, error) {
@@ -234,10 +242,17 @@ func appInfoFromZip(file string) (*App, error) {
 	}
 	for _, f := range r.File {
 		if f.Name == "app.json" {
-			return appInfoFromJsonFile(f)
+			app, err := appInfoFromJsonFile(f)
+			if err != nil {
+				if fail.IsFail(err) {
+					return nil, fail.NewFromErr(err, file)
+				}
+				return nil, err
+			}
+			return app, nil
 		}
 	}
-	return nil, ErrAppInvalid
+	return nil, fail.NewFromErr(FailAppInvalid, file)
 }
 
 func appInfoFromJsonFile(f *zip.File) (*App, error) {
@@ -255,53 +270,48 @@ func appInfoFromJsonFile(f *zip.File) (*App, error) {
 	err = json.Unmarshal(buff, app)
 	switch err := err.(type) {
 	case *json.SyntaxError:
-		return nil, pubFail(errors.New("app.json file contains invalid JSON: " + err.Error()))
+		return nil, fail.New("app.json file contains invalid JSON: "+err.Error(), nil)
 	case *json.UnmarshalTypeError:
-		return nil, pubFail(errors.New("app.json file contains a JSON structure that " +
-			"doesn't match the expected structure."))
+		return nil, fail.New("app.json file contains a JSON structure that "+
+			"doesn't match the expected structure.", nil)
 	}
 	if err != nil {
 		return nil, err
 	}
 
 	if app.Id == "" {
-		return nil, ErrInvalidId
+		return nil, fail.NewFromErr(FailInvalidId, nil)
 	}
 
 	return app, nil
-
 }
 
 func appFileReader(zippath string) (*zip.ReadCloser, error) {
 	if zippath == "" {
-		return nil, pubErr(errors.New("Invalid application path."))
+		return nil, fail.New("Invalid application path.", zippath)
 	}
 
-	filepath := path.Join(availableAppDir, zippath)
-
-	if filepath == "" {
-		return nil, pubErr(errors.New("Invalid application path."))
-	}
+	filepath := path.Join(AVAILABLEAPPDIR, zippath)
 
 	r, err := zip.OpenReader(filepath)
 	if os.IsNotExist(err) {
-		return nil, ErrAppNotFound
+		return nil, fail.NewFromErr(FailAppNotFound, zippath)
 	}
 
 	if err != nil {
-		logError(err)
-		return nil, ErrAppInvalid
+		log.Error(err)
+		return nil, fail.NewFromErr(FailAppInvalid, zippath)
 	}
 	return r, nil
 }
 
 func appFileFromUrl(url string) (string, error) {
-	if !settingBool("AllowWebAppInstall") {
-		return "", ErrNoWebInstall
+	if !setting.Bool("AllowWebAppInstall") {
+		return "", fail.NewFromErr(FailNoWebInstall, url)
 	}
 
 	client := &http.Client{
-		Timeout: time.Duration(settingInt("HttpClientTimeout")) * time.Second,
+		Timeout: time.Duration(setting.Int("HttpClientTimeout")) * time.Second,
 	}
 	r, err := client.Get(url)
 
@@ -310,13 +320,40 @@ func appFileFromUrl(url string) (string, error) {
 	}
 
 	if r.StatusCode != http.StatusOK {
-		return "", pubErr(errors.New("Unable to retrieve app file from url: " + r.Status))
+		return "", fail.New("Unable to retrieve app file from url: "+r.Status, url)
 	}
 
 	filename := path.Base(url)
-	err = writeFile(r.Body, path.Join(availableAppDir, filename))
+	err = writeFile(r.Body, path.Join(AVAILABLEAPPDIR, filename))
 	if err != nil {
 		return "", err
 	}
 	return filename, nil
+}
+
+//writeFile writes the contents of the reader, and closes it
+func writeFile(reader io.Reader, filename string) error {
+	bytes, err := ioutil.ReadAll(reader)
+	if err != nil {
+		return err
+	}
+	newFile, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+	if os.IsExist(err) {
+		return fail.New("File already exists.", filename)
+	}
+	if err != nil {
+		return err
+	}
+
+	n, err := newFile.Write(bytes)
+	if err == nil && n < len(bytes) {
+		err = io.ErrShortWrite
+	}
+	if err1 := newFile.Close(); err == nil {
+		err = err1
+	}
+	if err != nil {
+		return err
+	}
+	return nil
 }

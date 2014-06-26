@@ -13,10 +13,6 @@ const (
 	default404Path = "/" + version + "/file/core/404.html"
 )
 
-func errorMessage(err error) (status, errMsg string) {
-
-}
-
 func errHandled(err error, w http.ResponseWriter) bool {
 	if err == nil {
 		return false
@@ -24,11 +20,10 @@ func errHandled(err error, w http.ResponseWriter) bool {
 
 	var status, errMsg string
 
-	switch err := err.(type) {
-	case *fail.Fail:
+	if fail.IsFail(err) {
 		status = statusFail
 		logFail(err)
-	default:
+	} else {
 		status = statusError
 		logError(err)
 		if settingBool("FullClientErrors") {
@@ -42,7 +37,7 @@ func errHandled(err error, w http.ResponseWriter) bool {
 		w.WriteHeader(http.StatusBadRequest)
 		respondJsend(w, &JSend{
 			Status: status,
-			Data:   err.(fail.Fail),
+			Data:   err.(*fail.Fail),
 		})
 	} else {
 		w.WriteHeader(http.StatusInternalServerError)
