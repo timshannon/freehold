@@ -5,6 +5,12 @@ import (
 	"errors"
 	"net/http"
 	"strings"
+
+	"bitbucket.org/tshannon/freehold/fail"
+	"bitbucket.org/tshannon/freehold/log"
+	"bitbucket.org/tshannon/freehold/session"
+	"bitbucket.org/tshannon/freehold/token"
+	"bitbucket.org/tshannon/freehold/user"
 )
 
 const (
@@ -15,9 +21,9 @@ const (
 
 type Auth struct {
 	AuthType string `json:"authType"`
-	*User
-	*Token
-	*Session `json:"-"`
+	*user.User
+	*token.Token
+	*session.Session `json:"-"`
 }
 
 // authenticate authenticates an http request in one of 2 ways
@@ -29,19 +35,16 @@ func authenticate(w http.ResponseWriter, r *http.Request) (*Auth, error) {
 	if headerInfo != "" {
 		authInfo := strings.TrimLeft(headerInfo, "Basic ")
 		if len(authInfo) == len(headerInfo) {
-			err := pubFail(errors.New("Error, malformed basic auth header."))
-			return nil, err
+			return nil, fail.New("Error, malformed basic auth header.", nil)
 		}
 		userPass, err := base64.StdEncoding.DecodeString(authInfo)
 		if err != nil {
-			logError(err)
-			err = pubFail(errors.New("Error, malformed basic auth header."))
-			return nil, err
+			log.Error(err)
+			return nil, fail.New("Error, malformed basic auth header.", nil)
 		}
 		split := strings.SplitN(string(userPass), ":", 2)
 		if len(split) != 2 {
-			err = pubFail(errors.New("Error, malformed basic auth header."))
-			return nil, err
+			return nil, fail.New("Error, malformed basic auth header.", nil)
 		}
 		u := split[0]
 		pass := split[1]
@@ -51,14 +54,14 @@ func authenticate(w http.ResponseWriter, r *http.Request) (*Auth, error) {
 			return nil, nil
 		}
 
-		user, err := getUser(u)
+		user, err := user.Get(u)
 		if err != nil {
 			return nil, err
 		}
 
 		//TODO: security tokens
 
-		err = user.login(pass)
+		err = user.Login(pass)
 		if err != nil {
 			return nil, err
 		}
@@ -69,7 +72,7 @@ func authenticate(w http.ResponseWriter, r *http.Request) (*Auth, error) {
 	}
 
 	//Check for session cookie
-	ses, err := session(r)
+	ses, err := session.Get(r)
 	if err != nil {
 		return nil, err
 	}
@@ -80,23 +83,19 @@ func authenticate(w http.ResponseWriter, r *http.Request) (*Auth, error) {
 		return nil, nil
 	}
 
-	if ses.isExpired() {
-		return nil, pubErr(errors.New("Your session has expired"))
+	if ses.IsExpired() {
+		return nil, fail.New("Your session has expired", nil)
 	}
 
 	// Check for CSRF token
-	err = ses.handleCSRF(w, r)
+	err = ses.HandleCSRF(w, r)
 	if err != nil {
 		return nil, err
 	}
 
-	user, err := ses.user()
-	if err != nil {
-		return nil, err
-	}
 	return &Auth{
 		AuthType: authTypeSession,
-		User:     user,
+		User:     ses.User(),
 		Session:  ses,
 	}, nil
 }
@@ -105,9 +104,6 @@ func authGet(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
 	if errHandled(err, w) {
 		return
-	}
-	if auth != nil {
-		auth.clearPassword()
 	}
 
 	respondJsend(w, &JSend{
@@ -131,11 +127,11 @@ func canWrite(auth *Auth, resource string) (bool, *Permission, error) {
 	if auth != nil && auth.tokenRestricted(resource) {
 		return false, nil, nil
 	}
-	prm, err := permissions(resource)
+	prm, err := permissions.Get(resource)
 	if err != nil {
 		return false, nil, err
 	}
-	return prm.canWrite(auth), prm, nil
+	return prm.CanWrite(auth), prm, nil
 }
 
 // tokenRestricted is whether or not a token exists and does not
