@@ -128,6 +128,41 @@ type PropertyInput struct {
 	Permissions *PermissionsInput `json:"permissions,omitempty"`
 }
 
+type PermissionsInput struct {
+	Owner   *string `json:"owner,omitempty"`
+	Public  *string `json:"public,omitempty"`
+	Friend  *string `json:"friend,omitempty"`
+	Private *string `json:"private,omitempty"`
+}
+
+// makePermission translates a partial permissions input to a full permissions type
+// by filling in the unspecfied entries from the datastore
+func (pi *PermissionsInput) makePermission(resource string) (*Permission, error) {
+	prm, err := permissions(resource)
+	if err != nil {
+		return nil, err
+	}
+
+	if pi.Owner != nil {
+		prm.Owner = *pi.Owner
+	}
+	if pi.Public != nil {
+		prm.Public = *pi.Public
+	}
+	if pi.Friend != nil {
+		prm.Friend = *pi.Friend
+	}
+	if pi.Private != nil {
+		prm.Private = *pi.Private
+	}
+
+	err = prm.validate()
+	if err != nil {
+		return nil, err
+	}
+	return prm, nil
+}
+
 func propertiesPut(w http.ResponseWriter, r *http.Request) {
 	input := &PropertyInput{}
 

@@ -14,13 +14,13 @@ import (
 	"bitbucket.org/tshannon/freehold/datastore"
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/log"
+	"bitbucket.org/tshannon/freehold/paths"
 	"bitbucket.org/tshannon/freehold/setting"
 )
 
 const (
 	DS              = "core/app.ds"
-	APPDIR          = "./apps/"
-	AVAILABLEAPPDIR = APPDIR + "available/"
+	AVAILABLEAPPDIR = paths.AppDir + "available/"
 )
 
 var (
@@ -119,7 +119,7 @@ func Install(filepath string) (*App, error) {
 		return nil, fail.New("An app with the same id is already installed", app)
 	}
 
-	installDir := path.Join(APPDIR, app.Id)
+	installDir := path.Join(paths.AppDir, app.Id)
 	r, err := appFileReader(filepath)
 	defer r.Close()
 	if err != nil {
@@ -181,7 +181,7 @@ func Uninstall(appid string) error {
 		return fail.NewFromErr(FailInvalidId, appid)
 	}
 
-	return os.RemoveAll(path.Join(APPDIR, appid))
+	return os.RemoveAll(path.Join(paths.AppDir, appid))
 }
 
 func Available() ([]*App, []*fail.Fail, error) {

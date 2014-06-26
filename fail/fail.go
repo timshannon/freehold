@@ -26,8 +26,8 @@ func NewFromErr(err error, data interface{}) error {
 	return New(err.Error(), data)
 }
 
-func (f *Fail) Equals(err error) bool {
-	return err.Error() == f.Error()
+func IsEqual(err, other error) bool {
+	return err.Error() == other.Error()
 }
 
 func IsFail(err error) bool {
