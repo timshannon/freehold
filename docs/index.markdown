@@ -23,9 +23,24 @@ http status codes.
 * fail - There was a problem with the data submitted - client error - usually (400)
 * error - There was a problem on the server - server error - usually (500)
 
-If status != "success" look for `data.message`.  It will always be there in non-successful transmissions. 
-For multiple failures, there will be a top `data.message` and an `data.errors[item#].message` for the individual 
-failures.
+If status is error look for `data.message`.  It will always be there in error returns. 
+For multiple failures, there will be a failure item with a message for each that has failed.
+```
+{
+	status: "fail",
+	data: [
+		{name: "item1"},
+		{name: "item2"},
+		{name: "item4"},
+		{name: "item6"}
+	],
+	failures: [
+		{message: "item 3 failed", data: {name: "item3"}},
+		{message: "item 5 failed due to no reason", data: {name: "item5"}}
+	]
+}
+
+```
 
 Authentication will be done through the Basic HTTP Auth in the header
 
@@ -133,12 +148,11 @@ Response (201):
 
 Error Response (500):
 {
-	status: "error",
-	message: "one or more files failed",
+	status: "fail",
 	data: [
 			{	url: "/v1/file/new-directory/profile.jpg"}
 	],
-	errors: [
+	failures: [
 		{	message: "file already exists",
 			data: {	url: "/v1/file/new-directory/header.jpg"}
 		},
