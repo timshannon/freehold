@@ -1,6 +1,8 @@
 // failures are errors which can be returned to the client and are the result
 // of user input or action in some way.  Different from an error in that they
-// are used to prevent internal data from being exposed to clients
+// are used to prevent internal data from being exposed to clients, and they
+// contain additional information as to the source of the error, usually their
+// input sent back to them
 
 package fail
 
@@ -20,12 +22,22 @@ func New(message string, data interface{}) error {
 	}
 }
 
-func (f *Fail) Equal(err error) bool {
-	switch err := err.(type) {
+func NewFromErr(err error, data interface{}) error {
+	return New(err.Error(), data)
+}
+
+func (f *Fail) Equals(err error) bool {
+	return err.Error() == f.Error()
+}
+
+func IsFail(err error) bool {
+	if err == nil {
+		return false
+	}
+	switch err.(type) {
 	case *Fail:
-		return err.Message == f.Message
+		return true
 	default:
 		return false
 	}
-
 }

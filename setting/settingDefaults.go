@@ -1,6 +1,11 @@
-package main
+package setting
 
-import "code.google.com/p/go.crypto/bcrypt"
+import (
+	"time"
+
+	"bitbucket.org/tshannon/freehold/datastore"
+	"code.google.com/p/go.crypto/bcrypt"
+)
 
 var settingDefaults map[string]Setting
 
@@ -61,7 +66,7 @@ func init() {
 		},
 		"404File": Setting{
 			Description: "Path to a standard 404 page.",
-			Value:       default404Path,
+			Value:       "core/v1/file/404.html",
 		},
 		"Log404": Setting{
 			Description: "Logs when an attempted is made to access an invalid resource.",
@@ -70,13 +75,13 @@ func init() {
 		"FullClientErrors": Setting{
 			Description: "If FullClientErrors is true, then the complete internal error will be " +
 				"returned to the client. This can expose information about your internal system to " +
-				"the public, but can be useful when troubleshooting issues, or developign applications.",
+				"the public, but can be useful when troubleshooting issues, or developing applications.",
 			Value: false,
 		},
 		"PublicRootFile": Setting{
 			Description: "Path to a file that unauthenticated users get served when hitting the root of " +
 				"the host: https://domain.com/.  Must be a file with public permissions.",
-			Value: defaultRoot,
+			Value: "core/v1/file/index.html",
 		},
 		"MaxOpenSessions": Setting{
 			Description: "The maximum number of open / non-expired user sessions a user can have. When a user " +
@@ -85,7 +90,7 @@ func init() {
 		},
 		"DefaultHomeApp": Setting{
 			Description: "Default home app set for new users who's home app was not specified.",
-			Value:       "core-home",
+			Value:       "home",
 		},
 		"AllowWebAppInstall": Setting{
 			Description: "Whether or not applications are allowed to be installed from any arbitary url. " +
@@ -99,11 +104,15 @@ func init() {
 		},
 		"MarkdownCSSFile": Setting{
 			Description: "Path to css file used for displaying markdown files.",
-			Value:       markdownCss,
+			Value:       "core/v1/file/index.html",
 		},
 		"HttpClientTimeout": Setting{
 			Description: "Timeout in seconds of requests made by the http client (like fetching an application zip file).",
 			Value:       float64(15),
 		},
 	}
+}
+
+func setDatastoreTimeout() {
+	datastore.SetTimeout(time.Duration(Int("DatastoreFileTimeout")) * time.Second)
 }
