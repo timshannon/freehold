@@ -2,8 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -38,6 +36,14 @@ func respondJsend(w http.ResponseWriter, response *JSend) {
 			Message: "An internal error occurred, and we'll look into it.",
 		})
 	}
+
+	switch response.Status {
+	case statusFail:
+		w.WriteHeader(http.StatusBadRequest)
+	case statusError:
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
 	w.Write(result)
 }
 
@@ -55,7 +61,7 @@ func parseJson(r *http.Request, result interface{}) error {
 		// take precedence
 		v, err := url.QueryUnescape(r.URL.RawQuery)
 		if err != nil {
-			return pubFail(err)
+			return fail.New(err, r.URL.RawQuery)
 		}
 
 		buff = []byte(v)
@@ -70,10 +76,9 @@ func parseJson(r *http.Request, result interface{}) error {
 	case nil:
 		return nil
 	case *json.SyntaxError:
-		return pubFail(errors.New("Request contains invalid JSON: " + err.Error()))
+		return fail.New("Request contains invalid JSON: "+err.Error(), string(buff))
 	case *json.UnmarshalTypeError:
-		fmt.Println(err.Error())
-		return pubFail(errors.New("Request contains a JSON structure that doesn't match the expected structure."))
+		return fail.New("Request contains a JSON structure that doesn't match the expected structure.", string(buff))
 	default:
 		return err
 	}

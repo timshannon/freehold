@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -9,12 +8,16 @@ import (
 	"path"
 	"strings"
 
+	"bitbucket.org/tshannon/freehold/fail"
+	"bitbucket.org/tshannon/freehold/log"
+	"bitbucket.org/tshannon/freehold/permission"
+	"bitbucket.org/tshannon/freehold/setting"
+
 	"github.com/russross/blackfriday"
 )
 
 const (
 	markdownType = ".markdown"
-	markdownCss  = "/" + version + "/file/core/css/markdown.css"
 )
 
 func fileGet(w http.ResponseWriter, r *http.Request) {
@@ -37,24 +40,19 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 	if errHandled(err, w) {
 		return
 	}
-	if auth == nil {
-		errHandled(pubFail(errors.New("You must log in before posting a file.")), w)
+
+	prm := permission.FileNew()
+	if !prm.CanWrite(auth.User) {
+		errHandled(fail.New("You do not have permissions to a post a file.", nil), w)
 		return
 	}
 
-	//check if authentication is via a token with specific access to a resource
-	if auth.tokenRestricted(r.URL.Path) {
-		errHandled(pubFail(errors.New("You must have proper credentials before posting a file.")), w)
-		return
-
-	}
-
-	r.ParseMultipartForm(settingInt64("MaxUploadMemory"))
+	r.ParseMultipartForm(setting.Int64("MaxUploadMemory"))
 
 	mp := r.MultipartForm
 
 	var fileList []Properties
-	var errors []ErrorItem
+	var failures []*fail.Fail
 	status := statusSuccess
 
 	for _, files := range mp.File {
@@ -66,18 +64,17 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 			file, err := files[i].Open()
 
 			if err != nil {
-				errStatus, item := fileErrorItem(err, filename, resource)
-				errors = append(errors, item)
-				status = errStatus
+				log.Error(err)
+				failures = append(failures, fail.New("Error opening file for writing.", resource))
+				status = statusFail
 
 				continue
 			}
 
 			err = writeFile(file, filename)
 			if err != nil {
-				errStatus, item := fileErrorItem(err, filename, resource)
-				errors = append(errors, item)
-				status = errStatus
+				failures = append(failures, fail.NewFromErr(err, resource))
+				status = statusFail
 
 				continue
 			}
@@ -90,16 +87,16 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondJsend(w, &JSend{
-		Status: status,
-		Data:   fileList,
-		Errors: errors,
+		Status:   status,
+		Data:     fileList,
+		Failures: failures,
 	})
 
 }
 
 func fileDelete(w http.ResponseWriter, r *http.Request) {
-	auth, ok := authedForOwner(w, r)
-	if !ok {
+	auth, err := authenticate(w, r)
+	if errHandled(err, w) {
 		return
 	}
 
@@ -123,25 +120,23 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !info.IsDir() {
-		prm, err := permissions(resource)
+		prm, err := permission.Get(resource)
 		if errHandled(err, w) {
 			return
 		}
 
-		if !prm.isOwner(auth.User) {
-			if !prm.canRead(auth) {
+		prm = permission.FileDelete(prm)
+
+		if !prm.CanWrite(auth.User) {
+			if !prm.canRead(auth.User) {
 				four04(w, r)
 				return
 			}
 
-			respondJsend(w, &JSend{
-				Status:  statusFail,
-				Message: "You do not have owner permissions on this resource.",
-			})
+			errHandled(fail.New("You do not have owner permissions on this resource.", resource), w)
 			return
 		}
 		os.Remove(urlPathToFile(resource))
-		//delete file
 		return
 	}
 
@@ -151,7 +146,7 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fileList := make([]Properties, 0, len(files))
-	var errors []ErrorItem
+	var failures []*fail.Fail
 	status := statusSuccess
 	dir := file.Name()
 
@@ -159,12 +154,13 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 		if !files[i].IsDir() {
 			child := path.Join(resource, files[i].Name())
 
-			prm, err := permissions(child)
+			prm, err := permission.Get(child)
 			if errHandled(err, w) {
 				return
 			}
+			prm = permission.FileDelete(prm)
 
-			if prm.isOwner(auth.User) {
+			if prm.CanWrite(auth.User) {
 				os.Remove(path.Join(dir, files[i].Name()))
 
 				fileList = append(fileList, Properties{
@@ -172,33 +168,31 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 					Url:  child,
 				})
 			} else {
-				if !prm.canRead(auth) {
+				if !prm.canRead(auth.User) {
 					continue
 				}
 
 				status = statusFail
-				errors = append(errors, ErrorItem{
-					Message: "You do not have owner permissions on this resource.",
-					Data: Properties{
+				failures = append(failures, fail.New("You do not have owner permissions on this resource.",
+					&Properties{
 						Name: files[i].Name(),
 						Url:  child,
-					},
-				})
+					}))
 
 			}
 		}
 	}
 
 	respondJsend(w, &JSend{
-		Status: status,
-		Data:   fileList,
-		Errors: errors,
+		Status:   status,
+		Data:     fileList,
+		Failures: failures,
 	})
 
 	//Check if folder is now empty and clean it up
 	files, err = file.Readdir(0)
 	if err != nil {
-		logError(err)
+		log.Error(err)
 		return
 	}
 	if len(files) == 0 {
@@ -225,12 +219,16 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 	}
 
 	if !info.IsDir() {
-		ok, _, err := canRead(auth, resource)
-
-		if errHandled(err, w) {
-			return
+		if isDocPath(resource) {
+			prm := permission.Doc()
+		} else {
+			prm, err := permission.Get(resource)
+			if errHandled(err, w) {
+				return
+			}
 		}
-		if !ok {
+
+		if !prm.CanRead(auth.User) {
 			four04(w, r)
 			return
 		}
@@ -252,11 +250,16 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 		if files[i].IsDir() {
 			continue
 		}
-		ok, _, err := canRead(auth, path.Join(resource, files[i].Name()))
-		if errHandled(err, w) {
-			return
+		if isDocPath(resource) {
+			prm := permission.Doc()
+		} else {
+			prm, err := permission.Get(path.Join(resource, files[i].Name()))
+			if errHandled(err, w) {
+				return
+			}
 		}
-		if ok {
+
+		if prm.CanRead(auth.User) {
 			//If a user can read one file in a dir, then they can know of the existence
 			// of the dir
 			canReadDir = true
@@ -305,7 +308,7 @@ func serveFile(w http.ResponseWriter, r *http.Request, file *os.File, info os.Fi
 }
 
 func docsGet(w http.ResponseWriter, r *http.Request) {
-	serveResource(w, r, r.URL.Path, nil)
+	serveResource(w, r, r.URL.Path, &Auth{})
 }
 
 func writeMarkdown(file *os.File) ([]byte, error) {
@@ -346,9 +349,6 @@ func writeFile(reader io.Reader, filename string) error {
 		return err
 	}
 	newFile, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
-	if os.IsExist(err) {
-		return pubErr(err)
-	}
 	if err != nil {
 		return err
 	}

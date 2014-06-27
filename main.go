@@ -12,6 +12,7 @@ import (
 
 	"bitbucket.org/tshannon/config"
 	"bitbucket.org/tshannon/freehold/cert"
+	"bitbucket.org/tshannon/freehold/user"
 )
 
 const (
@@ -46,7 +47,7 @@ func main() {
 	certFile := cfg.String("certificateFile", "")
 	keyFile := cfg.String("keyFile", "")
 
-	firstRun = !fileExists(userDS)
+	firstRun = !fileExists(user.DS)
 
 	if flagAdmin != "" {
 		if flagAdminPass == "" {
@@ -72,8 +73,8 @@ func main() {
 			if host == "" {
 				host, err = os.Hostname()
 				if err != nil {
-					halt("Can't get hostname for self-signed hosting, specify an address in settings.json. Error: " +
-						err.Error())
+					halt("Can't get hostname for self-signed hosting, specify an address in " +
+						"settings.json. Error: " + err.Error())
 				}
 			}
 

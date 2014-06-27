@@ -65,6 +65,10 @@ func Get(r *http.Request) (*Session, error) {
 		return nil, err
 	}
 
+	err = session.getUser()
+	if err != nil {
+		return nil, err
+	}
 	return session, nil
 }
 
@@ -208,7 +212,7 @@ func (s *Session) HandleCSRF(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (s *Session) getUser() error {
-	if s.IsExpired() || s.key == "" || username(s.key) == "" {
+	if s.key == "" || username(s.key) == "" {
 		errors.New("Invalid Session")
 	}
 
