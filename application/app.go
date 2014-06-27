@@ -14,13 +14,13 @@ import (
 	"bitbucket.org/tshannon/freehold/datastore"
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/log"
-	"bitbucket.org/tshannon/freehold/paths"
 	"bitbucket.org/tshannon/freehold/setting"
 )
 
 const (
 	DS              = "core/app.ds"
-	AVAILABLEAPPDIR = paths.AppDir + "available/"
+	AvailableAppDir = AppDir + "available/"
+	AppDir          = "./apps/"
 )
 
 var (
@@ -119,7 +119,7 @@ func Install(filepath string) (*App, error) {
 		return nil, fail.New("An app with the same id is already installed", app)
 	}
 
-	installDir := path.Join(paths.AppDir, app.Id)
+	installDir := path.Join(AppDir, app.Id)
 	r, err := appFileReader(filepath)
 	defer r.Close()
 	if err != nil {
@@ -181,11 +181,11 @@ func Uninstall(appid string) error {
 		return fail.NewFromErr(FailInvalidId, appid)
 	}
 
-	return os.RemoveAll(path.Join(paths.AppDir, appid))
+	return os.RemoveAll(path.Join(AppDir, appid))
 }
 
 func Available() ([]*App, []*fail.Fail, error) {
-	return getAppsFromDir(AVAILABLEAPPDIR)
+	return getAppsFromDir(AvailableAppDir)
 }
 
 func getAppsFromDir(dir string) ([]*App, []*fail.Fail, error) {
@@ -291,7 +291,7 @@ func appFileReader(zippath string) (*zip.ReadCloser, error) {
 		return nil, fail.New("Invalid application path.", zippath)
 	}
 
-	filepath := path.Join(AVAILABLEAPPDIR, zippath)
+	filepath := path.Join(AvailableAppDir, zippath)
 
 	r, err := zip.OpenReader(filepath)
 	if os.IsNotExist(err) {
@@ -324,7 +324,7 @@ func appFileFromUrl(url string) (string, error) {
 	}
 
 	filename := path.Base(url)
-	err = writeFile(r.Body, path.Join(AVAILABLEAPPDIR, filename))
+	err = writeFile(r.Body, path.Join(AvailableAppDir, filename))
 	if err != nil {
 		return "", err
 	}

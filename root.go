@@ -3,10 +3,8 @@ package main
 import (
 	"net/http"
 	"text/template"
-)
 
-const (
-	defaultRoot = "/" + version + "/file/core/index.html"
+	"bitbucket.org/tshannon/freehold/setting"
 )
 
 func rootGet(w http.ResponseWriter, r *http.Request) {
@@ -28,12 +26,12 @@ func rootGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var homeFile string
-	if auth != nil {
+	if auth.User != nil {
 		homeFile = auth.User.HomeApp
 	}
 
 	if homeFile == "" {
-		homeFile = settingString("PublicRootFile")
+		homeFile = setting.String("PublicRootFile")
 	}
 
 	serveResource(w, r, homeFile, auth)

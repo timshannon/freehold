@@ -1,29 +1,33 @@
 package main
 
 import (
-	"errors"
 	"os"
 	"path"
+
+	"bitbucket.org/tshannon/freehold/fail"
+	"bitbucket.org/tshannon/freehold/paths"
+	"bitbucket.org/tshannon/freehold/user"
 )
 
 var firstRun bool
 
 const coreFilePath = "/" + version + "/file/core/"
 
+//TODO: Replace with core and home apps, install at first run
+
 // makeFirstAdmin is used to make the first admin user, then set the default starting permissions
 // on all of the core resources
 func makeFirstAdmin(username, password string) error {
 	if !firstRun {
-		return pubErr(errors.New("The freehold " + userDS + " datastore has already been initiated, " +
-			"and the First Admin has already been created. Another cannot be created using this method."))
-
+		return fail.New("The freehold "+userDS+" datastore has already been initiated, "+
+			"and the First Admin has already been created. Another cannot be created using this method.", nil)
 	}
 
-	admin := &User{
+	admin := &user.User{
 		username: username,
 		Password: password,
 	}
-	err := newUser(admin)
+	err := user.New(admin)
 	if err != nil {
 		return err
 	}
@@ -49,7 +53,7 @@ func setCoreDefaultPermissions(owner string) error {
 }
 
 func recurseSetPermissionOnFolder(urlPath string, permission *Permission) error {
-	filePath := urlPathToFile(urlPath)
+	filePath := paths.UrlPathToFile(urlPath)
 	dir, err := os.Open(filePath)
 	if err != nil {
 		return err
@@ -70,7 +74,7 @@ func recurseSetPermissionOnFolder(urlPath string, permission *Permission) error 
 			continue
 		}
 
-		err = setPermissions(fileUrl, permission)
+		err = permission.Set(fileUrl, permission)
 		if err != nil {
 			return err
 		}

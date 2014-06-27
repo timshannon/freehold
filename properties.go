@@ -5,6 +5,9 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+
+	"bitbucket.org/tshannon/freehold/fail"
+	"bitbucket.org/tshannon/freehold/permission"
 )
 
 type Properties struct {
@@ -13,11 +16,6 @@ type Properties struct {
 	Permissions *Permission `json:"permissions,omitempty"`
 	Size        int64       `json:"size,omitempty"`
 }
-
-//TODO: Encryption
-// PGP with sane defaults
-// Settings will allow you to change default hash, cypher, compression, etc
-// Store encryption settings with file?
 
 func resPathFromProperty(propertyPath string) string {
 	root, resource := splitRootAndPath(propertyPath)
@@ -30,6 +28,11 @@ func resPathFromProperty(propertyPath string) string {
 	resource = resPathFromProperty(resource)
 	return path.Join("/", root, resource)
 }
+
+//TODO: Encryption
+// PGP with sane defaults
+// Settings will allow you to change default hash, cypher, compression, etc
+// Store encryption settings with file?
 
 func propertiesGet(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
@@ -56,15 +59,20 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !info.IsDir() {
-		ok, prm, err := canRead(auth, resource)
+		prm, err := permission.Get(resource)
 
 		if errHandled(err, w) {
 			return
 		}
-		if !ok || auth == nil {
-			//Public can't view permissions
+		propPrm := permission.Properties(prm)
+
+		if !prm.CanRead(auth.User) {
 			four04(w, r)
 			return
+		}
+
+		if !propPrm.CanRead(auth.User) {
+			prm = nil
 		}
 
 		respondJsend(w, &JSend{
@@ -90,22 +98,22 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 		var size int64
 		var prm *Permission
 		if files[i].IsDir() {
-			if auth == nil {
+			if auth.User == nil {
 				//Public can't view the existence of directories
 				continue
 			}
 		} else {
 			size = files[i].Size()
-			ok, p, err := canRead(auth, path.Join(resource, files[i].Name()))
+			prm, err := permission.Get(path.Join(resource, files[i].Name()))
 			if errHandled(err, w) {
 				return
 			}
-			if !ok {
+			if !prm.CanRead(auth.User) {
 				continue
 			}
-			if auth != nil {
-				//PUBLIC can't view permissions
-				prm = p
+			propPrm := permission.Properties(prm)
+			if !propPrm.CanRead(auth.User) {
+				prm = nil
 			}
 		}
 
@@ -137,12 +145,8 @@ type PermissionsInput struct {
 
 // makePermission translates a partial permissions input to a full permissions type
 // by filling in the unspecfied entries from the datastore
-func (pi *PermissionsInput) makePermission(resource string) (*Permission, error) {
-	prm, err := permissions(resource)
-	if err != nil {
-		return nil, err
-	}
-
+func (pi *PermissionsInput) makePermission(resource string, curPrm *permission.Permission) *permission.Permission {
+	prm := *curPrm
 	if pi.Owner != nil {
 		prm.Owner = *pi.Owner
 	}
@@ -156,10 +160,6 @@ func (pi *PermissionsInput) makePermission(resource string) (*Permission, error)
 		prm.Private = *pi.Private
 	}
 
-	err = prm.validate()
-	if err != nil {
-		return nil, err
-	}
 	return prm, nil
 }
 
@@ -172,12 +172,12 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if input.Permissions == nil {
-		//return failure?
+		errHandled(fail.New("No json input passed in.", nil), w)
 		return
 	}
 
-	auth, ok := authedForOwner(w, r)
-	if !ok {
+	auth, err := authenticate(w, r)
+	if errHandled(err, w) {
 		return
 	}
 
@@ -200,30 +200,30 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !info.IsDir() {
-		newprm, err := input.Permissions.makePermission(resource)
-		if errHandled(err, w) {
-			return
-		}
-
 		prm, err := permissions(resource)
 		if errHandled(err, w) {
 			return
 		}
 
-		if !prm.isOwner(auth.User) {
-			if !prm.canRead(auth) {
+		newprm := input.Permissions.makePermission(resource, prm)
+		propPrm := permission.Properties(prm)
+
+		if !propPrm.CanWrite(auth.User) {
+			if !propPrm.CanRead(auth) {
 				four04(w, r)
 				return
 			}
 
-			respondJsend(w, &JSend{
-				Status:  statusFail,
-				Message: "You do not have owner permissions on this resource.",
-			})
+			errHandled(fail.New("You do not have owner permissions on this resource.",
+				&Properties{
+					Name: file.Name(),
+					Url:  resource,
+				}), w)
+
 			return
 		}
+		err = permission.Set(resource, newprm)
 
-		err = setPermissions(resource, newprm)
 		if errHandled(err, w) {
 			return
 		}
@@ -244,67 +244,44 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fileList := make([]Properties, 0, len(files))
-	var errors []ErrorItem
+	var failures []*fail.Fail
 	status := statusSuccess
 
 	for i := range files {
 		if !files[i].IsDir() {
-
 			child := path.Join(resource, files[i].Name())
-			newprm, err := input.Permissions.makePermission(child)
-			if errHandled(err, w) {
-				return
-			}
+
 			prm, err := permissions(child)
 			if errHandled(err, w) {
 				return
 			}
+			newprm := input.Permissions.makePermission(child, prm)
 
-			if prm.isOwner(auth.User) {
-				err = setPermissions(child, newprm)
-				if err != nil {
-					errStatus, item := fileErrorItem(err, files[i].Name(), child)
-					errors = append(errors, item)
-					status = errStatus
-
-					continue
+			propPrm := permission.Properties(prm)
+			if propPrm.CanWrite(auth.User) {
+				err = permission.Set(child, newprm)
+				if errHandled(err, w) {
+					return
 				}
-				fileList = append(fileList, Properties{
-					Name: files[i].Name(),
-					Url:  child,
-				})
+
 			} else {
-				if !prm.canRead(auth) {
+				if !propPrm.canRead(auth) {
 					continue
 				}
 
 				status = statusFail
-				errors = append(errors, ErrorItem{
-					Message: "You do not have owner permissions on this resource.",
-					Data: Properties{
+				failures = append(failures, fail.New("You do not have owner permissions on this resource.",
+					&Properties{
 						Name: files[i].Name(),
 						Url:  child,
-					},
-				})
-
+					}))
 			}
 		}
 	}
 
 	respondJsend(w, &JSend{
-		Status: status,
-		Data:   fileList,
-		Errors: errors,
+		Status:   status,
+		Data:     fileList,
+		Failures: failures,
 	})
-}
-
-func fileErrorItem(err error, name, url string) (status string, item ErrorItem) {
-	status, errMsg := errorMessage(err)
-	return status, ErrorItem{
-		Message: errMsg,
-		Data: Properties{
-			Name: name,
-			Url:  url,
-		},
-	}
 }

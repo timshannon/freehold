@@ -20,22 +20,21 @@ const (
 	DS = "core/token.ds"
 )
 
-type Requester interface {
-	User() *user.User
-}
+var FailTokenLevel = errors.New("Token grants more permissions than requester has.")
 
 type Token struct {
 	Name       string `json:"name,omitempty"`
 	Expires    string `json:"expires,omitempty"`
 	Resource   string `json:"resource,omitempty"`
 	Permission string `json:permission,omitempty"`
+	Created    string `json:"created,omitempty"`
 
-	requester Requester `json:"_"`
-	token     string    `json:"-"`
+	requester *user.User `json:"_"`
+	token     string     `json:"-"`
 }
 
-func New(t *Token, r Requester) (*Token, error) {
-	t.requester = r
+func New(t *Token, requester *user.User) (*Token, error) {
+	t.requester = requester
 
 	err := t.verify()
 	if err != nil {
@@ -43,12 +42,14 @@ func New(t *Token, r Requester) (*Token, error) {
 	}
 	t.token = generateToken()
 
+	t.Created = time.Now().Format(time.RFC3339)
+
 	ds, err := datastore.OpenCoreDS(DS)
 	if err != nil {
 		return nil, err
 	}
 
-	key, err := json.Marshal(key(r, t.token))
+	key, err := json.Marshal(key(t.requester.Username(), t.token))
 	if err != nil {
 		return nil, err
 	}
@@ -74,12 +75,9 @@ func (t *Token) verify() error {
 	}
 
 	if t.requester == nil {
-		return errors.New("requester is not set in the token")
-	}
-
-	if t.requester.User() == nil {
 		return fail.New("You must log in before requesting a security token", nil)
 	}
+
 	if t.Resource == "" {
 		if t.Permission != "" {
 			return fail.New("You must specify a resource when generating a token with permissions.", t)
@@ -91,27 +89,73 @@ func (t *Token) verify() error {
 	if err != nil {
 		return err
 	}
+	return t.checkPermissionsLevel(prm)
+}
 
+func (t *Token) checkPermissionsLevel(prm *permission.Permission) error {
 	switch t.Permission {
-	case "r":
+	case permission.Read:
 		if !prm.CanRead(t.requester) {
-			return fail.New("You can't grant read permissions for a resource you can't read from.", t)
+			return fail.NewFromErr(FailTokenLevel, t)
 		}
-	case "rw":
+	case permission.Read + permission.Write:
 		if !prm.CanRead(t.requester) || !prm.CanWrite(t.requester) {
-			return fail.New("You can't grant read/write permissions for a resource you can't read from / write to.", t)
+			return fail.NewFromErr(FailTokenLevel, t)
 		}
-	case "w":
+	case permission.Write:
 		if !prm.CanWrite(t.requester) {
-			return fail.New("You can't grant write permissions for a resource you can't write to.", t)
+			return fail.NewFromErr(FailTokenLevel, t)
 		}
 	}
-
 	return nil
 }
 
-func key(r Requester, token string) string {
-	return r.User().Username() + "_" + token
+func Get(u *user.User, token string) (*Token, error) {
+	t := &Token{}
+
+	ds, err := datastore.OpenCoreDS(DS)
+	if err != nil {
+		return nil, err
+	}
+	key, err := json.Marshal(key(u.Username(), token))
+	if err != nil {
+		return nil, err
+	}
+
+	value, err := ds.Get(key)
+	if err != nil {
+		return nil, err
+	}
+	if value == nil {
+		return nil, nil
+	}
+
+	err = json.Unmarshal(value, t)
+
+	if err != nil {
+		return nil, err
+	}
+
+	t.requester = u
+
+	return t, nil
+}
+
+func (t *Token) getUser(username string) error {
+	if username == "" {
+		errors.New("Invalid Token")
+	}
+
+	user, err := user.Get(username)
+	if err != nil {
+		return err
+	}
+	t.requester = user
+	return nil
+}
+
+func key(username, token string) string {
+	return username + "_" + token
 }
 
 func generateToken() string {
@@ -152,7 +196,38 @@ func (t *Token) expireTime() time.Time {
 // fully emulate the user's access
 func (t *Token) User() *user.User {
 	if t.Resource == "" && t.Permission == "" && !t.IsExpired() {
-		return t.requester.User()
+		return t.requester
 	}
 	return nil
+}
+
+// SetPermission creates the permissions to check against
+// based on the token.
+// token access is unauthenticated in that
+// it doesn't return a *user.User if a permission and / or a resource is supplied
+// so SetPermissions sets the appropriate public permissions based on token
+func (t *Token) SetPermission(resource string, base *permission.Permission) {
+	if t.User() != nil {
+		//No change
+		return
+	}
+
+	if t.Resource != "" {
+		if t.Resource != resource {
+			base.Public = ""
+			return
+		}
+	}
+
+	if t.Permission != "" {
+		err := t.checkPermissionsLevel(base)
+		if err != nil {
+			base.Public = ""
+			return
+		}
+		base.Public = t.Permission
+		return
+	}
+
+	//No change
 }

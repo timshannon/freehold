@@ -7,10 +7,10 @@ import (
 	"os"
 
 	"bitbucket.org/tshannon/freehold/fail"
-)
-
-const (
-	default404Path = "/" + version + "/file/core/404.html"
+	"bitbucket.org/tshannon/freehold/log"
+	"bitbucket.org/tshannon/freehold/paths"
+	"bitbucket.org/tshannon/freehold/permission"
+	"bitbucket.org/tshannon/freehold/setting"
 )
 
 func errHandled(err error, w http.ResponseWriter) bool {
@@ -22,11 +22,11 @@ func errHandled(err error, w http.ResponseWriter) bool {
 
 	if fail.IsFail(err) {
 		status = statusFail
-		logFail(err)
+		log.Fail(err)
 	} else {
 		status = statusError
-		logError(err)
-		if settingBool("FullClientErrors") {
+		log.Error(err)
+		if setting.Bool("FullClientErrors") {
 			errMsg = err.Error()
 		} else {
 			errMsg = "An internal server error has occurred"
@@ -34,13 +34,11 @@ func errHandled(err error, w http.ResponseWriter) bool {
 	}
 
 	if status == statusFail {
-		w.WriteHeader(http.StatusBadRequest)
 		respondJsend(w, &JSend{
 			Status: status,
 			Data:   err.(*fail.Fail),
 		})
 	} else {
-		w.WriteHeader(http.StatusInternalServerError)
 		respondJsend(w, &JSend{
 			Status:  status,
 			Message: errMsg,
@@ -51,34 +49,34 @@ func errHandled(err error, w http.ResponseWriter) bool {
 }
 
 func four04(w http.ResponseWriter, r *http.Request) {
-	if settingBool("Log404") {
-		logError(errors.New("Resource not found: " + r.URL.String()))
+	if setting.Bool("Log404") {
+		log.Error(errors.New("Resource not found: " + r.URL.String()))
 	}
 
-	prm, err := permissions(settingString("404File"))
+	prm, err := permission.Get(setting.String("404File"))
 	if err != nil {
-		logError(err)
+		log.Error(err)
 		http.NotFound(w, r)
 		return
 	}
-	if !prm.canRead(nil) {
-		logError(errors.New("The 404File setting is pointing at a non-public file: " +
-			settingString("404File")))
+	if !prm.CanRead(nil) {
+		log.Error(errors.New("The 404File setting is pointing at a non-public file: " +
+			setting.String("404File")))
 		http.NotFound(w, r)
 		return
 	}
 
-	file, err := os.Open(urlPathToFile(settingString("404File")))
+	file, err := os.Open(paths.UrlPathToFile(setting.String("404File")))
 	defer file.Close()
 	if err != nil {
-		logError(err)
+		log.Error(err)
 		http.NotFound(w, r)
 		return
 	}
 
 	info, err := file.Stat()
 	if err != nil {
-		logError(err)
+		log.Error(err)
 		http.NotFound(w, r)
 		return
 	}
