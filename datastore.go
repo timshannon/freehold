@@ -1,8 +1,8 @@
 package main
 
-import "bitbucket.org/tshannon/freehold/datastore"
+import "encoding/json"
 
 type KeyValue struct {
-	Key   datastore.Key
-	Value datastore.Value
+	Key   json.RawMessage
+	Value json.RawMessage
 }
