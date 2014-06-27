@@ -8,7 +8,6 @@ import (
 
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/log"
-	"bitbucket.org/tshannon/freehold/paths"
 	"bitbucket.org/tshannon/freehold/permission"
 	"bitbucket.org/tshannon/freehold/setting"
 )
@@ -66,7 +65,7 @@ func four04(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file, err := os.Open(paths.UrlPathToFile(setting.String("404File")))
+	file, err := os.Open(urlPathToFile(setting.String("404File")))
 	defer file.Close()
 	if err != nil {
 		log.Error(err)

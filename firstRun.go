@@ -5,7 +5,6 @@ import (
 	"path"
 
 	"bitbucket.org/tshannon/freehold/fail"
-	"bitbucket.org/tshannon/freehold/paths"
 	"bitbucket.org/tshannon/freehold/user"
 )
 
@@ -53,7 +52,7 @@ func setCoreDefaultPermissions(owner string) error {
 }
 
 func recurseSetPermissionOnFolder(urlPath string, permission *Permission) error {
-	filePath := paths.UrlPathToFile(urlPath)
+	filePath := urlPathToFile(urlPath)
 	dir, err := os.Open(filePath)
 	if err != nil {
 		return err
