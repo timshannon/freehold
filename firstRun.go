@@ -11,7 +11,7 @@ import (
 
 var firstRun bool
 
-const coreFilePath = "/" + version + "/file/core/"
+const coreFilePath = "/core/" + version + "/file/"
 
 //TODO: Replace with core and home apps, install at first run
 
@@ -23,14 +23,29 @@ func makeFirstAdmin(username, password string) error {
 			"and the First Admin has already been created. Another cannot be created using this method.", nil)
 	}
 
-	admin := &user.User{
-		Password: password,
+	//setup folders
+	err := os.MkdirAll(appDir, 0777)
+	if err != nil {
+		return err
 	}
-	err := user.New(username, admin)
+	err = os.MkdirAll(fileDir, 0777)
+	if err != nil {
+		return err
+	}
+	err = os.MkdirAll(datastoreDir, 0777)
 	if err != nil {
 		return err
 	}
 
+	admin := &user.User{
+		Password: password,
+	}
+	err = user.New(username, admin)
+	if err != nil {
+		return err
+	}
+
+	//TODO: core and home app auto install
 	err = setCoreDefaultPermissions(username)
 	if err != nil {
 		return err
@@ -54,6 +69,7 @@ func setCoreDefaultPermissions(owner string) error {
 func recurseSetPermissionOnFolder(urlPath string, prm *permission.Permission) error {
 	filePath := urlPathToFile(urlPath)
 	dir, err := os.Open(filePath)
+	defer dir.Close()
 	if err != nil {
 		return err
 	}

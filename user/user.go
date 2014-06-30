@@ -25,7 +25,7 @@ type User struct {
 	Name        string `json:"name,omitempty"`
 	Password    string `json:"password,omitempty"`
 	EncPassword []byte `json:"encPassword,omitempty"`
-	HomeApp     string `json:"name,omitempty"`
+	HomeApp     string `json:"homeApp,omitempty"`
 	Admin       bool   `json:"admin,omitempty"`
 }
 

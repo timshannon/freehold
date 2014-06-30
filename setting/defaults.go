@@ -66,7 +66,7 @@ func init() {
 		},
 		"404File": Setting{
 			Description: "Path to a standard 404 page.",
-			Value:       "core/v1/file/404.html",
+			Value:       "/core/v1/file/404.html",
 		},
 		"Log404": Setting{
 			Description: "Logs when an attempted is made to access an invalid resource.",
@@ -81,7 +81,7 @@ func init() {
 		"PublicRootFile": Setting{
 			Description: "Path to a file that unauthenticated users get served when hitting the root of " +
 				"the host: https://domain.com/.  Must be a file with public permissions.",
-			Value: "core/v1/file/index.html",
+			Value: "/core/v1/file/public.html",
 		},
 		"MaxOpenSessions": Setting{
 			Description: "The maximum number of open / non-expired user sessions a user can have. When a user " +
@@ -100,15 +100,16 @@ func init() {
 		"MaxUploadMemory": Setting{
 			Description: "Maximum amount of memory (in bytes) to be used for file uploads. After max memory " +
 				"is reached, temporary files are used to hold the rest of the upload.",
-			Value: float64(10 * 1024 * 1024), //10MB
+			Value: float64(10 * 1024 * 1024), //10MB - Minimum target raspi
 		},
 		"MarkdownCSSFile": Setting{
 			Description: "Path to css file used for displaying markdown files.",
-			Value:       "core/v1/file/index.html",
+			Value:       "/core/v1/file/css/markdown.css",
 		},
 		"HttpClientTimeout": Setting{
-			Description: "Timeout in seconds of requests made by the http client (like fetching an application zip file).",
-			Value:       float64(15),
+			Description: "Timeout in seconds of requests made by the http client (like fetching an " +
+				" application zip file).",
+			Value: float64(15),
 		},
 	}
 }

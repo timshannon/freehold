@@ -47,6 +47,9 @@ func isDocPath(resource string) bool {
 // url path format will usually be
 // /<version>/<type of resource>/<path to resource>/
 func urlPathToFile(urlPath string) string {
+	if urlPath == "/" || urlPath == "" {
+		return "/"
+	}
 	root, respath := splitRootAndPath(urlPath)
 
 	//strip off version and check if valid
@@ -57,7 +60,7 @@ func urlPathToFile(urlPath string) string {
 		}
 
 		//Is app path and root is app-id
-		return path.Join(appDir, root, v1FilePath(respath))
+		return path.Join(appDir, root, urlPathToFile(respath))
 	}
 	return v1FilePath(respath)
 }

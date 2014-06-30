@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>freehold</title>
+	<title>freehold - REST Tester</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 	<!-- Bootstrap -->
-	<link href="/v1/file/core/css/bootstrap.min.css" rel="stylesheet" media="screen">
+	<link href="/core/v1/file/css/bootstrap.min.css" rel="stylesheet" media="screen">
 
-	<link rel="shortcut icon" href="/v1/file/core/images/favicon.ico">
+	<link rel="shortcut icon" href="/core/v1/file/images/favicon.ico">
 </head>
 <body>
 <nav class="navbar navbar-default" role="navigation">
@@ -57,26 +57,13 @@
 </div>
 
 <div class="container">
-<!--public-->
-<div class="public hidden jumbotron">
-	<h1> Welcome! </h1>
-	<p>This is the default <i><b>freehold</b> </i>landing page.</p>
-	<p>
-		Freehold is an open source webserver where you can store and control your own data.
-		It aims to be easy to host, secure, easy to use and easy to build on top of. If you disagree,
-		then please check out the <a href="http://bitbucket.org/tshannon/freehold">project</a>, open an 
-		<a href="https://bitbucket.org/tshannon/freehold/issues">issue</a>, and help make it better.
-	</p>
-	<p>
-		Or check out the <a href="/docs/">documentation</a> and build an application.  It uses a simple
-		REST API that allows you to easily access your data from any device or software.
-	</p>
-
+<div class="public hidden">
+	<h1>Public Testing</h1>
 </div>
 
-<!--authenticated-->
 <div class="authenticated hidden">
 	<h1>Authenticated Testing</h1>
+</div>
 	<form class="form" role="form" id="resttest" name="resttest">
 		<div class="form-inline form-group">
 			<select class="form-control" id="method" name="method" placeholder="method">
@@ -101,12 +88,11 @@
 		</div>
 
 	</form>
-</div>
+
 </div>
 
-<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-<script src="/v1/file/core/js/jquery-2.1.1.min.js"></script>
-<script src="/v1/file/core/js/bootstrap.min.js"></script>
+<script src="/core/v1/file/js/jquery-2.1.1.min.js"></script>
+<script src="/core/v1/file/js/bootstrap.min.js"></script>
 <script language="Javascript">
 var CSRFToken = ""
 $(document).ready(function() { 
@@ -213,7 +199,7 @@ function checkAuth() {
 				complete: function (xhr) {
 					CSRFToken = xhr.getResponseHeader("X-CSRFToken");
 					var result = JSON.parse(xhr.responseText);
-					if (result.status == "success" && result.data) {
+					if (result.status == "success" && result.data.type != "none") {
 						$(".public").addClass("hidden");
 						$(".authenticated").removeClass("hidden");
 					} else {

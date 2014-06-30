@@ -127,8 +127,9 @@ func Install(filepath string) (*App, error) {
 	}
 	for _, f := range r.File {
 		fr, err := f.Open()
+
+		defer fr.Close()
 		if err != nil {
-			fr.Close()
 			log.Error(err)
 			return nil, fail.NewFromErr(FailAppInvalid, filepath)
 		}

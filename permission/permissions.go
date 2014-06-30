@@ -155,10 +155,10 @@ func (p *Permission) isOwner(u *user.User) bool {
 	return false
 }
 
-func removeWrite(permission string) {
-	strings.TrimRight(permission, Write)
+func removeWrite(permission *string) {
+	*permission = strings.TrimRight(*permission, Write)
 }
 
-func removeRead(permission string) {
-	strings.TrimRight(permission, Write)
+func removeRead(permission *string) {
+	*permission = strings.TrimRight(*permission, Write)
 }
