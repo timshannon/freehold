@@ -51,3 +51,11 @@ func Properties(base *Permission) *Permission {
 	removeWrite(prm.Public)
 	return &prm
 }
+
+// Only authenticated users (and not partially athenticated tokens)
+// can write a new sesion or view an existing one
+func Session() *Permission {
+	return &Permission{
+		Friend: Read + Write,
+	}
+}

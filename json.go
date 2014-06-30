@@ -7,6 +7,7 @@ import (
 	"net/url"
 
 	"bitbucket.org/tshannon/freehold/fail"
+	"bitbucket.org/tshannon/freehold/log"
 )
 
 const (
@@ -19,7 +20,7 @@ type JSend struct {
 	Status   string      `json:"status"`
 	Data     interface{} `json:"data,omitempty"`
 	Message  string      `json:"message,omitempty"`
-	Failures []fail.Fail `json:"failures,omitempty"`
+	Failures []error     `json:"failures,omitempty"`
 }
 
 //respondJsend marshalls the input into a json byte array
@@ -30,7 +31,7 @@ func respondJsend(w http.ResponseWriter, response *JSend) {
 
 	result, err := json.Marshal(response)
 	if err != nil {
-		logError(err)
+		log.Error(err)
 		result, _ = json.Marshal(&JSend{
 			Status:  statusError,
 			Message: "An internal error occurred, and we'll look into it.",
@@ -61,7 +62,7 @@ func parseJson(r *http.Request, result interface{}) error {
 		// take precedence
 		v, err := url.QueryUnescape(r.URL.RawQuery)
 		if err != nil {
-			return fail.New(err, r.URL.RawQuery)
+			return fail.NewFromErr(err, r.URL.RawQuery)
 		}
 
 		buff = []byte(v)

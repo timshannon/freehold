@@ -5,6 +5,7 @@ import (
 	"path"
 
 	"bitbucket.org/tshannon/freehold/fail"
+	"bitbucket.org/tshannon/freehold/permission"
 	"bitbucket.org/tshannon/freehold/user"
 )
 
@@ -18,15 +19,14 @@ const coreFilePath = "/" + version + "/file/core/"
 // on all of the core resources
 func makeFirstAdmin(username, password string) error {
 	if !firstRun {
-		return fail.New("The freehold "+userDS+" datastore has already been initiated, "+
+		return fail.New("The freehold "+user.DS+" datastore has already been initiated, "+
 			"and the First Admin has already been created. Another cannot be created using this method.", nil)
 	}
 
 	admin := &user.User{
-		username: username,
 		Password: password,
 	}
-	err := user.New(admin)
+	err := user.New(username, admin)
 	if err != nil {
 		return err
 	}
@@ -43,7 +43,7 @@ func makeFirstAdmin(username, password string) error {
 // setCoreDefaultPermissions sets the initial starting permissions for all necessary core resources
 func setCoreDefaultPermissions(owner string) error {
 	//core files
-	return recurseSetPermissionOnFolder(coreFilePath, &Permission{
+	return recurseSetPermissionOnFolder(coreFilePath, &permission.Permission{
 		Owner:   owner,
 		Public:  "r",
 		Friend:  "r",
@@ -51,7 +51,7 @@ func setCoreDefaultPermissions(owner string) error {
 	})
 }
 
-func recurseSetPermissionOnFolder(urlPath string, permission *Permission) error {
+func recurseSetPermissionOnFolder(urlPath string, prm *permission.Permission) error {
 	filePath := urlPathToFile(urlPath)
 	dir, err := os.Open(filePath)
 	if err != nil {
@@ -66,14 +66,14 @@ func recurseSetPermissionOnFolder(urlPath string, permission *Permission) error 
 	for i := range files {
 		fileUrl := path.Join(urlPath, files[i].Name())
 		if files[i].IsDir() {
-			err = recurseSetPermissionOnFolder(fileUrl, permission)
+			err = recurseSetPermissionOnFolder(fileUrl, prm)
 			if err != nil {
 				return err
 			}
 			continue
 		}
 
-		err = permission.Set(fileUrl, permission)
+		err = permission.Set(fileUrl, prm)
 		if err != nil {
 			return err
 		}

@@ -97,8 +97,10 @@ func (p *Permission) validate() error {
 	}
 
 	_, err := user.Get(p.Owner)
-	if fail.IsEqual(user.FailLogon, err) {
-		return fail.New("Set permission failed because owner isn't a valid user.", p)
+	if err != nil {
+		if fail.IsEqual(user.FailLogon, err) {
+			return fail.New("Set permission failed because owner isn't a valid user.", p)
+		}
 	}
 
 	return err

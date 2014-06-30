@@ -58,7 +58,8 @@ func Get(username string) (*User, error) {
 	return usr, nil
 }
 
-func New(u *User) error {
+func New(username string, u *User) error {
+	u.username = username
 	//Check if user exists
 	ds, err := datastore.OpenCoreDS(DS)
 	if err != nil {

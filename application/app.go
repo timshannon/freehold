@@ -184,11 +184,11 @@ func Uninstall(appid string) error {
 	return os.RemoveAll(path.Join(AppDir, appid))
 }
 
-func Available() ([]*App, []*fail.Fail, error) {
+func Available() ([]*App, []error, error) {
 	return getAppsFromDir(AvailableAppDir)
 }
 
-func getAppsFromDir(dir string) ([]*App, []*fail.Fail, error) {
+func getAppsFromDir(dir string) (apps []*App, failures []error, err error) {
 	file, err := os.Open(dir)
 	defer file.Close()
 	if err != nil {
@@ -207,8 +207,6 @@ func getAppsFromDir(dir string) ([]*App, []*fail.Fail, error) {
 		return nil, nil, err
 	}
 
-	var apps []*App
-	var failures []*fail.Fail
 	for _, f := range files {
 		child := path.Join(dir, f.Name())
 		if f.IsDir() {
@@ -223,7 +221,7 @@ func getAppsFromDir(dir string) ([]*App, []*fail.Fail, error) {
 		app, err := appInfoFromZip(child)
 		if err != nil {
 			if fail.IsFail(err) {
-				failures = append(failures, err.(*fail.Fail))
+				failures = append(failures, err)
 				continue
 			}
 			return apps, failures, err
@@ -305,7 +303,7 @@ func appFileReader(zippath string) (*zip.ReadCloser, error) {
 	return r, nil
 }
 
-func appFileFromUrl(url string) (string, error) {
+func PostAvailable(url string) (string, error) {
 	if !setting.Bool("AllowWebAppInstall") {
 		return "", fail.NewFromErr(FailNoWebInstall, url)
 	}
