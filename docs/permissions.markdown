@@ -1,6 +1,6 @@
 Permissions
 ==========
-There are two types of explicit permission types that can be applied to a given file.
+There are two types of explicit permission types that can be applied an item in a freehold instance.
 
 * Read (**r**) - The ability to view the file data, or retrieve a record from a datastore.
 * Write (**w**) - The ablity to add a new record to a datastore.
@@ -23,6 +23,7 @@ There are some implicit permissions that are gained by the nature of the access 
 
 
 Other implicit permissions are built into freehold, and apply to the core operations of the instance.
+
 * Posting a session - Authenticated users
 * Viewing installed applications - Authenticated users
 * Viewing available applications - Admins

@@ -13,13 +13,14 @@ import (
 )
 
 const (
+	authTypeNone    = "none"
 	authTypeBasic   = "basic"
 	authTypeSession = "session"
 	authTypeToken   = "token"
 )
 
 type Auth struct {
-	AuthType string `json:"authType"`
+	AuthType string `json:"type"`
 	*user.User
 	*token.Token
 	*session.Session `json:"-"`
@@ -29,7 +30,9 @@ type Auth struct {
 // Checks for basic http authentication where the password is either the user's password
 // or a valid security token, or the user has an valid cookie based session.
 func authenticate(w http.ResponseWriter, r *http.Request) (*Auth, error) {
-	a := &Auth{}
+	a := &Auth{
+		AuthType: authTypeNone,
+	}
 	headerInfo := r.Header.Get("Authorization")
 	if headerInfo != "" {
 		authInfo := strings.TrimLeft(headerInfo, "Basic ")
@@ -121,80 +124,3 @@ func authGet(w http.ResponseWriter, r *http.Request) {
 		Data:   auth,
 	})
 }
-
-//func canRead(auth *Auth, resource string) (bool, *Permission, error) {
-//if auth != nil && auth.tokenRestricted(resource) {
-//return false, nil, nil
-//}
-//prm, err := permissions(resource)
-//if err != nil {
-//return false, nil, err
-//}
-//return prm.canRead(auth), prm, nil
-//}
-
-//func canWrite(auth *Auth, resource string) (bool, *Permission, error) {
-//if auth != nil && auth.tokenRestricted(resource) {
-//return false, nil, nil
-//}
-//prm, err := permissions.Get(resource)
-//if err != nil {
-//return false, nil, err
-//}
-//return prm.CanWrite(auth), prm, nil
-//}
-
-//// tokenRestricted is whether or not a token exists and does not
-//// allow access to the resource
-//func (a *Auth) tokenRestricted(resource string) bool {
-//if a.Token != nil {
-//if a.Resource != resource {
-//return true
-//}
-//}
-//return false
-//}
-
-//// authedForAdmin checks if the current user
-//// is admin and handles a bunch of commonly used responses if not
-//// If is admin, returns true
-//func authedForAdmin(w http.ResponseWriter, r *http.Request) (*Auth, bool) {
-//auth, err := authenticate(w, r)
-//if errHandled(err, w) {
-//return nil, false
-//}
-//if auth == nil {
-//four04(w, r)
-//return nil, false
-//}
-
-//if auth.AuthType == authTypeToken && !auth.Token.isOwner() {
-//four04(w, r)
-//return nil, false
-//}
-//if !auth.User.Admin {
-//four04(w, r)
-//return nil, false
-//}
-
-//return auth, true
-//}
-
-//func authedForOwner(w http.ResponseWriter, r *http.Request) (*Auth, bool) {
-//auth, err := authenticate(w, r)
-//if errHandled(err, w) {
-//return nil, false
-//}
-//if auth == nil {
-//errHandled(pubFail(errors.New("You must log in before deleting a file.")), w)
-//return nil, false
-//}
-
-////If access is granted via token check if token grants owner level permissions
-//if auth.AuthType == authTypeToken && !auth.Token.isOwner() {
-//errHandled(pubFail(errors.New("You must log in before deleting a file.")), w)
-//return nil, false
-//}
-
-//return auth, true
-//}

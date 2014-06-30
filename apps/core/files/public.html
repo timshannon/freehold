@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>freehold</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+	<!-- Bootstrap -->
+	<link href="/core/v1/file/css/bootstrap.min.css" rel="stylesheet" media="screen">
+
+	<link rel="shortcut icon" href="/core/v1/file/images/favicon.ico">
+</head>
+<body>
+<nav class="navbar navbar-default" role="navigation">
+	<div class="navbar-header">
+		<a class="navbar-brand" href="/">freehold</a>
+		<button type="button" id="loginButton" class="btn btn-default navbar-btn">Log in</button>
+	</div>
+</nav>
+
+<!-- Modal -->
+<div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="loginModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="loginModalLabel">Log in</h4>
+      </div>
+      <div class="modal-body">
+			<!--content-->
+
+				<form class="form" role="form" id="login" name="login">
+				<span id="err" class="hidden label label-danger"></span>
+					<div class="form-group">
+						<label class="sr-only" for="username">Username</label>	
+						<input class="form-control" id="username" name="username" placeholder="Enter username">
+					</div>
+					<div class="form-group">
+						<label class="sr-only" for="password">Password</label>
+						<input type="password" class="form-control" id="password" name="password" placeholder="Password">
+					</div>
+					<div class="checkbox">
+						<label>
+							<input type="checkbox" id="rememberMe" name="rememberMe" checked="checked"> Remember me
+						</label>
+					</div>
+					<button type="submit" class="btn btn-default">Log In</button>
+				</form>
+
+			<!--content-->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+<div class="jumbotron">
+	<h1> Welcome! </h1>
+	<p>This is the default <i><b>freehold</b> </i>landing page.</p>
+	<p>
+		Freehold is an open source webserver where you can store and control your own data.
+		It aims to be easy to host, secure, easy to use and easy to build on top of. If you disagree,
+		then please check out the <a href="http://bitbucket.org/tshannon/freehold">project</a>, open an 
+		<a href="https://bitbucket.org/tshannon/freehold/issues">issue</a>, and help make it better.
+	</p>
+	<p>
+		Or check out the <a href="/docs/">documentation</a> and build an application.  It uses a simple
+		REST API that allows you to easily access your data from any device or software.
+	</p>
+
+</div>
+
+</div>
+
+<script src="/core/v1/file/js/jquery-2.1.1.min.js"></script>
+<script src="/core/v1/file/js/bootstrap.min.js"></script>
+<script language="Javascript">
+$(document).ready(function() { 
+
+
+$("#loginButton").click(function() {
+		clearErr()
+		$("#loginModal").modal();			
+});
+
+
+$( "#login" ).submit(function( event ) {
+	clearErr();
+	event.preventDefault();
+	var data = {}
+
+	if ($("#rememberMe").prop("checked")) {
+		var today = new Date(Date.now());
+		today.setDate(today.getDate() + 15); 	
+		data = {
+			expires: today
+		}
+	}
+	if ($("#username").val() === "") { 
+		err("Username is required");
+		return;
+	}
+
+	$.ajax({
+			type: "POST",
+			url: "/v1/auth/session",
+			beforeSend: function (xhr) {
+				xhr.setRequestHeader ("Authorization", "Basic "+btoa($("#username").val()+":"+$("#password").val()));
+			},
+			dataType: "json",
+			data: JSON.stringify(data),
+			complete: function (xhr) {
+				var result = JSON.parse(xhr.responseText);
+				if (result.status == "success") {
+					location.reload();
+				} else {
+					err(result.message);
+				}
+			},
+	});
+});
+
+});
+
+function err(msg) {
+	$("#err").removeClass("hidden").text(msg);
+}
+
+function clearErr() {
+	$("#err").addClass("hidden").text("");
+}
+
+</script>
+</body>
+</html>

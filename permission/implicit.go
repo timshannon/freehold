@@ -35,8 +35,8 @@ func FileNew() *Permission {
 func FileDelete(base *Permission) *Permission {
 	prm := *base
 	prm.Private = Read + Write
-	removeWrite(prm.Friend)
-	removeWrite(prm.Public)
+	removeWrite(&prm.Friend)
+	removeWrite(&prm.Public)
 	return &prm
 }
 
@@ -46,9 +46,9 @@ func FileDelete(base *Permission) *Permission {
 func Properties(base *Permission) *Permission {
 	prm := *base
 	prm.Private = Read + Write
-	removeRead(prm.Public)
-	removeWrite(prm.Friend)
-	removeWrite(prm.Public)
+	removeRead(&prm.Public)
+	removeWrite(&prm.Friend)
+	removeWrite(&prm.Public)
 	return &prm
 }
 

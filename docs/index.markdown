@@ -616,7 +616,7 @@ Information about the current authenticated user.
 		email: <current user's email address>,
 		homeApp: <current user's home app>,
 		admin: <Is the current user an admin>,
-		authType: <"session" | "token" | "basic",
+		type: <"session" | "token" | "basic",
 		expires: <expiration of access, if it exists>,
 		resource: <specified auth resource (token only)>,
 		permissions: <specified auth permissions (token only)>
@@ -637,8 +637,21 @@ Response (200):
 			email: "shannon.timothy@gmail.com",
 			homeApp: "home",
 			admin: true,
-			authType: "session",
+			type: "session",
 			expires: "2044-04-23T18:25:43.511Z"
+	}
+}
+```
+
+*If user isn't authenticated*
+```
+GET /v1/auth
+
+Response (200):
+{
+	status: "success",
+	data: {
+			type: "none",
 	}
 }
 ```
