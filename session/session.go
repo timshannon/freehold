@@ -21,7 +21,7 @@ import (
 
 const (
 	DS         = "core/session.ds"
-	cookieName = "freehold_session"
+	CookieName = "freehold_session"
 )
 
 type Session struct {
@@ -79,7 +79,7 @@ func sessionCookieValue(r *http.Request) string {
 	cValue := ""
 
 	for i := range cookies {
-		if cookies[i].Name == cookieName {
+		if cookies[i].Name == CookieName {
 			if cookies[i].Value != "" {
 				cValue = cookies[i].Value
 			}
@@ -134,7 +134,7 @@ func (s *Session) Cookie(isSSL bool) *http.Cookie {
 		return nil
 	}
 	cookie := &http.Cookie{
-		Name:     cookieName,
+		Name:     CookieName,
 		Value:    s.key,
 		HttpOnly: true,
 		Path:     "/",

@@ -11,10 +11,10 @@ import (
 )
 
 type Properties struct {
-	Name        string      `json:"name,omitempty"`
-	Url         string      `json:"url,omitempty"`
-	Permissions *Permission `json:"permissions,omitempty"`
-	Size        int64       `json:"size,omitempty"`
+	Name        string                 `json:"name,omitempty"`
+	Url         string                 `json:"url,omitempty"`
+	Permissions *permission.Permission `json:"permissions,omitempty"`
+	Size        int64                  `json:"size,omitempty"`
 }
 
 func resPathFromProperty(propertyPath string) string {
@@ -96,7 +96,7 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 
 	for i := range files {
 		var size int64
-		var prm *Permission
+		var prm *permission.Permission
 		if files[i].IsDir() {
 			if auth.User == nil {
 				//Public can't view the existence of directories
@@ -160,7 +160,7 @@ func (pi *PermissionsInput) makePermission(resource string, curPrm *permission.P
 		prm.Private = *pi.Private
 	}
 
-	return prm, nil
+	return &prm
 }
 
 func propertiesPut(w http.ResponseWriter, r *http.Request) {
@@ -200,7 +200,7 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !info.IsDir() {
-		prm, err := permissions(resource)
+		prm, err := permission.Get(resource)
 		if errHandled(err, w) {
 			return
 		}
@@ -209,7 +209,7 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 		propPrm := permission.Properties(prm)
 
 		if !propPrm.CanWrite(auth.User) {
-			if !propPrm.CanRead(auth) {
+			if !propPrm.CanRead(auth.User) {
 				four04(w, r)
 				return
 			}
@@ -244,14 +244,14 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fileList := make([]Properties, 0, len(files))
-	var failures []*fail.Fail
+	var failures []error
 	status := statusSuccess
 
 	for i := range files {
 		if !files[i].IsDir() {
 			child := path.Join(resource, files[i].Name())
 
-			prm, err := permissions(child)
+			prm, err := permission.Get(child)
 			if errHandled(err, w) {
 				return
 			}
@@ -265,7 +265,7 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 				}
 
 			} else {
-				if !propPrm.canRead(auth) {
+				if !propPrm.CanRead(auth.User) {
 					continue
 				}
 

@@ -52,7 +52,7 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 	mp := r.MultipartForm
 
 	var fileList []Properties
-	var failures []*fail.Fail
+	var failures []error
 	status := statusSuccess
 
 	for _, files := range mp.File {
@@ -128,7 +128,7 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 		prm = permission.FileDelete(prm)
 
 		if !prm.CanWrite(auth.User) {
-			if !prm.canRead(auth.User) {
+			if !prm.CanRead(auth.User) {
 				four04(w, r)
 				return
 			}
@@ -146,7 +146,7 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fileList := make([]Properties, 0, len(files))
-	var failures []*fail.Fail
+	var failures []error
 	status := statusSuccess
 	dir := file.Name()
 
@@ -168,7 +168,7 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 					Url:  child,
 				})
 			} else {
-				if !prm.canRead(auth.User) {
+				if !prm.CanRead(auth.User) {
 					continue
 				}
 
@@ -219,10 +219,11 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 	}
 
 	if !info.IsDir() {
+		var prm *permission.Permission
 		if isDocPath(resource) {
-			prm := permission.Doc()
+			prm = permission.Doc()
 		} else {
-			prm, err := permission.Get(resource)
+			prm, err = permission.Get(resource)
 			if errHandled(err, w) {
 				return
 			}
@@ -247,13 +248,14 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 	canReadDir := false
 
 	for i := range files {
+		var prm *permission.Permission
 		if files[i].IsDir() {
 			continue
 		}
 		if isDocPath(resource) {
-			prm := permission.Doc()
+			prm = permission.Doc()
 		} else {
-			prm, err := permission.Get(path.Join(resource, files[i].Name()))
+			prm, err = permission.Get(path.Join(resource, files[i].Name()))
 			if errHandled(err, w) {
 				return
 			}
@@ -327,7 +329,7 @@ func writeMarkdown(file *os.File) ([]byte, error) {
 	htmlFlags |= blackfriday.HTML_SMARTYPANTS_LATEX_DASHES
 	htmlFlags |= blackfriday.HTML_COMPLETE_PAGE
 	renderer := blackfriday.HtmlRenderer(htmlFlags,
-		strings.TrimRight(file.Name(), markdownType), settingString("MarkdownCSSFile"))
+		strings.TrimRight(file.Name(), markdownType), setting.String("MarkdownCSSFile"))
 
 	// set up the parser
 	extensions := 0

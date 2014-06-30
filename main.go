@@ -106,7 +106,7 @@ func main() {
 
 }
 
-func fileExists(fileName string) bool {
+func fileExists(filename string) bool {
 	if _, err := os.Stat(filename); err == nil {
 		return true
 	}

@@ -1,8 +1,11 @@
 package main
 
 import (
-	"errors"
 	"net/http"
+
+	"bitbucket.org/tshannon/freehold/fail"
+	"bitbucket.org/tshannon/freehold/permission"
+	"bitbucket.org/tshannon/freehold/session"
 )
 
 func sessionGet(w http.ResponseWriter, r *http.Request) {
@@ -10,10 +13,14 @@ func sessionGet(w http.ResponseWriter, r *http.Request) {
 	if errHandled(err, w) {
 		return
 	}
-	if auth == nil {
+	prm := permission.Session()
+	if !prm.CanRead(auth.User) {
 		four04(w, r)
 		return
 	}
+
+	//TODO:
+
 }
 
 func sessionPost(w http.ResponseWriter, r *http.Request) {
@@ -21,27 +28,29 @@ func sessionPost(w http.ResponseWriter, r *http.Request) {
 	if errHandled(err, w) {
 		return
 	}
-	if auth == nil {
-		four04(w, r)
+
+	prm := permission.Session()
+	if !prm.CanWrite(auth.User) {
+		if !prm.CanRead(auth.User) {
+			four04(w, r)
+			return
+		}
+		//should never happen
+		errHandled(fail.New("You do not have proper permissions to post a new session.", nil), w)
 		return
 	}
 
-	//Sessions can only be created with basic auth type
-	if auth.AuthType != authTypeBasic {
-		errHandled(pubErr(errors.New("Sessions can only be requested using basic authentication")), w)
-		return
-	}
-
-	baseSession := &Session{}
+	baseSession := &session.Session{}
 	err = parseJson(r, baseSession)
 	if errHandled(err, w) {
 		return
 	}
-	cookie, err := newSession(auth, baseSession)
+	ses, err := session.New(auth.User, baseSession)
 	if errHandled(err, w) {
 		return
 	}
-	http.SetCookie(w, cookie)
+
+	http.SetCookie(w, ses.Cookie(isSSL))
 	w.WriteHeader(http.StatusCreated)
 	respondJsend(w, &JSend{
 		Status: statusSuccess,
@@ -53,18 +62,25 @@ func sessionDelete(w http.ResponseWriter, r *http.Request) {
 	if errHandled(err, w) {
 		return
 	}
-	if auth == nil {
-		four04(w, r)
+
+	prm := permission.Session()
+	if !prm.CanWrite(auth.User) {
+		if !prm.CanRead(auth.User) {
+			four04(w, r)
+			return
+		}
+		//should never happen
+		errHandled(fail.New("You do not have proper permissions to delete a session.", nil), w)
 		return
 	}
 
 	if auth.Session != nil {
-		if errHandled(auth.Session.expire(), w) {
+		if errHandled(auth.Session.Expire(), w) {
 			return
 		}
 	}
 
-	cookie, err := r.Cookie(cookieName)
+	cookie, err := r.Cookie(session.CookieName)
 
 	if err != http.ErrNoCookie {
 		cookie.MaxAge = 0
