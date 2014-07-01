@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"bitbucket.org/tshannon/freehold/datastore"
+	"bitbucket.org/tshannon/freehold/data"
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/log"
 	"bitbucket.org/tshannon/freehold/setting"
@@ -30,7 +30,7 @@ type User struct {
 }
 
 func Get(username string) (*User, error) {
-	ds, err := datastore.OpenCoreDS(DS)
+	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func Get(username string) (*User, error) {
 func New(username string, u *User) error {
 	u.username = username
 	//Check if user exists
-	ds, err := datastore.OpenCoreDS(DS)
+	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return err
 	}
@@ -95,7 +95,7 @@ func (u *User) update() error {
 		return fail.New("Invalid username", u.username)
 	}
 
-	ds, err := datastore.OpenCoreDS(DS)
+	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return err
 	}

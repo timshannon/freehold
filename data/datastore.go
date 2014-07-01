@@ -1,10 +1,10 @@
-package datastore
+package data
 
 import (
 	"encoding/json"
 	"time"
 
-	"bitbucket.org/tshannon/freehold/datastore/store"
+	"bitbucket.org/tshannon/freehold/data/store"
 )
 
 // Datastore holds data and an identifying key in json format in a file on the host

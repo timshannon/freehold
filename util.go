@@ -6,17 +6,21 @@ import (
 	"path"
 	"strings"
 
-	"bitbucket.org/tshannon/freehold/application"
+	"bitbucket.org/tshannon/freehold/app"
 )
 
 var versions = map[string]struct{}{"v1": struct{}{}}
 
+func init() {
+	app.IsVersionFunc = isVersion
+}
+
 const (
 	version      = "v1"
 	docsDir      = "./docs/"
-	fileDir      = "./files/"
-	datastoreDir = "./datastores/"
-	appDir       = application.AppDir
+	fileDir      = "./file/"
+	datastoreDir = "./datastore/"
+	appDir       = app.AppDir
 )
 
 // splitRootAndPath splits the first item in a path from the rest

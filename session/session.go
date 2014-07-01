@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"bitbucket.org/tshannon/freehold/datastore"
+	"bitbucket.org/tshannon/freehold/data"
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/log"
 	"bitbucket.org/tshannon/freehold/setting"
@@ -42,7 +42,7 @@ func Get(r *http.Request) (*Session, error) {
 		return nil, nil
 	}
 
-	ds, err := datastore.OpenCoreDS(DS)
+	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +102,7 @@ func New(u *user.User, base *Session) (*Session, error) {
 
 	newSession.Created = time.Now().Format(time.RFC3339)
 
-	ds, err := datastore.OpenCoreDS(DS)
+	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return nil, err
 	}
@@ -228,7 +228,7 @@ func (s *Session) User() *user.User {
 }
 
 func (s *Session) Expire() error {
-	ds, err := datastore.OpenCoreDS(DS)
+	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return err
 	}
@@ -240,7 +240,7 @@ func (s *Session) Expire() error {
 }
 
 func enforceSessionLimit(u *user.User) error {
-	ds, err := datastore.OpenCoreDS(DS)
+	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return err
 	}

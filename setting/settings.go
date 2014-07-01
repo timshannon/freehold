@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
-
-	"bitbucket.org/tshannon/freehold/datastore"
+	"bitbucket.org/tshannon/freehold/data"
 	"bitbucket.org/tshannon/freehold/fail"
 )
 
@@ -20,7 +19,7 @@ type Setting struct {
 }
 
 func Get(settingName string) (*Setting, error) {
-	ds, err := datastore.OpenCoreDS(DS)
+	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +47,7 @@ func Get(settingName string) (*Setting, error) {
 }
 
 func Set(settingName string, value interface{}) error {
-	ds, err := datastore.OpenCoreDS(DS)
+	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return err
 	}

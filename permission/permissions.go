@@ -5,7 +5,7 @@ import (
 	"errors"
 	"strings"
 
-	"bitbucket.org/tshannon/freehold/datastore"
+	"bitbucket.org/tshannon/freehold/data"
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/log"
 	"bitbucket.org/tshannon/freehold/user"
@@ -27,7 +27,7 @@ type Permission struct {
 }
 
 func Get(resource string) (*Permission, error) {
-	ds, err := datastore.OpenCoreDS(DS)
+	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func Get(resource string) (*Permission, error) {
 func Set(resource string, permissions *Permission) error {
 	err := permissions.validate()
 
-	ds, err := datastore.OpenCoreDS(DS)
+	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return err
 	}

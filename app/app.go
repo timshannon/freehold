@@ -1,4 +1,4 @@
-package application
+package app
 
 import (
 	"archive/zip"
@@ -11,7 +11,7 @@ import (
 	"path"
 	"time"
 
-	"bitbucket.org/tshannon/freehold/datastore"
+	"bitbucket.org/tshannon/freehold/data"
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/log"
 	"bitbucket.org/tshannon/freehold/setting"
@@ -20,7 +20,7 @@ import (
 const (
 	DS              = "core/app.ds"
 	AvailableAppDir = AppDir + "available/"
-	AppDir          = "./apps/"
+	AppDir          = "./application/"
 )
 
 var (
@@ -41,7 +41,7 @@ type App struct {
 }
 
 func Get(id string) (*App, error) {
-	ds, err := datastore.OpenCoreDS(DS)
+	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +71,7 @@ func Get(id string) (*App, error) {
 }
 
 func GetAll() ([]*App, error) {
-	ds, err := datastore.OpenCoreDS(DS)
+	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return nil, err
 	}
@@ -110,6 +110,10 @@ func Install(filepath string) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
+	//TODO: Check for restricted names
+	if isRestricted(app.Id) {
+		return nil, fail.New("Application ID is invalid.  The application cannot be installed.", app)
+	}
 
 	a, err := Get(app.Id)
 	if err != nil {
@@ -139,7 +143,7 @@ func Install(filepath string) (*App, error) {
 		}
 	}
 
-	ds, err := datastore.OpenCoreDS(DS)
+	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return nil, err
 	}
@@ -355,4 +359,16 @@ func writeFile(reader io.Reader, filename string) error {
 		return err
 	}
 	return nil
+}
+
+var IsVersionFunc func(root string) bool
+
+func isRestricted(appid string) bool {
+	if appid == "available" {
+		return true
+	}
+	if IsVersionFunc != nil {
+		return IsVersionFunc(appid)
+	}
+	return false
 }

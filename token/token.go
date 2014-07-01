@@ -9,7 +9,7 @@ import (
 	"io"
 	"time"
 
-	"bitbucket.org/tshannon/freehold/datastore"
+	"bitbucket.org/tshannon/freehold/data"
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/log"
 	"bitbucket.org/tshannon/freehold/permission"
@@ -44,7 +44,7 @@ func New(t *Token, requester *user.User) (*Token, error) {
 
 	t.Created = time.Now().Format(time.RFC3339)
 
-	ds, err := datastore.OpenCoreDS(DS)
+	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +113,7 @@ func (t *Token) checkPermissionsLevel(prm *permission.Permission) error {
 func Get(u *user.User, token string) (*Token, error) {
 	t := &Token{}
 
-	ds, err := datastore.OpenCoreDS(DS)
+	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return nil, err
 	}
