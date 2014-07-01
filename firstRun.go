@@ -4,16 +4,13 @@ import (
 	"os"
 	"path"
 
+	"bitbucket.org/tshannon/freehold/app"
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/permission"
 	"bitbucket.org/tshannon/freehold/user"
 )
 
 var firstRun bool
-
-const coreFilePath = "/core/" + version + "/file/"
-
-//TODO: Replace with core and home apps, install at first run
 
 // makeFirstAdmin is used to make the first admin user, then set the default starting permissions
 // on all of the core resources
@@ -25,6 +22,10 @@ func makeFirstAdmin(username, password string) error {
 
 	//setup folders
 	err := os.MkdirAll(appDir, 0777)
+	if err != nil {
+		return err
+	}
+	err = os.MkdirAll(app.AvailableAppDir, 0777)
 	if err != nil {
 		return err
 	}
@@ -46,7 +47,12 @@ func makeFirstAdmin(username, password string) error {
 	}
 
 	//TODO: core and home app auto install
-	err = setCoreDefaultPermissions(username)
+	err = setupCore(username)
+	if err != nil {
+		return err
+	}
+
+	err = setupHome(username)
 	if err != nil {
 		return err
 	}
@@ -55,14 +61,28 @@ func makeFirstAdmin(username, password string) error {
 	return nil
 }
 
-// setCoreDefaultPermissions sets the initial starting permissions for all necessary core resources
-func setCoreDefaultPermissions(owner string) error {
-	//core files
-	return recurseSetPermissionOnFolder(coreFilePath, &permission.Permission{
+func setupHome(owner string) error {
+	a, err := app.Install("home.zip")
+	if err != nil {
+		return err
+	}
+	err = permission.Set(path.Join("/home", a.Root), &permission.Permission{
 		Owner:   owner,
-		Public:  "r",
-		Friend:  "r",
-		Private: "rw",
+		Friend:  permission.Read,
+		Private: permission.Read,
+	})
+
+	return err
+}
+
+// setupCore sets the initial starting permissions for all necessary core resources
+func setupCore(owner string) error {
+	//core files
+	return recurseSetPermissionOnFolder("/core/v1/file/", &permission.Permission{
+		Owner:   owner,
+		Public:  permission.Read,
+		Friend:  permission.Read,
+		Private: permission.Read + permission.Write,
 	})
 }
 
@@ -80,16 +100,16 @@ func recurseSetPermissionOnFolder(urlPath string, prm *permission.Permission) er
 	}
 
 	for i := range files {
-		fileUrl := path.Join(urlPath, files[i].Name())
+		fileURL := path.Join(urlPath, files[i].Name())
 		if files[i].IsDir() {
-			err = recurseSetPermissionOnFolder(fileUrl, prm)
+			err = recurseSetPermissionOnFolder(fileURL, prm)
 			if err != nil {
 				return err
 			}
 			continue
 		}
 
-		err = permission.Set(fileUrl, prm)
+		err = permission.Set(fileURL, prm)
 		if err != nil {
 			return err
 		}

@@ -31,7 +31,10 @@ func splitRootAndPath(pattern string) (root, path string) {
 	if pattern == "" {
 		panic("Invalid pattern")
 	}
-	split := strings.SplitN(pattern[1:], "/", 2)
+	if pattern[:1] == "/" {
+		pattern = pattern[1:]
+	}
+	split := strings.SplitN(pattern, "/", 2)
 	root = split[0]
 	if len(split) < 2 {
 		path = "/"
