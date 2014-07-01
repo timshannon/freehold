@@ -7,8 +7,7 @@ import (
 	"log"
 	"log/syslog"
 	"time"
-
-	"bitbucket.org/tshannon/freehold/datastore"
+	"bitbucket.org/tshannon/freehold/data"
 	"bitbucket.org/tshannon/freehold/setting"
 )
 
@@ -20,7 +19,7 @@ type Log struct {
 }
 
 func NewEntry(Type string, entry string) {
-	ds, err := datastore.OpenCoreDS(DS)
+	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		syslogError(errors.New("Error can't log entry to freehold instance. Entry: " +
 			entry + " error: " + err.Error()))

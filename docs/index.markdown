@@ -1177,7 +1177,7 @@ they are available to all users in the system, and possibly (depending on how th
 available to the public as well.
 
 By default application zip files must be present on the server running the freehold instance before they can
-be installed. Any .zip file in the folder *<freehold executable>/apps/available/* will be listed as an application
+be installed. Any .zip file in the folder *<freehold executable>/application/available/* will be listed as an application
 available to install. Installation of non-local applications can be accomplished by changing the setting **AllowWebAppInstall**, and making POST of that file to /v1/application/available.  This will download the application file to the server and make it available for install.  Note, this should only be done if you trust the source of the application file.
 
 The application zip file must have a file called app.json in the following format:
@@ -1302,7 +1302,7 @@ Response (200):
 **POST**
 
 *Install an Application* - Admins only - 
-Files must be in *<freehold executable>/apps/available/* 
+Files must be in *<freehold executable>/application/available/* 
 
 ```
 POST /v1/application
@@ -1344,7 +1344,7 @@ Response (201):
 **PUT**
 
 *Upgrade an Application* - Admins only - 
-Files must be in *<freehold executable>/apps/available/* or (if web-install is enabled) a valid
+Files must be in *<freehold executable>/application/available/* or (if web-install is enabled) a valid
 url. POSTing the same application that is already installed will fail.  PUTing it will replace
 the existing application with the new files from the install file.
 ```

@@ -2,8 +2,7 @@ package setting
 
 import (
 	"time"
-
-	"bitbucket.org/tshannon/freehold/datastore"
+	"bitbucket.org/tshannon/freehold/data"
 	"code.google.com/p/go.crypto/bcrypt"
 )
 
@@ -115,5 +114,5 @@ func init() {
 }
 
 func setDatastoreTimeout() {
-	datastore.SetTimeout(time.Duration(Int("DatastoreFileTimeout")) * time.Second)
+	data.SetTimeout(time.Duration(Int("DatastoreFileTimeout")) * time.Second)
 }

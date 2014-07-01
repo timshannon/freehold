@@ -119,10 +119,6 @@ const firstRunAdminPage = `
 		<input type="password" id="password" name="password" placeholder="Enter Password"><br>
 		<button type="submit">Submit</button>
 	</form>
-	
-	<br><br>
-	<p>If you have issues creating your adminstative user, or forget your password,<br>
-	you can reset your freehold instance by deleting the <b>core</b> folder in your running directory.</p>
 </body>
 </html>
 `

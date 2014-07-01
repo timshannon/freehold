@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"path"
 
-	"bitbucket.org/tshannon/freehold/application"
+	"bitbucket.org/tshannon/freehold/app"
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/log"
 	"bitbucket.org/tshannon/freehold/permission"
@@ -36,7 +36,7 @@ func appGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if input.Id != nil {
-		app, err := application.Get(*input.Id)
+		app, err := app.Get(*input.Id)
 		if errHandled(err, w) {
 			return
 		}
@@ -52,7 +52,7 @@ func appGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	apps, err := application.GetAll()
+	apps, err := app.GetAll()
 	if errHandled(err, w) {
 		return
 	}
@@ -87,7 +87,7 @@ func appPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app, err := application.Install(*input.File)
+	app, err := app.Install(*input.File)
 	if errHandled(err, w) {
 		return
 	}
@@ -120,7 +120,7 @@ func appPut(w http.ResponseWriter, r *http.Request) {
 		errHandled(fail.New("JSON request must contain file property", nil), w)
 		return
 	}
-	app, err := application.Upgrade(*input.File)
+	app, err := app.Upgrade(*input.File)
 	if errHandled(err, w) {
 		return
 	}
@@ -154,7 +154,7 @@ func appDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = application.Uninstall(*input.Id)
+	err = app.Uninstall(*input.Id)
 	if errHandled(err, w) {
 		return
 	}
@@ -174,7 +174,7 @@ func appRootGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app, err := application.Get(appHandler.Root(r))
+	app, err := app.Get(appHandler.Root(r))
 
 	if errHandled(err, w) {
 		return
@@ -206,7 +206,7 @@ func appAvailableGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	apps, fails, err := application.Available()
+	apps, fails, err := app.Available()
 	if errHandled(err, w) {
 		return
 	}
@@ -249,7 +249,7 @@ func appAvailablePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file, err := application.PostAvailable(*input.File)
+	file, err := app.PostAvailable(*input.File)
 	if errHandled(err, w) {
 		return
 	}
