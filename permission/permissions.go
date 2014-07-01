@@ -160,5 +160,5 @@ func removeWrite(permission *string) {
 }
 
 func removeRead(permission *string) {
-	*permission = strings.TrimRight(*permission, Write)
+	*permission = strings.TrimRight(*permission, Read)
 }

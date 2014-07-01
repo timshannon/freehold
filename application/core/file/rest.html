@@ -93,11 +93,18 @@
 
 <script src="/core/v1/file/js/jquery-2.1.1.min.js"></script>
 <script src="/core/v1/file/js/bootstrap.min.js"></script>
+<script src="/core/v1/file/js/fh.js"></script>
 <script language="Javascript">
-var CSRFToken = ""
 $(document).ready(function() { 
 
-checkAuth();
+if (fh.Auth().type != "none") {
+	$(".public").addClass("hidden");
+	$(".authenticated").removeClass("hidden");
+} else {
+	$(".authenticated").addClass("hidden");
+	$(".public").removeClass("hidden");
+}					
+
 
 $("#loginButton").click(function() {
 		clearErr()
@@ -113,53 +120,30 @@ $( "#login" ).submit(function( event ) {
 	if ($("#rememberMe").prop("checked")) {
 		var today = new Date(Date.now());
 		today.setDate(today.getDate() + 15); 	
-		data = {
-			expires: today
-		}
+			data = today
 	}
 	if ($("#username").val() === "") { 
 		err("Username is required");
 		return;
 	}
 
-	$.ajax({
-			type: "POST",
-			url: "/v1/auth/session",
-			beforeSend: function (xhr) {
-				xhr.setRequestHeader ("Authorization", "Basic "+btoa($("#username").val()+":"+$("#password").val()));
-			},
-			dataType: "json",
-			data: JSON.stringify(data),
-			complete: function (xhr) {
-				var result = JSON.parse(xhr.responseText);
-				if (result.status == "success") {
-					location.reload();
-				} else {
-					err(result.message);
-				}
-			},
-	});
+	var result = fh.Login($("#username").val(),$("#password").val(),data);
+	if (result.status == "success") {
+		location.reload();
+	} else {
+		err(result.message);
+	}
 });
 
 $("#logoutButton").click(function() {
-	$.ajax({
-			type: "DELETE",
-			url: "/v1/auth/session",
-			dataType: "json",
-			beforeSend: function (xhr) {
-				xhr.setRequestHeader ("X-CSRFToken", CSRFToken);
-			},
-			complete: function (xhr) {
-				var result = JSON.parse(xhr.responseText);
-				if (result.status == "success") {
-					location.reload();
-				} else {
-					alert(result.message);
-				}
-			},
-	});
-
+	var result = fh.Logout();
+	if (result.status == "success") {
+		location.reload();
+	} else {
+		alert(JSON.stringify(result));
+	}
 });
+
 
 //testing
 $( "#resttest" ).submit(function( event ) {
@@ -168,7 +152,7 @@ $( "#resttest" ).submit(function( event ) {
 			type: $("#method").val(),
 			url: $("#url").val(),
 			beforeSend: function (xhr) {
-				xhr.setRequestHeader ("X-CSRFToken", CSRFToken);
+				xhr.setRequestHeader ("X-CSRFToken", fh.Auth.CSRFToken);
 			},
 			dataType: "json",
 			data: $("#request").val(),
@@ -180,7 +164,8 @@ $( "#resttest" ).submit(function( event ) {
 
 });
 	
-});
+
+}); //end document read
 
 function err(msg) {
 	$("#err").removeClass("hidden").text(msg);
@@ -190,25 +175,6 @@ function clearErr() {
 	$("#err").addClass("hidden").text("");
 }
 
-function checkAuth() {
-	//check if authenticated
-	$.ajax({
-				type: "GET",
-				url: "/v1/auth",
-				dataType: "json",
-				complete: function (xhr) {
-					CSRFToken = xhr.getResponseHeader("X-CSRFToken");
-					var result = JSON.parse(xhr.responseText);
-					if (result.status == "success" && result.data.type != "none") {
-						$(".public").addClass("hidden");
-						$(".authenticated").removeClass("hidden");
-					} else {
-						$(".authenticated").addClass("hidden");
-						$(".public").removeClass("hidden");
-					}					
-				},
-		});
-}
 </script>
 </body>
 </html>

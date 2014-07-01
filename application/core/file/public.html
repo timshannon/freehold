@@ -76,14 +76,15 @@
 
 <script src="/core/v1/file/js/jquery-2.1.1.min.js"></script>
 <script src="/core/v1/file/js/bootstrap.min.js"></script>
+<script src="/core/v1/file/js/fh.js"></script>
 <script language="Javascript">
 $(document).ready(function() { 
-
 
 $("#loginButton").click(function() {
 		clearErr()
 		$("#loginModal").modal();			
 });
+
 
 
 $( "#login" ).submit(function( event ) {
@@ -94,32 +95,19 @@ $( "#login" ).submit(function( event ) {
 	if ($("#rememberMe").prop("checked")) {
 		var today = new Date(Date.now());
 		today.setDate(today.getDate() + 15); 	
-		data = {
-			expires: today
-		}
+			data = today
 	}
 	if ($("#username").val() === "") { 
 		err("Username is required");
 		return;
 	}
 
-	$.ajax({
-			type: "POST",
-			url: "/v1/auth/session",
-			beforeSend: function (xhr) {
-				xhr.setRequestHeader ("Authorization", "Basic "+btoa($("#username").val()+":"+$("#password").val()));
-			},
-			dataType: "json",
-			data: JSON.stringify(data),
-			complete: function (xhr) {
-				var result = JSON.parse(xhr.responseText);
-				if (result.status == "success") {
-					location.reload();
-				} else {
-					err(result.message);
-				}
-			},
-	});
+	var result = fh.Login($("#username").val(),$("#password").val(),data);
+	if (result.status == "success") {
+		location.reload();
+	} else {
+		err(result.message);
+	}
 });
 
 });

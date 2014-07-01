@@ -231,7 +231,14 @@ func getAppsFromDir(dir string) (apps []*App, failures []error, err error) {
 			}
 			return apps, failures, err
 		}
-		apps = append(apps, app)
+		//check if app is already installed
+		check, err := Get(app.Id)
+		if err != nil {
+			return nil, nil, err
+		}
+		if check == nil {
+			apps = append(apps, app)
+		}
 	}
 
 	return apps, failures, nil

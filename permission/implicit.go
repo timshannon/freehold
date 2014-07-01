@@ -47,8 +47,8 @@ func Properties(base *Permission) *Permission {
 	prm := *base
 	prm.Private = Read + Write
 	removeRead(&prm.Public)
-	removeWrite(&prm.Friend)
 	removeWrite(&prm.Public)
+	removeWrite(&prm.Friend)
 	return &prm
 }
 

@@ -96,7 +96,7 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 
 	for i := range files {
 		var size int64
-		var prm *permission.Permission
+		var filePrm *permission.Permission
 		if files[i].IsDir() {
 			if auth.User == nil {
 				//Public can't view the existence of directories
@@ -112,14 +112,14 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 			propPrm := permission.Properties(prm)
-			if !propPrm.CanRead(auth.User) {
-				prm = nil
+			if propPrm.CanRead(auth.User) {
+				filePrm = prm
 			}
 		}
 
 		fileList = append(fileList, Properties{
 			Name:        files[i].Name(),
-			Permissions: prm,
+			Permissions: filePrm,
 			Url:         path.Join(resource, files[i].Name()),
 			Size:        size,
 		})

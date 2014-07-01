@@ -3,7 +3,6 @@ package main
 import (
 	"net/http"
 	"text/template"
-
 	"bitbucket.org/tshannon/freehold/setting"
 )
 
@@ -27,7 +26,8 @@ func rootGet(w http.ResponseWriter, r *http.Request) {
 
 	var homeFile string
 	if auth.User != nil {
-		homeFile = auth.User.HomeApp
+		serveApp(w, r, auth.User.HomeApp, auth)
+		return
 	}
 
 	if homeFile == "" {

@@ -36,18 +36,18 @@ func appGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if input.Id != nil {
-		app, err := app.Get(*input.Id)
+		a, err := app.Get(*input.Id)
 		if errHandled(err, w) {
 			return
 		}
 
-		if app == nil {
+		if a == nil {
 			four04(w, r)
 			return
 		}
 		respondJsend(w, &JSend{
 			Status: statusSuccess,
-			Data:   app,
+			Data:   a,
 		})
 		return
 	}
@@ -87,13 +87,13 @@ func appPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app, err := app.Install(*input.File)
+	a, err := app.Install(*input.File)
 	if errHandled(err, w) {
 		return
 	}
 	respondJsend(w, &JSend{
 		Status: statusSuccess,
-		Data:   app,
+		Data:   a,
 	})
 
 }
@@ -120,13 +120,13 @@ func appPut(w http.ResponseWriter, r *http.Request) {
 		errHandled(fail.New("JSON request must contain file property", nil), w)
 		return
 	}
-	app, err := app.Upgrade(*input.File)
+	a, err := app.Upgrade(*input.File)
 	if errHandled(err, w) {
 		return
 	}
 	respondJsend(w, &JSend{
 		Status: statusSuccess,
-		Data:   app,
+		Data:   a,
 	})
 }
 
@@ -173,21 +173,25 @@ func appRootGet(w http.ResponseWriter, r *http.Request) {
 	if errHandled(err, w) {
 		return
 	}
+	serveApp(w, r, appHandler.Root(r), auth)
 
-	app, err := app.Get(appHandler.Root(r))
+}
+
+func serveApp(w http.ResponseWriter, r *http.Request, appid string, auth *Auth) {
+	a, err := app.Get(appid)
 
 	if errHandled(err, w) {
 		return
 	}
-	if app == nil {
+	if a == nil {
 		four04(w, r)
 		return
 	}
 
-	root := app.Root
+	root := a.Root
 	if root == "" {
-		log.Error(errors.New("App " + app.Id + " has no root specified."))
-		root = path.Join("/", app.Id, version, "file")
+		log.Error(errors.New("App " + a.Id + " has no root specified."))
+		root = path.Join("/", a.Id, version, "file")
 	}
 
 	serveResource(w, r, root, auth)
