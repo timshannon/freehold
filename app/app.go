@@ -14,6 +14,7 @@ import (
 	"bitbucket.org/tshannon/freehold/data"
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/log"
+	"bitbucket.org/tshannon/freehold/permission"
 	"bitbucket.org/tshannon/freehold/setting"
 )
 
@@ -38,6 +39,7 @@ type App struct {
 	Author      string `json:"author,omitempty"`
 	Root        string `json:"root,omitempty"`
 	Icon        string `json:"icon,omitempty"`
+	Version     string `json:"version,omitempty"`
 }
 
 func Get(id string) (*App, error) {
@@ -105,12 +107,11 @@ func GetAll() ([]*App, error) {
 	return apps, nil
 }
 
-func Install(filepath string) (*App, error) {
+func Install(filepath, owner string) (*App, error) {
 	app, err := appInfoFromZip(filepath)
 	if err != nil {
 		return nil, err
 	}
-	//TODO: Check for restricted names
 	if isRestricted(app.Id) {
 		return nil, fail.New("Application ID is invalid.  The application cannot be installed.", app)
 	}
@@ -137,10 +138,13 @@ func Install(filepath string) (*App, error) {
 			log.Error(err)
 			return nil, fail.NewFromErr(FailAppInvalid, filepath)
 		}
-		err = writeFile(fr, path.Join(installDir, f.Name))
+		filename := path.Join(installDir, f.Name)
+		err = writeFile(fr, filename)
 		if err != nil {
 			return nil, err
 		}
+		//set permissions
+		err = permission.Set(filename, permission.FileNewDefault(owner))
 	}
 
 	ds, err := data.OpenCoreDS(DS)
@@ -158,7 +162,7 @@ func Install(filepath string) (*App, error) {
 	return app, nil
 }
 
-func Upgrade(filepath string) (*App, error) {
+func Upgrade(filepath, owner string) (*App, error) {
 	app, err := appInfoFromZip(filepath)
 	if err != nil {
 		return nil, err
@@ -168,7 +172,7 @@ func Upgrade(filepath string) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	app, err = Install(filepath)
+	app, err = Install(filepath, owner)
 	if err != nil {
 		return nil, err
 	}

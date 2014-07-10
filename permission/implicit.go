@@ -40,6 +40,14 @@ func FileDelete(base *Permission) *Permission {
 	return &prm
 }
 
+//Default file permissions for new files
+func FileNewDefault(owner string) *Permission {
+	return &Permission{
+		Owner:   owner,
+		Private: Read + Write,
+	}
+}
+
 //Only owners can update properties.
 // Public can't view any properites
 // authenticated users who have read rights can read properties

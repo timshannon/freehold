@@ -87,7 +87,7 @@ func appPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	a, err := app.Install(*input.File)
+	a, err := app.Install(*input.File, auth.User.Username())
 	if errHandled(err, w) {
 		return
 	}
@@ -120,7 +120,7 @@ func appPut(w http.ResponseWriter, r *http.Request) {
 		errHandled(fail.New("JSON request must contain file property", nil), w)
 		return
 	}
-	a, err := app.Upgrade(*input.File)
+	a, err := app.Upgrade(*input.File, auth.User.Username())
 	if errHandled(err, w) {
 		return
 	}

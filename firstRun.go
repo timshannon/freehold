@@ -46,7 +46,6 @@ func makeFirstAdmin(username, password string) error {
 		return err
 	}
 
-	//TODO: core and home app auto install
 	err = setupCore(username)
 	if err != nil {
 		return err
@@ -62,23 +61,14 @@ func makeFirstAdmin(username, password string) error {
 }
 
 func setupHome(owner string) error {
-	a, err := app.Install("home.zip")
-	if err != nil {
-		return err
-	}
-	err = permission.Set(path.Join("/home", a.Root), &permission.Permission{
-		Owner:   owner,
-		Friend:  permission.Read,
-		Private: permission.Read,
-	})
-
+	_, err := app.Install(path.Join(app.AvailableAppDir, "home.zip"), owner)
 	return err
 }
 
 // setupCore sets the initial starting permissions for all necessary core resources
 func setupCore(owner string) error {
 	//core files
-	return recurseSetPermissionOnFolder("/core/v1/file/", &permission.Permission{
+	return recurseSetPermissionOnFolder("application/core/file/", &permission.Permission{
 		Owner:   owner,
 		Public:  permission.Read,
 		Friend:  permission.Read,
@@ -86,8 +76,7 @@ func setupCore(owner string) error {
 	})
 }
 
-func recurseSetPermissionOnFolder(urlPath string, prm *permission.Permission) error {
-	filePath := urlPathToFile(urlPath)
+func recurseSetPermissionOnFolder(filePath string, prm *permission.Permission) error {
 	dir, err := os.Open(filePath)
 	defer dir.Close()
 	if err != nil {
@@ -100,16 +89,16 @@ func recurseSetPermissionOnFolder(urlPath string, prm *permission.Permission) er
 	}
 
 	for i := range files {
-		fileURL := path.Join(urlPath, files[i].Name())
+		child := path.Join(filePath, files[i].Name())
 		if files[i].IsDir() {
-			err = recurseSetPermissionOnFolder(fileURL, prm)
+			err = recurseSetPermissionOnFolder(child, prm)
 			if err != nil {
 				return err
 			}
 			continue
 		}
 
-		err = permission.Set(fileURL, prm)
+		err = permission.Set(child, prm)
 		if err != nil {
 			return err
 		}
