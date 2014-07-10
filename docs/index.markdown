@@ -1185,6 +1185,7 @@ The application zip file must have a file called app.json in the following forma
 {
 	id: "datastore-manager",
 	name: "Datastore Manager",
+	version: "0.1",
 	description: "Application for managing datastore files.",
 	author: "Tim Shannon - shannon.timothy@gmail.com",
 	root: "index.htm",

@@ -78,9 +78,11 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 
 				continue
 			}
+			permission.Set(filename, permission.FileNewDefault(auth.User.Username()))
+			_, name := path.Split(filename)
 
 			fileList = append(fileList, Properties{
-				Name: filename,
+				Name: name,
 				Url:  resource,
 			})
 		}
@@ -101,8 +103,9 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resource := r.URL.Path
+	filename := urlPathToFile(resource)
 
-	file, err := os.Open(urlPathToFile(resource))
+	file, err := os.Open(filename)
 	defer file.Close()
 
 	if os.IsNotExist(err) {
@@ -120,7 +123,7 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !info.IsDir() {
-		prm, err := permission.Get(resource)
+		prm, err := permission.Get(filename)
 		if errHandled(err, w) {
 			return
 		}
@@ -136,7 +139,7 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 			errHandled(fail.New("You do not have owner permissions on this resource.", resource), w)
 			return
 		}
-		os.Remove(urlPathToFile(resource))
+		os.Remove(filename)
 		return
 	}
 
@@ -152,7 +155,8 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 
 	for i := range files {
 		if !files[i].IsDir() {
-			child := path.Join(resource, files[i].Name())
+			child := path.Join(dir, files[i].Name())
+			cRes := path.Join(resource, files[i].Name())
 
 			prm, err := permission.Get(child)
 			if errHandled(err, w) {
@@ -161,11 +165,11 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 			prm = permission.FileDelete(prm)
 
 			if prm.CanWrite(auth.User) {
-				os.Remove(path.Join(dir, files[i].Name()))
+				os.Remove(child)
 
 				fileList = append(fileList, Properties{
 					Name: files[i].Name(),
-					Url:  child,
+					Url:  cRes,
 				})
 			} else {
 				if !prm.CanRead(auth.User) {
@@ -176,7 +180,7 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 				failures = append(failures, fail.New("You do not have owner permissions on this resource.",
 					&Properties{
 						Name: files[i].Name(),
-						Url:  child,
+						Url:  cRes,
 					}))
 
 			}
@@ -201,7 +205,8 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 }
 
 func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth *Auth) {
-	file, err := os.Open(urlPathToFile(resource))
+	filename := urlPathToFile(resource)
+	file, err := os.Open(filename)
 	defer file.Close()
 
 	if os.IsNotExist(err) {
@@ -223,7 +228,7 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 		if isDocPath(resource) {
 			prm = permission.Doc()
 		} else {
-			prm, err = permission.Get(resource)
+			prm, err = permission.Get(filename)
 			if errHandled(err, w) {
 				return
 			}
@@ -237,8 +242,6 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 		serveFile(w, r, file, info)
 		return
 	}
-
-	dir := file.Name()
 
 	files, err := file.Readdir(0)
 	if errHandled(err, w) {
@@ -255,7 +258,7 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 		if isDocPath(resource) {
 			prm = permission.Doc()
 		} else {
-			prm, err = permission.Get(path.Join(resource, files[i].Name()))
+			prm, err = permission.Get(path.Join(filename, files[i].Name()))
 			if errHandled(err, w) {
 				return
 			}
@@ -266,7 +269,7 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 			// of the dir
 			canReadDir = true
 			if strings.TrimRight(files[i].Name(), path.Ext(files[i].Name())) == "index" {
-				indexFile, err := os.Open(path.Join(dir, files[i].Name()))
+				indexFile, err := os.Open(path.Join(filename, files[i].Name()))
 				defer indexFile.Close()
 
 				if errHandled(err, w) {
