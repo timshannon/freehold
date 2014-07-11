@@ -10,6 +10,7 @@
 <nav class="navbar navbar-default" role="navigation">
 	<div class="navbar-header">
 		<a class="navbar-brand" href="/">freehold</a>
+		<button type="button" id="logoutButton" class="btn btn-default navbar-btn">Log Out</button>
 	</div>
 </nav>
 
@@ -20,5 +21,15 @@
 <script src="/core/v1/file/js/bootstrap.min.js"></script>
 <script src="/core/v1/file/js/ractive.min.js"></script>
 <script src="/core/v1/file/js/fh.js"></script>
+<script language="Javascript">
+$(document).ready(function() { 
+
+$("#logoutButton").click(function() {
+	fh.Logout();
+	window.location = "/"
+});
+
+}); //end ready
+</script>
 </body>
 </html>

@@ -40,6 +40,7 @@ func makeFirstAdmin(username, password string) error {
 
 	admin := &user.User{
 		Password: password,
+		Admin:    true,
 	}
 	err = user.New(username, admin)
 	if err != nil {

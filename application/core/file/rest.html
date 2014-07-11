@@ -152,7 +152,7 @@ $( "#resttest" ).submit(function( event ) {
 			type: $("#method").val(),
 			url: $("#url").val(),
 			beforeSend: function (xhr) {
-				xhr.setRequestHeader ("X-CSRFToken", fh.Auth.CSRFToken);
+				xhr.setRequestHeader ("X-CSRFToken", fh.Auth().CSRFToken);
 			},
 			dataType: "json",
 			data: $("#request").val(),
