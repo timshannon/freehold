@@ -5,7 +5,9 @@ import os
 
 def zip(app):
     print "zipping " + app
-    subprocess.call(["zip", "-r", "../application/available/"+app+".zip", app])
+    os.chdir(app)
+    subprocess.call(["zip", "-r", "../../application/available/"+app+".zip", ".", "-x", ".*"])
+    os.chdir("..")
 
 
 if len(sys.argv) > 1:

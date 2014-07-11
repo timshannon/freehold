@@ -1183,13 +1183,13 @@ available to install. Installation of non-local applications can be accomplished
 The application zip file must have a file called app.json in the following format:
 ```
 {
-	id: "datastore-manager",
-	name: "Datastore Manager",
-	version: "0.1",
-	description: "Application for managing datastore files.",
-	author: "Tim Shannon - shannon.timothy@gmail.com",
-	root: "index.htm",
-	icon: "v1/file/images/ds-icon.png"
+	"id": "datastore-manager",
+	"name": "Datastore Manager",
+	"version": "0.1",
+	"description": "Application for managing datastore files.",
+	"author": "Tim Shannon - shannon.timothy@gmail.com",
+	"root": "v1/file/index.html",
+	"icon": "v1/file/images/ds-icon.png"
 }
 ```
 * id - Path on which the application will be installed (`https://host/<app-id>/`). Must not match any existing installed

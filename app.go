@@ -191,9 +191,9 @@ func serveApp(w http.ResponseWriter, r *http.Request, appid string, auth *Auth) 
 	root := a.Root
 	if root == "" {
 		log.Error(errors.New("App " + a.Id + " has no root specified."))
-		root = path.Join("/", a.Id, version, "file")
 	}
 
+	root = path.Join("/", a.Id, root)
 	serveResource(w, r, root, auth)
 }
 

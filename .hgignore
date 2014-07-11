@@ -5,3 +5,4 @@ freehold
 .*\.pem$
 settings.json
 ^core$
+^application$
