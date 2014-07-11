@@ -1,0 +1,9 @@
+{
+	"id": "home",
+	"name": "Home",
+	"version": "0.1",
+	"description": "Core Home Application",
+	"author": "Tim Shannon - shannon.timothy@gmail.com",
+	"root": "/v1/file/index.html",
+	"icon": ""
+}

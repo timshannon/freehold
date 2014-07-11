@@ -61,7 +61,7 @@ func makeFirstAdmin(username, password string) error {
 }
 
 func setupHome(owner string) error {
-	_, err := app.Install(path.Join(app.AvailableAppDir, "home.zip"), owner)
+	_, err := app.Install("home.zip", owner)
 	return err
 }
 

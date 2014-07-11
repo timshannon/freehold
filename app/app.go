@@ -108,6 +108,7 @@ func GetAll() ([]*App, error) {
 }
 
 func Install(filepath, owner string) (*App, error) {
+	filepath = path.Join(AvailableAppDir, filepath)
 	app, err := appInfoFromZip(filepath)
 	if err != nil {
 		return nil, err
@@ -131,14 +132,22 @@ func Install(filepath, owner string) (*App, error) {
 		return nil, err
 	}
 	for _, f := range r.File {
-		fr, err := f.Open()
+		filename := path.Join(installDir, f.Name)
 
-		defer fr.Close()
+		if f.FileInfo().IsDir() {
+			err := os.MkdirAll(filename, 0777)
+			if err != nil {
+				return nil, err
+			}
+			continue
+		}
+		fr, err := f.Open()
 		if err != nil {
 			log.Error(err)
 			return nil, fail.NewFromErr(FailAppInvalid, filepath)
 		}
-		filename := path.Join(installDir, f.Name)
+
+		defer fr.Close()
 		err = writeFile(fr, filename)
 		if err != nil {
 			return nil, err
@@ -250,10 +259,11 @@ func getAppsFromDir(dir string) (apps []*App, failures []error, err error) {
 
 func appInfoFromZip(file string) (*App, error) {
 	r, err := appFileReader(file)
-	defer r.Close()
 	if err != nil {
 		return nil, err
 	}
+
+	defer r.Close()
 	for _, f := range r.File {
 		if f.Name == "app.json" {
 			app, err := appInfoFromJsonFile(f)
@@ -305,9 +315,7 @@ func appFileReader(zippath string) (*zip.ReadCloser, error) {
 		return nil, fail.New("Invalid application path.", zippath)
 	}
 
-	filepath := path.Join(AvailableAppDir, zippath)
-
-	r, err := zip.OpenReader(filepath)
+	r, err := zip.OpenReader(zippath)
 	if os.IsNotExist(err) {
 		return nil, fail.NewFromErr(FailAppNotFound, zippath)
 	}

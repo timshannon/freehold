@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"text/template"
+
 	"bitbucket.org/tshannon/freehold/setting"
 )
 
@@ -15,7 +16,8 @@ func rootGet(w http.ResponseWriter, r *http.Request) {
 		t.Execute(w, nil)
 		return
 	}
-	if r.URL.Path != "/" {
+	_, pth := splitRootAndPath(r.URL.Path)
+	if pth != "/" {
 		four04(w, r)
 		return
 	}
@@ -24,17 +26,14 @@ func rootGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var homeFile string
 	if auth.User != nil {
-		serveApp(w, r, auth.User.HomeApp, auth)
-		return
+		if auth.User.HomeApp != "" {
+			serveApp(w, r, auth.User.HomeApp, auth)
+			return
+		}
 	}
 
-	if homeFile == "" {
-		homeFile = setting.String("PublicRootFile")
-	}
-
-	serveResource(w, r, homeFile, auth)
+	serveResource(w, r, setting.String("PublicRootFile"), auth)
 }
 
 //Only used on first login

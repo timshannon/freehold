@@ -52,7 +52,7 @@ func four04(w http.ResponseWriter, r *http.Request) {
 		log.Error(errors.New("Resource not found: " + r.URL.String()))
 	}
 
-	prm, err := permission.Get(setting.String("404File"))
+	prm, err := permission.Get(urlPathToFile(setting.String("404File")))
 	if err != nil {
 		log.Error(err)
 		http.NotFound(w, r)
