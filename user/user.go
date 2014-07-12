@@ -187,6 +187,6 @@ func loginFailure(u *User) error {
 		log.NewEntry(authLogType, "User "+u.username+" has failed a login attempt.")
 	}
 	u.clearPassword()
-	return fail.NewFromErr(FailLogon, u)
+	return fail.NewFromErr(FailLogon, u.username)
 
 }
