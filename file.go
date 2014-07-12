@@ -1,12 +1,15 @@
 package main
 
 import (
+	"crypto/md5"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
 	"strings"
+	"time"
 
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/log"
@@ -304,11 +307,16 @@ func serveFile(w http.ResponseWriter, r *http.Request, file *os.File, info os.Fi
 		if errHandled(err, w) {
 			return
 		}
+
+		w.Header().Add("ETag", fmt.Sprintf("%x", md5.Sum(buf)))
+		//TODO: Make markdown readseeker and use serveContent
 		w.Write(buf)
 		return
 	}
+	_ = info.ModTime()
 
-	http.ServeContent(w, r, file.Name(), info.ModTime(), file)
+	w.Header().Add("ETag", md5Sum(file))
+	http.ServeContent(w, r, file.Name(), time.Time{}, file)
 	return
 }
 
@@ -317,7 +325,6 @@ func docsGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func writeMarkdown(file *os.File) ([]byte, error) {
-	//TODO: Cache result and check modtime? Might be overkill.
 	buf, err := ioutil.ReadAll(file)
 	if err != nil {
 		return nil, err
