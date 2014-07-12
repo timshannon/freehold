@@ -131,7 +131,7 @@ $( "#login" ).submit(function( event ) {
 	if (result.status == "success") {
 		location.reload();
 	} else {
-		err(result.message);
+		err(result.data.message);
 	}
 });
 

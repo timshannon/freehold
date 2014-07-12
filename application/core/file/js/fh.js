@@ -46,6 +46,7 @@ return {
 			data: JSON.stringify(expData),
 			complete: function (xhr) {
 				result = JSON.parse(xhr.responseText);
+				console.log(result);
 			},
 		});
 		return result;
