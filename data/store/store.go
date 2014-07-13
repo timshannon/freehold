@@ -124,6 +124,7 @@ func (o *openedFiles) close(name string) {
 		err := db.Close()
 
 		if err != nil {
+			logError(err)
 		}
 
 	}
@@ -132,7 +133,7 @@ func (o *openedFiles) close(name string) {
 func (d *DS) reset() error {
 	if !d.timeout.Reset(Timeout()) {
 		var err error
-		d.DB, err = kv.Open(d.filePath, nil)
+		d, err = files.open(d.filePath)
 		return err
 	}
 	return nil

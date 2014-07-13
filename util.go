@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/md5"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path"
@@ -101,10 +102,10 @@ func halt(msg string) {
 	os.Exit(2)
 }
 
-func md5Sum(file *os.File) string {
-	buff, err := ioutil.ReadAll(file)
+func md5Sum(rs io.Reader) string {
+	buff, err := ioutil.ReadAll(rs)
 	if err != nil {
-		halt("Error calculating MD5 sum on file " + file.Name() + " Error: " + err.Error())
+		halt("Error calculating MD5 sum: " + err.Error())
 	}
 	return fmt.Sprintf("%x", md5.Sum(buff))
 }
