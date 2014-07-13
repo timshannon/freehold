@@ -1,15 +1,16 @@
 package main
 
 import (
-	"crypto/md5"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"time"
+
+	"bytes"
 
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/log"
@@ -82,10 +83,9 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 			permission.Set(filename, permission.FileNewDefault(auth.User.Username()))
-			_, name := path.Split(filename)
 
 			fileList = append(fileList, Properties{
-				Name: name,
+				Name: filepath.Base(filename),
 				Url:  resource,
 			})
 		}
@@ -171,7 +171,7 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 				os.Remove(child)
 
 				fileList = append(fileList, Properties{
-					Name: files[i].Name(),
+					Name: filepath.Base(files[i].Name()),
 					Url:  cRes,
 				})
 			} else {
@@ -182,7 +182,7 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 				status = statusFail
 				failures = append(failures, fail.New("You do not have owner permissions on this resource.",
 					&Properties{
-						Name: files[i].Name(),
+						Name: filepath.Base(files[i].Name()),
 						Url:  cRes,
 					}))
 
@@ -242,7 +242,7 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 			return
 		}
 
-		serveFile(w, r, file, info)
+		serveFile(w, r, file)
 		return
 	}
 
@@ -278,7 +278,7 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 				if errHandled(err, w) {
 					return
 				}
-				serveFile(w, r, indexFile, files[i])
+				serveFile(w, r, indexFile)
 				return
 
 			}
@@ -300,7 +300,9 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 	four04(w, r)
 }
 
-func serveFile(w http.ResponseWriter, r *http.Request, file *os.File, info os.FileInfo) {
+func serveFile(w http.ResponseWriter, r *http.Request, file *os.File) {
+
+	var rs io.ReadSeeker
 
 	if path.Ext(file.Name()) == markdownType {
 		buf, err := writeMarkdown(file)
@@ -308,15 +310,14 @@ func serveFile(w http.ResponseWriter, r *http.Request, file *os.File, info os.Fi
 			return
 		}
 
-		w.Header().Add("ETag", fmt.Sprintf("%x", md5.Sum(buf)))
-		//TODO: Make markdown readseeker and use serveContent
-		w.Write(buf)
-		return
+		rs = bytes.NewReader(buf)
+		w.Header().Add("Content-Type", "text/html; charset=utf-8")
+	} else {
+		rs = file
 	}
-	_ = info.ModTime()
 
-	w.Header().Add("ETag", md5Sum(file))
-	http.ServeContent(w, r, file.Name(), time.Time{}, file)
+	w.Header().Add("ETag", md5Sum(rs))
+	http.ServeContent(w, r, file.Name(), time.Time{}, rs)
 	return
 }
 

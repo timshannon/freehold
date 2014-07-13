@@ -23,7 +23,7 @@ http status codes.
 * fail - There was a problem with the data submitted - client error - usually (400)
 * error - There was a problem on the server - server error - usually (500)
 
-If status is error look for `data.message`.  It will always be there in error returns. 
+If status is error look for `data.message`.  It will always be there in error / failure returns. 
 For multiple failures, there will be a failure item with a message for each that has failed.
 ```
 {
@@ -126,7 +126,7 @@ Response (500):
 	}
 }
 ```
-To replace an existing file, you'll need to delete the existing file first.
+To replace an existing file, you'll need to delete the previously uploaded file first.
 
 Multiple file posts will have multiple entries in the data field.
 ```

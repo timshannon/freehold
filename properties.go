@@ -41,7 +41,8 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resource := resPathFromProperty(r.URL.Path)
-	file, err := os.Open(urlPathToFile(resource))
+	filename := urlPathToFile(resource)
+	file, err := os.Open(filename)
 	defer file.Close()
 
 	if os.IsNotExist(err) {
@@ -59,7 +60,7 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !info.IsDir() {
-		prm, err := permission.Get(resource)
+		prm, err := permission.Get(filename)
 
 		if errHandled(err, w) {
 			return
@@ -104,7 +105,7 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 			}
 		} else {
 			size = files[i].Size()
-			prm, err := permission.Get(path.Join(resource, files[i].Name()))
+			prm, err := permission.Get(path.Join(filename, files[i].Name()))
 			if errHandled(err, w) {
 				return
 			}
@@ -118,7 +119,7 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 		}
 
 		fileList = append(fileList, Properties{
-			Name:        files[i].Name(),
+			Name:        filepath.Base(files[i].Name()),
 			Permissions: filePrm,
 			Url:         path.Join(resource, files[i].Name()),
 			Size:        size,
@@ -145,7 +146,7 @@ type PermissionsInput struct {
 
 // makePermission translates a partial permissions input to a full permissions type
 // by filling in the unspecfied entries from the datastore
-func (pi *PermissionsInput) makePermission(resource string, curPrm *permission.Permission) *permission.Permission {
+func (pi *PermissionsInput) makePermission(curPrm *permission.Permission) *permission.Permission {
 	prm := *curPrm
 	if pi.Owner != nil {
 		prm.Owner = *pi.Owner
@@ -182,7 +183,8 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resource := resPathFromProperty(r.URL.Path)
-	file, err := os.Open(urlPathToFile(resource))
+	filename := urlPathToFile(resource)
+	file, err := os.Open(filename)
 	defer file.Close()
 
 	if os.IsNotExist(err) {
@@ -200,12 +202,12 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !info.IsDir() {
-		prm, err := permission.Get(resource)
+		prm, err := permission.Get(filename)
 		if errHandled(err, w) {
 			return
 		}
 
-		newprm := input.Permissions.makePermission(resource, prm)
+		newprm := input.Permissions.makePermission(prm)
 		propPrm := permission.Properties(prm)
 
 		if !propPrm.CanWrite(auth.User) {
@@ -216,13 +218,13 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 
 			errHandled(fail.New("You do not have owner permissions on this resource.",
 				&Properties{
-					Name: file.Name(),
+					Name: filepath.Base(file.Name()),
 					Url:  resource,
 				}), w)
 
 			return
 		}
-		err = permission.Set(resource, newprm)
+		err = permission.Set(filename, newprm)
 
 		if errHandled(err, w) {
 			return
@@ -231,7 +233,7 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 		respondJsend(w, &JSend{
 			Status: statusSuccess,
 			Data: &Properties{
-				Name: file.Name(),
+				Name: filepath.Base(file.Name()),
 				Url:  resource,
 			},
 		})
@@ -249,13 +251,14 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 
 	for i := range files {
 		if !files[i].IsDir() {
-			child := path.Join(resource, files[i].Name())
+			child := path.Join(filename, files[i].Name())
+			cRes := path.Join(resource, files[i].Name())
 
 			prm, err := permission.Get(child)
 			if errHandled(err, w) {
 				return
 			}
-			newprm := input.Permissions.makePermission(child, prm)
+			newprm := input.Permissions.makePermission(prm)
 
 			propPrm := permission.Properties(prm)
 			if propPrm.CanWrite(auth.User) {
@@ -272,8 +275,8 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 				status = statusFail
 				failures = append(failures, fail.New("You do not have owner permissions on this resource.",
 					&Properties{
-						Name: files[i].Name(),
-						Url:  child,
+						Name: filepath.Base(files[i].Name()),
+						Url:  cRes,
 					}))
 			}
 		}

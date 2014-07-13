@@ -58,6 +58,9 @@ func Get(resource string) (*Permission, error) {
 
 func Set(resource string, permissions *Permission) error {
 	err := permissions.validate()
+	if err != nil {
+		return err
+	}
 
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
