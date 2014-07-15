@@ -244,14 +244,10 @@ func getAppsFromDir(dir string) (apps []*App, failures []error, err error) {
 			}
 			return apps, failures, err
 		}
-		//check if app is already installed
-		check, err := Get(app.Id)
-		if err != nil {
-			return nil, nil, err
-		}
-		if check == nil {
-			apps = append(apps, app)
-		}
+		//return app even if it's already installed
+		// leave it up to the client to differentiate
+		// between files for upgrade vs new apps (i.e compare version)
+		apps = append(apps, app)
 	}
 
 	return apps, failures, nil

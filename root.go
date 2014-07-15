@@ -18,7 +18,7 @@ func rootGet(w http.ResponseWriter, r *http.Request) {
 	}
 	_, pth := splitRootAndPath(r.URL.Path)
 	if pth != "/" {
-		four04(w, r)
+		four04Page(w, r)
 		return
 	}
 	auth, err := authenticate(w, r)
@@ -36,7 +36,7 @@ func rootGet(w http.ResponseWriter, r *http.Request) {
 	serveResource(w, r, setting.String("PublicRootFile"), auth)
 }
 
-//Only used on first login
+//Only used on first login for creating the first admin
 func rootPost(w http.ResponseWriter, r *http.Request) {
 	if !firstRun {
 		four04(w, r)

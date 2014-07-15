@@ -143,6 +143,19 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		os.Remove(filename)
+		err = permission.Delete(filename)
+		if errHandled(err, w) {
+			return
+		}
+
+		respondJsend(w, &JSend{
+			Status: statusSuccess,
+			Data: Properties{
+				Name: filepath.Base(filename),
+				Url:  resource,
+			},
+		})
+
 		return
 	}
 
@@ -169,7 +182,10 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 
 			if prm.CanWrite(auth.User) {
 				os.Remove(child)
-
+				err = permission.Delete(child)
+				if errHandled(err, w) {
+					return
+				}
 				fileList = append(fileList, Properties{
 					Name: filepath.Base(files[i].Name()),
 					Url:  cRes,
@@ -213,7 +229,7 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 	defer file.Close()
 
 	if os.IsNotExist(err) {
-		four04(w, r)
+		four04Page(w, r)
 		return
 	}
 
@@ -238,7 +254,7 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 		}
 
 		if !prm.CanRead(auth.User) {
-			four04(w, r)
+			four04Page(w, r)
 			return
 		}
 
@@ -284,7 +300,7 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 			}
 			continue
 		} else {
-			four04(w, r)
+			four04Page(w, r)
 			return
 		}
 	}
@@ -297,7 +313,7 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 
 	// Is a dir lookup, but user doesn't have access to any files in the dir.  Give them a 404
 	// instead of a redirect
-	four04(w, r)
+	four04Page(w, r)
 }
 
 func serveFile(w http.ResponseWriter, r *http.Request, file *os.File) {
@@ -316,6 +332,8 @@ func serveFile(w http.ResponseWriter, r *http.Request, file *os.File) {
 		rs = file
 	}
 
+	//ETag is an MD5 sum of the contents of the file.  If the file changes
+	// clients should know to grab the new version because the md5 won't match.
 	w.Header().Add("ETag", md5Sum(rs))
 	http.ServeContent(w, r, file.Name(), time.Time{}, rs)
 	return
