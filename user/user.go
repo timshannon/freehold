@@ -90,6 +90,23 @@ func New(username string, u *User) error {
 	return u.update()
 }
 
+func Delete(username string) error {
+	ds, err := data.OpenCoreDS(DS)
+	if err != nil {
+		return err
+	}
+	key, err := json.Marshal(username)
+	if err != nil {
+		return err
+	}
+
+	err = ds.Delete(key)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (u *User) update() error {
 	if u.username == "" {
 		return fail.New("Invalid username", u.username)

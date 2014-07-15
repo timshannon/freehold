@@ -84,6 +84,24 @@ func Set(resource string, permissions *Permission) error {
 	return nil
 }
 
+func Delete(resource string) error {
+	ds, err := data.OpenCoreDS(DS)
+	if err != nil {
+		return err
+	}
+	key, err := json.Marshal(resource)
+	if err != nil {
+		return err
+	}
+
+	err = ds.Delete(key)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (p *Permission) validate() error {
 	strings.ToLower(p.Private)
 	strings.ToLower(p.Friend)

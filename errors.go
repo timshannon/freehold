@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
@@ -47,7 +48,36 @@ func errHandled(err error, w http.ResponseWriter) bool {
 	return true
 }
 
+// four04 is a standard 404 response to a rest request
+// if its a request for a file, then a user will get a four04Page
 func four04(w http.ResponseWriter, r *http.Request) {
+	if setting.Bool("Log404") {
+		log.Error(errors.New("Resource not found: " + r.URL.String()))
+	}
+
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Content-Type", "application/json")
+	response := &JSend{
+		Status:  statusFail,
+		Message: "Resource not found",
+		Data:    r.URL.String(),
+	}
+
+	w.WriteHeader(http.StatusNotFound)
+
+	result, err := json.Marshal(response)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	w.Write(result)
+}
+
+// four04Page returns a 404 status with custom page that can be set to any
+// file in the system.  This is displayed when a user tries to access a file
+// that doesn't exist, or they don't have the right to know it exists
+func four04Page(w http.ResponseWriter, r *http.Request) {
 	if setting.Bool("Log404") {
 		log.Error(errors.New("Resource not found: " + r.URL.String()))
 	}
