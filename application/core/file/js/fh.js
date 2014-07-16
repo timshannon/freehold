@@ -5,12 +5,12 @@ var auth;
 	
 
 return {
-	Alert: function(target, result) {
+	alert: function(target, result) {
 		$(target).append('<div class="alert alert-danger fade in alert-dismissable">\
 		 <button type="button" class="close" data-dismiss="alert" \
 		 aria-hidden="true">&times;</button>' + result + '</div>');
 	},
-	Auth: function() {
+	auth: function() {
 		if (auth != null) {
 			return auth
 		}
@@ -28,7 +28,7 @@ return {
 
 		return auth;
 	},
-	Login: function(username, password, expires) {
+	login: function(username, password, expires) {
 		var expData, result;
 		if (expires != null) {
 			expData = {
@@ -51,7 +51,7 @@ return {
 		});
 		return result;
 	},
-	Logout: function() {
+	logout: function() {
 		var result;
 		$.ajax({
 			type: "DELETE",
@@ -59,14 +59,41 @@ return {
 			dataType: "json",
 			async: false,
 			beforeSend: function (xhr) {
-				xhr.setRequestHeader ("X-CSRFToken", fh.Auth().CSRFToken);
+				xhr.setRequestHeader ("X-CSRFToken", fh.auth().CSRFToken);
 			},
 			complete: function (xhr) {
 				result = JSON.parse(xhr.responseText);
 			},
 		});
 		return result;
-	}
+	},
+	uuid: function() {
+		function s4() {
+			return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+		}
+		return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+	},
+	application: {
+		get: function(appid) {
+
+		},
+		available: function() {
+
+		},
+		installed: function() {
+
+		},
+		install: function(file) {
+
+		},
+		upgrade: function(file) {
+
+		},
+		delete: function(appid) {
+
+		}
+		
+	} //application
 }
 }());
 
