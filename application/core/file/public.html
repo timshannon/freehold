@@ -102,7 +102,7 @@ $( "#login" ).submit(function( event ) {
 		return;
 	}
 
-	var result = fh.Login($("#username").val(),$("#password").val(),data);
+	var result = fh.login($("#username").val(),$("#password").val(),data);
 	if (result.status == "success") {
 		location.reload();
 	} else {

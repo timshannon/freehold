@@ -97,7 +97,7 @@
 <script language="Javascript">
 $(document).ready(function() { 
 
-if (fh.Auth().type != "none") {
+if (fh.auth().type != "none") {
 	$(".public").addClass("hidden");
 	$(".authenticated").removeClass("hidden");
 } else {
@@ -127,7 +127,7 @@ $( "#login" ).submit(function( event ) {
 		return;
 	}
 
-	var result = fh.Login($("#username").val(),$("#password").val(),data);
+	var result = fh.login($("#username").val(),$("#password").val(),data);
 	if (result.status == "success") {
 		location.reload();
 	} else {
@@ -136,7 +136,7 @@ $( "#login" ).submit(function( event ) {
 });
 
 $("#logoutButton").click(function() {
-	var result = fh.Logout();
+	var result = fh.logout();
 	if (result.status == "success") {
 		location.reload();
 	} else {
@@ -152,7 +152,7 @@ $( "#resttest" ).submit(function( event ) {
 			type: $("#method").val(),
 			url: $("#url").val(),
 			beforeSend: function (xhr) {
-				xhr.setRequestHeader ("X-CSRFToken", fh.Auth().CSRFToken);
+				xhr.setRequestHeader ("X-CSRFToken", fh.auth().CSRFToken);
 			},
 			dataType: "json",
 			data: $("#request").val(),

@@ -1194,7 +1194,8 @@ The application zip file must have a file called app.json in the following forma
 ```
 * id - Path on which the application will be installed (`https://host/<app-id>/`). Must not match any existing installed
 applications, or any paths used by the freehold instance (i.e. /v1 /v2, etc). 
-* name - User visable name of the application
+* name - User visible name of the application
+* version - Version of the application. Can be any string ("0.01", "BreezyBadger", etc.). Is not used by the server side, but is there for use by client side applications usually to determine if application in the available folder matches the application already installed (e.g. for upgrades). 
 * description - Description of what the application does
 * author - Who wrote the application
 * root - File to which users will be redirected to when accessing the apps root path: `https://host/<app-id>`
@@ -1203,8 +1204,7 @@ applications, or any paths used by the freehold instance (i.e. /v1 /v2, etc).
 Paths to the root file and icon files are relative to the application, so 
 "v1/file/images/ds-icon.png" refers to `https://host/<app-id>/v1/file/images/ds-icon.png`.
 
-While not part of the server side installation, if you include an install.html file at the root of your application, the core home application will present that page once the application is enabled.  Usually this page will consist of an install button, but it can contain whatever you need it to.  You can use this file to do any one-time setup required like setting permissions on files (as they will be defaulted to private upon install), or creating any necessary datastores.
-
+While not part of the server side installation, if you include an install.js file at the root of your application, the core home application will dynamically load that file and execute a function named *installApp*.  Usually this script will consist of any pre-setup permissions (as they will be defaulted to private upon install) or any other setup that can't be done by the normal install process (i.e getting a list of active users and creating personal datastores for them, etc).  
 
 *Datastore definition of Applications* - Only stores currently installed applications.  If an application is
 removed, it's deleted from the datastore.
@@ -1214,6 +1214,7 @@ core/application.ds
 	key: <app id>,
 	value: {
 		name: <name of the application>,
+		version: <version of app>,
 		description: <description>,
 		author: <author>,
 		root: <root file>,
@@ -1235,6 +1236,7 @@ Response (200):
 		{
 			id: "datastore-manager",
 			name: "Datastore Manager",
+			version: "0.01",
 			description: "Application for managing datastore files.",
 			author: "Tim Shannon - shannon.timothy@gmail.com",
 			root: "index.htm",
@@ -1243,6 +1245,7 @@ Response (200):
 		{
 			id: "home",
 			name: "Home",
+			version: "0.02",
 			description: "Freehold Homepage",
 			author: "Tim Shannon - shannon.timothy@gmail.com",
 			root: "index.htm",
@@ -1265,6 +1268,7 @@ Response (200):
 	data: {
 			id: "home",
 			name: "Home",
+			version: "0.01",
 			description: "Freehold Homepage",
 			author: "Tim Shannon - shannon.timothy@gmail.com",
 			root: "index.htm",
@@ -1284,6 +1288,7 @@ Response (200):
 		{
 			id: "blog",
 			name: "Blog",
+			version: "0.01",
 			description: "Software for writing and publish a blog to the public",
 			author: "Tim Shannon - shannon.timothy@gmail.com",
 			root: "index.htm",
@@ -1292,6 +1297,7 @@ Response (200):
 		{
 			id: "gallery",
 			name: "Gallery",
+			version: "0.01",
 			description: "Application for showing image files in a gallery format",
 			author: "Tim Shannon - shannon.timothy@gmail.com",
 			root: "index.htm",
@@ -1317,6 +1323,7 @@ Response (201):
 	data: {
 			id: "blog",
 			name: "Blog",
+			version: "0.01",
 			description: "Software for writing and publish a blog to the public",
 			author: "Tim Shannon - shannon.timothy@gmail.com",
 			root: "index.htm",
@@ -1360,6 +1367,7 @@ Response (200):
 	data: {
 			id: "blog",
 			name: "Blog V2",
+			version: "0.01",
 			description: "Software for writing and publish a blog to the public",
 			author: "Tim Shannon - shannon.timothy@gmail.com",
 			root: "index.htm",
