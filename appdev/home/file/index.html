@@ -16,20 +16,15 @@
 
 <div class="container">
 <h1>Home</h1>
+<ul class="nav nav-tabs" role="tablist">
+	<li class="active">Installed</li>
+	<li>Available</li>
+</ul>
 </div>
 <script src="/core/v1/file/js/jquery-2.1.1.min.js"></script>
 <script src="/core/v1/file/js/bootstrap.min.js"></script>
 <script src="/core/v1/file/js/ractive.min.js"></script>
 <script src="/core/v1/file/js/fh.js"></script>
-<script language="Javascript">
-$(document).ready(function() { 
-
-$("#logoutButton").click(function() {
-	fh.logout();
-	window.location = "/"
-});
-
-}); //end ready
-</script>
+<script src="/home/v1/file/js/index.js"></script>
 </body>
 </html>
