@@ -1,4 +1,24 @@
-API Conventions
+Contents
+=========
+
+* [API Conventions](#api)
+* [Storage](#storage)
+	* [File](#file)
+	* [Datastore](#datastore)
+	* [Properties](#properties)
+* [Core Datastores](#core)
+	* [Authentication](#auth)
+		* [User](#user)
+		* [Token](#token)
+		* [Session](#session)
+	* [Settings](#settings)
+	* [Applications](#application)
+	* [Logs](#logs)
+	* [Communication](#communication)
+	* [Calendar](#calendar)
+
+
+<a name="api"></a>API Conventions
 ==============
 Freehold's REST api will generally use the following conventions.
 
@@ -52,7 +72,7 @@ The Auth header will always override any authentication via cookie.
 
 GET requests with a JSON payload will be accepted both in the request body or as a parameter `https://host/v1/file/?<jsonpayload>`. For writing applications, making an AJAX GET request with a JSON payload should just work. 
 
-Storage
+<a name="#storage"></a>Storage
 =======
 You can store data either in files directly or in a key / value DataStore.
 Each File / Datastore can have Read or Write permissions applied at one of three
@@ -78,7 +98,7 @@ Application Specific Storage paths will be prefixed with the given applications 
 * `app-id`/v1/properties/file/`path to file`
 * `app-id`/v1/datastore/`path to file`
 
-File
+<a name="file"></a> File
 ----
 ### /v1/file/<path to file>
 
@@ -196,7 +216,7 @@ Response (200):
 ```
 
 
-DataStore
+<a name="datastore"></a>DataStore
 ---------
 ### /v1/datastore/`path to datastore`/
 
@@ -419,7 +439,7 @@ Response (200):
 ```
 
 
-File Properties
+<a name="properties"></a>Properties
 ----
 ### /v1/properties/file/<path to file>
 or
@@ -570,7 +590,7 @@ Response (200):
 
 * * *
 
-Core Datastore
+<a name="core"></a>Core Datastores
 ==============
 Data used for the running of the freehold instance are stored in the *core* datastore. The core datastore is designed to only be 
 modified via specific REST requests and not directly. It contains data used for authentication, authorization, session data, 
@@ -585,7 +605,7 @@ the user themself.
 
 * * *
 
-Authentication
+<a name="auth"></a>Authentication
 --------------
 Authentication will be done through the Basic HTTP Auth set in the request header.
 
@@ -656,7 +676,7 @@ Response (200):
 }
 ```
 
-### /v1/auth/user
+### /v1/auth/user <a name="user"></a>
 
 Information on Users in the system.  Stored in the core *user* datastore.
 ```
@@ -802,7 +822,7 @@ Response (200):
 
 ```
 
-### /v1/auth/token
+### /v1/auth/token  <a name="token"></a>
 
 A *Security Token* is a cryptographically random value that may have a preset expiration when it will no
 longer be valid.  
@@ -978,7 +998,7 @@ Response (200):
 }
 ```
 
-### /v1/auth/session
+### /v1/auth/session <a name="session"></a>
 
 A session refers to when the authentication is tracked via a cookie in the client's browser. Sessions
 only support POST to create a new one and DELETE to remove or logout of the session.  
@@ -1065,7 +1085,7 @@ Response (200):
 
 * * *
 
-Core Settings
+<a name="settings"></a> Core Settings 
 -----------------------------
 Freehold tries to have sane default settings that you can adjust as needed.  This will hopefully make the instance
 easy to setup and get running, yet allow the admin to modify it's operation to their own needs.
@@ -1170,8 +1190,8 @@ Response (200):
 
 * * *
 
-Applications
-------------
+<a name="application"></a> Applications
+----------------------------------------
 Applications are bundles of files in a zip file that only Admins can install.  Once installed
 they are available to all users in the system, and possibly (depending on how the app sets it's permissions)
 available to the public as well.
@@ -1393,7 +1413,7 @@ Response (200):
 
 * * *
 
-Logs 
+<a name="logs"></a> Logs 
 ======================
 By default only server errors are logged, but core settings can be changed to log other things such as access,
 failed authentication attempts, etc.
@@ -1450,7 +1470,7 @@ Response (200):
 
 * * *
 
-Communication
+<a name="communication"></a> Communication
 ======================
 /v1/com/
 --------
@@ -1472,6 +1492,6 @@ TODO: IRC client
 
 * * *
 
-Calendar
+<a name="calendar"></a> Calendar
 ========
 TODO: built in calendar functionality, exports to ical would be nice.
