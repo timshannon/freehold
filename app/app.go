@@ -96,7 +96,7 @@ func GetAll() ([]*App, error) {
 			return nil, err
 		}
 
-		err = json.Unmarshal(iter.Key(), app.Id)
+		err = json.Unmarshal(iter.Key(), &app.Id)
 		if err != nil {
 			return nil, err
 		}
