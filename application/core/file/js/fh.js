@@ -1,15 +1,40 @@
 window.fh = (function() {
 'use strict';
 var _auth;
+function parseResult(result) {
+	try {
+		return JSON.parse(result);
+	} catch (e) {
+		console.log("error parsing json: " + result.responseText);
+		return {status:"error", message:"Unable to parse response as JSON"};
+	}
+}
+
+function stdAjax(type, url, options) {
+	if (!options) {options = {};}
+	if (!options.type) {options.type = type;}
+	if (!options.url) {options.url = url;}
+	if (!options.dataType) {options.dataType = "json";}
+
+	if ((type.toUpperCase() !== "GET") && (!options.beforeSend)) {
+		options.beforeSend = function (xhr) {
+			xhr.setRequestHeader ("X-CSRFToken", fh.auth().CSRFToken);
+		};
+	}
+
+	return $.ajax(options)
+		.then(function(data) {return data;},
+		function(data) {return parseResult(data);});
+}
 
 return {
-	alert: function(target, result) {
+	alert: function(target, message) {
 		$(target).append('<div class="alert alert-danger fade in alert-dismissable">' +
 		 '<button type="button" class="close" data-dismiss="alert" ' +
-		 'aria-hidden="true">&times;</button>' + result + '</div>');
+		 'aria-hidden="true">&times;</button>' + message + '</div>');
 	},
 	auth: function() {
-		if (_auth !== null) {
+		if (_auth) {
 			return _auth;
 		}
 		$.ajax({
@@ -28,41 +53,20 @@ return {
 	},
 	login: function(username, password, expires) {
 		var expData, result;
-		if (expires !== null) {
+		if (expires) {
 			expData = {
 				expires: expires
 			};
 		}
-		$.ajax({
-			type: "POST",
-			url: "/v1/auth/session",
-			async: false,
+		return stdAjax("POST", "/v1/auth/session", {
 			beforeSend: function (xhr) {
 				xhr.setRequestHeader ("Authorization", "Basic "+btoa(username+":"+password));
 			},
-			dataType: "json",
 			data: JSON.stringify(expData),
-			complete: function (xhr) {
-				result = JSON.parse(xhr.responseText);
-			},
 		});
-		return result;
 	},
 	logout: function() {
-		var result;
-		$.ajax({
-			type: "DELETE",
-			url: "/v1/auth/session",
-			dataType: "json",
-			async: false,
-			beforeSend: function (xhr) {
-				xhr.setRequestHeader ("X-CSRFToken", fh.auth().CSRFToken);
-			},
-			complete: function (xhr) {
-				result = JSON.parse(xhr.responseText);
-			},
-		});
-		return result;
+		return stdAjax("DELETE", "/v1/auth/session");
 	},
 	uuid: function() {
 		function s4() {
@@ -72,107 +76,40 @@ return {
 	},
 	application: {
 		get: function(appid) {
-			var result;
-			$.ajax({
-				type: "GET",
-				url: "/v1/application",
-				dataType: "json",
-				async: false,
+			return stdAjax("GET", "/v1/application",{
 				data: JSON.stringify({id: appid}),
-				complete: function (xhr) {
-					result = JSON.parse(xhr.responseText);
-				},
 			});
-			return result;
 		},
 		available: function() {
-			var result;
-			$.ajax({
-				type: "GET",
-				url: "/v1/application/available",
-				dataType: "json",
-				async: false,
-				complete: function (xhr) {
-					result = JSON.parse(xhr.responseText);
-				},
-			});
-			return result;
+			return stdAjax("GET", "/v1/application/available");
 		},
 		postAvailable: function(file) {
-			var result;
-			$.ajax({
-				type: "POST",
-				url: "/v1/application/available",
-				dataType: "json",
-				data: JSON.stringify({file: file}),
-				async: false,
-				complete: function (xhr) {
-					result = JSON.parse(xhr.responseText);
-				},
-			});
-			return result;
-
-
+			return stdAjax("POST","/v1/application/available", 
+				{data: JSON.stringify({file: file})});
 		},
 		installed: function() {
-			var result;
-			$.ajax({
-				type: "GET",
-				url: "/v1/application",
-				dataType: "json",
-				async: false,
-				complete: function (xhr) {
-					result = JSON.parse(xhr.responseText);
-				},
-			});
-			return result;
-
+			return stdAjax("GET","/v1/application");
 		},
 		install: function(file) {
-			var result;
-			$.ajax({
-				type: "POST",
-				url: "/v1/application",
-				dataType: "json",
-				async: false,
-				data: JSON.stringify({file: file}),
-				complete: function (xhr) {
-					result = JSON.parse(xhr.responseText);
-				},
-			});
-			return result;
+			stdAjax("POST","/v1/application",{
+				data: JSON.stringify({file: file})});
 		},
 		upgrade: function(file) {
-			var result;
-			$.ajax({
-				type: "PUT",
-				url: "/v1/application",
-				dataType: "json",
-				async: false,
-				data: JSON.stringify({file: file}),
-				complete: function (xhr) {
-					result = JSON.parse(xhr.responseText);
-				},
-			});
-			return result;
+			return stdAjax("PUT","/v1/application", {
+				data: JSON.stringify({file: file})});
 
 		},
 		delete: function(appid) {
-			var result;
-			$.ajax({
-				type: "DELETE",
-				url: "/v1/application",
-				dataType: "json",
-				async: false,
-				data: JSON.stringify({id: appid}),
-				complete: function (xhr) {
-					result = JSON.parse(xhr.responseText);
-				},
-			});
-			return result;
+			return stdAjax("DELETE","/v1/application", {
+				data: JSON.stringify({id: appid})});
 		}
 		
-	} //application
+	}, //application
+	template: {
+		//ractive templates for standard freehold UI components
+		// like file browser, user lists, etc
+	},
 };
-}());
+
+}()); //end
 

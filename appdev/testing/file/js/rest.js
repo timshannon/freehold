@@ -30,41 +30,37 @@ $( "#login" ).submit(function( event ) {
 		return;
 	}
 
-	var result = fh.login($("#username").val(),$("#password").val(),data);
-	if (result.status == "success") {
+	fh.login($("#username").val(),$("#password").val(),data)
+	.done(function() {
 		location.reload();
-	} else {
+	})
+	.fail(function(result) {
 		err(result.data.message);
-	}
+	});
 });
 
 $("#logoutButton").click(function() {
-	var result = fh.logout();
-	if (result.status == "success") {
+	fh.logout()
+	.done(function() {
 		location.reload();
-	} else {
+	})
+	.fail(function() {
 		alert(JSON.stringify(result));
-	}
+	});
 });
 
 
 //testing
 $( "#resttest" ).submit(function( event ) {
 	event.preventDefault();
-	$.ajax({
-			type: $("#method").val(),
-			url: $("#url").val(),
-			beforeSend: function (xhr) {
-				xhr.setRequestHeader ("X-CSRFToken", fh.auth().CSRFToken);
-			},
-			dataType: "json",
-			data: $("#request").val(),
-			complete: function (xhr) {
-				$("#result").val(xhr.responseText);
-			},
-	});
-
-
+	fh.stdAjax( $("#method").val(), $("#url").val(), {
+		data: $("#request").val()})
+		.done(function (result) {
+			$("#result").val(JSON.stringify(result));
+		})
+		.fail(function(result) {
+			ts.alert("#resttest", result.data.message);
+		});
 });
 	
 

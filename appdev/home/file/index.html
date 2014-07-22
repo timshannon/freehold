@@ -15,12 +15,26 @@
 </nav>
 
 <div class="container">
-<h1>Home</h1>
 <ul class="nav nav-tabs" role="tablist">
-	<li class="active">Installed</li>
-	<li>Available</li>
+	<li class="active"><a href="#installed" role="tab" data-toggle="tab">Installed</a>
+	</li>
+	<li><a href="#available" role="tab" data-toggle="tab">Available</a>
+	</li>
 </ul>
 </div>
+
+<!--tabs-->
+<div class="tab-content">
+	<div class="tab-pane active" id="installed"></div>
+	<div class="tab-pane" id="available"></div>
+</div>
+<script id="appGrid" type="text/ractive">
+<div class="container">
+{{#data:i}}
+	<p><a href="{{id}}">{{name}}</a>: {{description}}</p>
+{{/data}}
+</div>
+</script>
 <script src="/core/v1/file/js/jquery-2.1.1.min.js"></script>
 <script src="/core/v1/file/js/bootstrap.min.js"></script>
 <script src="/core/v1/file/js/ractive.min.js"></script>
