@@ -27,6 +27,7 @@ $( "#login" ).submit(function( event ) {
 		location.reload();
 	})
 	.fail(function(result) {
+		console.log(JSON.stringify(result));
 		err(result.data.message);
 	});
 });

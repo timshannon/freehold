@@ -2,7 +2,7 @@
 	"id": "testing",
 	"name": "Testing",
 	"version": "0.1",
-	"description": "Application that runs javascript unit tests that test all available REST API options. Uses QUnit",
+	"description": "Application that runs javascript unit tests that test all available REST API options. Uses QUnit.",
 	"author": "Tim Shannon - shannon.timothy@gmail.com",
 	"root": "/v1/file/index.html",
 	"icon": ""
