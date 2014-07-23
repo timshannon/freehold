@@ -72,7 +72,7 @@ func Get(id string) (*App, error) {
 	return app, nil
 }
 
-func GetAll() ([]*App, error) {
+func GetAll() (map[string]*App, error) {
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return nil, err
@@ -83,7 +83,7 @@ func GetAll() ([]*App, error) {
 		return nil, err
 	}
 
-	var apps []*App
+	apps := make(map[string]*App)
 
 	for iter.Next() {
 		if iter.Err() != nil {
@@ -101,7 +101,7 @@ func GetAll() ([]*App, error) {
 			return nil, err
 		}
 
-		apps = append(apps, app)
+		apps[app.Id] = app
 	}
 
 	return apps, nil
@@ -202,11 +202,12 @@ func Uninstall(appid string) error {
 	return os.RemoveAll(path.Join(AppDir, appid))
 }
 
-func Available() ([]*App, []error, error) {
+func Available() (map[string]*App, []error, error) {
 	return getAppsFromDir(AvailableAppDir)
 }
 
-func getAppsFromDir(dir string) (apps []*App, failures []error, err error) {
+func getAppsFromDir(dir string) (apps map[string]*App, failures []error, err error) {
+	apps = make(map[string]*App)
 	file, err := os.Open(dir)
 	defer file.Close()
 	if err != nil {
@@ -228,12 +229,7 @@ func getAppsFromDir(dir string) (apps []*App, failures []error, err error) {
 	for _, f := range files {
 		child := path.Join(dir, f.Name())
 		if f.IsDir() {
-			childApps, childfail, err := getAppsFromDir(child)
-			apps = append(apps, childApps...)
-			failures = append(failures, childfail...)
-			if err != nil {
-				return apps, childfail, err
-			}
+			//only look in base dir, can change if need be
 			continue
 		}
 		app, err := appInfoFromZip(child)
@@ -247,7 +243,7 @@ func getAppsFromDir(dir string) (apps []*App, failures []error, err error) {
 		//return app even if it's already installed
 		// leave it up to the client to differentiate
 		// between files for upgrade vs new apps (i.e compare version)
-		apps = append(apps, app)
+		apps[app.Id] = app
 	}
 
 	return apps, failures, nil

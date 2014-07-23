@@ -62,6 +62,8 @@ For multiple failures, there will be a failure item with a message for each that
 
 ```
 
+For most cases with multiple item returns data will return an array, but for instances where there is a unique identifier for a given row (such as a datastore key / value record), a hash map will instead be returned with the unique identifier as the hash key.  Pay attention to the documentation to see whether an array or a map is used.
+
 Authentication will be done through the Basic HTTP Auth in the header
 
 Username is always required, and Password can be the users password, or a valid security token. See 
@@ -268,7 +270,7 @@ Response (201):
 {
 	status: "success",
 	data: {
-		url: "/v1/file/new-directory/profile.jpg"
+		url: "/v1/file/new-directory/bookmarks_backup.ds"
 	}
 }
 ```
@@ -293,8 +295,7 @@ Response (200):
 {
 	status: "success",
 	data: {
-		key: "http://golang.org/pkg",
-		value: {
+		"http://golang.org/pkg": {
 			tags: "programming,golang,go,awesome"
 		}
 	}
@@ -339,16 +340,16 @@ Response (200):
 {
 	status: "success",
 	data: {
-		[key: 31,	value: "Data"],
-		[key: 32,	value: "Data"],
-		[key: 33,	value: "Data"],
-		[key: 34,	value: "Data"],
-		[key: 35,	value: "Data"],
-		[key: 36,	value: "Data"],
-		[key: 37,	value: "Data"],
-		[key: 38,	value: "Data"],
-		[key: 39,	value: "Data"],
-		[key: 40,	value: "Data"]
+		31:	"Data",
+		32:	"Data",
+		33:	"Data",
+		34:	"Data",
+		35:	"Data",
+		36:	"Data",
+		37: "Data",
+		38: "Data",
+		39: "Data",
+		40: "Data"
 	}
 }
 ```
@@ -366,14 +367,14 @@ Response (200):
 {
 	status: "success",
 	data: {
-		[key: 43,	value: "Data"],
-		[key: 44,	value: "Data"],
-		[key: 45,	value: "Data"],
-		[key: 46, value: "Data"],
-		[key: 47,	value: "Data"],
-		[key: 48,	value: "Data"],
-		[key: 49,	value: "Data"],
-		[key: 50,	value: "Data"]
+		43:	 "Data",
+		44:	 "Data",
+		45:	 "Data",
+		46:  "Data",
+		47:	 "Data",
+		48:	 "Data",
+		49:	 "Data",
+		50:	 "Data"
 	}
 }
 ```
@@ -399,16 +400,21 @@ PUT /v1/datastore/personal/bookmarks.ds
 
 Response (200):
 {
-	status: "success",
-	data: {
-		key: "http://golang.org/pkg",
+	status: "success"
+}
+
+Alternately simply pass in a JSON object, and the object's keys will be used as the datastore's keys
+
+PUT /v1/datastore/personal/bookmarks.ds
+{
+	"http://golang.org/pkg": {
+			tags: "programming,golang,go,awesome"
 	}
 }
 
 If the datastore file doesn't exist:
 Response (404):
 ```
-
 
 **DELETE** 
 
@@ -702,22 +708,21 @@ GET /v1/auth/user
 Response (200):
 {
 	status: "success",
-	data: [
+	data: 
+		"tshannon":
 		{
-			user: "tshannon", 
 			name: "Tim Shannon", 
 			email: "shannon.timothy@gmail.com",
 			homeApp: "home",
 			admin: true
 		},
+		"otheruser":
 		{
-			user: "otheruser", 
 			name: "Other User", 
 			email: "other.user@gmail.com",
 			homeApp: "home",
 			admin: false
 		}
-	]
 }
 ```
 
@@ -732,7 +737,6 @@ Response (200):
 {
 	status: "success",
 	data: {
-		user: "tshannon", 
 		name: "Tim Shannon", 
 		email: "shannon.timothy@gmail.com",
 		homeApp: "home",
@@ -855,9 +859,9 @@ Response (200):
 {
 	status: "success",
 	data: [
-		{token: "aaaaaaaaaaaaaaaaaaaaa", name: "android phone"},
-		{token: "bbbbbbbbbbbbbbbbbbbbb", name: "testing", expires: "2044-04-23T18:25:43.511Z"},
-		{token: "ccccccccccccccccccccc", name: "temp torrent share", expires: "2014-08-18T00:00:00.000Z", resource: "/v1/file/public/checkthisout.torrent"},
+		"aaaaaaaaaaaaaaaaaaaaa": {name: "android phone"},
+		"bbbbbbbbbbbbbbbbbbbbb": {name: "testing", expires: "2044-04-23T18:25:43.511Z"},
+		"ccccccccccccccccccccc": {name: "temp torrent share", expires: "2014-08-18T00:00:00.000Z", resource: "/v1/file/public/checkthisout.torrent"},
 	]
 }
 ```
@@ -888,7 +892,7 @@ POST /v1/auth/token
 Response (201):
 {
 	status: "success",
-	data: {token: "fffffffffffffffffffff", name: "Full Sync Access"}
+	data: {"fffffffffffffffffffff": {name: "Full Sync Access"}}
 }
 ```
 
@@ -903,7 +907,7 @@ POST /v1/auth/token
 Response (201):
 {
 	status: "success",
-	data: {token: "kkkkkkkkkkkkkkkkkkkkk", name: "Temporary full access", expires: "2044-04-23T18:25:43.511Z"}
+	data: {"kkkkkkkkkkkkkkkkkkkkk": {name: "Temporary full access", expires: "2044-04-23T18:25:43.511Z"}}
 }
 ```
 
@@ -918,7 +922,7 @@ POST /v1/auth/token
 Response (201):
 {
 	status: "success",
-	data: {token: "lllllllllllllllllllll", name: "Public comments", resource: "/v1/datastore/comments.ds"}
+	data: {"lllllllllllllllllllll": {name: "Public comments", resource: "/v1/datastore/comments.ds"}}
 }
 ```
 
@@ -935,7 +939,7 @@ POST /v1/auth/token
 Response (201):
 {
 	status: "success",
-	data: {token: "lllllllllllllllllllll", name: "Read Only comments", resource: "/v1/datastore/comments.ds"}
+	data: {"lllllllllllllllllllll": {name: "Read Only comments", resource: "/v1/datastore/comments.ds"}}
 }
 ```
 
@@ -1035,12 +1039,11 @@ GET /v1/auth/session
 Response (200):
 {
 	status: "success",
-	data: [
-		{session: "bbbbbbbbbbbbbbbbbbbbb", CSRFToken: "12345677", expires: "2014-04-23T18:25:43.511Z", ipAddress: "127.0.0.1", created: "2014-04-20T18:25:43.511Z"},
-		{session: "ccccccccccccccccccccc", CSRFToken: "12345677", ipAddress: "127.0.0.1", created: "2014-04-20T18:25:43.511Z"},
-		{session: "lllllllllllllllllllll", CSRFToken: "12345677", expires: "1900-00-00T00:00:00.000Z", ipAddress: "127.0.0.1", created: "2014-04-20T18:25:43.511Z"},
-		{session: "222222222222222222222", CSRFToken: "12345677", expires: "1900-00-00T00:00:00.000Z", ipAddress: "127.0.0.1", created: "2014-04-20T18:25:43.511Z"},
-	]
+	data: {
+		"bbbbbbbbbbbbbbbbbbbbb": {CSRFToken: "12345677", expires: "2014-04-23T18:25:43.511Z", ipAddress: "127.0.0.1", created: "2014-04-20T18:25:43.511Z"},
+		"ccccccccccccccccccccc": {CSRFToken: "12345677", ipAddress: "127.0.0.1", created: "2014-04-20T18:25:43.511Z"},
+		"lllllllllllllllllllll": {CSRFToken: "12345677", expires: "1900-00-00T00:00:00.000Z", ipAddress: "127.0.0.1", created: "2014-04-20T18:25:43.511Z"},
+		"222222222222222222222": {CSRFToken: "12345677", expires: "1900-00-00T00:00:00.000Z", ipAddress: "127.0.0.1", created: "2014-04-20T18:25:43.511Z"}
 }
 ```
 
@@ -1119,23 +1122,18 @@ GET /v1/settings
 Response (200):
 {
 	status: "success",
-	data: [
+	data: 
 		{
-			setting: "public-rate-limit", 
-			description: "Number of writes per minute per user for a single collection (can be decimal)", 
-			value: 5
-		},
-		{
-			setting: "default-home-app", 
-			description: "Default application used as the home app, where logins are redirected to.", 
-			value: "home"
-		},
-		{
-			setting: "application-allow-web-install", 
-			description: "Whether or not applications can be installed from urls.", 
-			value: false
-		}
-	]
+			"public-rate-limit": { 
+				description: "Number of writes per minute per user for a single collection (can be decimal)", 
+				value: 5},
+			"default-home-app": { 
+				description: "Default application used as the home app, where logins are redirected to.", 
+				value: "home"},
+			"application-allow-web-install": {
+				description: "Whether or not applications can be installed from urls.", 
+				value: false}
+	}
 }
 ```
 
@@ -1252,9 +1250,8 @@ GET /v1/application
 Response (200):
 {
 	status: "success",
-	data: [
-		{
-			id: "datastore-manager",
+	data: {
+		"datastore-manager": {
 			name: "Datastore Manager",
 			version: "0.01",
 			description: "Application for managing datastore files.",
@@ -1262,8 +1259,7 @@ Response (200):
 			root: "index.htm",
 			icon: "v1/file/images/ds-icon.png"
 		},
-		{
-			id: "home",
+		"home": {
 			name: "Home",
 			version: "0.02",
 			description: "Freehold Homepage",
@@ -1271,7 +1267,7 @@ Response (200):
 			root: "index.htm",
 			icon: "v1/file/images/home.png"
 		}
-	]
+	}
 }
 ```
 
@@ -1286,7 +1282,6 @@ Response (200):
 {
 	status: "success",
 	data: {
-			id: "home",
 			name: "Home",
 			version: "0.01",
 			description: "Freehold Homepage",
@@ -1304,9 +1299,8 @@ GET /v1/application/available
 Response (200):
 {
 	status: "success",
-	data: [
-		{
-			id: "blog",
+	data: {
+		"blog": {
 			name: "Blog",
 			version: "0.01",
 			description: "Software for writing and publish a blog to the public",
@@ -1314,8 +1308,7 @@ Response (200):
 			root: "index.htm",
 			icon: "v1/file/images/blog.png"
 		},
-		{
-			id: "gallery",
+		"gallery": {
 			name: "Gallery",
 			version: "0.01",
 			description: "Application for showing image files in a gallery format",
@@ -1323,6 +1316,7 @@ Response (200):
 			root: "index.htm",
 			icon: "v1/file/images/gallery.png"
 		}
+	}
 }
 ```
 

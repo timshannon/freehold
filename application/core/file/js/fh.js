@@ -1,14 +1,14 @@
 window.fh = (function() {
 'use strict';
 var _auth;
-function parseResult(result) {
-	try {
-		return JSON.parse(result);
-	} catch (e) {
-		console.log("error parsing json: " + result.responseText);
-		return {status:"error", message:"Unable to parse response as JSON"};
-	}
-}
+/*function parseResult(result) {*/
+/*try {*/
+/*return JSON.parse(result);*/
+/*} catch (e) {*/
+/*console.log("error parsing json: " + result.responseText);*/
+/*return {status:"error", message:"Unable to parse response as JSON"};*/
+/*}*/
+/*}*/
 
 function stdAjax(type, url, options) {
 	if (!options) {options = {};}
@@ -24,7 +24,7 @@ function stdAjax(type, url, options) {
 
 	return $.ajax(options)
 		.then(function(data) {return data;},
-		function(data) {return parseResult(data);});
+		function(data) {return data.responseJSON;});
 }
 
 return {
@@ -48,7 +48,6 @@ return {
 				_auth.CSRFToken = xhr.getResponseHeader("X-CSRFToken");
 			},
 		});
-
 		return _auth;
 	},
 	login: function(username, password, expires) {
