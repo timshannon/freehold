@@ -16,10 +16,14 @@ $(document).ready(function() {
 
 
 	fh.application.installed()
-	.always(function(result) {installed.set(result);});
+	.always(function(result) {
+		installed.set(result);
+	});
 
 	fh.application.available()
-	.always(function(result) {available.set(result);});
+	.always(function(result) {
+		available.set(result);
+	});
 
 
 	//TODO: figure out which available apps are already installed

@@ -1,3 +1,7 @@
+// Copyright 2014 Tim Shannon. All rights reserved.
+// Use of this source code is governed by the MIT license
+// that can be found in the LICENSE file.
+
 // failures are errors which can be returned to the client and are the result
 // of user input or action in some way.  Different from an error in that they
 // are used to prevent internal data from being exposed to clients, and they

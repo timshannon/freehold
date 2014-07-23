@@ -1,3 +1,7 @@
+// Copyright 2014 Tim Shannon. All rights reserved.
+// Use of this source code is governed by the MIT license
+// that can be found in the LICENSE file.
+
 // store is the wrapper around the cznic/kv to match the minimum interface
 // used by freehold for a KV store.
 
