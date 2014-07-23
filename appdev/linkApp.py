@@ -2,10 +2,16 @@
 import sys
 import subprocess
 import os
+import shutil
 
 def link(app):
     print "linking " + app
     os.chdir("../application")
+    if os.path.islink(app):
+        os.remove(app)
+    elif os.path.isdir(app):
+        shutil.rmtree(app)
+
     subprocess.call(["ln", "-s", "../appdev/"+app, app])
     os.chdir("../appdev")
 
