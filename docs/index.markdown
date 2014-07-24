@@ -1292,7 +1292,7 @@ Response (200):
 }
 ```
 
-*List Applications available for install* - Admins only
+*List Applications available for install* - Admins only.  file refers to the filepath relative to the application/available directory.
 ```
 GET /v1/application/available
 
@@ -1306,7 +1306,8 @@ Response (200):
 			description: "Software for writing and publish a blog to the public",
 			author: "Tim Shannon - shannon.timothy@gmail.com",
 			root: "index.htm",
-			icon: "v1/file/images/blog.png"
+			icon: "v1/file/images/blog.png",
+			file: "blog.zip"
 		},
 		"gallery": {
 			name: "Gallery",
@@ -1314,7 +1315,8 @@ Response (200):
 			description: "Application for showing image files in a gallery format",
 			author: "Tim Shannon - shannon.timothy@gmail.com",
 			root: "index.htm",
-			icon: "v1/file/images/gallery.png"
+			icon: "v1/file/images/gallery.png",
+			file: "gallery.zip"
 		}
 	}
 }
