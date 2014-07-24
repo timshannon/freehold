@@ -28,11 +28,6 @@ function stdAjax(type, url, options) {
 }
 
 return {
-	alert: function(target, message) {
-		$(target).append('<div class="alert alert-danger fade in alert-dismissable">' +
-		 '<button type="button" class="close" data-dismiss="alert" ' +
-		 'aria-hidden="true">&times;</button>' + message + '</div>');
-	},
 	auth: function() {
 		if (_auth) {
 			return _auth;
@@ -82,20 +77,20 @@ return {
 		available: function() {
 			return stdAjax("GET", "/v1/application/available");
 		},
-		postAvailable: function(file) {
+		postAvailable: function(filename) {
 			return stdAjax("POST","/v1/application/available", 
-				{data: JSON.stringify({file: file})});
+				{data: JSON.stringify({file: filename})});
 		},
 		installed: function() {
 			return stdAjax("GET","/v1/application");
 		},
-		install: function(file) {
-			stdAjax("POST","/v1/application",{
-				data: JSON.stringify({file: file})});
+		install: function(filename) {
+			return stdAjax("POST","/v1/application",{
+				data: JSON.stringify({file: filename})});
 		},
-		upgrade: function(file) {
+		upgrade: function(filename) {
 			return stdAjax("PUT","/v1/application", {
-				data: JSON.stringify({file: file})});
+				data: JSON.stringify({file: filename})});
 
 		},
 		delete: function(appid) {
@@ -104,8 +99,8 @@ return {
 		}
 		
 	}, //application
-	template: {
-		//ractive templates for standard freehold UI components
+	component: {
+		//ractive components for standard freehold UI components
 		// like file browser, user lists, etc
 	},
 };

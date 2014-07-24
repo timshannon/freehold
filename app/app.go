@@ -44,6 +44,7 @@ type App struct {
 	Root        string `json:"root,omitempty"`
 	Icon        string `json:"icon,omitempty"`
 	Version     string `json:"version,omitempty"`
+	File        string `json:"file,omitempty"`
 }
 
 func Get(id string) (*App, error) {
@@ -111,9 +112,8 @@ func GetAll() (map[string]*App, error) {
 	return apps, nil
 }
 
-func Install(filepath, owner string) (*App, error) {
-	filepath = path.Join(AvailableAppDir, filepath)
-	app, err := appInfoFromZip(filepath)
+func Install(file, owner string) (*App, error) {
+	app, err := appInfoFromZip(file)
 	if err != nil {
 		return nil, err
 	}
@@ -130,11 +130,12 @@ func Install(filepath, owner string) (*App, error) {
 	}
 
 	installDir := path.Join(AppDir, app.Id)
-	r, err := appFileReader(filepath)
-	defer r.Close()
+	r, err := appFileReader(path.Join(AvailableAppDir, file))
 	if err != nil {
 		return nil, err
 	}
+	defer r.Close()
+
 	for _, f := range r.File {
 		filename := path.Join(installDir, f.Name)
 
@@ -148,7 +149,7 @@ func Install(filepath, owner string) (*App, error) {
 		fr, err := f.Open()
 		if err != nil {
 			log.Error(err)
-			return nil, fail.NewFromErr(FailAppInvalid, filepath)
+			return nil, fail.NewFromErr(FailAppInvalid, file)
 		}
 
 		defer fr.Close()
@@ -175,8 +176,8 @@ func Install(filepath, owner string) (*App, error) {
 	return app, nil
 }
 
-func Upgrade(filepath, owner string) (*App, error) {
-	app, err := appInfoFromZip(filepath)
+func Upgrade(file, owner string) (*App, error) {
+	app, err := appInfoFromZip(file)
 	if err != nil {
 		return nil, err
 	}
@@ -185,7 +186,7 @@ func Upgrade(filepath, owner string) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	app, err = Install(filepath, owner)
+	app, err = Install(file, owner)
 	if err != nil {
 		return nil, err
 	}
@@ -203,7 +204,22 @@ func Uninstall(appid string) error {
 		return fail.NewFromErr(FailInvalidId, appid)
 	}
 
-	return os.RemoveAll(path.Join(AppDir, appid))
+	//remove from DS
+	ds, err := data.OpenCoreDS(DS)
+	if err != nil {
+		return err
+	}
+	key, err := json.Marshal(appid)
+	if err != nil {
+		return err
+	}
+
+	err = os.RemoveAll(path.Join(AppDir, appid))
+	if err != nil {
+		return err
+	}
+
+	return ds.Delete(key)
 }
 
 func Available() (map[string]*App, []error, error) {
@@ -231,12 +247,11 @@ func getAppsFromDir(dir string) (apps map[string]*App, failures []error, err err
 	}
 
 	for _, f := range files {
-		child := path.Join(dir, f.Name())
 		if f.IsDir() {
 			//only look in base dir, can change if need be
 			continue
 		}
-		app, err := appInfoFromZip(child)
+		app, err := appInfoFromZip(f.Name())
 		if err != nil {
 			if fail.IsFail(err) {
 				failures = append(failures, err)
@@ -254,7 +269,8 @@ func getAppsFromDir(dir string) (apps map[string]*App, failures []error, err err
 }
 
 func appInfoFromZip(file string) (*App, error) {
-	r, err := appFileReader(file)
+	filepath := path.Join(AvailableAppDir, file)
+	r, err := appFileReader(filepath)
 	if err != nil {
 		return nil, err
 	}
@@ -263,16 +279,17 @@ func appInfoFromZip(file string) (*App, error) {
 	for _, f := range r.File {
 		if f.Name == "app.json" {
 			app, err := appInfoFromJsonFile(f)
+			app.File = file
 			if err != nil {
 				if fail.IsFail(err) {
-					return nil, fail.NewFromErr(err, file)
+					return nil, fail.NewFromErr(err, filepath)
 				}
 				return nil, err
 			}
 			return app, nil
 		}
 	}
-	return nil, fail.NewFromErr(FailAppInvalid, file)
+	return nil, fail.NewFromErr(FailAppInvalid, filepath)
 }
 
 func appInfoFromJsonFile(f *zip.File) (*App, error) {

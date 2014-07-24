@@ -16,6 +16,9 @@ Attribution and Credits
 *"If I have seen further, it is by standing on the shoulders of giants"*
 
 * [Go](http://golang.org) - The Go Authors - (BSD) http://golang.org/LICENSE 
-* [Vim](http://vim.org) - Bram Moolenaar - (GPL-Compatible) http://vimdoc.sourceforge.net/htmldoc/uganda.html#license
 * [kv](https://github.com/cznic/kv) - Jan Mercl (cznic) - (BSD) https://github.com/cznic/kv/blob/master/LICENSE
 * [blackfriday](https://github.com/russross/blackfriday) - Russ Ross - (BSD) https://github.com/russross/blackfriday/blob/master/README.md
+* [jquery](https://jquery.org) - jQuery Foundation - (MIT) https://jquery.org/license/
+* [bootstrap](http://getbootstrap.com) - Twitter - (MIT) https://github.com/twbs/bootstrap/blob/master/LICENSE
+* [Glyphicons Halflings](http://glyphicons.com) -  Jan Kovarik - (MIT via bootstrap) - http://glyphicons.com/license
+* [Ractive.js](http://www.ractivejs.org) - Rich Harris and contributors - (MIT) https://github.com/ractivejs/ractive/blob/dev/LICENSE.md

@@ -13,6 +13,7 @@
 		<button type="button" id="logoutButton" class="btn btn-default navbar-btn">Log Out</button>
 	</div>
 </nav>
+<div id="modalHook"></div>
 
 <div class="container">
 <ul class="nav nav-tabs" role="tablist">
@@ -28,38 +29,49 @@
 	<div class="tab-pane active" id="installed"></div>
 	<div class="tab-pane" id="available"></div>
 </div>
-<script id="appGrid" type="text/ractive">
+
+<script id="tAppGrid" type="text/ractive">
 
 <div class="container">
 {{#data:i}}
-	{{#modal}}
+	{{#available}}
 		<p><a href="#" on-click="openModal">{{name}}</a>: {{description}}</p>
-	{{/modal}}
-	{{^modal}}
+	{{/available}}
+	{{^available}}
 		<p><a href="{{id}}">{{name}}</a>: {{description}}</p>
-	{{/modal}}
+	{{/available}}
 {{/data}}
 </div>
 </script>
 
-<script id="appModal" type="text/ractive">
-<div class="modal fade">
+<script id="tAppModal" type="text/ractive">
+
+<div class="modal fade" id="appModal" tabindex="-1" role="dialog" aria-labelledby="Application" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal">
-				<span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span>
+					<span class="sr-only">Close</span></button>
         <h4 class="modal-title">Application: {{name}}</h4>
       </div>
       <div class="modal-body">
-			<h2>{{description}}</h2>
+			{{#error}}
+			<div class="alert alert-danger alert-dismissible" role="alert">
+				<button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span>
+				<span class="sr-only">Close</span></button>
+				{{message}}
+			</div>
+			{{/error}}
+			{{name}}: {{description}}
+			<p><a href="#" on-click="upgrade">{{action}}</a></p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
       </div>
-    </div><!-- /.modal-content -->
-  </div><!-- /.modal-dialog -->
-</div><!-- /.modal -->
+    </div>
+  </div>
+</div>
+
 </script>
 
 <script src="/core/v1/file/js/jquery-2.1.1.min.js"></script>
