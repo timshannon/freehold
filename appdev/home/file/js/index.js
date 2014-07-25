@@ -53,12 +53,12 @@ available.on({
 
 modal.on({
 	install: function(event) {
+		console.log(JSON.stringify(event.context));
 		if ((event.context.action  == "re-install") || 
 			(event.context.action == "upgrade")) {
 			fh.application.upgrade(event.context.file)
 			.done(function(result) {
-				event.context.error = {message : "completed"};
-				modal.set(event.context);
+				location.reload();
 			})
 			.fail(function(result) {
 				event.context.error = result.data;
@@ -68,8 +68,7 @@ modal.on({
 			//install
 			fh.application.install(event.context.file)
 			.done(function(result) {
-				event.context.error = {message : "completed"};
-				modal.set(event.context);
+				location.reload();
 			})
 			.fail(function(result) {
 				event.context.error = result.data;

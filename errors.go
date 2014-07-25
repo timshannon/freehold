@@ -7,7 +7,6 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -86,7 +85,6 @@ func four04Page(w http.ResponseWriter, r *http.Request) {
 	if setting.Bool("Log404") {
 		log.Error(errors.New("Resource not found: " + r.URL.String()))
 	}
-	fmt.Println(r.URL.String())
 
 	prm, err := permission.Get(urlPathToFile(setting.String("404File")))
 	if err != nil {
