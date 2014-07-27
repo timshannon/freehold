@@ -1,14 +1,7 @@
 window.fh = (function() {
 'use strict';
 var _auth;
-/*function parseResult(result) {*/
-/*try {*/
-/*return JSON.parse(result);*/
-/*} catch (e) {*/
-/*console.log("error parsing json: " + result.responseText);*/
-/*return {status:"error", message:"Unable to parse response as JSON"};*/
-/*}*/
-/*}*/
+
 
 function stdAjax(type, url, options) {
 	if (!options) {options = {};}
@@ -26,6 +19,9 @@ function stdAjax(type, url, options) {
 		.then(function(data) {return data;},
 		function(data) {return data.responseJSON;});
 }
+
+
+//init Ractive events and partials
 
 return {
 	auth: function() {
@@ -68,6 +64,19 @@ return {
 		}
 		return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
 	},
+	properties: {
+		get: function(fileurl) {
+			if (fileurl[0] != "/") { fileurl = "/"+fileurl;}
+
+			var root = fileurl.slice(0, fileurl.indexOf("/",1));
+			var path = fileurl.slice(fileurl.indexOf("/",1));
+
+			var propPath = root+"/properties"+path;
+
+			return stdAjax("GET", propPath);
+		}	
+
+	},
 	application: {
 		get: function(appid) {
 			return stdAjax("GET", "/v1/application",{
@@ -93,17 +102,29 @@ return {
 				data: JSON.stringify({file: filename})});
 
 		},
-		delete: function(appid) {
+		uninstall: function(appid) {
 			return stdAjax("DELETE","/v1/application", {
 				data: JSON.stringify({id: appid})});
 		}
 		
 	}, //application
-	component: {
-		//ractive components for standard freehold UI components
-		// like file browser, user lists, etc
-	},
+	Ractive: fhRactive(),
 };
 
+
+
+function fhRactive() {
+	//TODO: capture bootstrap events like modal, and alerts
+	// partials and components
+	if ("Ractive" in window) {
+		return Ractive.extend({
+		});
+	}
+	return null;
+}
+
 }()); //end
+
+
+
 

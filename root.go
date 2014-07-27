@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"text/template"
 
+	"bitbucket.org/tshannon/freehold/app"
 	"bitbucket.org/tshannon/freehold/setting"
 )
 
@@ -32,8 +33,14 @@ func rootGet(w http.ResponseWriter, r *http.Request) {
 
 	if auth.User != nil {
 		if auth.User.HomeApp != "" {
-			serveApp(w, r, auth.User.HomeApp, auth)
-			return
+			app, err := app.Get(auth.User.HomeApp)
+			if errHandled(err, w) {
+				return
+			}
+			if app != nil {
+				serveApp(w, r, auth.User.HomeApp, auth)
+				return
+			}
 		}
 	}
 

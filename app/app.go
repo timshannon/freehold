@@ -136,6 +136,7 @@ func Install(file, owner string) (*App, error) {
 	}
 	defer r.Close()
 
+	os.MkdirAll(installDir, 0777)
 	for _, f := range r.File {
 		filename := path.Join(installDir, f.Name)
 
@@ -373,9 +374,7 @@ func writeFile(reader io.Reader, filename string) error {
 		return err
 	}
 	newFile, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
-	if os.IsExist(err) {
-		return fail.New("File already exists.", filename)
-	}
+
 	if err != nil {
 		return err
 	}
