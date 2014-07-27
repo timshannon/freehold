@@ -45,15 +45,18 @@ available.on({
 				app.action = "upgrade";
 			}
 		}
+		if (app.id == "home") {
+			app.action = null;
+		}
 
 		//open modal and set ractive data to the current app
 		modal.set(event.context);
 		$("#appModal").modal("show");
-	}});
+	}
+});
 
 modal.on({
 	install: function(event) {
-		console.log(JSON.stringify(event.context));
 		if ((event.context.action  == "re-install") || 
 			(event.context.action == "upgrade")) {
 			fh.application.upgrade(event.context.file)
@@ -76,7 +79,18 @@ modal.on({
 			});
 		}
 	},
-	//TODO: Trigger ractive event off of jquery / bootstrap modal close event
+	uninstall: function(event) {
+		fh.application.uninstall(event.context.id)
+		.done(function(result) {
+			location.reload();
+		})
+		.fail(function(result) {
+			event.context.error = result.data;
+			modal.set(event.context);
+
+		});
+
+	}
 });
 
 }); //end ready

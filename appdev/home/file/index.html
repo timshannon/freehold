@@ -64,6 +64,9 @@
 			{{/error}}
 			{{name}}: {{description}}
 			<p><a href="#" on-click="install">{{action}}</a></p>
+			{{#(action != "install") && (id != "home")}}
+			<p><a href="#" on-click="uninstall">uninstall</a></p>
+			{{/}}
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>

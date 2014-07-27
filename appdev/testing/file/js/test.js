@@ -1,1 +1,3 @@
-//todo
+QUnit.test("Properties", function(assert) {
+
+});
