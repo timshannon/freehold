@@ -1,7 +1,7 @@
 window.fh = (function() {
 'use strict';
 var _auth;
-
+var versions = ["v1"];
 
 function stdAjax(type, url, options) {
 	if (!options) {options = {};}
@@ -66,14 +66,7 @@ return {
 	},
 	properties: {
 		get: function(fileurl) {
-			if (fileurl[0] != "/") { fileurl = "/"+fileurl;}
-
-			var root = fileurl.slice(0, fileurl.indexOf("/",1));
-			var path = fileurl.slice(fileurl.indexOf("/",1));
-
-			var propPath = root+"/properties"+path;
-
-			return stdAjax("GET", propPath);
+			return stdAjax("GET", propPath(fileurl));
 		}	
 
 	},
@@ -121,6 +114,27 @@ function fhRactive() {
 		});
 	}
 	return null;
+}
+
+function propPath(fileurl) {
+	var split = fileurl.split("/");
+
+	if (split[0] === "") {
+	  split = split.slice(1);  
+	}
+
+	var slc1, slc2;
+
+	if (versions.indexOf(split[0]) != -1) {
+	   slc1 = split.slice(0,1);
+	   slc2 = split.slice(1);
+	} else {
+	  slc1 = split.slice(0, 2);
+	  slc2 = split.slice(2);
+	}
+
+	var prop = slc1.concat("properties",slc2);
+	return "/"+prop.join("/");
 }
 
 }()); //end
