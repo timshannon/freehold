@@ -44,22 +44,28 @@ func setupRoutes() {
 		get: authGet,
 	})
 
-	rootHandler.Handle("/v1/auth/session", &methodHandler{
+	rootHandler.Handle("/v1/auth/session/", &methodHandler{
 		get:    sessionGet,
 		post:   sessionPost,
 		delete: sessionDelete,
 	})
 
-	rootHandler.Handle("/v1/application", &methodHandler{
+	rootHandler.Handle("/v1/application/", &methodHandler{
 		get:    appGet,
 		post:   appPost,
 		put:    appPut,
 		delete: appDelete,
 	})
 
-	rootHandler.Handle("/v1/application/available", &methodHandler{
+	rootHandler.Handle("/v1/application/available/", &methodHandler{
 		get:  appAvailableGet,
 		post: appAvailablePost,
+	})
+
+	rootHandler.Handle("/v1/settings/", &methodHandler{
+		get:    settingsGet,
+		put:    settingsPut,
+		delete: settingsDelete,
 	})
 
 	//apps

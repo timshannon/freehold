@@ -64,10 +64,19 @@ func Properties(base *Permission) *Permission {
 	return &prm
 }
 
-// Only authenticated users (and not partially athenticated tokens)
+// Only authenticated users (and not partially authenticated tokens)
 // can write a new sesion or view an existing one
 func Session() *Permission {
 	return &Permission{
 		Friend: Read + Write,
+	}
+}
+
+func Settings() *Permission {
+	return &Permission{
+		admin:   Read + Write,
+		Friend:  Read,
+		Private: Read,
+		Public:  "",
 	}
 }

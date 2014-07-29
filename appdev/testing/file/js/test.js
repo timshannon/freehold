@@ -91,3 +91,15 @@ QUnit.asyncTest("Get Properties", function(assert) {
 	});
 	
 });
+
+
+QUnit.module("settings");
+QUnit.asyncTest("Get Setting", function(assert) {
+	expect(1);
+
+	fh.settings.get("LogErrors")
+	.always(function(result) {
+		assert.ok((result.status == "success") && (result.data.LogErrors === undefined));
+		QUnit.start();
+	});
+});

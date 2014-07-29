@@ -77,7 +77,7 @@ func Get(id string) (*App, error) {
 	return app, nil
 }
 
-func GetAll() (map[string]*App, error) {
+func All() (map[string]*App, error) {
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return nil, err

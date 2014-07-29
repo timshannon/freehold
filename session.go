@@ -23,7 +23,7 @@ func sessionGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//TODO:
+	//TODO: get session data
 
 }
 

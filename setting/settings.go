@@ -83,6 +83,69 @@ func Set(settingName string, value interface{}) error {
 	return nil
 }
 
+func All() (map[string]*Setting, error) {
+	ds, err := data.OpenCoreDS(DS)
+	if err != nil {
+		return nil, err
+	}
+
+	iter, err := ds.Iter(nil, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	settings := make(map[string]*Setting)
+
+	for k, v := range settingDefaults {
+		settings[k] = &v
+	}
+
+	for iter.Next() {
+		if iter.Err() != nil {
+			return nil, iter.Err()
+		}
+
+		set := &Setting{}
+		name := ""
+		err = json.Unmarshal(iter.Value(), set)
+		if err != nil {
+			return nil, err
+		}
+
+		err = json.Unmarshal(iter.Key(), &name)
+		if err != nil {
+			return nil, err
+		}
+
+		settings[name] = set
+	}
+
+	return settings, nil
+}
+
+func Default(settingName string) error {
+	ds, err := data.OpenCoreDS(DS)
+	if err != nil {
+		return err
+	}
+	key, err := json.Marshal(settingName)
+	if err != nil {
+		return err
+	}
+
+	err = ds.Delete(key)
+	if err != nil {
+		return err
+	}
+
+	fhSetting := settingDefault(settingName)
+	if fhSetting.setFunc != nil {
+		fhSetting.setFunc()
+	}
+
+	return nil
+}
+
 // Helper functions for grabbing specific setting values
 // Will panic if requesting the wrong type for the setting
 
