@@ -102,7 +102,7 @@ func New(u *user.User, base *Session) (*Session, error) {
 	sessionId := random(128)
 	newSession.CSRFToken = random(128)
 
-	newSession.key = u.Username() + "_" + sessionId
+	newSession.key = u.User + "_" + sessionId
 
 	newSession.Created = time.Now().Format(time.RFC3339)
 
@@ -248,7 +248,7 @@ func enforceSessionLimit(u *user.User) error {
 	if err != nil {
 		return err
 	}
-	from, err := json.Marshal(u.Username())
+	from, err := json.Marshal(u.User)
 	if err != nil {
 		return err
 	}
@@ -276,7 +276,7 @@ func enforceSessionLimit(u *user.User) error {
 			return err
 		}
 
-		if username(s.key) != u.Username() {
+		if username(s.key) != u.User {
 			break
 		}
 		if s.IsExpired() {

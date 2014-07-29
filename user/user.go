@@ -24,8 +24,7 @@ const (
 var FailLogon = errors.New("Invalid user and / or password")
 
 type User struct {
-	username string `json:"-"`
-
+	User        string `json:"user,omitempty"`
 	Name        string `json:"name,omitempty"`
 	Password    string `json:"password,omitempty"`
 	EncPassword []byte `json:"encPassword,omitempty"`
@@ -57,19 +56,19 @@ func Get(username string) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-	usr.username = username
+	usr.User = username
 
 	return usr, nil
 }
 
 func New(username string, u *User) error {
-	u.username = username
+	u.User = username
 	//Check if user exists
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return err
 	}
-	key, err := json.Marshal(u.username)
+	key, err := json.Marshal(u.User)
 	if err != nil {
 		return err
 	}
@@ -83,7 +82,7 @@ func New(username string, u *User) error {
 		return err
 	}
 	if value != nil {
-		u.clearPassword()
+		u.ClearPassword()
 		return fail.New("User already exists", u)
 	}
 
@@ -112,15 +111,15 @@ func Delete(username string) error {
 }
 
 func (u *User) update() error {
-	if u.username == "" {
-		return fail.New("Invalid username", u.username)
+	if u.User == "" {
+		return fail.New("Invalid username", u.User)
 	}
 
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return err
 	}
-	key, err := json.Marshal(u.username)
+	key, err := json.Marshal(u.User)
 	if err != nil {
 		return err
 	}
@@ -149,14 +148,14 @@ func (u *User) UpdatePassword(password string) error {
 	}
 
 	if setting.Bool("LogPasswordChange") {
-		log.NewEntry(authLogType, "User "+u.username+" has changed their password.")
+		log.NewEntry(authLogType, "User "+u.User+" has changed their password.")
 	}
 	return nil
 }
 
 func (u *User) SetPassword(password string) error {
 	if len(password) < setting.Int("MinPasswordLength") {
-		u.clearPassword()
+		u.ClearPassword()
 		return fail.New("Password isn't long enough.", u)
 	}
 	encPass, err := bcrypt.GenerateFromPassword([]byte(password), setting.Int("PasswordBcryptWorkFactor"))
@@ -169,7 +168,7 @@ func (u *User) SetPassword(password string) error {
 }
 
 func (u *User) Login(password string) error {
-	if u.username == "" {
+	if u.User == "" {
 		return loginFailure(u)
 	}
 
@@ -186,28 +185,24 @@ func (u *User) Login(password string) error {
 		return err
 	}
 	if setting.Bool("LogSuccessAuth") {
-		log.NewEntry(authLogType, "User "+u.username+" has logged in successfully.")
+		log.NewEntry(authLogType, "User "+u.User+" has logged in successfully.")
 	}
 	//done with password, clear it
-	u.clearPassword()
+	u.ClearPassword()
 
 	return nil
 }
 
-func (u *User) clearPassword() {
+func (u *User) ClearPassword() {
 	u.Password = ""
 	u.EncPassword = nil
 }
 
-func (u *User) Username() string {
-	return u.username
-}
-
 func loginFailure(u *User) error {
 	if setting.Bool("LogFailedAuth") {
-		log.NewEntry(authLogType, "User "+u.username+" has failed a login attempt.")
+		log.NewEntry(authLogType, "User "+u.User+" has failed a login attempt.")
 	}
-	u.clearPassword()
-	return fail.NewFromErr(FailLogon, u.username)
+	u.ClearPassword()
+	return fail.NewFromErr(FailLogon, u.User)
 
 }

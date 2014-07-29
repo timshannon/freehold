@@ -374,7 +374,10 @@ func writeFile(reader io.Reader, filename string) error {
 		return err
 	}
 	newFile, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
-
+	if os.IsExist(err) {
+		//capturing is exists error so that too much info isn't exposed to end users
+		return errors.New("File already exists")
+	}
 	if err != nil {
 		return err
 	}

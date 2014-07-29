@@ -123,6 +123,8 @@ func authGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	auth.User.ClearPassword()
+
 	respondJsend(w, &JSend{
 		Status: statusSuccess,
 		Data:   auth,

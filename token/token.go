@@ -53,7 +53,7 @@ func New(t *Token, requester *user.User) (*Token, error) {
 		return nil, err
 	}
 
-	key, err := json.Marshal(key(t.requester.Username(), t.token))
+	key, err := json.Marshal(key(t.requester.User, t.token))
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +121,7 @@ func Get(u *user.User, token string) (*Token, error) {
 	if err != nil {
 		return nil, err
 	}
-	key, err := json.Marshal(key(u.Username(), token))
+	key, err := json.Marshal(key(u.User, token))
 	if err != nil {
 		return nil, err
 	}
