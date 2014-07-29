@@ -340,16 +340,16 @@ Response (200):
 {
 	status: "success",
 	data: {
-		31:	"Data",
-		32:	"Data",
-		33:	"Data",
-		34:	"Data",
-		35:	"Data",
-		36:	"Data",
-		37: "Data",
-		38: "Data",
-		39: "Data",
-		40: "Data"
+		31:"Data",
+		32:"Data",
+		33:"Data",
+		34:"Data",
+		35:"Data",
+		36:"Data",
+		37:"Data",
+		38:"Data",
+		39:"Data",
+		40:"Data"
 	}
 }
 ```
@@ -367,14 +367,14 @@ Response (200):
 {
 	status: "success",
 	data: {
-		43:	 "Data",
-		44:	 "Data",
-		45:	 "Data",
-		46:  "Data",
-		47:	 "Data",
-		48:	 "Data",
-		49:	 "Data",
-		50:	 "Data"
+		43: "Data",
+		44: "Data",
+		45: "Data",
+		46: "Data",
+		47: "Data",
+		48: "Data",
+		49: "Data",
+		50: "Data"
 	}
 }
 ```

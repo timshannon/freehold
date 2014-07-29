@@ -56,7 +56,7 @@ func appGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	apps, err := app.GetAll()
+	apps, err := app.All()
 	if errHandled(err, w) {
 		return
 	}

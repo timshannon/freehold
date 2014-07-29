@@ -48,7 +48,7 @@ return {
 				expires: expires
 			};
 		}
-		return stdAjax("POST", "/v1/auth/session", {
+		return stdAjax("POST", "/v1/auth/session/", {
 			beforeSend: function (xhr) {
 				xhr.setRequestHeader ("Authorization", "Basic "+btoa(username+":"+password));
 			},
@@ -56,7 +56,7 @@ return {
 		});
 	},
 	logout: function() {
-		return stdAjax("DELETE", "/v1/auth/session");
+		return stdAjax("DELETE", "/v1/auth/session/");
 	},
 	uuid: function() {
 		function s4() {
@@ -93,35 +93,59 @@ return {
 	},
 	application: {
 		get: function(appid) {
-			return stdAjax("GET", "/v1/application",{
+			return stdAjax("GET", "/v1/application/",{
 				data: JSON.stringify({id: appid}),
 			});
 		},
 		available: function() {
-			return stdAjax("GET", "/v1/application/available");
+			return stdAjax("GET", "/v1/application/available/");
 		},
 		postAvailable: function(filename) {
-			return stdAjax("POST","/v1/application/available", 
+			return stdAjax("POST","/v1/application/available/", 
 				{data: JSON.stringify({file: filename})});
 		},
 		installed: function() {
-			return stdAjax("GET","/v1/application");
+			return stdAjax("GET","/v1/application/");
 		},
 		install: function(filename) {
-			return stdAjax("POST","/v1/application",{
+			return stdAjax("POST","/v1/application/",{
 				data: JSON.stringify({file: filename})});
 		},
 		upgrade: function(filename) {
-			return stdAjax("PUT","/v1/application", {
+			return stdAjax("PUT","/v1/application/", {
 				data: JSON.stringify({file: filename})});
 
 		},
 		uninstall: function(appid) {
-			return stdAjax("DELETE","/v1/application", {
+			return stdAjax("DELETE","/v1/application/", {
 				data: JSON.stringify({id: appid})});
 		}
 		
 	}, //application
+	settings: {
+		all: function() {
+			return stdAjax("GET", "/v1/settings/");
+		},
+		get: function(setting) {
+			return stdAjax("GET", "/v1/settings/", {
+				data: JSON.stringify({setting: setting})
+			});
+		},
+		set: function(setting, value) {
+			return stdAjax("PUT", "/v1/settings/", {
+				data: JSON.stringify({
+					setting: setting,
+					value: value
+				})
+			});
+
+		},
+		default: function(setting) {
+			return stdAjax("DELETE", "/v1/settings/", {
+				data: JSON.stringify({setting: setting})
+			});
+		}
+	},
 	Ractive: fhRactive(),
 };
 
