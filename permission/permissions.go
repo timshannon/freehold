@@ -173,7 +173,7 @@ func (p *Permission) isOwner(u *user.User) bool {
 	if u == nil {
 		return false
 	}
-	if p.Owner == u.Username() {
+	if p.Owner == u.User {
 		return true
 	}
 

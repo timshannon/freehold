@@ -5,6 +5,7 @@
 package main
 
 import (
+	"errors"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -16,6 +17,7 @@ import (
 
 	"bytes"
 
+	"bitbucket.org/tshannon/freehold/app"
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/log"
 	"bitbucket.org/tshannon/freehold/permission"
@@ -55,7 +57,20 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	r.ParseMultipartForm(setting.Int64("MaxUploadMemory"))
+	err = r.ParseMultipartForm(setting.Int64("MaxUploadMemory"))
+	if errHandled(err, w) {
+		return
+	}
+
+	if !validFilePath(r.URL.Path) {
+		errHandled(fail.New("Invalid path for file upload.", r.URL.Path), w)
+		return
+	}
+
+	err = os.MkdirAll(urlPathToFile(r.URL.Path), 0777)
+	if errHandled(err, w) {
+		return
+	}
 
 	mp := r.MultipartForm
 
@@ -65,6 +80,12 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 
 	for _, files := range mp.File {
 		for i := range files {
+			if path.Base(files[i].Filename) != files[i].Filename {
+				failures = append(failures, fail.New("File name must not contain a path.", files[i].Filename))
+				status = statusFail
+
+				continue
+			}
 			resource := path.Join(r.URL.Path, files[i].Filename)
 			filename := urlPathToFile(resource)
 
@@ -86,7 +107,7 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 
 				continue
 			}
-			permission.Set(filename, permission.FileNewDefault(auth.User.Username()))
+			permission.Set(filename, permission.FileNewDefault(auth.User.User))
 
 			fileList = append(fileList, Properties{
 				Name: filepath.Base(filename),
@@ -152,6 +173,10 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		if errHandled(clearEmptyFolder(filepath.Dir(file.Name())), w) {
+			return
+		}
+
 		respondJsend(w, &JSend{
 			Status: statusSuccess,
 			Data: Properties{
@@ -210,21 +235,29 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	if errHandled(clearEmptyFolder(file.Name()), w) {
+		return
+	}
 	respondJsend(w, &JSend{
 		Status:   status,
 		Data:     fileList,
 		Failures: failures,
 	})
 
-	//Check if folder is now empty and clean it up
-	files, err = file.Readdir(0)
+}
+
+func clearEmptyFolder(folder string) error {
+	file, err := os.Open(folder)
+	defer file.Close()
+
+	files, err := file.Readdir(0)
 	if err != nil {
-		log.Error(err)
-		return
+		return err
 	}
 	if len(files) == 0 {
 		os.Remove(file.Name())
 	}
+	return nil
 }
 
 func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth *Auth) {
@@ -384,6 +417,10 @@ func writeFile(reader io.Reader, filename string) error {
 		return err
 	}
 	newFile, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+	if os.IsExist(err) {
+		//capturing is exists error so that too much info isn't exposed to end users
+		return errors.New("File already exists")
+	}
 	if err != nil {
 		return err
 	}
@@ -399,4 +436,27 @@ func writeFile(reader io.Reader, filename string) error {
 		return err
 	}
 	return nil
+}
+
+func validFilePath(url string) bool {
+	if isDocPath(url) {
+		return false
+	}
+
+	root, pth := splitRootAndPath(url)
+	if !isVersion(root) {
+		a, err := app.Get(root)
+		if err != nil || a == nil {
+			return false
+		}
+		root, pth = splitRootAndPath(pth)
+		if !isVersion(root) {
+			return false
+		}
+	}
+	root, pth = splitRootAndPath(pth)
+	if root != "file" {
+		return false
+	}
+	return true
 }

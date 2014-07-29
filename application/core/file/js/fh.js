@@ -64,11 +64,32 @@ return {
 		}
 		return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
 	},
+	file: {
+		upload: function(fileurl, formData) {
+			//very simple file upload, feel free to write you own or use a plugin
+			//  with progress handling, polyfills, etc
+			// just be sure to include the X-CSRFToken header:
+			//   xhr.setRequestHeader ("X-CSRFToken", fh.auth().CSRFToken);
+			return stdAjax("POST", fileurl, {
+				data: formData,
+				cache: false,
+				processData: false,
+				contentType: false
+			});
+		},
+		delete: function(fileurl) {
+			return stdAjax("DELETE", fileurl);
+		}
+	},
 	properties: {
 		get: function(fileurl) {
 			return stdAjax("GET", propPath(fileurl));
-		}	
-
+		},	
+		set: function(fileurl, properties) {
+			return stdAjax("PUT", propPath(fileurl), {
+				data: JSON.stringify(properties)
+			});
+		}
 	},
 	application: {
 		get: function(appid) {

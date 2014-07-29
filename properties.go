@@ -38,6 +38,7 @@ func resPathFromProperty(propertyPath string) string {
 // Settings will allow you to change default hash, cypher, compression, etc
 // Store encryption settings with file?
 
+//TODO: Store upload date?
 func propertiesGet(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
 	if errHandled(err, w) {
@@ -177,7 +178,7 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if input.Permissions == nil {
-		errHandled(fail.New("No json input passed in.", nil), w)
+		errHandled(fail.New("No permissions passed in.", nil), w)
 		return
 	}
 
