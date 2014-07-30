@@ -1148,7 +1148,6 @@ Response (200):
 {
 	status: "success",
 	data: {
-			setting: "public-rate-limit", 
 			description: "Number of writes per minute per user for a single collection", 
 			value: 5
 	}

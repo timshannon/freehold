@@ -83,7 +83,7 @@ func Set(settingName string, value interface{}) error {
 	return nil
 }
 
-func All() (map[string]*Setting, error) {
+func All() (map[string]Setting, error) {
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return nil, err
@@ -94,10 +94,10 @@ func All() (map[string]*Setting, error) {
 		return nil, err
 	}
 
-	settings := make(map[string]*Setting)
+	settings := make(map[string]Setting)
 
 	for k, v := range settingDefaults {
-		settings[k] = &v
+		settings[k] = v
 	}
 
 	for iter.Next() {
@@ -117,7 +117,7 @@ func All() (map[string]*Setting, error) {
 			return nil, err
 		}
 
-		settings[name] = set
+		settings[name] = *set
 	}
 
 	return settings, nil

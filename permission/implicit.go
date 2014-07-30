@@ -77,6 +77,24 @@ func Settings() *Permission {
 		admin:   Read + Write,
 		Friend:  Read,
 		Private: Read,
-		Public:  "",
+	}
+}
+
+func User() *Permission {
+	return &Permission{
+		Friend:  Read,
+		Private: Read + Write,
+	}
+}
+
+func UserMakeAdmin() *Permission {
+	return &Permission{
+		admin: Read + Write,
+	}
+}
+
+func UserRemoveAdmin() *Permission {
+	return &Permission{
+		Private: Read + Write,
 	}
 }

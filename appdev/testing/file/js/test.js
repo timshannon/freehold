@@ -99,7 +99,77 @@ QUnit.asyncTest("Get Setting", function(assert) {
 
 	fh.settings.get("LogErrors")
 	.always(function(result) {
-		assert.ok((result.status == "success") && (result.data.LogErrors === undefined));
+		//returned successfully and didn't return a map of settings
+		assert.ok((result.status == "success") && 
+			(result.data.description === "Whether or not errors will be logged in the core/log datastore."));
 		QUnit.start();
 	});
 });
+
+QUnit.asyncTest("All Settings", function(assert) {
+	expect(1);
+
+	fh.settings.all()
+	.always(function(result) {
+		assert.ok((result.status == "success") && 
+		(result.data.LogErrors.description === "Whether or not errors will be logged in the core/log datastore."));
+		QUnit.start();
+	});
+});
+
+
+QUnit.asyncTest("Set Setting", function(assert) {
+	expect(1);
+
+	fh.settings.get("LogErrors")
+	.always(function(result) {
+		var val = result.data.value;
+		fh.settings.set("LogErrors", false)
+		.always(function(result) {
+			fh.settings.get("LogErrors")
+			.always(function(result) {
+				assert.deepEqual(result.data.value, false);
+				fh.settings.set("LogErrors", val)
+				.always(function(result) {
+					QUnit.start();
+				});
+			});
+		});
+	});
+});
+
+QUnit.asyncTest("Default Setting", function(assert) {
+	expect(1);
+
+	fh.settings.get("LogErrors")
+	.always(function(result) {
+		var val = result.data.value;
+		fh.settings.default("LogErrors")
+		.always(function(result) {
+			fh.settings.get("LogErrors")
+			.always(function(result) {
+				assert.deepEqual(result.data.value, true);
+				
+				fh.settings.set("LogErrors", val)
+				.always(function(result) {
+					QUnit.start();
+				});
+			});
+		});
+	});
+});
+
+
+QUnit.module("Users", {
+	setup: function(assert) {
+		QUnit.stop();
+		//create test user
+
+	},
+	teardown: function(assert) {
+		QUnit.stop();
+		//delete test user
+	}
+});
+
+

@@ -68,6 +68,13 @@ func setupRoutes() {
 		delete: settingsDelete,
 	})
 
+	rootHandler.Handle("/v1/auth/user/", &methodHandler{
+		get:    userGet,
+		post:   userPost,
+		put:    userPut,
+		delete: userDelete,
+	})
+
 	//apps
 	appHandler = treemux.NewServeMux()
 	rootHandler.SetChild(appHandler)
