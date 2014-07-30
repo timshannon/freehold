@@ -25,6 +25,7 @@ const (
 
 type Auth struct {
 	AuthType string `json:"type"`
+	Username string `json:"user,omitempty"`
 	*user.User
 	*token.Token
 	*session.Session `json:"-"`
@@ -77,6 +78,7 @@ func authenticate(w http.ResponseWriter, r *http.Request) (*Auth, error) {
 			}
 			a.Token = t
 			a.User = t.User()
+			a.Username = t.User().Username()
 			return a, nil
 		}
 
@@ -86,6 +88,7 @@ func authenticate(w http.ResponseWriter, r *http.Request) (*Auth, error) {
 			return a, err
 		}
 		a.User = user
+		a.Username = user.Username()
 		return a, nil
 	}
 
@@ -113,6 +116,7 @@ func authenticate(w http.ResponseWriter, r *http.Request) (*Auth, error) {
 
 	a.AuthType = authTypeSession
 	a.User = ses.User()
+	a.Username = ses.User().Username()
 	a.Session = ses
 	return a, nil
 }

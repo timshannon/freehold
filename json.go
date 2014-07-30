@@ -57,6 +57,9 @@ func parseJson(r *http.Request, result interface{}) error {
 	if err != nil {
 		return err
 	}
+
+	//TODO: Parse input differently based on content type
+	// accept x-www-form-urlencoded as well as json?
 	if len(buff) == 0 {
 		if r.Method != "GET" {
 			return nil

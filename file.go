@@ -107,7 +107,13 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 
 				continue
 			}
-			permission.Set(filename, permission.FileNewDefault(auth.User.User))
+			err = permission.Set(filename, permission.FileNewDefault(auth.User.Username()))
+			if err != nil {
+				failures = append(failures, fail.NewFromErr(err, resource))
+				status = statusFail
+
+				continue
+			}
 
 			fileList = append(fileList, Properties{
 				Name: filepath.Base(filename),

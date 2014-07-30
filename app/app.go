@@ -395,14 +395,14 @@ func writeFile(reader io.Reader, filename string) error {
 	return nil
 }
 
-var IsVersionFunc func(root string) bool
+var IsRestrictedFunc func(root string) bool
 
 func isRestricted(appid string) bool {
 	if appid == "available" {
 		return true
 	}
-	if IsVersionFunc != nil {
-		return IsVersionFunc(appid)
+	if IsRestrictedFunc != nil {
+		return IsRestrictedFunc(appid)
 	}
 	return false
 }

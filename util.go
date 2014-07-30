@@ -19,7 +19,7 @@ import (
 var versions = map[string]struct{}{"v1": struct{}{}}
 
 func init() {
-	app.IsVersionFunc = isVersion
+	app.IsRestrictedFunc = isRestricted
 }
 
 const (
@@ -99,6 +99,16 @@ func isVersion(version string) bool {
 	// make sure apps can be registered on possible future version endpoints?
 	_, ok := versions[version]
 	return ok
+}
+
+func isRestricted(path string) bool {
+	if isDocPath(path) {
+		return true
+	}
+	if isVersion(path) {
+		return true
+	}
+	return false
 }
 
 func halt(msg string) {

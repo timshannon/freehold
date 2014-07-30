@@ -30,7 +30,7 @@ return {
 		}
 		$.ajax({
 			type: "GET",
-			url: "/v1/auth",
+			url: "/v1/auth/",
 			dataType: "json",
 			async: false,
 			complete: function (xhr) {
@@ -143,6 +143,48 @@ return {
 		default: function(setting) {
 			return stdAjax("DELETE", "/v1/settings/", {
 				data: JSON.stringify({setting: setting})
+			});
+		}
+	},
+	user: {
+		all: function() {
+			return stdAjax("GET", "/v1/auth/user/");
+		},
+		get: function(username) {
+			return stdAjax("GET", "/v1/auth/user/", {
+				data: JSON.stringify({user: username})
+			});
+		},
+		new: function(userObject) {
+			return stdAjax("POST", "/v1/auth/user/", {
+				data: JSON.stringify(userObject)
+			});
+		},
+		update: function(userObject) { //Current user
+			return stdAjax("PUT", "/v1/auth/user/", {
+				data: JSON.stringify(userObject)
+			});
+
+		},
+		makeAdmin: function(username) {
+			return stdAjax("PUT", "/v1/auth/user/", {
+				data: JSON.stringify({
+					user: username,
+					admin: true,
+				})
+			});
+		},
+		relinquishAdmin: function() { //current user 
+			return stdAjax("PUT", "/v1/auth/user/", {
+				data: JSON.stringify({
+					admin: false,
+				})
+			});
+
+		},
+		delete: function(username) {
+			return stdAjax("DELETE", "/v1/auth/user/", {
+				data: JSON.stringify({user: username})
 			});
 		}
 	},

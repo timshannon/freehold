@@ -24,12 +24,15 @@ const (
 var FailLogon = errors.New("Invalid user and / or password")
 
 type User struct {
-	User        string `json:"user,omitempty"`
 	Name        string `json:"name,omitempty"`
 	Password    string `json:"password,omitempty"`
 	EncPassword []byte `json:"encPassword,omitempty"`
 	HomeApp     string `json:"homeApp,omitempty"`
 	Admin       bool   `json:"admin,omitempty"`
+
+	username    string `json:"-"`
+	passwordSet bool   `json:"-"` //True when password is getting updated. Can only be set internally
+	adminSet    bool   `json:"-"`
 }
 
 func Get(username string) (*User, error) {
@@ -56,19 +59,55 @@ func Get(username string) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-	usr.User = username
+	usr.username = username
 
 	return usr, nil
 }
 
+func All() (map[string]*User, error) {
+	ds, err := data.OpenCoreDS(DS)
+	if err != nil {
+		return nil, err
+	}
+
+	iter, err := ds.Iter(nil, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	users := make(map[string]*User)
+
+	for iter.Next() {
+		if iter.Err() != nil {
+			return nil, iter.Err()
+		}
+
+		usr := &User{}
+
+		err = json.Unmarshal(iter.Value(), usr)
+		if err != nil {
+			return nil, err
+		}
+
+		err = json.Unmarshal(iter.Key(), &usr.username)
+		if err != nil {
+			return nil, err
+		}
+
+		users[usr.username] = usr
+	}
+
+	return users, nil
+}
+
 func New(username string, u *User) error {
-	u.User = username
+	u.username = username
 	//Check if user exists
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return err
 	}
-	key, err := json.Marshal(u.User)
+	key, err := json.Marshal(u.username)
 	if err != nil {
 		return err
 	}
@@ -86,11 +125,11 @@ func New(username string, u *User) error {
 		return fail.New("User already exists", u)
 	}
 
-	err = u.SetPassword(u.Password)
+	err = u.setPassword(u.Password)
 	if err != nil {
 		return err
 	}
-	return u.update()
+	return u.Update()
 }
 
 func Delete(username string) error {
@@ -110,16 +149,20 @@ func Delete(username string) error {
 	return nil
 }
 
-func (u *User) update() error {
-	if u.User == "" {
-		return fail.New("Invalid username", u.User)
+func (u *User) Update() error {
+	if u.username == "" {
+		return fail.New("Invalid username", u.username)
+	}
+
+	if !u.passwordSet {
+		u.ClearPassword()
 	}
 
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return err
 	}
-	key, err := json.Marshal(u.User)
+	key, err := json.Marshal(u.username)
 	if err != nil {
 		return err
 	}
@@ -136,24 +179,31 @@ func (u *User) update() error {
 	return nil
 }
 
+func (u *User) SetAdmin(isAdmin bool) error {
+	u.Admin = isAdmin
+	u.adminSet = true
+	//TODO: Log Admin changes
+	return u.Update()
+}
+
 func (u *User) UpdatePassword(password string) error {
-	err := u.SetPassword(password)
+	err := u.setPassword(password)
 	if err != nil {
 		return err
 	}
 
-	err = u.update()
+	err = u.Update()
 	if err != nil {
 		return err
 	}
 
 	if setting.Bool("LogPasswordChange") {
-		log.NewEntry(authLogType, "User "+u.User+" has changed their password.")
+		log.NewEntry(authLogType, "User "+u.username+" has changed their password.")
 	}
 	return nil
 }
 
-func (u *User) SetPassword(password string) error {
+func (u *User) setPassword(password string) error {
 	if len(password) < setting.Int("MinPasswordLength") {
 		u.ClearPassword()
 		return fail.New("Password isn't long enough.", u)
@@ -164,11 +214,13 @@ func (u *User) SetPassword(password string) error {
 	}
 	u.EncPassword = encPass
 	u.Password = ""
+	u.passwordSet = true
+
 	return nil
 }
 
 func (u *User) Login(password string) error {
-	if u.User == "" {
+	if u.username == "" {
 		return loginFailure(u)
 	}
 
@@ -185,12 +237,16 @@ func (u *User) Login(password string) error {
 		return err
 	}
 	if setting.Bool("LogSuccessAuth") {
-		log.NewEntry(authLogType, "User "+u.User+" has logged in successfully.")
+		log.NewEntry(authLogType, "User "+u.username+" has logged in successfully.")
 	}
 	//done with password, clear it
 	u.ClearPassword()
 
 	return nil
+}
+
+func (u *User) Username() string {
+	return u.username
 }
 
 func (u *User) ClearPassword() {
@@ -200,9 +256,9 @@ func (u *User) ClearPassword() {
 
 func loginFailure(u *User) error {
 	if setting.Bool("LogFailedAuth") {
-		log.NewEntry(authLogType, "User "+u.User+" has failed a login attempt.")
+		log.NewEntry(authLogType, "User "+u.username+" has failed a login attempt.")
 	}
 	u.ClearPassword()
-	return fail.NewFromErr(FailLogon, u.User)
+	return fail.NewFromErr(FailLogon, u.username)
 
 }
