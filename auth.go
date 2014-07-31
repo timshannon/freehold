@@ -6,6 +6,7 @@ package main
 
 import (
 	"encoding/base64"
+	"errors"
 	"net/http"
 	"strings"
 
@@ -40,15 +41,16 @@ func authenticate(w http.ResponseWriter, r *http.Request) (*Auth, error) {
 	}
 	headerInfo := r.Header.Get("Authorization")
 	if headerInfo != "" {
-		authInfo := strings.TrimLeft(headerInfo, "Basic ")
+		authInfo := strings.TrimPrefix(headerInfo, "Basic ")
 		if len(authInfo) == len(headerInfo) {
 			return nil, fail.New("Error, malformed basic auth header.", nil)
 		}
 		userPass, err := base64.StdEncoding.DecodeString(authInfo)
 		if err != nil {
-			log.Error(err)
+			log.Error(errors.New("Error decoding base64 auth header: " + err.Error()))
 			return nil, fail.New("Error, malformed basic auth header.", nil)
 		}
+
 		split := strings.SplitN(string(userPass), ":", 2)
 		if len(split) != 2 {
 			return nil, fail.New("Error, malformed basic auth header.", nil)
@@ -126,8 +128,6 @@ func authGet(w http.ResponseWriter, r *http.Request) {
 	if errHandled(err, w) {
 		return
 	}
-
-	auth.User.ClearPassword()
 
 	respondJsend(w, &JSend{
 		Status: statusSuccess,

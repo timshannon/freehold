@@ -122,6 +122,9 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	if status == statusSuccess {
+		w.WriteHeader(http.StatusCreated)
+	}
 	respondJsend(w, &JSend{
 		Status:   status,
 		Data:     fileList,

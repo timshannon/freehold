@@ -30,7 +30,7 @@ $( "#login" ).submit(function( event ) {
 		return;
 	}
 
-	fh.login($("#username").val(),$("#password").val(),data)
+	fh.session.login($("#username").val(),$("#password").val(),data)
 	.done(function() {
 		location.reload();
 	})
@@ -40,7 +40,7 @@ $( "#login" ).submit(function( event ) {
 });
 
 $("#logoutButton").click(function() {
-	fh.logout()
+	fh.session.logout()
 	.done(function() {
 		location.reload();
 	})

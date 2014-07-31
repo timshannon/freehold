@@ -95,6 +95,8 @@ func appPost(w http.ResponseWriter, r *http.Request) {
 	if errHandled(err, w) {
 		return
 	}
+
+	w.WriteHeader(http.StatusCreated)
 	respondJsend(w, &JSend{
 		Status: statusSuccess,
 		Data:   a,

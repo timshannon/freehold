@@ -76,6 +76,18 @@ func Get(r *http.Request) (*Session, error) {
 	return session, nil
 }
 
+func All(user *user.User) ([]*Session, error) {
+	if user == nil {
+		return nil, fail.New("Invalid user", nil)
+	}
+
+	sessions, err := userSessions(user.Username())
+	if err != nil {
+		return nil, err
+	}
+	return sessions, nil
+}
+
 // Gets the cookie value for the freehold session cookie, and
 // ignores empty values
 func sessionCookieValue(r *http.Request) string {
@@ -243,19 +255,19 @@ func (s *Session) Expire() error {
 	return ds.Delete(key)
 }
 
-func enforceSessionLimit(u *user.User) error {
+func userSessions(user string) ([]*Session, error) {
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	from, err := json.Marshal(u.Username())
+	from, err := json.Marshal(user)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	iter, err := ds.Iter(from, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var sessions []*Session
@@ -264,29 +276,38 @@ func enforceSessionLimit(u *user.User) error {
 
 		s := &Session{}
 		if iter.Err() != nil {
-			return iter.Err()
+			return nil, iter.Err()
 		}
 
 		err = json.Unmarshal(iter.Value(), s)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		err = json.Unmarshal(iter.Key(), &s.key)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
-		if username(s.key) != u.Username() {
+		if username(s.key) != user {
 			break
 		}
 		if s.IsExpired() {
 			err = ds.Delete(iter.Key())
 			if err != nil {
-				return err
+				return nil, err
 			}
 			continue
 		}
 		sessions = append(sessions, s)
+	}
+
+	return sessions, nil
+}
+
+func enforceSessionLimit(u *user.User) error {
+	sessions, err := userSessions(u.Username())
+	if err != nil {
+		return err
 	}
 
 	over := len(sessions) - setting.Int("MaxOpenSessions")

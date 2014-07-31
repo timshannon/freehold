@@ -23,8 +23,15 @@ func sessionGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//TODO: get session data
+	sessions, err := session.All(auth.User)
+	if errHandled(err, w) {
+		return
+	}
 
+	respondJsend(w, &JSend{
+		Status: statusSuccess,
+		Data:   sessions,
+	})
 }
 
 func sessionPost(w http.ResponseWriter, r *http.Request) {

@@ -22,7 +22,7 @@ $( "#login" ).submit(function( event ) {
 		return;
 	}
 
-	fh.login($("#username").val(),$("#password").val(),data)
+	fh.session.login($("#username").val(),$("#password").val(),data)
 	.done(function(result) {
 		location.reload();
 	})
