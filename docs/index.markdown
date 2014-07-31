@@ -1039,11 +1039,12 @@ GET /v1/auth/session
 Response (200):
 {
 	status: "success",
-	data: {
+	data: [
 		"bbbbbbbbbbbbbbbbbbbbb": {CSRFToken: "12345677", expires: "2014-04-23T18:25:43.511Z", ipAddress: "127.0.0.1", created: "2014-04-20T18:25:43.511Z"},
 		"ccccccccccccccccccccc": {CSRFToken: "12345677", ipAddress: "127.0.0.1", created: "2014-04-20T18:25:43.511Z"},
 		"lllllllllllllllllllll": {CSRFToken: "12345677", expires: "1900-00-00T00:00:00.000Z", ipAddress: "127.0.0.1", created: "2014-04-20T18:25:43.511Z"},
 		"222222222222222222222": {CSRFToken: "12345677", expires: "1900-00-00T00:00:00.000Z", ipAddress: "127.0.0.1", created: "2014-04-20T18:25:43.511Z"}
+	]
 }
 ```
 

@@ -41,23 +41,6 @@ return {
 		});
 		return _auth;
 	},
-	login: function(username, password, expires) {
-		var expData, result;
-		if (expires) {
-			expData = {
-				expires: expires
-			};
-		}
-		return stdAjax("POST", "/v1/auth/session/", {
-			beforeSend: function (xhr) {
-				xhr.setRequestHeader ("Authorization", "Basic "+btoa(username+":"+password));
-			},
-			data: JSON.stringify(expData),
-		});
-	},
-	logout: function() {
-		return stdAjax("DELETE", "/v1/auth/session/");
-	},
 	uuid: function() {
 		function s4() {
 			return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
@@ -187,6 +170,28 @@ return {
 				data: JSON.stringify({user: username})
 			});
 		}
+	},
+	session: {
+		get: function() {
+			return stdAjax("GET", "/v1/auth/session/");
+		},
+		login: function(username, password, expires) {
+			var expData, result;
+			if (expires) {
+				expData = {
+					expires: expires
+				};
+			}
+			return stdAjax("POST", "/v1/auth/session/", {
+				beforeSend: function (xhr) {
+					xhr.setRequestHeader ("Authorization", "Basic "+btoa(username+":"+password));
+				},
+				data: JSON.stringify(expData),
+			});
+		},
+		logout: function() {
+			return stdAjax("DELETE", "/v1/auth/session/");
+		},
 	},
 	Ractive: fhRactive(),
 };

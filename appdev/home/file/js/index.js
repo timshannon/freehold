@@ -2,7 +2,7 @@ $(document).ready(function() {
 "use strict";
 $(".alert").alert();
 $("#logoutButton").click(function() {
-	fh.logout();
+	fh.session.logout();
 	window.location = "/";
 });
 

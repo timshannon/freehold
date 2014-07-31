@@ -163,13 +163,149 @@ QUnit.asyncTest("Default Setting", function(assert) {
 QUnit.module("Users", {
 	setup: function(assert) {
 		QUnit.stop();
-		//create test user
-
+		//Create test user
+		fh.user.new({
+			user: "quinitTestUser",
+			password: "qunitTestPassword",
+			name: "QUnit Test User"
+		})
+		.always(function(result) {
+			assert.ok(
+				(result.status == "success") &&
+				(result.data.name == "QUnit Test User")
+			);
+			QUnit.start();
+		});
 	},
 	teardown: function(assert) {
 		QUnit.stop();
 		//delete test user
+		fh.user.delete("quinitTestUser")
+		.always(function(result) {
+			assert.ok((result.status == "success"));
+			QUnit.start();
+		});
 	}
 });
 
 
+QUnit.asyncTest("Get User", function(assert) {
+	expect(3);
+
+	fh.user.get("quinitTestUser")
+	.always(function(result) {
+		assert.ok(
+			(result.status == "success") &&
+			(result.data.name == "QUnit Test User")
+		);
+		QUnit.start();
+	});
+});
+
+QUnit.asyncTest("Get All Users", function(assert) {
+	expect(3);
+
+	fh.user.all()
+	.always(function(result) {
+		assert.ok(
+			(result.status == "success") &&
+			(result.data.quinitTestUser.name == "QUnit Test User")
+		);
+		QUnit.start();
+	});
+});
+
+QUnit.asyncTest("Update User", function(assert) {
+	expect(4);
+
+	fh.user.update({
+			user: "quinitTestUser",
+			name: "Bob QUnit Test User"
+	})
+	.always(function(result) {
+		//Users can only update themselves
+		assert.ok(
+			(result.status == "fail")
+		);
+		QUnit.start();
+	});
+
+	QUnit.stop();
+	$.ajax({	
+		type: "PUT",
+		url: "/v1/auth/user/",
+		dataType:  "json",
+		beforeSend: function (xhr) {
+			xhr.setRequestHeader ("Authorization", "Basic "+btoa("quinitTestUser:qunitTestPassword"));
+		},
+		data: JSON.stringify({name: "Bob QUnit Test User"})
+	})
+	.always(function(result) {
+		fh.user.get("quinitTestUser")
+		.always(function(result) {
+			assert.ok(
+				(result.status == "success") &&
+				(result.data.name == "Bob QUnit Test User")
+			);
+			QUnit.start();
+		});
+	});
+
+});
+
+
+QUnit.module("Application"); 
+QUnit.asyncTest("Get Application", function(assert) {
+	expect(1);
+
+	fh.application.get("testing")
+	.always(function(result) {
+		assert.ok(
+			(result.status == "success") &&
+			(result.data.name == "Testing")
+		);
+		QUnit.start();
+	});
+});
+
+QUnit.asyncTest("Get Installed Applications", function(assert) {
+	expect(1);
+
+	fh.application.installed()
+	.always(function(result) {
+		assert.ok(
+			(result.status == "success") &&
+			(result.data.testing.name == "Testing")
+		);
+		QUnit.start();
+	});
+});
+
+QUnit.asyncTest("Get Available Applications", function(assert) {
+	expect(1);
+
+	fh.application.available()
+	.always(function(result) {
+		assert.ok(
+			(result.status == "success") &&
+			(result.data.testing.name == "Testing")
+		);
+		QUnit.start();
+	});
+});
+
+
+QUnit.module("Session"); 
+QUnit.asyncTest("Get Session", function(assert) {
+	expect(1);
+
+	fh.session.get()
+	.always(function(result) {
+		//TODO: Lookup session cookie and find matching session info
+		assert.ok(
+			(result.status == "success") &&
+			(result.data.length >= 1)
+		);
+		QUnit.start();
+	});
+});

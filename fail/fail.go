@@ -31,6 +31,12 @@ func NewFromErr(err error, data interface{}) error {
 }
 
 func IsEqual(err, other error) bool {
+	if err == nil {
+		if other == nil {
+			return true
+		}
+		return false
+	}
 	return err.Error() == other.Error()
 }
 

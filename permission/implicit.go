@@ -80,9 +80,24 @@ func Settings() *Permission {
 	}
 }
 
-func User() *Permission {
+func User(owner string) *Permission {
 	return &Permission{
+		Owner:   owner,
 		Friend:  Read,
+		Private: Read + Write,
+	}
+}
+
+func UserNew() *Permission {
+	return &Permission{
+		admin: Read + Write,
+	}
+}
+
+func UserDelete(owner string) *Permission {
+	return &Permission{
+		Owner:   owner,
+		admin:   Read + Write,
 		Private: Read + Write,
 	}
 }
@@ -93,8 +108,9 @@ func UserMakeAdmin() *Permission {
 	}
 }
 
-func UserRemoveAdmin() *Permission {
+func UserRemoveAdmin(owner string) *Permission {
 	return &Permission{
+		Owner:   owner,
 		Private: Read + Write,
 	}
 }

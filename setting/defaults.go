@@ -66,7 +66,11 @@ func init() {
 		},
 		"LogPasswordChange": Setting{
 			Description: "Logs when a user changes their password.",
-			Value:       false,
+			Value:       true,
+		},
+		"LogAdminChange": Setting{
+			Description: "Logs when a user is made admin, or removes their admin rights.",
+			Value:       true,
 		},
 		"404File": Setting{
 			Description: "Path to a standard 404 page.",
@@ -115,6 +119,10 @@ func init() {
 				" application zip file).",
 			Value: float64(15),
 		},
+		// LoginAttemptRateLimit
+		// Public Write Rate Limit
+		// Public Read Rate Limit
+
 	}
 }
 
