@@ -18,7 +18,7 @@ func sessionGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	prm := permission.Session()
-	if !prm.CanRead(auth.User) {
+	if !auth.canRead(prm) {
 		four04(w, r)
 		return
 	}
@@ -41,8 +41,8 @@ func sessionPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	prm := permission.Session()
-	if !prm.CanWrite(auth.User) {
-		if !prm.CanRead(auth.User) {
+	if !auth.canWrite(prm) {
+		if !auth.canRead(prm) {
 			four04(w, r)
 			return
 		}
@@ -75,8 +75,8 @@ func sessionDelete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	prm := permission.Session()
-	if !prm.CanWrite(auth.User) {
-		if !prm.CanRead(auth.User) {
+	if !auth.canWrite(prm) {
+		if !auth.canRead(prm) {
 			four04(w, r)
 			return
 		}

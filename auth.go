@@ -12,6 +12,7 @@ import (
 
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/log"
+	"bitbucket.org/tshannon/freehold/permission"
 	"bitbucket.org/tshannon/freehold/session"
 	"bitbucket.org/tshannon/freehold/token"
 	"bitbucket.org/tshannon/freehold/user"
@@ -121,6 +122,22 @@ func authenticate(w http.ResponseWriter, r *http.Request) (*Auth, error) {
 	a.Username = ses.User().Username()
 	a.Session = ses
 	return a, nil
+}
+
+func (a *Auth) canRead(prm *permission.Permission) bool {
+	if a.AuthType != authTypeToken {
+		return prm.CanRead(a.User)
+	}
+	a.Token.SetPermission(prm)
+	return prm.CanRead(a.User)
+}
+
+func (a *Auth) canWrite(prm *permission.Permission) bool {
+	if a.AuthType != authTypeToken {
+		return prm.CanWrite(a.User)
+	}
+	a.Token.SetPermission(prm)
+	return prm.CanWrite(a.User)
 }
 
 func authGet(w http.ResponseWriter, r *http.Request) {

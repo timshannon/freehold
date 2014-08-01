@@ -301,7 +301,6 @@ QUnit.asyncTest("Get Session", function(assert) {
 
 	fh.session.get()
 	.always(function(result) {
-		//TODO: Lookup session cookie and find matching session info
 		assert.ok(
 			(result.status == "success") &&
 			(result.data.length >= 1)

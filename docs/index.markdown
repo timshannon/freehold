@@ -148,7 +148,7 @@ Response (500):
 	}
 }
 ```
-To replace an existing file, you'll need to delete the previously uploaded file first.
+To replace an existing file, you'll need to delete the previously uploaded file first, or call PUT on an existing file to replace it.
 
 Multiple file posts will have multiple entries in the data field.
 ```
@@ -182,6 +182,24 @@ Error Response (500):
 			data: {url: "/v1/file/new-directory/wikipedia.zip"}
 		}
 	]
+}
+```
+
+**PUT** - Replace a previously uploaded file.  You must be the owner.
+```
+PUT "/v1/file/new-directory/"
+------WebKitFormBoundary
+Content-Disposition: form-data; name="files[]"; filename="profile.jpg"
+Content-Type: image/jpeg
+...
+------WebKitFormBoundary--
+
+Response (201):
+{
+	status: "success",
+	data: {
+		url: "/v1/file/new-directory/profile.jpg"
+	}
 }
 ```
 
@@ -834,6 +852,8 @@ longer be valid.
 Security tokens can be granted for specific resources and specific permissions (equal lower than the existing access). 
 In this case the user generating the token grants their permissions but only if the resource path matches the one for the token.  This would be a way to grant public access temporarily to private files.
 
+Security tokens cannot be updated once created.  If you want to change permissions, or resource on a token, you need to delete the token and generate a new one with a new token identifier.
+
 //TODO Temporary urls.  
 
 ```
@@ -851,7 +871,7 @@ core/token.ds
 
 **GET**
 
-*List all active / non-expired tokens for the current user*
+*List all tokens for the current user*
 ```
 GET /v1/auth/token
 
@@ -866,7 +886,7 @@ Response (200):
 }
 ```
 
-*Get tokens expiration date if one exists*
+*Get a single token*
 ```
 GET /v1/auth/token
 {
@@ -940,51 +960,6 @@ Response (201):
 {
 	status: "success",
 	data: {"lllllllllllllllllllll": {name: "Read Only comments", resource: "/v1/datastore/comments.ds"}}
-}
-```
-
-
-
-**PUT**
-
-*Set expiration*
-```
-PUT /v1/auth/token
-{
-	token: "kkkkkkkkkkkkkkkkkkkkk",
-	expires: "1900-04-23T18:25:43.511Z"
-}
-
-Response (200):
-{
-	status: "success",
-}
-```
-
-*Remove Expiration*
-```
-PUT /v1/auth/token
-{
-	token: "kkkkkkkkkkkkkkkkkkkkk"
-}
-
-Response (200):
-{
-	status: "success",
-}
-```
-
-*Rename Token*
-```
-PUT /v1/auth/token
-{
-	token: "kkkkkkkkkkkkkkkkkkkkk",
-	name: "Desktop Sync"
-}
-
-Response (200):
-{
-	status: "success",
 }
 ```
 

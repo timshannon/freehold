@@ -72,12 +72,12 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 		}
 		propPrm := permission.Properties(prm)
 
-		if !prm.CanRead(auth.User) {
+		if !auth.canRead(prm) {
 			four04(w, r)
 			return
 		}
 
-		if !propPrm.CanRead(auth.User) {
+		if !auth.canRead(propPrm) {
 			prm = nil
 		}
 
@@ -114,11 +114,11 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 			if errHandled(err, w) {
 				return
 			}
-			if !prm.CanRead(auth.User) {
+			if !auth.canRead(prm) {
 				continue
 			}
 			propPrm := permission.Properties(prm)
-			if propPrm.CanRead(auth.User) {
+			if auth.canRead(propPrm) {
 				filePrm = prm
 			}
 		}
@@ -215,8 +215,8 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 		newprm := input.Permissions.makePermission(prm)
 		propPrm := permission.Properties(prm)
 
-		if !propPrm.CanWrite(auth.User) {
-			if !propPrm.CanRead(auth.User) {
+		if !auth.canWrite(propPrm) {
+			if !auth.canRead(propPrm) {
 				four04(w, r)
 				return
 			}
@@ -266,14 +266,14 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 			newprm := input.Permissions.makePermission(prm)
 
 			propPrm := permission.Properties(prm)
-			if propPrm.CanWrite(auth.User) {
+			if auth.canWrite(propPrm) {
 				err = permission.Set(child, newprm)
 				if errHandled(err, w) {
 					return
 				}
 
 			} else {
-				if !propPrm.CanRead(auth.User) {
+				if !auth.canRead(propPrm) {
 					continue
 				}
 

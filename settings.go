@@ -25,7 +25,7 @@ func settingsGet(w http.ResponseWriter, r *http.Request) {
 
 	prm := permission.Settings()
 
-	if !prm.CanRead(auth.User) {
+	if !auth.canRead(prm) {
 		four04(w, r)
 		return
 	}
@@ -86,7 +86,7 @@ func settingsPut(w http.ResponseWriter, r *http.Request) {
 
 	prm := permission.Settings()
 
-	if !prm.CanWrite(auth.User) {
+	if !auth.canWrite(prm) {
 		errHandled(fail.New("You do not have permissions to update settings.  Admin rights are required.", nil), w)
 		return
 	}
@@ -119,7 +119,7 @@ func settingsDelete(w http.ResponseWriter, r *http.Request) {
 
 	prm := permission.Settings()
 
-	if !prm.CanWrite(auth.User) {
+	if !auth.canWrite(prm) {
 		errHandled(fail.New("You do not have permissions to update settings.  Admin rights are required.", nil), w)
 		return
 	}

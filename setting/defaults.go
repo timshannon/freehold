@@ -119,6 +119,10 @@ func init() {
 				" application zip file).",
 			Value: float64(15),
 		},
+		"RemoveExpiredTokens": Setting{
+			Description: "Whether or not to automatically remove expired tokens from the datastore.",
+			Value:       true,
+		},
 		// LoginAttemptRateLimit
 		// Public Write Rate Limit
 		// Public Read Rate Limit
