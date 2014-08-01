@@ -51,8 +51,7 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	prm := permission.FileNew()
-	if !prm.CanWrite(auth.User) {
+	if !auth.canWrite(permission.FileNew()) {
 		errHandled(fail.New("You do not have permissions to a post a file.", nil), w)
 		return
 	}
@@ -133,6 +132,10 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func filePut(w http.ResponseWriter, r *http.Request) {
+	//TODO:
+}
+
 func fileDelete(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
 	if errHandled(err, w) {
@@ -167,8 +170,8 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 
 		prm = permission.FileDelete(prm)
 
-		if !prm.CanWrite(auth.User) {
-			if !prm.CanRead(auth.User) {
+		if !auth.canWrite(prm) {
+			if !auth.canRead(prm) {
 				four04(w, r)
 				return
 			}
@@ -218,7 +221,7 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 			}
 			prm = permission.FileDelete(prm)
 
-			if prm.CanWrite(auth.User) {
+			if auth.canWrite(prm) {
 				os.Remove(child)
 				err = permission.Delete(child)
 				if errHandled(err, w) {
@@ -229,7 +232,7 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 					Url:  cRes,
 				})
 			} else {
-				if !prm.CanRead(auth.User) {
+				if !auth.canRead(prm) {
 					continue
 				}
 
@@ -299,7 +302,7 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 			}
 		}
 
-		if !prm.CanRead(auth.User) {
+		if !auth.canRead(prm) {
 			four04Page(w, r)
 			return
 		}
@@ -329,7 +332,7 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 			}
 		}
 
-		if prm.CanRead(auth.User) {
+		if auth.canRead(prm) {
 			//If a user can read one file in a dir, then they can know of the existence
 			// of the dir
 			canReadDir = true

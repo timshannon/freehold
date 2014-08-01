@@ -193,6 +193,31 @@ return {
 			return stdAjax("DELETE", "/v1/auth/session/");
 		},
 	},
+	token: {
+		all: function() {
+			return stdAjax("GET", "/v1/auth/token/");
+		},
+		get: function(token) {
+			return stdAjax("GET", "/v1/auth/token/", {
+				data: JSON.stringify({token: token}),
+			});
+		},
+		new: function(tokenObject) { //{name:"", resource: "", expires: "", permission: ""}
+			return stdAjax("POST", "/v1/auth/token/", {
+				data: JSON.stringify(tokenObject),
+			});
+		},
+		update: function(tokenObject) {
+			return stdAjax("PUT", "/v1/auth/token/", {
+				data: JSON.stringify(tokenObject),
+			});
+		},
+		delete: function(token) {
+			return stdAjax("GET", "/v1/auth/token/", {
+				data: JSON.stringify({token: token}),
+			});
+		},
+	},
 	Ractive: fhRactive(),
 };
 

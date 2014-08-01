@@ -27,7 +27,9 @@ type Permission struct {
 	Public  string `json:"public,omitempty"`
 	Friend  string `json:"friend,omitempty"`
 	Private string `json:"private,omitempty"`
-	admin   string `json:"-"`
+
+	admin    string `json:"-"`
+	resource string `json:"-"`
 }
 
 func Get(resource string) (*Permission, error) {
@@ -56,6 +58,8 @@ func Get(resource string) (*Permission, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	prm.resource = resource
 
 	return prm, nil
 }
@@ -178,6 +182,10 @@ func (p *Permission) isOwner(u *user.User) bool {
 	}
 
 	return false
+}
+
+func (p *Permission) Resource() string {
+	return p.resource
 }
 
 func removeWrite(permission *string) {

@@ -26,9 +26,7 @@ func appGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	prm := permission.Application()
-
-	if !prm.CanRead(auth.User) {
+	if !auth.canRead(permission.Application()) {
 		four04(w, r)
 		return
 	}
@@ -74,9 +72,7 @@ func appPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	prm := permission.Application()
-
-	if !prm.CanWrite(auth.User) {
+	if !auth.canWrite(permission.Application()) {
 		errHandled(fail.New("You do not have permissions to install an application.", nil), w)
 		return
 	}
@@ -110,9 +106,7 @@ func appPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	prm := permission.Application()
-
-	if !prm.CanWrite(auth.User) {
+	if !auth.canWrite(permission.Application()) {
 		errHandled(fail.New("You do not have permissions to update an application.", nil), w)
 		return
 	}
@@ -142,9 +136,7 @@ func appDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	prm := permission.Application()
-
-	if !prm.CanWrite(auth.User) {
+	if !auth.canWrite(permission.Application()) {
 		errHandled(fail.New("You do not have permissions to uninstall an application.", nil), w)
 		return
 	}
@@ -210,9 +202,7 @@ func appAvailableGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	prm := permission.AppAvailable()
-
-	if !prm.CanRead(auth.User) {
+	if !auth.canRead(permission.AppAvailable()) {
 		errHandled(fail.New("You do not have permissions to view available applications.", nil), w)
 		return
 	}
@@ -243,9 +233,7 @@ func appAvailablePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	prm := permission.AppAvailable()
-
-	if !prm.CanWrite(auth.User) {
+	if !auth.canWrite(permission.AppAvailable()) {
 		errHandled(fail.New("You do not have permissions to post a new available application.", nil), w)
 		return
 	}

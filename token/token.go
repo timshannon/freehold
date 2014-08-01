@@ -11,12 +11,14 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strings"
 	"time"
 
 	"bitbucket.org/tshannon/freehold/data"
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/log"
 	"bitbucket.org/tshannon/freehold/permission"
+	"bitbucket.org/tshannon/freehold/setting"
 	"bitbucket.org/tshannon/freehold/user"
 )
 
@@ -142,20 +144,66 @@ func Get(u *user.User, token string) (*Token, error) {
 
 	t.requester = u
 
+	if t.IsExpired() && setting.Bool("RemoveExpiredTokens") {
+		err = ds.Delete(key)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return t, nil
 }
 
-func (t *Token) getUser(username string) error {
-	if username == "" {
-		errors.New("Invalid Token")
+func All(u *user.User) (map[string]*Token, error) {
+	ds, err := data.OpenCoreDS(DS)
+	if err != nil {
+		return nil, err
+	}
+	from, err := json.Marshal(u.Username())
+	if err != nil {
+		return nil, err
 	}
 
-	user, err := user.Get(username)
+	iter, err := ds.Iter(from, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	t.requester = user
-	return nil
+
+	tokens := make(map[string]*Token)
+
+	for iter.Next() {
+
+		t := &Token{}
+		key := ""
+		if iter.Err() != nil {
+			return nil, iter.Err()
+		}
+
+		err = json.Unmarshal(iter.Value(), t)
+		if err != nil {
+			return nil, err
+		}
+		err = json.Unmarshal(iter.Key(), &key)
+		if err != nil {
+			return nil, err
+		}
+
+		split := strings.SplitN(key, "_", 2)
+
+		if len(split) != 2 {
+			return nil, errors.New("Invalid token key: " + key)
+		}
+		if split[0] != u.Username() {
+			break
+		}
+
+		t.requester = u
+		t.token = split[1]
+
+		tokens[t.token] = t
+	}
+
+	return tokens, nil
 }
 
 func key(username, token string) string {
@@ -208,16 +256,16 @@ func (t *Token) User() *user.User {
 // SetPermission creates the permissions to check against
 // based on the token.
 // token access is unauthenticated in that
-// it doesn't return a *user.User if a permission and / or a resource is supplied
+// the token doesn't have a *user.User if a permission and / or a resource is supplied
 // so SetPermissions sets the appropriate public permissions based on token
-func (t *Token) SetPermission(resource string, base *permission.Permission) {
+func (t *Token) SetPermission(base *permission.Permission) {
 	if t.User() != nil {
 		//No change
 		return
 	}
 
 	if t.Resource != "" {
-		if t.Resource != resource {
+		if t.Resource != base.Resource() {
 			base.Public = ""
 			return
 		}

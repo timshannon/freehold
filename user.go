@@ -28,7 +28,7 @@ func userGet(w http.ResponseWriter, r *http.Request) {
 
 	prm := permission.User("")
 
-	if !prm.CanRead(auth.User) {
+	if !auth.canRead(prm) {
 		four04(w, r)
 		return
 	}
@@ -78,7 +78,7 @@ func userPost(w http.ResponseWriter, r *http.Request) {
 
 	prm := permission.UserNew()
 
-	if !prm.CanWrite(auth.User) {
+	if !auth.canWrite(prm) {
 		four04(w, r)
 		return
 	}
@@ -129,7 +129,7 @@ func userPut(w http.ResponseWriter, r *http.Request) {
 
 	prm := permission.User(*input.User)
 
-	if !prm.CanWrite(auth.User) {
+	if !auth.canWrite(prm) {
 		errHandled(fail.New("You do not have permissions to update this user.", input), w)
 		return
 	}
@@ -144,7 +144,7 @@ func userPut(w http.ResponseWriter, r *http.Request) {
 
 	if input.isMakeAdmin() {
 		prm = permission.UserMakeAdmin()
-		if !prm.CanWrite(auth.User) {
+		if !auth.canWrite(prm) {
 			errHandled(fail.New("Invalid permissions.  Admin is required to make a new admin user.", input), w)
 			return
 		}
@@ -152,7 +152,7 @@ func userPut(w http.ResponseWriter, r *http.Request) {
 
 	if input.isRemoveAdmin() {
 		prm = permission.UserRemoveAdmin(*input.User)
-		if !prm.CanWrite(auth.User) {
+		if !auth.canWrite(prm) {
 			errHandled(fail.New("You do not have permissions to remove admin rights.", input), w)
 			return
 		}
@@ -198,7 +198,7 @@ func userDelete(w http.ResponseWriter, r *http.Request) {
 	}
 	prm := permission.UserDelete(*input.User)
 
-	if !prm.CanWrite(auth.User) {
+	if !auth.canWrite(prm) {
 		four04(w, r)
 		return
 	}
