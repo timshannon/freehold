@@ -8,6 +8,7 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"path"
@@ -22,6 +23,7 @@ import (
 	"bitbucket.org/tshannon/freehold/log"
 	"bitbucket.org/tshannon/freehold/permission"
 	"bitbucket.org/tshannon/freehold/setting"
+	"bitbucket.org/tshannon/freehold/user"
 
 	"github.com/russross/blackfriday"
 )
@@ -70,9 +72,10 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 	if errHandled(err, w) {
 		return
 	}
-
 	mp := r.MultipartForm
-
+	uploadFile(w, r.URL.Path, auth.User, mp)
+}
+func uploadFile(w http.ResponseWriter, resourcePath string, owner *user.User, mp *multipart.Form) {
 	var fileList []Properties
 	var failures []error
 	status := statusSuccess
@@ -85,7 +88,7 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 
 				continue
 			}
-			resource := path.Join(r.URL.Path, files[i].Filename)
+			resource := path.Join(resourcePath, files[i].Filename)
 			filename := urlPathToFile(resource)
 
 			//write file
@@ -106,7 +109,7 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 
 				continue
 			}
-			err = permission.Set(filename, permission.FileNewDefault(auth.User.Username()))
+			err = permission.Set(filename, permission.FileNewDefault(owner.Username()))
 			if err != nil {
 				failures = append(failures, fail.NewFromErr(err, resource))
 				status = statusFail
@@ -129,7 +132,6 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 		Data:     fileList,
 		Failures: failures,
 	})
-
 }
 
 func filePut(w http.ResponseWriter, r *http.Request) {

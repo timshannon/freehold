@@ -334,28 +334,27 @@ QUnit.asyncTest("Get Session", function(assert) {
 
 QUnit.module("Token"); 
 QUnit.asyncTest("New Get and Delete Token", function(assert) {
-	expect(1);
+	expect(3);
 
-	//FIXME:
 	fh.token.new({name: "test token"})
 	.always(function(result) {
-		/*assert.ok(*/
-		/*(result.status == "success") &&*/
-		/*(result.data.name == "test token")*/
-		/*);*/
+		assert.ok(
+			(result.status == "success") &&
+			(result.data.name == "test token")
+			);
 		var token = result.data.token;
 		
 		fh.token.get(token) 
-		.always(function(result) {
+		.always(function(getResult) {
 			assert.ok(
-				(result.status == "success") &&
-				(result.data.name == "test token")
+				(getResult.status == "success") &&
+				(getResult.data.name == "test token")
 			);
 			fh.token.delete(token)
-			.always(function(result) {
-				/*assert.ok(*/
-				/*(result.status == "success") */
-				/*);*/
+			.always(function(deleteResult) {
+				assert.ok(
+					(deleteResult.status == "success") 
+				);
 				QUnit.start();
 			});
 		});
