@@ -330,3 +330,35 @@ QUnit.asyncTest("Get Session", function(assert) {
 		QUnit.start();
 	});
 });
+
+
+QUnit.module("Token"); 
+QUnit.asyncTest("New Get and Delete Token", function(assert) {
+	expect(1);
+
+	//FIXME:
+	fh.token.new({name: "test token"})
+	.always(function(result) {
+		/*assert.ok(*/
+		/*(result.status == "success") &&*/
+		/*(result.data.name == "test token")*/
+		/*);*/
+		var token = result.data.token;
+		
+		fh.token.get(token) 
+		.always(function(result) {
+			assert.ok(
+				(result.status == "success") &&
+				(result.data.name == "test token")
+			);
+			fh.token.delete(token)
+			.always(function(result) {
+				/*assert.ok(*/
+				/*(result.status == "success") */
+				/*);*/
+				QUnit.start();
+			});
+		});
+	});
+});
+
