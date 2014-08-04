@@ -114,3 +114,10 @@ func UserRemoveAdmin(owner string) *Permission {
 		Private: Read + Write,
 	}
 }
+
+func Token(owner string) *Permission {
+	return &Permission{
+		Owner:   owner,
+		Private: Read + Write,
+	}
+}

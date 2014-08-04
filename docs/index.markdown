@@ -879,9 +879,9 @@ Response (200):
 {
 	status: "success",
 	data: [
-		"aaaaaaaaaaaaaaaaaaaaa": {name: "android phone"},
-		"bbbbbbbbbbbbbbbbbbbbb": {name: "testing", expires: "2044-04-23T18:25:43.511Z"},
-		"ccccccccccccccccccccc": {name: "temp torrent share", expires: "2014-08-18T00:00:00.000Z", resource: "/v1/file/public/checkthisout.torrent"},
+		{token: "aaaaaaaaaaaaaaaaaaaaa", name: "android phone"},
+		{token: "bbbbbbbbbbbbbbbbbbbbb", name: "testing", expires: "2044-04-23T18:25:43.511Z"},
+		{token: "ccccccccccccccccccccc", name: "temp torrent share", expires: "2014-08-18T00:00:00.000Z", resource: "/v1/file/public/checkthisout.torrent"},
 	]
 }
 ```
@@ -912,7 +912,7 @@ POST /v1/auth/token
 Response (201):
 {
 	status: "success",
-	data: {"fffffffffffffffffffff": {name: "Full Sync Access"}}
+	data: {token: "fffffffffffffffffffff", name: "Full Sync Access"}
 }
 ```
 
@@ -927,7 +927,7 @@ POST /v1/auth/token
 Response (201):
 {
 	status: "success",
-	data: {"kkkkkkkkkkkkkkkkkkkkk": {name: "Temporary full access", expires: "2044-04-23T18:25:43.511Z"}}
+	data: {token: "kkkkkkkkkkkkkkkkkkkkk", name: "Temporary full access", expires: "2044-04-23T18:25:43.511Z"}
 }
 ```
 
@@ -942,7 +942,7 @@ POST /v1/auth/token
 Response (201):
 {
 	status: "success",
-	data: {"lllllllllllllllllllll": {name: "Public comments", resource: "/v1/datastore/comments.ds"}}
+	data: {token: "lllllllllllllllllllll", name: "Public comments", resource: "/v1/datastore/comments.ds"}
 }
 ```
 
@@ -959,7 +959,7 @@ POST /v1/auth/token
 Response (201):
 {
 	status: "success",
-	data: {"lllllllllllllllllllll": {name: "Read Only comments", resource: "/v1/datastore/comments.ds"}}
+	data: {token: "lllllllllllllllllllll", name: "Read Only comments", resource: "/v1/datastore/comments.ds"}
 }
 ```
 

@@ -29,6 +29,7 @@ const (
 var FailTokenLevel = errors.New("Token grants more permissions than requester has.")
 
 type Token struct {
+	Token      string `json:"token,omitempty"`
 	Name       string `json:"name,omitempty"`
 	Expires    string `json:"expires,omitempty"`
 	Resource   string `json:"resource,omitempty"`
@@ -36,7 +37,6 @@ type Token struct {
 	Created    string `json:"created,omitempty"`
 
 	requester *user.User `json:"_"`
-	token     string     `json:"-"`
 }
 
 func New(t *Token, requester *user.User) (*Token, error) {
@@ -46,7 +46,7 @@ func New(t *Token, requester *user.User) (*Token, error) {
 	if err != nil {
 		return nil, err
 	}
-	t.token = generateToken()
+	t.Token = generateToken()
 
 	t.Created = time.Now().Format(time.RFC3339)
 
@@ -55,7 +55,7 @@ func New(t *Token, requester *user.User) (*Token, error) {
 		return nil, err
 	}
 
-	key, err := json.Marshal(key(t.requester.Username(), t.token))
+	key, err := json.Marshal(key(t.requester.Username(), t.Token))
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +154,7 @@ func Get(u *user.User, token string) (*Token, error) {
 	return t, nil
 }
 
-func All(u *user.User) (map[string]*Token, error) {
+func All(u *user.User) ([]*Token, error) {
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return nil, err
@@ -169,12 +169,11 @@ func All(u *user.User) (map[string]*Token, error) {
 		return nil, err
 	}
 
-	tokens := make(map[string]*Token)
+	tokens := make([]*Token, 0)
 
 	for iter.Next() {
 
 		t := &Token{}
-		key := ""
 		if iter.Err() != nil {
 			return nil, iter.Err()
 		}
@@ -183,27 +182,31 @@ func All(u *user.User) (map[string]*Token, error) {
 		if err != nil {
 			return nil, err
 		}
-		err = json.Unmarshal(iter.Key(), &key)
-		if err != nil {
-			return nil, err
-		}
-
-		split := strings.SplitN(key, "_", 2)
-
-		if len(split) != 2 {
-			return nil, errors.New("Invalid token key: " + key)
-		}
-		if split[0] != u.Username() {
-			break
-		}
 
 		t.requester = u
-		t.token = split[1]
 
-		tokens[t.token] = t
+		tokens = append(tokens, t)
 	}
 
 	return tokens, nil
+}
+
+func Delete(u *user.User, token string) error {
+	ds, err := data.OpenCoreDS(DS)
+	if err != nil {
+		return err
+	}
+	key, err := json.Marshal(key(u.Username(), token))
+	if err != nil {
+		return err
+	}
+
+	err = ds.Delete(key)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func key(username, token string) string {
@@ -217,7 +220,9 @@ func generateToken() string {
 		panic(fmt.Sprintf("Error generating random values: %v", err))
 	}
 
-	return base64.StdEncoding.EncodeToString(result)
+	b64 := base64.StdEncoding.EncodeToString(result)
+	//make token url safe
+	return strings.Replace(strings.Replace(b64, "+", "-", -1), "/", "_", -1)
 }
 
 func (t *Token) IsExpired() bool {
