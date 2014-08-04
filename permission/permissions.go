@@ -32,12 +32,12 @@ type Permission struct {
 	resource string `json:"-"`
 }
 
-func Get(resource string) (*Permission, error) {
+func Get(filename string) (*Permission, error) {
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return nil, err
 	}
-	key, err := json.Marshal(resource)
+	key, err := json.Marshal(filename)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +50,7 @@ func Get(resource string) (*Permission, error) {
 
 	prm := &Permission{}
 	if value == nil {
-		log.Error(errors.New("Permissions not found for resource: " + resource))
+		log.Error(errors.New("Permissions not found for resource: " + filename))
 		return prm, nil
 	}
 
@@ -59,12 +59,12 @@ func Get(resource string) (*Permission, error) {
 		return nil, err
 	}
 
-	prm.resource = resource
+	prm.resource = filename
 
 	return prm, nil
 }
 
-func Set(resource string, permissions *Permission) error {
+func Set(filename string, permissions *Permission) error {
 	err := permissions.validate()
 	if err != nil {
 		return err
@@ -74,7 +74,7 @@ func Set(resource string, permissions *Permission) error {
 	if err != nil {
 		return err
 	}
-	key, err := json.Marshal(resource)
+	key, err := json.Marshal(filename)
 	if err != nil {
 		return err
 	}
@@ -92,12 +92,12 @@ func Set(resource string, permissions *Permission) error {
 	return nil
 }
 
-func Delete(resource string) error {
+func Delete(filename string) error {
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return err
 	}
-	key, err := json.Marshal(resource)
+	key, err := json.Marshal(filename)
 	if err != nil {
 		return err
 	}

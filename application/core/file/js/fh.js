@@ -60,6 +60,15 @@ return {
 				contentType: false
 			});
 		},
+		update: function(fileurl, formData) {
+			return stdAjax("PUT", fileurl, {
+				data: formData,
+				cache: false,
+				processData: false,
+				contentType: false
+			});
+		},
+
 		delete: function(fileurl) {
 			return stdAjax("DELETE", fileurl);
 		}
@@ -204,11 +213,6 @@ return {
 		},
 		new: function(tokenObject) { //{name:"", resource: "", expires: "", permission: ""}
 			return stdAjax("POST", "/v1/auth/token/", {
-				data: JSON.stringify(tokenObject),
-			});
-		},
-		update: function(tokenObject) {
-			return stdAjax("PUT", "/v1/auth/token/", {
 				data: JSON.stringify(tokenObject),
 			});
 		},

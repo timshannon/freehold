@@ -36,7 +36,7 @@ func FileNew() *Permission {
 }
 
 //Only file owners can delete a file
-func FileDelete(base *Permission) *Permission {
+func FileUpdate(base *Permission) *Permission {
 	prm := *base
 	prm.Private = Read + Write
 	removeWrite(&prm.Friend)
