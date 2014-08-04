@@ -87,6 +87,7 @@ func setupRoutes() {
 	appHandler.Handle("/v1/file/", &methodHandler{
 		get:    fileGet,
 		post:   filePost,
+		put:    filePut,
 		delete: fileDelete,
 	})
 

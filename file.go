@@ -99,7 +99,7 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 
-			err = writeFile(file, filename)
+			err = writeFile(file, filename, false)
 			if err != nil {
 				failures = append(failures, fail.NewFromErr(err, resource))
 				status = statusFail
@@ -133,7 +133,89 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func filePut(w http.ResponseWriter, r *http.Request) {
-	//TODO:
+	auth, err := authenticate(w, r)
+	if errHandled(err, w) {
+		return
+	}
+
+	err = r.ParseMultipartForm(setting.Int64("MaxUploadMemory"))
+	if errHandled(err, w) {
+		return
+	}
+
+	if !validFilePath(r.URL.Path) {
+		errHandled(fail.New("Invalid path for file update.", r.URL.Path), w)
+		return
+	}
+
+	mp := r.MultipartForm
+
+	var fileList []Properties
+	var failures []error
+	status := statusSuccess
+
+	for _, files := range mp.File {
+		for i := range files {
+			if path.Base(files[i].Filename) != files[i].Filename {
+				failures = append(failures, fail.New("File name must not contain a path.", files[i].Filename))
+				status = statusFail
+
+				continue
+			}
+			resource := path.Join(r.URL.Path, files[i].Filename)
+			filename := urlPathToFile(resource)
+
+			prm, err := permission.Get(filename)
+			if err != nil {
+				log.Error(err)
+				failures = append(failures, fail.New("Error opening file for writing.", resource))
+				status = statusFail
+
+				continue
+			}
+
+			prm = permission.FileUpdate(prm)
+			if !auth.canWrite(prm) {
+				err = fail.New("You do not have permissions to update this file.", resource)
+				log.Error(err)
+				failures = append(failures, err)
+				status = statusFail
+
+				continue
+			}
+
+			//write file
+			file, err := files[i].Open()
+
+			if err != nil {
+				log.Error(err)
+				failures = append(failures, fail.New("Error opening file for writing.", resource))
+				status = statusFail
+
+				continue
+			}
+
+			err = writeFile(file, filename, true)
+			if err != nil {
+				failures = append(failures, fail.NewFromErr(err, resource))
+				status = statusFail
+
+				continue
+			}
+
+			fileList = append(fileList, Properties{
+				Name: filepath.Base(filename),
+				Url:  resource,
+			})
+		}
+	}
+
+	respondJsend(w, &JSend{
+		Status:   status,
+		Data:     fileList,
+		Failures: failures,
+	})
+
 }
 
 func fileDelete(w http.ResponseWriter, r *http.Request) {
@@ -168,7 +250,7 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		prm = permission.FileDelete(prm)
+		prm = permission.FileUpdate(prm)
 
 		if !auth.canWrite(prm) {
 			if !auth.canRead(prm) {
@@ -219,7 +301,7 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 			if errHandled(err, w) {
 				return
 			}
-			prm = permission.FileDelete(prm)
+			prm = permission.FileUpdate(prm)
 
 			if auth.canWrite(prm) {
 				os.Remove(child)
@@ -423,12 +505,20 @@ func writeMarkdown(file *os.File) ([]byte, error) {
 }
 
 //writeFile writes the contents of the reader, and closes it
-func writeFile(reader io.Reader, filename string) error {
+func writeFile(reader io.Reader, filename string, overwrite bool) error {
 	bytes, err := ioutil.ReadAll(reader)
 	if err != nil {
 		return err
 	}
-	newFile, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+
+	var newFile *os.File
+
+	if overwrite {
+		newFile, err = os.Create(filename)
+	} else {
+		newFile, err = os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+	}
+
 	if os.IsExist(err) {
 		//capturing is exists error so that too much info isn't exposed to end users
 		return errors.New("File already exists")

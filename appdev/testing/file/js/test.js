@@ -41,6 +41,28 @@ QUnit.module("files", {
 	}
 });
 
+QUnit.asyncTest("Update File", function(assert) {
+	expect(3);
+	var form = new FormData();
+	form.append("testfile.xml", 
+		new Blob(['<test id="1">New data<inner id="2"></inner></test>'], 
+		{type: "text/xml"}), "testfile.xml");
+
+	//update file
+	fh.file.update("/testing/v1/file/testdata/", form)
+	.always(function(result) {
+		assert.deepEqual(result, {
+			status: "success",
+			data: [
+				{
+					name: "testfile.xml",
+					url: "/testing/v1/file/testdata/testfile.xml"
+				}
+			]
+		});
+		QUnit.start();
+	});
+});
 
 QUnit.asyncTest("Set Permissions", function(assert) {
 	expect(3);
