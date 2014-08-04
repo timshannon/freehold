@@ -217,7 +217,7 @@ return {
 			});
 		},
 		delete: function(token) {
-			return stdAjax("GET", "/v1/auth/token/", {
+			return stdAjax("DELETE", "/v1/auth/token/", {
 				data: JSON.stringify({token: token}),
 			});
 		},

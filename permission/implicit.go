@@ -121,3 +121,21 @@ func Token(owner string) *Permission {
 		Private: Read + Write,
 	}
 }
+
+func DatastoreNew() *Permission {
+	return &Permission{
+		Friend: Read + Write,
+	}
+}
+
+func DatastoreDelete(base *Permission) *Permission {
+	prm := *base
+	prm.Private = Read + Write
+	removeWrite(&prm.Friend)
+	removeWrite(&prm.Public)
+	return &prm
+}
+
+func DatastoreNewDefault(owner string) *Permission {
+	return FileNewDefault(owner)
+}

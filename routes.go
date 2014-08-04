@@ -32,6 +32,13 @@ func setupRoutes() {
 		delete: fileDelete,
 	})
 
+	rootHandler.Handle("/v1/datastore/", &methodHandler{
+		get:    datastoreGet,
+		post:   datastorePost,
+		put:    datastorePut,
+		delete: datastoreDelete,
+	})
+
 	rootHandler.Handle("/v1/properties/", &methodHandler{
 		get: propertiesGet,
 		put: propertiesPut,
@@ -97,6 +104,12 @@ func setupRoutes() {
 		delete: fileDelete,
 	})
 
+	appHandler.Handle("/v1/datastore/", &methodHandler{
+		get:    datastoreGet,
+		post:   datastorePost,
+		put:    datastorePut,
+		delete: datastoreDelete,
+	})
 	appHandler.Handle("/v1/properties/", &methodHandler{
 		get: propertiesGet,
 		put: propertiesPut,

@@ -48,6 +48,7 @@ func tokenGet(w http.ResponseWriter, r *http.Request) {
 			Status: statusSuccess,
 			Data:   t,
 		})
+		return
 	}
 
 	tokens, err := token.All(auth.User)
