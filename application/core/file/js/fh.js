@@ -222,6 +222,38 @@ return {
 			});
 		},
 	},
+	datastore: {
+		new: function(dsPath) {
+			return stdAjax("POST", dsPath);
+		},
+		upload: function(dsPath, formData) {
+			return stdAjax("POST", dsPath, {
+				data: formData,
+				cache: false,
+				processData: false,
+				contentType: false
+			});
+		},
+		get: function(dsPath, keyOrIter) {
+			return stdAjax("GET", dsPath, {
+				data: JSON.stringify(keyOrIter),
+			});
+		},
+		put: function(dspath, data) {
+			return stdAjax("PUT", dsPath, {
+				data: JSON.stringify(data),
+			});
+
+		},
+		drop: function(dspath) {
+			return stdAjax("DELETE", dsPath);
+		},
+		delete: function(dsPath, key) {
+			return stdAjax("DELETE", dsPath, {
+				data: JSON.stringify({key: key}),
+			});
+		}
+	},
 	Ractive: fhRactive(),
 };
 

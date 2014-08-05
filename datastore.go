@@ -6,6 +6,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"path"
@@ -14,6 +15,7 @@ import (
 	"bitbucket.org/tshannon/freehold/data"
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/permission"
+	"bitbucket.org/tshannon/freehold/setting"
 )
 
 type KeyValue struct {
@@ -22,6 +24,28 @@ type KeyValue struct {
 }
 
 func datastoreGet(w http.ResponseWriter, r *http.Request) {
+	auth, err := authenticate(w, r)
+	if errHandled(err, w) {
+		return
+	}
+
+	filename := urlPathToFile(r.URL.Path)
+	prm, err := permission.Get(filename)
+	if errHandled(err, w) {
+		return
+	}
+
+	if !auth.canRead(prm) {
+		four04(w, r)
+		return
+	}
+	input := &KeyValue{}
+	parseJson(r, input)
+
+	if input.Key == nil {
+		fmt.Println("Key exists: %v", input)
+	}
+
 }
 
 func datastorePost(w http.ResponseWriter, r *http.Request) {
@@ -42,8 +66,13 @@ func datastorePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	mp := r.MultipartForm
-	if len(mp.File) != 0 {
+	if r.Header.Get("Content-Type") == "multipart/form-data" {
+		err = r.ParseMultipartForm(setting.Int64("MaxUploadMemory"))
+		if errHandled(err, w) {
+			return
+		}
+
+		mp := r.MultipartForm
 		err = os.MkdirAll(urlPathToFile(r.URL.Path), 0777)
 		if errHandled(err, w) {
 			return

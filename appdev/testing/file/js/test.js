@@ -361,3 +361,49 @@ QUnit.asyncTest("New Get and Delete Token", function(assert) {
 	});
 });
 
+QUnit.module("Datastore", {
+	setup: function(assert) {
+		QUnit.stop();
+		fh.datastore.new("/testing/v1/datastore/testdata/test.ds")
+		.always(function(result) {
+			assert.deepEqual(result, {
+				status: "success",
+				data: {
+					name: "test.ds",
+					url: "/testing/v1/datastore/testdata/test.ds"
+				}
+			});
+			QUnit.start();
+		});
+
+	},
+	teardown: function(assert) {
+		QUnit.stop();
+		//delete file
+		fh.datastore.drop("/testing/v1/datastore/testdata/test.ds")
+		.always(function(result) {
+			assert.deepEqual(result,  {
+				status: "success",
+				data: {
+					name: "test.ds",
+					url: "/testing/v1/datastore/testdata/test.ds"
+				}
+			});
+			QUnit.start();
+		});
+	}
+});
+QUnit.asyncTest("Put Data in store", function(assert) {
+	expect(3);
+
+	fh.datastore.put("/testing/v1/datastore/testdata/test.ds", {key: "testkey", value: "testvalue"})
+	.always(function(result) {
+		assert.ok(
+			(result.status == "success")
+		);
+
+		QUnit.start();
+	});
+});
+
+
