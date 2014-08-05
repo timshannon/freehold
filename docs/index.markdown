@@ -406,12 +406,11 @@ In general it's best to use the same type of key for an entire store and be care
 things like strings ("1234") and numbers (1234).  The keys returned will always be the proper type of the
 keys inserted.
 
-**PUT**
+**PUT** - Simply insert your JSON object(s), the object's top level keys will become the keys for the datastore.
 ```
 PUT /v1/datastore/personal/bookmarks.ds
 {
-	key: "http://golang.org/pkg"
-	value: {
+	"http://golang.org/pkg": {
 			tags: "programming,golang,go,awesome"
 	}
 }
@@ -421,14 +420,6 @@ Response (200):
 	status: "success"
 }
 
-Alternately simply pass in a JSON object, and the object's keys will be used as the datastore's keys
-
-PUT /v1/datastore/personal/bookmarks.ds
-{
-	"http://golang.org/pkg": {
-			tags: "programming,golang,go,awesome"
-	}
-}
 
 If the datastore file doesn't exist:
 Response (404):

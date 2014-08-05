@@ -59,7 +59,7 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = r.ParseMultipartForm(setting.Int64("MaxUploadMemory"))
-	if errHandled(err, w) {
+	if errHandled(fail.NewFromErr(err, nil), w) {
 		return
 	}
 
