@@ -313,9 +313,7 @@ Response (200):
 {
 	status: "success",
 	data: {
-		"http://golang.org/pkg": {
 			tags: "programming,golang,go,awesome"
-		}
 	}
 }
 ```
@@ -327,7 +325,6 @@ GET /v1/datastore/personal/bookmarks.ds
 		from: <key>,
 		to: <key>,
 		skip: <count>,
-		order: <"asc" | "dsc">,
 		limit: <count>,
 		regexp: <regular expression to match against key>
 	}
@@ -338,9 +335,10 @@ All fields are optional with the defaults below:
 * from - defaults to minimum key in the collection
 * to - defaults to maximum key in the collection
 * skip - defaults to 0
-* order - defaults to asc
 * limit - defaults to returning all records
 * regexp - defaults to matching all keys
+
+Skip and limit only apply to records that match the regular expression (if one is passed in).  So if a value doesn't match the regular expression, it doesn't count as a "skipped" value.  Or to put it another way, skip and limit apply to the resulting set after the regular expression is applied.
 
 *Example: Consider a datastore with 50 items with keys 1 - 50*
 
@@ -397,14 +395,6 @@ Response (200):
 }
 ```
 Both *from* and *to* are inclusive of the specified key in their range.
-
-The underlying value of a key is an array of bytes, and it is important to understand that 30 != "30".
-The type of the PUT key prefixed in byte array so that it can be properly decoded on the way back.
-For this reason if you use different types of keys ordering and comparisons won't work the way you expect.
-
-In general it's best to use the same type of key for an entire store and be careful not to combine
-things like strings ("1234") and numbers (1234).  The keys returned will always be the proper type of the
-keys inserted.
 
 **PUT** - Simply insert your JSON object(s), the object's top level keys will become the keys for the datastore.
 ```
