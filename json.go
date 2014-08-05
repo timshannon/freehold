@@ -80,14 +80,8 @@ func parseJson(r *http.Request, result interface{}) error {
 	}
 
 	err = json.Unmarshal(buff, result)
-	switch err := err.(type) {
-	case nil:
-		return nil
-	case *json.SyntaxError:
-		return fail.New("Request contains invalid JSON: "+err.Error(), string(buff))
-	case *json.UnmarshalTypeError:
-		return fail.New("Request contains a JSON structure that doesn't match the expected structure.", string(buff))
-	default:
+	if err != nil {
 		return err
 	}
+	return nil
 }

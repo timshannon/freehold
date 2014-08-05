@@ -128,7 +128,7 @@ func DatastoreNew() *Permission {
 	}
 }
 
-func DatastoreDelete(base *Permission) *Permission {
+func DatastoreDrop(base *Permission) *Permission {
 	prm := *base
 	prm.Private = Read + Write
 	removeWrite(&prm.Friend)

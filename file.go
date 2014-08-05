@@ -28,9 +28,7 @@ import (
 	"github.com/russross/blackfriday"
 )
 
-const (
-	markdownType = ".markdown"
-)
+var markdownTypes = []string{".markdown", ".md"}
 
 func fileGet(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
@@ -59,7 +57,7 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = r.ParseMultipartForm(setting.Int64("MaxUploadMemory"))
-	if errHandled(fail.NewFromErr(err, nil), w) {
+	if errHandled(err, w) {
 		return
 	}
 
@@ -453,7 +451,7 @@ func serveFile(w http.ResponseWriter, r *http.Request, file *os.File) {
 
 	var rs io.ReadSeeker
 
-	if path.Ext(file.Name()) == markdownType {
+	if isMarkDown(file.Name()) {
 		buf, err := writeMarkdown(file)
 		if errHandled(err, w) {
 			return
@@ -470,6 +468,15 @@ func serveFile(w http.ResponseWriter, r *http.Request, file *os.File) {
 	w.Header().Add("ETag", md5Sum(rs))
 	http.ServeContent(w, r, file.Name(), time.Time{}, rs)
 	return
+}
+
+func isMarkDown(filename string) bool {
+	for i := range markdownTypes {
+		if path.Ext(filename) == markdownTypes[i] {
+			return true
+		}
+	}
+	return false
 }
 
 func docsGet(w http.ResponseWriter, r *http.Request) {
@@ -491,7 +498,7 @@ func writeMarkdown(file *os.File) ([]byte, error) {
 	htmlFlags |= blackfriday.HTML_SMARTYPANTS_LATEX_DASHES
 	htmlFlags |= blackfriday.HTML_COMPLETE_PAGE
 	renderer := blackfriday.HtmlRenderer(htmlFlags,
-		strings.TrimRight(file.Name(), markdownType), setting.String("MarkdownCSSFile"))
+		strings.TrimSuffix(file.Name(), path.Ext(file.Name())), setting.String("MarkdownCSSFile"))
 
 	// set up the parser
 	extensions := 0

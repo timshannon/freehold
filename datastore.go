@@ -6,10 +6,10 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
 	"path"
+	"time"
 
 	"bitbucket.org/tshannon/freehold/app"
 	"bitbucket.org/tshannon/freehold/data"
@@ -18,9 +18,9 @@ import (
 	"bitbucket.org/tshannon/freehold/setting"
 )
 
-type KeyValue struct {
-	Key   json.RawMessage
-	Value json.RawMessage
+type DatastoreInput struct {
+	Key  *json.RawMessage `json:"key,omitempty"`
+	Iter *data.Iter       `json:"iter,omitempty"`
 }
 
 func datastoreGet(w http.ResponseWriter, r *http.Request) {
@@ -30,6 +30,11 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	filename := urlPathToFile(r.URL.Path)
+	if !fileExists(filename) {
+		four04(w, r)
+		return
+	}
+
 	prm, err := permission.Get(filename)
 	if errHandled(err, w) {
 		return
@@ -39,13 +44,61 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 		four04(w, r)
 		return
 	}
-	input := &KeyValue{}
+	input := &DatastoreInput{}
 	parseJson(r, input)
 
-	if input.Key == nil {
-		fmt.Println("Key exists: %v", input)
-	}
+	if input.Key != nil {
+		//return key's value
+		ds, err := data.Open(filename)
+		if os.IsNotExist(err) {
+			four04(w, r)
+			return
+		}
 
+		if errHandled(err, w) {
+			return
+		}
+		val, err := ds.Get(*input.Key)
+		if errHandled(err, w) {
+			return
+		}
+
+		if val == nil {
+			ds404(w, r, input.Key)
+			return
+		}
+
+		respondJsend(w, &JSend{
+			Status: statusSuccess,
+			Data:   val,
+		})
+	} else if input.Iter != nil {
+		//return iter result
+		ds, err := data.Open(filename)
+		if os.IsNotExist(err) {
+			four04(w, r)
+			return
+		}
+
+		val, err := ds.Iter(input.Iter)
+		if errHandled(err, w) {
+			return
+		}
+		respondJsend(w, &JSend{
+			Status: statusSuccess,
+			Data:   val,
+		})
+	} else {
+		//return entire file
+
+		data.Close(filename)
+		dsFile, err := os.Open(filename)
+		if errHandled(err, w) {
+			return
+		}
+		defer dsFile.Close()
+		http.ServeContent(w, r, dsFile.Name(), time.Time{}, dsFile)
+	}
 }
 
 func datastorePost(w http.ResponseWriter, r *http.Request) {
@@ -109,9 +162,124 @@ func datastorePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func datastorePut(w http.ResponseWriter, r *http.Request) {
+	auth, err := authenticate(w, r)
+	if errHandled(err, w) {
+		return
+	}
+
+	filename := urlPathToFile(r.URL.Path)
+	if !fileExists(filename) {
+		four04(w, r)
+		return
+	}
+
+	prm, err := permission.Get(filename)
+	if errHandled(err, w) {
+		return
+	}
+
+	if !auth.canWrite(prm) {
+		if !auth.canRead(prm) {
+			four04(w, r)
+			return
+		}
+		errHandled(fail.New("You do not have permissions to update this datastore.", nil), w)
+		return
+	}
+
+	input := make(data.Data)
+	err = parseJson(r, &input)
+	if errHandled(err, w) {
+		return
+	}
+
+	ds, err := data.Open(filename)
+	if errHandled(err, w) {
+		return
+	}
+
+	errors := ds.Put(input)
+	if len(errors) == 0 {
+		respondJsend(w, &JSend{
+			Status: statusSuccess,
+		})
+		return
+	}
+
+	respondJsend(w, &JSend{
+		Status:   statusFail,
+		Failures: errors,
+	})
+
 }
 
 func datastoreDelete(w http.ResponseWriter, r *http.Request) {
+	auth, err := authenticate(w, r)
+	if errHandled(err, w) {
+		return
+	}
+
+	filename := urlPathToFile(r.URL.Path)
+	if !fileExists(filename) {
+		four04(w, r)
+		return
+	}
+
+	input := &DatastoreInput{}
+	parseJson(r, input)
+
+	prm, err := permission.Get(filename)
+	if errHandled(err, w) {
+		return
+	}
+
+	if !auth.canWrite(prm) {
+		if !auth.canRead(prm) {
+			four04(w, r)
+			return
+		}
+		errHandled(fail.New("You do not have permissions to a delete from this datastore.", nil), w)
+		return
+	}
+
+	if input.Key != nil {
+		ds, err := data.Open(filename)
+		if errHandled(err, w) {
+			return
+		}
+		err = ds.Delete(*input.Key)
+		if errHandled(err, w) {
+			return
+		}
+		respondJsend(w, &JSend{
+			Status: statusSuccess,
+		})
+		return
+	}
+
+	//no key specified drop datastore
+	prm = permission.DatastoreDrop(prm)
+
+	if !auth.canWrite(prm) {
+		if !auth.canRead(prm) {
+			four04(w, r)
+			return
+		}
+		errHandled(fail.New("You do not have permissions to drop this datastore.", nil), w)
+		return
+	}
+
+	err = data.Delete(filename)
+	if errHandled(err, w) {
+		return
+	}
+	respondJsend(w, &JSend{
+		Status: statusSuccess,
+		Data: Properties{
+			Name: path.Base(filename),
+			Url:  r.URL.Path,
+		},
+	})
 }
 
 func validDSPath(url string) bool {

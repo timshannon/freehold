@@ -123,3 +123,10 @@ func md5Sum(rs io.Reader) string {
 	}
 	return fmt.Sprintf("%x", md5.Sum(buff))
 }
+
+func fileExists(filename string) bool {
+	if _, err := os.Stat(filename); err == nil {
+		return true
+	}
+	return false
+}

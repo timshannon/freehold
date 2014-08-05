@@ -333,7 +333,7 @@ QUnit.asyncTest("Get Session", function(assert) {
 
 
 QUnit.module("Token"); 
-QUnit.asyncTest("New Get and Delete Token", function(assert) {
+QUnit.asyncTest("New, Get and Delete Token", function(assert) {
 	expect(3);
 
 	fh.token.new({name: "test token"})
@@ -380,7 +380,9 @@ QUnit.module("Datastore", {
 	teardown: function(assert) {
 		QUnit.stop();
 		//delete file
-		fh.datastore.drop("/testing/v1/datastore/testdata/test.ds")
+		var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
+
+		ds.drop()
 		.always(function(result) {
 			assert.deepEqual(result,  {
 				status: "success",
@@ -393,17 +395,63 @@ QUnit.module("Datastore", {
 		});
 	}
 });
-QUnit.asyncTest("Put Data in store", function(assert) {
-	expect(3);
+QUnit.asyncTest("Get and put Data in datastore", function(assert) {
+	expect(4);
 
-	fh.datastore.put("/testing/v1/datastore/testdata/test.ds", {key: "testkey", value: "testvalue"})
+	var data = {};
+	for (var i = 0; i <= 100; i++) {
+		data[i] = fh.uuid();
+	}
+
+	var testVal = data[10];
+
+	var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
+	ds.put(data)
 	.always(function(result) {
 		assert.ok(
 			(result.status == "success")
 		);
+		ds.get(10)
+		.always(function(result) {
+			assert.ok(
+				(result.status == "success") &&
+				(result.data == testVal)
+			);
+		});
 
 		QUnit.start();
 	});
 });
 
 
+QUnit.asyncTest("Iterate through data", function(assert) {
+	expect(4);
+	var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
+
+	var data = {};
+	for (var i = 0; i <= 100; i++) {
+		data[i] = fh.uuid();
+	}
+
+	ds.put(data)
+	.always(function(result) {
+		assert.ok(
+			(result.status == "success")
+		);
+		ds.iter({
+			from: 10,
+			to: 50,
+			skip: 10,
+			limit: 5
+		})
+		.always(function(result) {
+			assert.ok(
+				(result.status == "success") &&
+				(Object.keys(result.data).length == 5)
+			);
+		});
+
+		QUnit.start();
+	});
+
+});

@@ -50,3 +50,8 @@ func Delete(name string) error {
 func Open(name string) (Storer, error) {
 	return files.open(name)
 }
+
+//Close / finish writes on a file
+func Close(name string) {
+	files.close(name)
+}

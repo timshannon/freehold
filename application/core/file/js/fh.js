@@ -233,26 +233,34 @@ return {
 				processData: false,
 				contentType: false
 			});
-		},
-		get: function(dsPath, keyOrIter) {
-			return stdAjax("GET", dsPath, {
-				data: JSON.stringify(keyOrIter),
+		}
+	},
+	Datastore: function(dsPath) {
+		this.path = dsPath;
+		this.get = function(key) {
+			return stdAjax("GET", this.path, {
+				data: JSON.stringify({key: key}),
 			});
-		},
-		put: function(dspath, data) {
-			return stdAjax("PUT", dsPath, {
+		};
+		this.iter = function(iterObject) {
+			return stdAjax("GET", this.path, {
+				data: JSON.stringify({iter: iterObject}),
+			});
+		};
+		this.put = function(data) {
+			return stdAjax("PUT", this.path, {
 				data: JSON.stringify(data),
 			});
 
-		},
-		drop: function(dspath) {
-			return stdAjax("DELETE", dsPath);
-		},
-		delete: function(dsPath, key) {
+		};
+		this.drop = function() {
+			return stdAjax("DELETE", this.path);
+		};
+		this.delete = function(key) {
 			return stdAjax("DELETE", dsPath, {
 				data: JSON.stringify({key: key}),
 			});
-		}
+		};
 	},
 	Ractive: fhRactive(),
 };

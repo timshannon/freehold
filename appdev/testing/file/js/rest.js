@@ -53,13 +53,13 @@ $("#logoutButton").click(function() {
 //testing
 $( "#resttest" ).submit(function( event ) {
 	event.preventDefault();
-	fh.stdAjax( $("#method").val(), $("#url").val(), {
+	stdAjax( $("#method").val(), $("#url").val(), {
 		data: $("#request").val()})
 		.done(function (result) {
 			$("#result").val(JSON.stringify(result));
 		})
 		.fail(function(result) {
-			ts.alert("#resttest", result.data.message);
+			alert("error: "+JSON.stringify(result));
 		});
 });
 	
@@ -74,3 +74,19 @@ function clearErr() {
 	$("#err").addClass("hidden").text("");
 }
 
+function stdAjax(type, url, options) {
+	if (!options) {options = {};}
+	if (!options.type) {options.type = type;}
+	if (!options.url) {options.url = url;}
+	if (!options.dataType) {options.dataType = "json";}
+
+	if ((type.toUpperCase() !== "GET") && (!options.beforeSend)) {
+		options.beforeSend = function (xhr) {
+			xhr.setRequestHeader ("X-CSRFToken", fh.auth().CSRFToken);
+		};
+	}
+
+	return $.ajax(options)
+		.then(function(data) {return data;},
+		function(data) {return data.responseJSON;});
+}

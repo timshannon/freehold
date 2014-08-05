@@ -118,3 +118,24 @@ func four04Page(w http.ResponseWriter, r *http.Request) {
 	//Have to do this manually so 404 Status Code is preserved
 	io.CopyN(w, file, info.Size())
 }
+
+//ds404 is the response returned when a datastore entry is not found
+func ds404(w http.ResponseWriter, r *http.Request, key *json.RawMessage) {
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Content-Type", "application/json")
+	response := &JSend{
+		Status:  statusFail,
+		Message: "Value not found for key",
+		Data:    key,
+	}
+
+	w.WriteHeader(http.StatusNotFound)
+
+	result, err := json.Marshal(response)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	w.Write(result)
+}
