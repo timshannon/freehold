@@ -247,12 +247,23 @@ return {
 				data: JSON.stringify({iter: iterObject}),
 			});
 		};
-		this.put = function(data) {
+		this.putObj = function(data) {
 			return stdAjax("PUT", this.path, {
 				data: JSON.stringify(data),
 			});
 
 		};
+		this.put = function(key, value) {
+			return stdAjax("PUT", this.path, {
+				data: JSON.stringify({
+					key: key,
+					value: value
+				}),
+			});
+
+		};
+
+
 		this.drop = function() {
 			return stdAjax("DELETE", this.path);
 		};

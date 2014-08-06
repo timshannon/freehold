@@ -10,11 +10,6 @@
 
 package fail
 
-import (
-	"encoding/json"
-	"net/http"
-)
-
 type Fail struct {
 	Message string      `json:"message,omitempty"`
 	Data    interface{} `json:"data,omitempty"`
@@ -52,11 +47,6 @@ func IsFail(err error) bool {
 	switch err.(type) {
 	case *Fail:
 		return true
-	//Hardcoded external errors which can bubble up to the end users
-	// without exposing internal server information
-	case *http.ProtocolError, *json.SyntaxError, *json.UnmarshalTypeError:
-		return true
-
 	default:
 		return false
 	}
