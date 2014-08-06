@@ -317,6 +317,7 @@ Response (200):
 	}
 }
 ```
+
 *Iterate through values in the collection*
 ```
 GET /v1/datastore/personal/bookmarks.ds
@@ -326,6 +327,7 @@ GET /v1/datastore/personal/bookmarks.ds
 		to: <key>,
 		skip: <count>,
 		limit: <count>,
+		order: <"asc"|"dsc">
 		regexp: <regular expression to match against key>
 	}
 }
@@ -337,8 +339,11 @@ All fields are optional with the defaults below:
 * skip - defaults to 0
 * limit - defaults to returning all records
 * regexp - defaults to matching all keys
+* order - defaults to order of keys stored in datastore (sorted by byte representation of json value)
 
 Skip and limit only apply to records that match the regular expression (if one is passed in).  So if a value doesn't match the regular expression, it doesn't count as a "skipped" value.  Or to put it another way, skip and limit apply to the resulting set after the regular expression is applied.
+
+The *natural* order of a datastore's values may not be what you want, especially if your keys are numbers as the keys are stored and sorted as binary representations of their json values.  If you want your numbers sorted as numbers, you *must* specify an order. 
 
 *Example: Consider a datastore with 50 items with keys 1 - 50*
 
@@ -355,18 +360,18 @@ GET /v1/datastore/50items.ds
 Response (200):
 {
 	status: "success",
-	data: {
-		31:"Data",
-		32:"Data",
-		33:"Data",
-		34:"Data",
-		35:"Data",
-		36:"Data",
-		37:"Data",
-		38:"Data",
-		39:"Data",
-		40:"Data"
-	}
+	data: [
+		{key: 31, value: "Data"},
+		{key: 32, value: "Data"},
+		{key: 33, value: "Data"},
+		{key: 34, value: "Data"},
+		{key: 35, value: "Data"},
+		{key: 36, value: "Data"},
+		{key: 37, value: "Data"},
+		{key: 38, value: "Data"},
+		{key: 39, value: "Data"},
+		{key: 40, value: "Data"}
+	]
 }
 ```
 
@@ -382,21 +387,21 @@ GET /v1/datastore/50items.ds
 Response (200):
 {
 	status: "success",
-	data: {
-		43: "Data",
-		44: "Data",
-		45: "Data",
-		46: "Data",
-		47: "Data",
-		48: "Data",
-		49: "Data",
-		50: "Data"
-	}
+	data: [
+		{key: 43, value: "Data"},
+		{key: 44, value: "Data"},
+		{key: 45, value: "Data"},
+		{key: 46, value: "Data"},
+		{key: 47, value: "Data"},
+		{key: 48, value: "Data"},
+		{key: 49, value: "Data"},
+		{key: 50, value: "Data"},
+	]
 }
 ```
 Both *from* and *to* are inclusive of the specified key in their range.
 
-**PUT** - Simply insert your JSON object(s), the object's top level keys will become the keys for the datastore.
+**PUT** - Simply insert your JSON object(s), the object's top level keys will become the keys for the datastore.  
 ```
 PUT /v1/datastore/personal/bookmarks.ds
 {
@@ -413,6 +418,22 @@ Response (200):
 
 If the datastore file doesn't exist:
 Response (404):
+```
+
+Since JSON keys are always strings, if you want to use a non-string as a key value, you can specify it with the key / value object.  This is useful for when you want key comparisons for iterating on something other than a string value. Keep in mind that javascript implicitly converts object keys to strings, and 10 != "10" as a datastore key but with javascript obj[10] == obj["10"].
+```
+PUT /v1/datastore/personal/bookmarks.ds
+{
+		"key": 1234,
+		"value":	{tags: "programming,golang,go,awesome"}
+	}
+}
+
+Response (200):
+{
+	status: "success"
+}
+
 ```
 
 **DELETE** 
@@ -996,7 +1017,7 @@ Response (200):
 {
 	status: "success",
 	data: [
-		"bbbbbbbbbbbbbbbbbbbbb": {CSRFToken: "12345677", expires: "2014-04-23T18:25:43.511Z", ipAddress: "127.0.0.1", created: "2014-04-20T18:25:43.511Z"},
+		{id: "bbbbbbbbbbbbbbbbbbbbb", CSRFToken: "12345677", expires: "2014-04-23T18:25:43.511Z", ipAddress: "127.0.0.1", created: "2014-04-20T18:25:43.511Z"},
 		"ccccccccccccccccccccc": {CSRFToken: "12345677", ipAddress: "127.0.0.1", created: "2014-04-20T18:25:43.511Z"},
 		"lllllllllllllllllllll": {CSRFToken: "12345677", expires: "1900-00-00T00:00:00.000Z", ipAddress: "127.0.0.1", created: "2014-04-20T18:25:43.511Z"},
 		"222222222222222222222": {CSRFToken: "12345677", expires: "1900-00-00T00:00:00.000Z", ipAddress: "127.0.0.1", created: "2014-04-20T18:25:43.511Z"}

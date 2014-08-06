@@ -105,3 +105,5 @@ func main() {
 	}
 
 }
+
+//TODO: recover from any panics and properly close the datastore files

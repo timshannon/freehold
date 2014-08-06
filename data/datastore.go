@@ -26,12 +26,18 @@ type Iter struct {
 	Skip   int              `json:"skip,omitempty"`
 	Limit  int              `json:"limit,omitempty"`
 	Regexp string           `json:"regexp,omitempty"`
+	Order  string           `json:"order,omitempty"`
 }
 
 // Data is a generic key / value representation for JSON data
 // the values we dont' acctual decode as it's just stored in the DS as raw
 // JSON bytes anyway
 type Data map[string]*json.RawMessage
+
+type KeyValue struct {
+	Key   *json.RawMessage `json:"key,omitempty"`
+	Value *json.RawMessage `json:"value,omitempty"`
+}
 
 // Create creates a new datastore
 func Create(name string) error {
@@ -62,11 +68,24 @@ func (d *Datastore) Get(key json.RawMessage) (*json.RawMessage, error) {
 	if err != nil {
 		return nil, err
 	}
+	if result == nil {
+		return nil, nil
+	}
 	return (*json.RawMessage)(&result), nil
 }
 
 func (d *Datastore) Put(data Data) []error {
 	errors := make([]error, 0, len(data))
+
+	if key, ok := data["key"]; ok {
+		v := data["value"]
+
+		err := d.store.Put([]byte(*key), []byte(*v))
+		if err != nil {
+			errors = append(errors, err)
+		}
+		return errors
+	}
 
 	for k, v := range data {
 		key, err := json.Marshal(k)
@@ -88,7 +107,7 @@ func (d *Datastore) Delete(key json.RawMessage) error {
 	return d.store.Delete([]byte(key))
 }
 
-func (d *Datastore) Iter(iter *Iter) (Data, error) {
+func (d *Datastore) Iter(iter *Iter) ([]KeyValue, error) {
 	var rx *regexp.Regexp
 	var err error
 	if iter.Regexp != "" {
@@ -96,6 +115,10 @@ func (d *Datastore) Iter(iter *Iter) (Data, error) {
 		if err != nil {
 			return nil, fail.NewFromErr(err, iter.Regexp)
 		}
+	}
+
+	if iter.Order != "asc" && iter.Order != "dsc" && iter.Order != "" {
+		return nil, fail.New("Invalid Order specified", iter)
 	}
 
 	var from []byte
@@ -115,7 +138,7 @@ func (d *Datastore) Iter(iter *Iter) (Data, error) {
 
 	skip := 0
 	limit := 0
-	result := make(Data)
+	result := make([]KeyValue, 0, iter.Limit)
 
 	for i.Next() {
 		if iter.Limit > 0 && iter.Limit <= limit {
@@ -134,16 +157,22 @@ func (d *Datastore) Iter(iter *Iter) (Data, error) {
 			continue
 		}
 
-		key := ""
-		err = json.Unmarshal(i.Key(), &key)
-		if err != nil {
-			return nil, err
+		key := i.Key()
+		value := i.Value()
+		if value == nil {
+			//shouldn't happen
+			panic("Nil value returned from datastore iterator")
 		}
 
+		result = append(result, KeyValue{
+			Key:   (*json.RawMessage)(&key),
+			Value: (*json.RawMessage)(&value),
+		})
+
 		limit++
-		val := i.Value()
-		result[key] = (*json.RawMessage)(&val)
 	}
+
+	//TODO: order
 	return result, nil
 }
 

@@ -398,15 +398,10 @@ QUnit.module("Datastore", {
 QUnit.asyncTest("Get and put Data in datastore", function(assert) {
 	expect(4);
 
-	var data = {};
-	for (var i = 0; i <= 100; i++) {
-		data[i] = fh.uuid();
-	}
-
-	var testVal = data[10];
+	var testVal = "testvalue";
 
 	var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
-	ds.put(data)
+	ds.put(10, testVal)
 	.always(function(result) {
 		assert.ok(
 			(result.status == "success")
@@ -433,14 +428,14 @@ QUnit.asyncTest("Iterate through data", function(assert) {
 		data[i] = fh.uuid();
 	}
 
-	ds.put(data)
+	ds.putObj(data)
 	.always(function(result) {
 		assert.ok(
 			(result.status == "success")
 		);
 		ds.iter({
-			from: 10,
-			to: 50,
+			from: "10",
+			to: "50",
 			skip: 10,
 			limit: 5
 		})
@@ -451,6 +446,32 @@ QUnit.asyncTest("Iterate through data", function(assert) {
 			);
 		});
 
+		QUnit.start();
+	});
+
+});
+
+QUnit.asyncTest("Iterate through non-string keys", function(assert) {
+	expect(3);
+	var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
+
+	var count = 0;
+	for (var i = 0; i < 100; i++) {
+		$.when(ds.put(i, fh.uuid()))
+		.then(count++);
+	}
+
+	ds.iter({
+		from: 10,
+		to: 50,
+		skip: 10,
+		limit: 5
+	})
+	.always(function(result) {
+		assert.ok(
+			(result.status == "success") &&
+			(Object.keys(result.data).length == 5)
+			);
 		QUnit.start();
 	});
 

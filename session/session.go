@@ -32,6 +32,7 @@ type Session struct {
 	key  string     `json:"-"`
 	user *user.User `json:"-"`
 
+	ID        string `json:"id,omitempty"`
 	Expires   string `json:"expires,omitempty"`
 	CSRFToken string `json:"CSRFToken,omitempty"`
 	IpAddress string `json:"ipAddress,omitempty"`
@@ -111,10 +112,10 @@ func New(u *user.User, base *Session) (*Session, error) {
 
 	newSession := *base
 
-	sessionId := random(128)
+	newSession.ID = random(128)
 	newSession.CSRFToken = random(128)
 
-	newSession.key = u.Username() + "_" + sessionId
+	newSession.key = u.Username() + "_" + newSession.ID
 
 	newSession.Created = time.Now().Format(time.RFC3339)
 

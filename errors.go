@@ -24,10 +24,18 @@ func errHandled(err error, w http.ResponseWriter) bool {
 
 	var status, errMsg string
 
-	if fail.IsFail(err) {
+	switch err.(type) {
+
+	case *fail.Fail:
 		status = statusFail
 		log.Fail(err)
-	} else {
+	case *http.ProtocolError, *json.SyntaxError, *json.UnmarshalTypeError:
+		//Hardcoded external errors which can bubble up to the end users
+		// without exposing internal server information, make them failures
+		err = fail.NewFromErr(err, nil)
+		status = statusFail
+		log.Fail(err)
+	default:
 		status = statusError
 		log.Error(err)
 		if setting.Bool("FullClientErrors") {
