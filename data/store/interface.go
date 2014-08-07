@@ -5,6 +5,8 @@
 package store
 
 import (
+	"bytes"
+	"encoding/json"
 	"os"
 
 	"github.com/cznic/kv"
@@ -26,7 +28,7 @@ type Iterator interface {
 	Err() error
 }
 
-//Replace Create, Open, and Delete with any data backend that satisfies store and iterator interface
+//Replace Create, Open, Close and Delete with any data backend that satisfies store and iterator interface
 
 // Create creates a new store file
 func Create(name string) error {
@@ -54,4 +56,44 @@ func Open(name string) (Storer, error) {
 //Close / finish writes on a file
 func Close(name string) {
 	files.close(name)
+}
+
+// naturalCompare is will try to sort numbers like you expect even
+// though their source is utf-8 json, as opposed to the default byte compare
+// if a number is compared with a non number, then default byte compare is used
+// Currently performance doesn't seem impacted
+func naturalCompare(x, y []byte) int {
+	var keyX interface{}
+	var keyY interface{}
+
+	err := json.Unmarshal(x, &keyX)
+	if err != nil {
+		return bytes.Compare(x, y)
+	}
+
+	err = json.Unmarshal(y, &keyY)
+	if err != nil {
+		return bytes.Compare(x, y)
+	}
+
+	switch keyX := keyX.(type) {
+	case float64:
+		switch keyY := keyY.(type) {
+		case float64:
+			if keyX == keyY {
+				return 0
+			}
+			if keyX < keyY {
+				return -1
+			}
+			return 1
+		default:
+
+			return bytes.Compare(x, y)
+		}
+
+	default:
+		return bytes.Compare(x, y)
+
+	}
 }

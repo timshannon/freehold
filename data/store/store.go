@@ -38,6 +38,7 @@ func options() *kv.Options {
 	return &kv.Options{
 		VerifyDbAfterOpen:  true,
 		VerifyDbAfterClose: true,
+		Compare:            naturalCompare,
 	}
 }
 

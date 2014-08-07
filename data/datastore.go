@@ -172,8 +172,17 @@ func (d *Datastore) Iter(iter *Iter) ([]KeyValue, error) {
 		limit++
 	}
 
-	//TODO: order
+	if iter.Order == "dsc" {
+		reverse(result)
+	}
+
 	return result, nil
+}
+
+func reverse(records []KeyValue) {
+	for i, j := 0, len(records)-1; i < j; i, j = i+1, j-1 {
+		records[i], records[j] = records[j], records[i]
+	}
 }
 
 func SetTimeout(timeout time.Duration) {
