@@ -339,11 +339,9 @@ All fields are optional with the defaults below:
 * skip - defaults to 0
 * limit - defaults to returning all records
 * regexp - defaults to matching all keys
-* order - defaults to order of keys stored in datastore (sorted by byte representation of json value)
+* order - defaults to asc
 
 Skip and limit only apply to records that match the regular expression (if one is passed in).  So if a value doesn't match the regular expression, it doesn't count as a "skipped" value.  Or to put it another way, skip and limit apply to the resulting set after the regular expression is applied.
-
-The *natural* order of a datastore's values may not be what you want, especially if your keys are numbers as the keys are stored and sorted as binary representations of their json values.  If you want your numbers sorted as numbers, you *must* specify an order. 
 
 *Example: Consider a datastore with 50 items with keys 1 - 50*
 

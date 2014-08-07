@@ -442,7 +442,7 @@ QUnit.asyncTest("Iterate through data", function(assert) {
 		.always(function(result) {
 			assert.ok(
 				(result.status == "success") &&
-				(Object.keys(result.data).length == 5)
+				(result.data.length == 5)
 			);
 		});
 
@@ -451,7 +451,7 @@ QUnit.asyncTest("Iterate through data", function(assert) {
 
 });
 
-QUnit.asyncTest("Iterate through non-string keys", function(assert) {
+QUnit.asyncTest("Iterate through reverse order non-string keys", function(assert) {
 	expect(3);
 	var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
 
@@ -465,13 +465,16 @@ QUnit.asyncTest("Iterate through non-string keys", function(assert) {
 		from: 10,
 		to: 50,
 		skip: 10,
-		limit: 5
+		limit: 5,
+		order: "dsc"
 	})
 	.always(function(result) {
 		assert.ok(
 			(result.status == "success") &&
-			(Object.keys(result.data).length == 5)
-			);
+			(result.data.length == 5) &&
+			(result.data[0].key == 24) && 
+			(result.data[4].key == 20)
+		);
 		QUnit.start();
 	});
 
