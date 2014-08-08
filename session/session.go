@@ -51,23 +51,13 @@ func Get(r *http.Request) (*Session, error) {
 	if err != nil {
 		return nil, err
 	}
-	key, err := json.Marshal(session.key)
-	if err != nil {
-		return nil, err
-	}
 
-	value, err := ds.Get(key)
+	err = ds.Get(session.key, session)
 	if err != nil {
 		return nil, err
 	}
-	if value == nil {
+	if session == nil {
 		return nil, nil
-	}
-
-	err = json.Unmarshal(value, session)
-
-	if err != nil {
-		return nil, err
 	}
 
 	err = session.getUser()
@@ -123,16 +113,8 @@ func New(u *user.User, base *Session) (*Session, error) {
 	if err != nil {
 		return nil, err
 	}
-	jKey, err := json.Marshal(newSession.key)
-	if err != nil {
-		return nil, err
-	}
-	value, err := json.Marshal(newSession)
-	if err != nil {
-		return nil, err
-	}
 
-	err = ds.Put(jKey, value)
+	err = ds.Put(newSession.key, newSession)
 	if err != nil {
 		return nil, err
 	}
@@ -249,11 +231,7 @@ func (s *Session) Expire() error {
 	if err != nil {
 		return err
 	}
-	key, err := json.Marshal(s.key)
-	if err != nil {
-		return err
-	}
-	return ds.Delete(key)
+	return ds.Delete(s.key)
 }
 
 func userSessions(user string) ([]*Session, error) {

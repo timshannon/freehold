@@ -130,3 +130,17 @@ func fileExists(filename string) bool {
 	}
 	return false
 }
+
+func clearEmptyFolder(folder string) error {
+	file, err := os.Open(folder)
+	defer file.Close()
+
+	files, err := file.Readdir(0)
+	if err != nil {
+		return err
+	}
+	if len(files) == 0 {
+		os.Remove(file.Name())
+	}
+	return nil
+}

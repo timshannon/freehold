@@ -45,8 +45,8 @@ func Create(name string) error {
 }
 
 // Delete deletes a datastore
-func Delete(name string) error {
-	return store.Delete(name)
+func Drop(name string) error {
+	return store.Drop(name)
 }
 
 // Open opens an existing datastore file

@@ -40,25 +40,17 @@ func Get(username string) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-	key, err := json.Marshal(username)
-	if err != nil {
-		return nil, err
-	}
 
 	usr := &User{}
 
-	value, err := ds.Get(key)
+	err = ds.Get(username, usr)
 	if err != nil {
 		return nil, err
 	}
-	if value == nil {
+	if usr == nil {
 		return nil, fail.NewFromErr(FailLogon, username)
 	}
 
-	err = json.Unmarshal(value, usr)
-	if err != nil {
-		return nil, err
-	}
 	usr.prep(username)
 
 	return usr, nil
@@ -142,12 +134,9 @@ func (u *User) validate() error {
 	if err != nil {
 		return err
 	}
-	key, err := json.Marshal(u.username)
-	if err != nil {
-		return err
-	}
 
-	value, err := ds.Get(key)
+	value := &User{}
+	err = ds.Get(u.username, value)
 	if err != nil {
 		return err
 	}
@@ -164,12 +153,8 @@ func Delete(username string) error {
 	if err != nil {
 		return err
 	}
-	key, err := json.Marshal(username)
-	if err != nil {
-		return err
-	}
 
-	err = ds.Delete(key)
+	err = ds.Delete(username)
 	if err != nil {
 		return err
 	}
@@ -198,17 +183,7 @@ func (u *User) Update() error {
 	if err != nil {
 		return err
 	}
-	key, err := json.Marshal(u.username)
-	if err != nil {
-		return err
-	}
-
-	value, err := json.Marshal(u)
-	if err != nil {
-		return err
-	}
-
-	err = ds.Put(key, value)
+	err = ds.Put(u.username, u)
 	if err != nil {
 		return err
 	}

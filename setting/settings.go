@@ -29,34 +29,21 @@ func Get(settingName string) (*Setting, error) {
 		return nil, err
 	}
 
-	key, err := json.Marshal(settingName)
-	if err != nil {
-		return nil, err
-	}
-	value, err := ds.Get(key)
-	if err != nil {
-		return nil, err
-	}
-
 	result := &Setting{}
+	err = ds.Get(settingName, result)
+	if err != nil {
+		return nil, err
+	}
 
-	if value == nil {
+	if result == nil {
 		return settingDefault(settingName), nil
 	}
 
-	err = json.Unmarshal(value, result)
-	if err != nil {
-		return nil, err
-	}
 	return result, nil
 }
 
 func Set(settingName string, value interface{}) error {
 	ds, err := data.OpenCoreDS(DS)
-	if err != nil {
-		return err
-	}
-	key, err := json.Marshal(settingName)
 	if err != nil {
 		return err
 	}
@@ -69,11 +56,7 @@ func Set(settingName string, value interface{}) error {
 
 	fhSetting.Value = value
 
-	dsValue, err := json.Marshal(fhSetting)
-	if err != nil {
-		return err
-	}
-	err = ds.Put(key, dsValue)
+	err = ds.Put(settingName, fhSetting)
 	if err != nil {
 		return err
 	}
@@ -128,12 +111,8 @@ func Default(settingName string) error {
 	if err != nil {
 		return err
 	}
-	key, err := json.Marshal(settingName)
-	if err != nil {
-		return err
-	}
 
-	err = ds.Delete(key)
+	err = ds.Delete(settingName)
 	if err != nil {
 		return err
 	}
