@@ -395,8 +395,8 @@ QUnit.module("Datastore", {
 		});
 	}
 });
-QUnit.asyncTest("Get and put Data in datastore", function(assert) {
-	expect(4);
+QUnit.asyncTest("Get, Put and Delete Data in datastore", function(assert) {
+	expect(6);
 
 	var testVal = "testvalue";
 
@@ -412,6 +412,19 @@ QUnit.asyncTest("Get and put Data in datastore", function(assert) {
 				(result.status == "success") &&
 				(result.data == testVal)
 			);
+			ds.delete(10)
+			.always(function(result) {
+				assert.ok(
+					(result.status == "success")
+				);
+				ds.get(10)
+				.always(function(result) {
+					assert.ok(
+						(result.status == "fail") //should not be found
+					);
+				});
+				
+			});
 		});
 
 		QUnit.start();
