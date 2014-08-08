@@ -340,20 +340,6 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func clearEmptyFolder(folder string) error {
-	file, err := os.Open(folder)
-	defer file.Close()
-
-	files, err := file.Readdir(0)
-	if err != nil {
-		return err
-	}
-	if len(files) == 0 {
-		os.Remove(file.Name())
-	}
-	return nil
-}
-
 func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth *Auth) {
 	filename := urlPathToFile(resource)
 	file, err := os.Open(filename)

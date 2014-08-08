@@ -55,16 +55,7 @@ func New(t *Token, requester *user.User) (*Token, error) {
 		return nil, err
 	}
 
-	key, err := json.Marshal(key(t.requester.Username(), t.Token))
-	if err != nil {
-		return nil, err
-	}
-	value, err := json.Marshal(t)
-	if err != nil {
-		return nil, err
-	}
-
-	err = ds.Put(key, value)
+	err = ds.Put(key(t.requester.Username(), t.Token), t)
 	if err != nil {
 		return nil, err
 	}
@@ -123,29 +114,20 @@ func Get(u *user.User, token string) (*Token, error) {
 	if err != nil {
 		return nil, err
 	}
-	key, err := json.Marshal(key(u.Username(), token))
-	if err != nil {
-		return nil, err
-	}
 
-	value, err := ds.Get(key)
+	k := key(u.Username(), token)
+	err = ds.Get(k, t)
 	if err != nil {
 		return nil, err
 	}
-	if value == nil {
+	if t == nil {
 		return nil, nil
-	}
-
-	err = json.Unmarshal(value, t)
-
-	if err != nil {
-		return nil, err
 	}
 
 	t.requester = u
 
 	if t.IsExpired() && setting.Bool("RemoveExpiredTokens") {
-		err = ds.Delete(key)
+		err = ds.Delete(k)
 		if err != nil {
 			return nil, err
 		}
@@ -196,12 +178,8 @@ func Delete(u *user.User, token string) error {
 	if err != nil {
 		return err
 	}
-	key, err := json.Marshal(key(u.Username(), token))
-	if err != nil {
-		return err
-	}
 
-	err = ds.Delete(key)
+	err = ds.Delete(key(u.Username(), token))
 	if err != nil {
 		return err
 	}

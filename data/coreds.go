@@ -5,6 +5,7 @@
 package data
 
 import (
+	"encoding/json"
 	"errors"
 	"os"
 	"path"
@@ -37,4 +38,45 @@ func OpenCoreDS(filename string) (*CoreDS, error) {
 		return nil, errors.New("Error opening core datastore: " + err.Error())
 	}
 	return &CoreDS{ds}, nil
+}
+
+func (c *CoreDS) Get(key interface{}, result interface{}) error {
+	dsKey, err := json.Marshal(key)
+	if err != nil {
+		return err
+	}
+
+	dsValue, err := c.Storer.Get(dsKey)
+	if err != nil {
+		return err
+	}
+	if dsValue == nil {
+		result = nil
+		return nil
+	}
+
+	return json.Unmarshal(dsValue, result)
+}
+
+func (c *CoreDS) Put(key interface{}, value interface{}) error {
+	dsKey, err := json.Marshal(key)
+	if err != nil {
+		return err
+	}
+
+	dsValue, err := json.Marshal(value)
+	if err != nil {
+		return err
+	}
+
+	return c.Storer.Put(dsKey, dsValue)
+}
+
+func (c *CoreDS) Delete(key interface{}) error {
+	dsKey, err := json.Marshal(key)
+	if err != nil {
+		return err
+	}
+
+	return c.Storer.Delete(dsKey)
 }

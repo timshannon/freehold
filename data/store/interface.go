@@ -7,7 +7,6 @@ package store
 import (
 	"bytes"
 	"encoding/json"
-	"os"
 
 	"github.com/cznic/kv"
 )
@@ -28,7 +27,8 @@ type Iterator interface {
 	Err() error
 }
 
-//Replace Create, Open, Close and Delete with any data backend that satisfies store and iterator interface
+//Replace Create, Open, Close and Drop with any data backend that satisfies store and iterator interface
+// may make these 4 a interface as well
 
 // Create creates a new store file
 func Create(name string) error {
@@ -41,15 +41,14 @@ func Create(name string) error {
 }
 
 // Delete deletes a store file
-func Delete(name string) error {
-	files.close(name)
-	return os.Remove(name)
-
+func Drop(name string) error {
+	return files.drop(name)
 }
 
 // Open opens an existing store file, if the file is currently open
 // then it passes back the current pointer to the store
 func Open(name string) (Storer, error) {
+	//FIXME: Issue with lock file already existing on concurrent open requests
 	return files.open(name)
 }
 

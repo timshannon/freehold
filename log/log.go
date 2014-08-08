@@ -5,7 +5,6 @@
 package log
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -19,6 +18,7 @@ import (
 const DS = "core/log.ds"
 
 type Log struct {
+	When string `json:"when"`
 	Type string `json:"type"`
 	Log  string `json:"log"`
 }
@@ -31,32 +31,29 @@ func NewEntry(Type string, entry string) {
 		return
 
 	}
-	key, err := json.Marshal(time.Now().Format(time.RFC3339))
-	if err != nil {
-		syslogError(errors.New("Error can't log entry to freehold instance. Entry: " +
-			entry + " error: " + err.Error()))
-		return
-	}
+	when := time.Now().Format(time.RFC3339)
 
 	log := &Log{
+		When: when,
 		Type: Type,
 		Log:  entry,
 	}
 
-	value, err := json.Marshal(log)
-	if err != nil {
-		syslogError(errors.New("Error can't log entry to freehold instance. Entry: " +
-			entry + " error: " + err.Error()))
-		return
-	}
-
-	err = ds.Put(key, value)
+	err = ds.Put(when, log)
 	if err != nil {
 		syslogError(errors.New("Error can't log entry to freehold instance. Entry: " +
 			entry + " error: " + err.Error()))
 		return
 	}
 }
+
+//TODO:
+//func Get(iter *data.Iter) ([]Log, error) {
+//ds, err := data.OpenCoreDS(ds)
+//if err != nil {
+//return nil, err
+//}
+//}
 
 // Error logs and error to the core log datastore.  For core code the rule for error logging
 // is to not log it until it's "bubbled up to the top".  Meaning only the http handler

@@ -135,6 +135,45 @@ func (o *openedFiles) close(name string) {
 	}
 }
 
+func (o *openedFiles) drop(name string) error {
+	o.Lock()
+	defer o.Unlock()
+	wal := ""
+
+	db, ok := o.files[name]
+	if ok {
+		delete(o.files, name)
+		wal = db.WALName()
+		err := db.Close()
+		if err != nil {
+			return err
+		}
+
+	} else {
+		//file hasn't been opened yet in this session
+		// open it to get the wal file, then close and delete
+		db, err := kv.Open(name, options())
+		if err != nil {
+			return err
+		}
+		wal = db.WALName()
+		err = db.Close()
+		if err != nil {
+			return err
+		}
+
+	}
+
+	if _, ferr := os.Stat(wal); ferr == nil {
+		//clean up wal file
+		err := os.Remove(wal)
+		if err != nil {
+			return err
+		}
+	}
+	return os.Remove(name)
+}
+
 func (d *DS) reset() error {
 	if !d.timeout.Reset(Timeout()) {
 		var err error

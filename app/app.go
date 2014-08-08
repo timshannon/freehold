@@ -52,24 +52,15 @@ func Get(id string) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	key, err := json.Marshal(id)
-	if err != nil {
-		return nil, err
-	}
 
 	app := &App{}
 
-	value, err := ds.Get(key)
+	err = ds.Get(id, app)
 	if err != nil {
 		return nil, err
 	}
-	if value == nil {
+	if app == nil {
 		return nil, nil
-	}
-
-	err = json.Unmarshal(value, app)
-	if err != nil {
-		return nil, err
 	}
 
 	app.Id = id
@@ -167,10 +158,7 @@ func Install(file, owner string) (*App, error) {
 		return nil, err
 	}
 
-	key, err := json.Marshal(app.Id)
-	value, err := json.Marshal(app)
-
-	err = ds.Put(key, value)
+	err = ds.Put(app.Id, app)
 	if err != nil {
 		return nil, err
 	}
@@ -210,17 +198,13 @@ func Uninstall(appid string) error {
 	if err != nil {
 		return err
 	}
-	key, err := json.Marshal(appid)
-	if err != nil {
-		return err
-	}
 
 	err = os.RemoveAll(path.Join(AppDir, appid))
 	if err != nil {
 		return err
 	}
 
-	return ds.Delete(key)
+	return ds.Delete(app.Id)
 }
 
 func Available() (map[string]*App, []error, error) {

@@ -269,7 +269,12 @@ func datastoreDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = data.Delete(filename)
+	err = data.Drop(filename)
+	if errHandled(err, w) {
+		return
+	}
+
+	err = clearEmptyFolder(path.Dir(filename))
 	if errHandled(err, w) {
 		return
 	}

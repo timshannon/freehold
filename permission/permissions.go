@@ -5,7 +5,6 @@
 package permission
 
 import (
-	"encoding/json"
 	"errors"
 	"strings"
 
@@ -37,26 +36,17 @@ func Get(filename string) (*Permission, error) {
 	if err != nil {
 		return nil, err
 	}
-	key, err := json.Marshal(filename)
-	if err != nil {
-		return nil, err
-	}
-
-	value, err := ds.Get(key)
-
-	if err != nil {
-		return nil, err
-	}
 
 	prm := &Permission{}
-	if value == nil {
-		log.Error(errors.New("Permissions not found for resource: " + filename))
-		return prm, nil
-	}
+	err = ds.Get(filename, prm)
 
-	err = json.Unmarshal(value, prm)
 	if err != nil {
 		return nil, err
+	}
+
+	if prm == nil {
+		log.Error(errors.New("Permissions not found for resource: " + filename))
+		return &Permission{}, nil
 	}
 
 	prm.resource = filename
@@ -74,17 +64,8 @@ func Set(filename string, permissions *Permission) error {
 	if err != nil {
 		return err
 	}
-	key, err := json.Marshal(filename)
-	if err != nil {
-		return err
-	}
 
-	value, err := json.Marshal(permissions)
-	if err != nil {
-		return err
-	}
-
-	err = ds.Put(key, value)
+	err = ds.Put(filename, permissions)
 	if err != nil {
 		return err
 	}
@@ -97,12 +78,8 @@ func Delete(filename string) error {
 	if err != nil {
 		return err
 	}
-	key, err := json.Marshal(filename)
-	if err != nil {
-		return err
-	}
 
-	err = ds.Delete(key)
+	err = ds.Delete(filename)
 	if err != nil {
 		return err
 	}
