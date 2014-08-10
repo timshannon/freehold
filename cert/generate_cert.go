@@ -1,4 +1,4 @@
-// from http://golang.org/src/pkg/crypto/tls/generate_cert.go
+// from http://golang.org/src/pkg/crypto/tls/generate_cert.go and modified
 // Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file (http://golang.org/LICENSE).
@@ -15,6 +15,7 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"errors"
+	"math"
 	"math/big"
 	"net"
 	"os"
@@ -29,9 +30,6 @@ import (
 //isCA      = flag.Bool("ca", false, "whether this cert should be its own Certificate Authority")
 //rsaBits   = flag.Int("rsa-bits", 2048, "Size of RSA key to generate")
 //)
-//TODO: Unique serial number from CA (firefox error):
-// 	Your certificate contains the same serial number as another certificate issued by the certificate authority. Please get a new certificate containing a unique serial number.
-
 func GenerateCert(host, organization string, validFrom time.Time, validFor time.Duration, isCA bool, rsaBits int,
 	certFile string, keyFile string) error {
 
@@ -60,9 +58,13 @@ func GenerateCert(host, organization string, validFrom time.Time, validFor time.
 	if notAfter.After(endOfTime) {
 		notAfter = endOfTime
 	}
-
+	serialNumber, err := rand.Int(rand.Reader, big.NewInt(math.MaxInt64))
+	if err != nil {
+		return err
+	}
 	template := x509.Certificate{
-		SerialNumber: new(big.Int).SetInt64(0),
+		//SerialNumber: new(big.Int).SetInt64(0), // replace with random serial number
+		SerialNumber: serialNumber,
 		Subject: pkix.Name{
 			Organization: []string{organization},
 		},
