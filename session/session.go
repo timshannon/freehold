@@ -53,11 +53,11 @@ func Get(r *http.Request) (*Session, error) {
 	}
 
 	err = ds.Get(session.key, session)
+	if err == data.ErrNotFound {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
-	}
-	if session == nil {
-		return nil, nil
 	}
 
 	err = session.getUser()

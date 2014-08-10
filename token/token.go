@@ -117,11 +117,11 @@ func Get(u *user.User, token string) (*Token, error) {
 
 	k := key(u.Username(), token)
 	err = ds.Get(k, t)
+	if err == data.ErrNotFound {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
-	}
-	if t == nil {
-		return nil, nil
 	}
 
 	t.requester = u
