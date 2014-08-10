@@ -13,6 +13,8 @@ import (
 	"bitbucket.org/tshannon/freehold/data/store"
 )
 
+var ErrNotFound = errors.New("Value not found")
+
 // CoreDS is a wrapper of the store interface with a few
 // handy things added for managing core datastores used for the operation
 // of a freehold instance
@@ -45,14 +47,13 @@ func (c *CoreDS) Get(key interface{}, result interface{}) error {
 	if err != nil {
 		return err
 	}
-
 	dsValue, err := c.Storer.Get(dsKey)
 	if err != nil {
 		return err
 	}
+
 	if dsValue == nil {
-		result = nil
-		return nil
+		return ErrNotFound
 	}
 
 	return json.Unmarshal(dsValue, result)

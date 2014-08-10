@@ -31,12 +31,11 @@ func Get(settingName string) (*Setting, error) {
 
 	result := &Setting{}
 	err = ds.Get(settingName, result)
+	if err == data.ErrNotFound {
+		return settingDefault(settingName), nil
+	}
 	if err != nil {
 		return nil, err
-	}
-
-	if result == nil {
-		return settingDefault(settingName), nil
 	}
 
 	return result, nil

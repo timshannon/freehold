@@ -59,12 +59,11 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		val, err := ds.Get(*input.Key)
-		if errHandled(err, w) {
+		if err == data.ErrNotFound {
+			ds404(w, r, input.Key)
 			return
 		}
-
-		if val == nil {
-			ds404(w, r, input.Key)
+		if errHandled(err, w) {
 			return
 		}
 

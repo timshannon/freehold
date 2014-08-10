@@ -56,11 +56,11 @@ func Get(id string) (*App, error) {
 	app := &App{}
 
 	err = ds.Get(id, app)
+	if err == data.ErrNotFound {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
-	}
-	if app == nil {
-		return nil, nil
 	}
 
 	app.Id = id
@@ -113,11 +113,13 @@ func Install(file, owner string) (*App, error) {
 	}
 
 	a, err := Get(app.Id)
-	if err != nil {
-		return nil, err
-	}
+
 	if a != nil {
 		return nil, fail.New("An app with the same id is already installed", app)
+	}
+
+	if err != nil && err != data.ErrNotFound {
+		return nil, err
 	}
 
 	installDir := path.Join(AppDir, app.Id)
@@ -185,12 +187,11 @@ func Upgrade(file, owner string) (*App, error) {
 
 func Uninstall(appid string) error {
 	app, err := Get(appid)
+	if err == data.ErrNotFound {
+		return fail.NewFromErr(FailInvalidId, appid)
+	}
 	if err != nil {
 		return err
-	}
-
-	if app == nil {
-		return fail.NewFromErr(FailInvalidId, appid)
 	}
 
 	//remove from DS

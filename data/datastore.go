@@ -69,7 +69,7 @@ func (d *Datastore) Get(key json.RawMessage) (*json.RawMessage, error) {
 		return nil, err
 	}
 	if result == nil {
-		return nil, nil
+		return nil, ErrNotFound
 	}
 	return (*json.RawMessage)(&result), nil
 }

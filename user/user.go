@@ -44,11 +44,11 @@ func Get(username string) (*User, error) {
 	usr := &User{}
 
 	err = ds.Get(username, usr)
+	if err == data.ErrNotFound {
+		return nil, fail.NewFromErr(FailLogon, username)
+	}
 	if err != nil {
 		return nil, err
-	}
-	if usr == nil {
-		return nil, fail.NewFromErr(FailLogon, username)
 	}
 
 	usr.prep(username)
@@ -137,12 +137,13 @@ func (u *User) validate() error {
 
 	value := &User{}
 	err = ds.Get(u.username, value)
-	if err != nil {
-		return err
-	}
-	if value != nil {
+	if err == nil {
 		u.clearPassword()
 		return fail.New("User already exists", u)
+
+	}
+	if err != nil && err != data.ErrNotFound {
+		return err
 	}
 
 	return nil
