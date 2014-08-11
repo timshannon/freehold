@@ -159,7 +159,7 @@ func (s *Session) IsExpired() bool {
 		//If expires isn't specified then it's a session cookie
 		// that should expire at the end of the session.  Use
 		// 12 hours past created date to make sure the session gets
-		// cleaned up in the datastore
+		// cleaned up in the datastore regardless of what the client does
 		return time.Now().After(s.createdTime().Add(time.Hour * 12))
 	}
 

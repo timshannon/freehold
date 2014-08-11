@@ -5,6 +5,7 @@
 package log
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -12,6 +13,7 @@ import (
 	"time"
 
 	"bitbucket.org/tshannon/freehold/data"
+	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/setting"
 )
 
@@ -21,6 +23,15 @@ type Log struct {
 	When string `json:"when"`
 	Type string `json:"type"`
 	Log  string `json:"log"`
+}
+
+type Iter struct {
+	Type  string           `json:"type,omitempty"`
+	From  *json.RawMessage `json:"from,omitempty"`
+	To    *json.RawMessage `json:"to,omitempty"`
+	Skip  int              `json:"skip,omitempty"`
+	Limit int              `json:"limit,omitempty"`
+	Order string           `json:"order,omitempty"`
 }
 
 func NewEntry(Type string, entry string) {
@@ -47,13 +58,81 @@ func NewEntry(Type string, entry string) {
 	}
 }
 
-//TODO:
-//func Get(iter *data.Iter) ([]Log, error) {
-//ds, err := data.OpenCoreDS(ds)
-//if err != nil {
-//return nil, err
-//}
-//}
+func Get(iter *Iter) ([]*Log, error) {
+	ds, err := data.OpenCoreDS(DS)
+	if err != nil {
+		return nil, err
+	}
+
+	if iter.Order != "asc" && iter.Order != "dsc" && iter.Order != "" {
+		return nil, fail.New("Invalid Order specified", iter)
+	}
+
+	var from []byte
+	var to []byte
+
+	if iter.From != nil {
+		from = []byte(*iter.From)
+	}
+	if iter.To != nil {
+		to = []byte(*iter.To)
+	}
+
+	i, err := ds.Iter(from, to)
+	if err != nil {
+		return nil, err
+	}
+
+	skip := 0
+	limit := 0
+	result := make([]*Log, 0, iter.Limit)
+
+	for i.Next() {
+		if iter.Limit > 0 && iter.Limit <= limit {
+			break
+		}
+		if i.Err() != nil {
+			return nil, i.Err()
+		}
+		value := i.Value()
+		if value == nil {
+			//shouldn't happen
+			panic("Nil value returned from datastore iterator")
+		}
+
+		entry := &Log{}
+		err = json.Unmarshal(value, entry)
+		if err != nil {
+			return nil, err
+		}
+
+		if iter.Type != "" && entry.Type != iter.Type {
+			continue
+		}
+
+		skip++
+		if iter.Skip > 0 && iter.Skip >= skip {
+			continue
+		}
+
+		result = append(result, entry)
+
+		limit++
+	}
+
+	if iter.Order == "dsc" {
+		reverse(result)
+	}
+
+	return result, nil
+
+}
+
+func reverse(records []*Log) {
+	for i, j := 0, len(records)-1; i < j; i, j = i+1, j-1 {
+		records[i], records[j] = records[j], records[i]
+	}
+}
 
 // Error logs and error to the core log datastore.  For core code the rule for error logging
 // is to not log it until it's "bubbled up to the top".  Meaning only the http handler

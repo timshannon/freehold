@@ -172,6 +172,8 @@ func (d *Datastore) Iter(iter *Iter) ([]KeyValue, error) {
 		limit++
 	}
 
+	//TODO: Remove order?  It doesn't work like you'd think it would
+	// leave order to the client?  Or iter in reverse?
 	if iter.Order == "dsc" {
 		reverse(result)
 	}
