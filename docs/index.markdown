@@ -1386,7 +1386,7 @@ Response (200):
 
 <a name="logs"></a> Logs 
 ======================
-By default only server errors are logged, but core settings can be changed to log other things such as access,
+By default only some things are logged, but the core settings can be changed to log other things such as access,
 failed authentication attempts, etc.
 
 ```
@@ -1407,6 +1407,7 @@ core/log.ds
 GET /v1/log
 {
 	iter: {
+		type: <type>,
 		from: <timestamp>,
 		to: <timestamp>,
 		skip: <count>,
