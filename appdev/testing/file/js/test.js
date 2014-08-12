@@ -478,8 +478,8 @@ QUnit.asyncTest("Iterate through reverse order non-string keys", function(assert
     }
 
     ds.iter({
-            from: 10,
-            to: 50,
+            from: 50,
+            to: 10,
             skip: 10,
             limit: 5,
             order: "dsc"
@@ -488,8 +488,8 @@ QUnit.asyncTest("Iterate through reverse order non-string keys", function(assert
             assert.ok(
                 (result.status == "success") &&
                 (result.data.length == 5) &&
-                (result.data[0].key == 24) &&
-                (result.data[4].key == 20)
+                (result.data[0].key == 40) &&
+                (result.data[4].key == 36)
             );
             QUnit.start();
         });

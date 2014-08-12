@@ -117,8 +117,16 @@ func (d *Datastore) Iter(iter *Iter) ([]KeyValue, error) {
 		}
 	}
 
-	if iter.Order != "asc" && iter.Order != "dsc" && iter.Order != "" {
-		return nil, fail.New("Invalid Order specified", iter)
+	if iter.Order != "" {
+		if iter.Order != "asc" && iter.Order != "dsc" {
+			return nil, fail.New("Invalid Order specified", iter)
+		}
+		//Flip from and to if order is specified.  If order isn't specified, then iteration direction
+		// is implied
+		if (iter.Order == "dsc" && store.Compare([]byte(*iter.From), []byte(*iter.To)) != 1) ||
+			(iter.Order == "asc" && store.Compare([]byte(*iter.To), []byte(*iter.From)) == -1) {
+			iter.From, iter.To = iter.To, iter.From
+		}
 	}
 
 	var from []byte
@@ -172,19 +180,7 @@ func (d *Datastore) Iter(iter *Iter) ([]KeyValue, error) {
 		limit++
 	}
 
-	//TODO: Remove order?  It doesn't work like you'd think it would
-	// leave order to the client?  Or iter in reverse?
-	if iter.Order == "dsc" {
-		reverse(result)
-	}
-
 	return result, nil
-}
-
-func reverse(records []KeyValue) {
-	for i, j := 0, len(records)-1; i < j; i, j = i+1, j-1 {
-		records[i], records[j] = records[j], records[i]
-	}
 }
 
 func SetTimeout(timeout time.Duration) {

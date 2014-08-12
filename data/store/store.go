@@ -67,7 +67,7 @@ func init() {
 // SetFileTimeout sets when the file will automatically close
 // after the timeout duration has passed with no activity on the datastore file.
 // Any new activity will restart the timeout.  Shorter timeout means fewer open files, but less
-// concurrency.
+// concurrency due to locking on open.
 func SetFileTimeout(newTimeout time.Duration) {
 	timeout.Lock()
 	timeout.duration = newTimeout
@@ -215,6 +215,22 @@ func (d *DS) Iter(from, to []byte) (Iterator, error) {
 		return nil, err
 	}
 
+	if to != nil && naturalCompare(from, to) == 1 {
+		enum, _, err := d.DB.Seek(from)
+		if err != nil {
+			return nil, err
+		}
+		return &KvIterator{
+			ds:         d,
+			Enumerator: enum,
+			from:       from,
+			to:         to,
+			reverse:    true,
+			err:        nil,
+		}, nil
+
+	}
+
 	enum, _, err := d.DB.Seek(from)
 	if err != nil {
 		return nil, err
@@ -222,6 +238,7 @@ func (d *DS) Iter(from, to []byte) (Iterator, error) {
 	return &KvIterator{
 		ds:         d,
 		Enumerator: enum,
+		from:       from,
 		to:         to,
 		err:        nil,
 	}, nil
@@ -230,11 +247,12 @@ func (d *DS) Iter(from, to []byte) (Iterator, error) {
 type KvIterator struct {
 	ds *DS
 	*kv.Enumerator
-	to    []byte
-	from  []byte
-	key   []byte
-	value []byte
-	err   error
+	reverse bool
+	from    []byte
+	to      []byte
+	key     []byte
+	value   []byte
+	err     error
 }
 
 func (i *KvIterator) Next() bool {
@@ -244,19 +262,34 @@ func (i *KvIterator) Next() bool {
 		return false
 	}
 
-	i.key, i.value, err = i.Enumerator.Next()
-	if err == io.EOF {
-		return false
+	var key, value []byte
+
+	if i.reverse {
+		key, value, err = i.Enumerator.Prev()
+		if err == io.EOF {
+			return false
+		}
+		if naturalCompare(key, i.to) == -1 {
+			return false
+		}
+	} else {
+		key, value, err = i.Enumerator.Next()
+		if err == io.EOF {
+			return false
+		}
+
+		if i.to != nil && naturalCompare(key, i.to) == 1 {
+			return false
+		}
 	}
 
-	//TODO: Check if current >= i.to
+	i.key = key
+	i.value = value
 	i.err = err
+
 	return true
 }
 
-func (i *KvIterator) Prev() bool {
-	//TODO:
-}
 func (i *KvIterator) Key() []byte {
 	return i.key
 }

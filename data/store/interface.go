@@ -22,7 +22,6 @@ type Storer interface {
 // Iterator is used for iterating through a range of keys in a datastore
 type Iterator interface {
 	Next() bool
-	Prev() bool
 	Key() []byte
 	Value() []byte
 	Err() error
@@ -56,6 +55,12 @@ func Open(name string) (Storer, error) {
 //Close / finish writes on a file
 func Close(name string) {
 	files.close(name)
+}
+
+// Compare returns an integer comparing two byte slices
+// The result will be 0 if a==b, -1 if a < b, and +1 if a > b. A nil argument is equivalent to an empty slice.
+func Compare(x, y []byte) int {
+	return naturalCompare(x, y)
 }
 
 // naturalCompare is will try to sort numbers like you expect even
