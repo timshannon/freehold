@@ -339,9 +339,11 @@ All fields are optional with the defaults below:
 * skip - defaults to 0
 * limit - defaults to returning all records
 * regexp - defaults to matching all keys
-* order - defaults to asc
+* order - defaults to asc unless from > to, then dsc
 
 Skip and limit only apply to records that match the regular expression (if one is passed in).  So if a value doesn't match the regular expression, it doesn't count as a "skipped" value.  Or to put it another way, skip and limit apply to the resulting set after the regular expression is applied.
+
+If *from* is greater than *to* and no order is specified, then descending order is implied.  If order is specified, then *from* and *to* are automatically corrected to return the correct order.
 
 *Example: Consider a datastore with 50 items with keys 1 - 50*
 

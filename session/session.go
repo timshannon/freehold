@@ -252,7 +252,6 @@ func userSessions(user string) ([]*Session, error) {
 	var sessions []*Session
 
 	for iter.Next() {
-
 		s := &Session{}
 		if iter.Err() != nil {
 			return nil, iter.Err()
