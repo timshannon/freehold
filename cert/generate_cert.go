@@ -58,12 +58,15 @@ func GenerateCert(host, organization string, validFrom time.Time, validFor time.
 	if notAfter.After(endOfTime) {
 		notAfter = endOfTime
 	}
+
+	//random serial number.  Chances of two certs being generated with the same serial number
+	// and a user hitting both freehold instances with the same number is pretty small, but even
+	// if that happens, Firefox seems to be the only browser that complains about this
 	serialNumber, err := rand.Int(rand.Reader, big.NewInt(math.MaxInt64))
 	if err != nil {
 		return err
 	}
 	template := x509.Certificate{
-		//SerialNumber: new(big.Int).SetInt64(0), // replace with random serial number
 		SerialNumber: serialNumber,
 		Subject: pkix.Name{
 			Organization: []string{organization},

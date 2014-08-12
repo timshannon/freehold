@@ -22,6 +22,7 @@ type Storer interface {
 // Iterator is used for iterating through a range of keys in a datastore
 type Iterator interface {
 	Next() bool
+	Prev() bool
 	Key() []byte
 	Value() []byte
 	Err() error
