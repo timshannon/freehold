@@ -231,6 +231,7 @@ type KvIterator struct {
 	ds *DS
 	*kv.Enumerator
 	to    []byte
+	from  []byte
 	key   []byte
 	value []byte
 	err   error
@@ -247,10 +248,15 @@ func (i *KvIterator) Next() bool {
 	if err == io.EOF {
 		return false
 	}
+
+	//TODO: Check if current >= i.to
 	i.err = err
 	return true
 }
 
+func (i *KvIterator) Prev() bool {
+	//TODO:
+}
 func (i *KvIterator) Key() []byte {
 	return i.key
 }
