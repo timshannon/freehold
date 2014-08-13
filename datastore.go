@@ -6,6 +6,8 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"path"
@@ -20,6 +22,8 @@ import (
 
 type DatastoreInput struct {
 	Key  *json.RawMessage `json:"key,omitempty"`
+	Max  *json.RawMessage `json:"max,omitempty"`
+	Min  *json.RawMessage `json:"min,omitempty"`
 	Iter *data.Iter       `json:"iter,omitempty"`
 }
 
@@ -87,6 +91,73 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 			Status: statusSuccess,
 			Data:   val,
 		})
+	} else if input.Max != nil {
+		ds, err := data.Open(filename)
+		if os.IsNotExist(err) {
+			four04(w, r)
+			return
+		}
+
+		if errHandled(err, w) {
+			return
+		}
+		key, err := ds.Max()
+		if errHandled(err, w) {
+			return
+		}
+
+		val, err := ds.Get(*key)
+		if err == data.ErrNotFound {
+			//shouldn't happen
+			errHandled(errors.New(fmt.Sprintf("Max key was retrieved but value was not key: %s", key)), w)
+			return
+		}
+
+		if errHandled(err, w) {
+			return
+		}
+
+		respondJsend(w, &JSend{
+			Status: statusSuccess,
+			Data: data.KeyValue{
+				Key:   key,
+				Value: val,
+			},
+		})
+	} else if input.Min != nil {
+		ds, err := data.Open(filename)
+		if os.IsNotExist(err) {
+			four04(w, r)
+			return
+		}
+
+		if errHandled(err, w) {
+			return
+		}
+		key, err := ds.Min()
+		if errHandled(err, w) {
+			return
+		}
+
+		val, err := ds.Get(*key)
+		if err == data.ErrNotFound {
+			//shouldn't happen
+			errHandled(errors.New(fmt.Sprintf("Max key was retrieved but value was not key: %s", key)), w)
+			return
+		}
+
+		if errHandled(err, w) {
+			return
+		}
+
+		respondJsend(w, &JSend{
+			Status: statusSuccess,
+			Data: data.KeyValue{
+				Key:   key,
+				Value: val,
+			},
+		})
+
 	} else {
 		//return entire file
 

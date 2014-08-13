@@ -318,6 +318,37 @@ Response (200):
 }
 ```
 
+*Get Min or Max Key in the store*
+```
+GET /v1/datastore/personal/top10.ds
+{
+	max: {}
+}
+
+Response (200):
+{
+	status: "success",
+	data: {
+			key: 10,
+			value: "ten"
+	}
+}
+
+GET /v1/datastore/personal/top10.ds
+{
+	min: {}
+}
+
+Response (200):
+{
+	status: "success",
+	data: {
+			key: 1,
+			value: "one"
+	}
+}
+```
+
 *Iterate through values in the collection*
 ```
 GET /v1/datastore/personal/bookmarks.ds
