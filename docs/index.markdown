@@ -1500,3 +1500,9 @@ TODO: IRC client
 <a name="calendar"></a> Calendar
 ========
 TODO: built in calendar functionality, exports to ical would be nice.
+
+
+<a name="Backup"></a> Backup
+=============
+TODO: Backup entire freehold instance into one zip file, or just backup core datastores.
+
