@@ -192,6 +192,24 @@ func (d *DS) Get(key []byte) ([]byte, error) {
 	return result, err
 }
 
+func (d *DS) Max() ([]byte, error) {
+	err := d.reset()
+	if err != nil {
+		return nil, err
+	}
+	key, _, err := d.DB.Last()
+	return key, err
+}
+
+func (d *DS) Min() ([]byte, error) {
+	err := d.reset()
+	if err != nil {
+		return nil, err
+	}
+	key, _, err := d.DB.First()
+	return key, err
+}
+
 func (d *DS) Put(key, value []byte) error {
 	err := d.reset()
 	if err != nil {

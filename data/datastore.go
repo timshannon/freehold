@@ -74,6 +74,24 @@ func (d *Datastore) Get(key json.RawMessage) (*json.RawMessage, error) {
 	return (*json.RawMessage)(&result), nil
 }
 
+func (d *Datastore) Max() (*json.RawMessage, error) {
+	key, err := d.store.Max()
+	if err != nil {
+		return nil, err
+	}
+
+	return (*json.RawMessage)(&key), nil
+}
+
+func (d *Datastore) Min() (*json.RawMessage, error) {
+	key, err := d.store.Min()
+	if err != nil {
+		return nil, err
+	}
+
+	return (*json.RawMessage)(&key), nil
+}
+
 func (d *Datastore) Put(data Data) []error {
 	errors := make([]error, 0, len(data))
 
@@ -117,26 +135,37 @@ func (d *Datastore) Iter(iter *Iter) ([]KeyValue, error) {
 		}
 	}
 
+	var from []byte
+	var to []byte
+
+	if iter.From != nil {
+		from = []byte(*iter.From)
+	} else {
+		from, err = d.store.Min()
+		if err != nil {
+			return nil, err
+		}
+	}
+	if iter.To != nil {
+		to = []byte(*iter.To)
+	} else {
+		to, err = d.store.Max()
+		if err != nil {
+			return nil, err
+		}
+
+	}
+
 	if iter.Order != "" {
 		if iter.Order != "asc" && iter.Order != "dsc" {
 			return nil, fail.New("Invalid Order specified", iter)
 		}
 		//Flip from and to if order is specified.  If order isn't specified, then iteration direction
 		// is implied
-		if (iter.Order == "dsc" && store.Compare([]byte(*iter.From), []byte(*iter.To)) != 1) ||
-			(iter.Order == "asc" && store.Compare([]byte(*iter.To), []byte(*iter.From)) == -1) {
-			iter.From, iter.To = iter.To, iter.From
+		if (iter.Order == "dsc" && store.Compare(from, to) != 1) ||
+			(iter.Order == "asc" && store.Compare(to, from) == -1) {
+			from, to = to, from
 		}
-	}
-
-	var from []byte
-	var to []byte
-
-	if iter.From != nil {
-		from = []byte(*iter.From)
-	}
-	if iter.To != nil {
-		to = []byte(*iter.To)
 	}
 
 	i, err := d.store.Iter(from, to)

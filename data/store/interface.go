@@ -16,6 +16,8 @@ type Storer interface {
 	Get(key []byte) ([]byte, error)
 	Put(key, value []byte) error
 	Delete(key []byte) error
+	Max() ([]byte, error) //Max Key in store
+	Min() ([]byte, error) //Min Key in store
 	Iter(from, to []byte) (Iterator, error)
 }
 

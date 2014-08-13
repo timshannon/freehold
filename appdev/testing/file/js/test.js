@@ -433,6 +433,45 @@ QUnit.asyncTest("Get, Put and Delete Data in datastore", function(assert) {
         });
 });
 
+QUnit.asyncTest("Max Key", function(assert) {
+    expect(3);
+    var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
+
+    for (var i = 0; i < 100; i++) {
+        $.when(ds.put(i, fh.uuid()))
+            .then();
+    }
+
+    ds.max().always(function(result) {
+        assert.ok(
+            (result.status == "success") &&
+            (result.data.key == 99)
+        );
+        QUnit.start();
+    });
+
+});
+
+QUnit.asyncTest("Min Key", function(assert) {
+    expect(3);
+    var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
+
+    for (var i = 0; i < 100; i++) {
+        $.when(ds.put(i, fh.uuid()))
+            .then();
+    }
+
+    ds.min().always(function(result) {
+        assert.ok(
+            (result.status == "success") &&
+            (result.data.key === 0)
+        );
+        QUnit.start();
+    });
+
+});
+
+
 
 QUnit.asyncTest("Iterate through data", function(assert) {
     expect(4);
@@ -465,37 +504,6 @@ QUnit.asyncTest("Iterate through data", function(assert) {
         });
 
 });
-
-QUnit.asyncTest("Iterate through reverse order non-string keys", function(assert) {
-    expect(3);
-
-    var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
-
-    var count = 0;
-    for (var i = 0; i < 100; i++) {
-        $.when(ds.put(i, fh.uuid()))
-            .then(count++);
-    }
-
-    ds.iter({
-            from: 50,
-            to: 10,
-            skip: 10,
-            limit: 5,
-            order: "dsc"
-        })
-        .always(function(result) {
-            assert.ok(
-                (result.status == "success") &&
-                (result.data.length == 5) &&
-                (result.data[0].key == 40) &&
-                (result.data[4].key == 36)
-            );
-            QUnit.start();
-        });
-
-});
-
 
 
 QUnit.asyncTest("Regex test", function(assert) {
@@ -530,5 +538,175 @@ QUnit.asyncTest("Regex test", function(assert) {
         });
 
 
+
+});
+
+
+QUnit.module("Datastore Iter", {
+    setup: function(assert) {
+        QUnit.stop();
+        fh.datastore.new("/testing/v1/datastore/testdata/test.ds")
+            .always(function(result) {
+                assert.deepEqual(result, {
+                    status: "success",
+                    data: {
+                        name: "test.ds",
+                        url: "/testing/v1/datastore/testdata/test.ds"
+                    }
+                });
+                var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
+
+                for (var i = 0; i < 100; i++) {
+                    $.when(ds.put(i, fh.uuid()))
+                        .then();
+                }
+
+                QUnit.start();
+            });
+
+    },
+    teardown: function(assert) {
+        QUnit.stop();
+        //delete file
+        var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
+
+        ds.drop()
+            .always(function(result) {
+                assert.deepEqual(result, {
+                    status: "success",
+                    data: {
+                        name: "test.ds",
+                        url: "/testing/v1/datastore/testdata/test.ds"
+                    }
+                });
+                QUnit.start();
+            });
+    }
+});
+
+QUnit.asyncTest("Test From and To", function(assert) {
+    expect(3);
+
+    var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
+
+    ds.iter({
+            from: 5,
+            to: 10
+        })
+        .always(function(result) {
+            assert.ok(
+                (result.status == "success") &&
+                (result.data.length == 6) &&
+                (result.data[0].key == 5) &&
+                (result.data[5].key == 10)
+            );
+            QUnit.start();
+        });
+
+});
+
+QUnit.asyncTest("Test Reverse From and To", function(assert) {
+    expect(3);
+
+    var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
+
+    ds.iter({
+            from: 10,
+            to: 5
+        })
+        .always(function(result) {
+            assert.ok(
+                (result.status == "success") &&
+                (result.data.length == 6) &&
+                (result.data[0].key == 10) &&
+                (result.data[5].key == 5)
+            );
+            QUnit.start();
+        });
+
+});
+
+QUnit.asyncTest("Test Reverse From and To with forced asc order", function(assert) {
+    expect(3);
+
+    var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
+
+    ds.iter({
+            from: 10,
+            to: 5,
+            order: "asc"
+
+        })
+        .always(function(result) {
+            assert.ok(
+                (result.status == "success") &&
+                (result.data.length == 6) &&
+                (result.data[0].key == 5) &&
+                (result.data[5].key == 10)
+            );
+            QUnit.start();
+        });
+});
+
+QUnit.asyncTest("Test Full Range", function(assert) {
+    expect(3);
+
+    var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
+
+    ds.iter({})
+        .always(function(result) {
+            assert.ok(
+                (result.status == "success") &&
+                (result.data.length == 100) &&
+                (result.data[0].key === 0) &&
+                (result.data[5].key == 5) &&
+                (result.data[99].key == 99)
+            );
+            QUnit.start();
+        });
+});
+
+QUnit.asyncTest("Test Reverse Full Range", function(assert) {
+    expect(3);
+
+    var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
+
+    ds.iter({
+            order: "dsc"
+        })
+        .always(function(result) {
+            assert.ok(
+                (result.status == "success") &&
+                (result.data.length == 100) &&
+                (result.data[0].key === 99) &&
+                (result.data[99].key === 0)
+            );
+            QUnit.start();
+        });
+});
+
+
+
+QUnit.asyncTest("Iterate through reverse order non-string keys with limit", function(assert) {
+    expect(3);
+
+    var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
+
+    ds.iter({
+            from: 50,
+            to: 10,
+            skip: 10,
+            limit: 5,
+            order: "dsc"
+        })
+        .always(function(result) {
+            assert.ok(
+                (result.status == "success") &&
+                (result.data.length == 5) &&
+                (result.data[0].key == 40) &&
+                (result.data[4].key == 36)
+            );
+            QUnit.start();
+        });
 
 });

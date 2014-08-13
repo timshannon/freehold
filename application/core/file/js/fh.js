@@ -282,6 +282,20 @@ window.fh = (function() {
                     }),
                 });
             };
+            this.max = function() {
+                return stdAjax("GET", this.path, {
+                    data: JSON.stringify({
+                        max: {}
+                    }),
+                });
+            };
+			this.min = function() {
+                return stdAjax("GET", this.path, {
+                    data: JSON.stringify({
+                        min: {}
+                    }),
+                });
+            };
             this.iter = function(iterObject) {
                 return stdAjax("GET", this.path, {
                     data: JSON.stringify({
