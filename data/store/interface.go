@@ -50,7 +50,6 @@ func Drop(name string) error {
 // Open opens an existing store file, if the file is currently open
 // then it passes back the current pointer to the store
 func Open(name string) (Storer, error) {
-	//FIXME: Issue with lock file already existing on concurrent open requests
 	return files.open(name)
 }
 
@@ -66,7 +65,7 @@ func Compare(x, y []byte) int {
 }
 
 // naturalCompare is will try to sort numbers like you expect even
-// though their source is utf-8 json, as opposed to the default byte compare
+// though their source is utf-8 json, as opposed to the default byte compare.
 // if a number is compared with a non number, then default byte compare is used
 // Currently performance doesn't seem impacted
 func naturalCompare(x, y []byte) int {

@@ -471,6 +471,20 @@ QUnit.asyncTest("Min Key", function(assert) {
 
 });
 
+QUnit.asyncTest("Datastore Properties", function(assert) {
+    expect(3);
+
+    fh.properties.get("/testing/v1/datastore/testdata/test.ds")
+        .always(function(result) {
+            assert.ok(
+                (result.data.name == "test.ds") &&
+                (result.data.permissions.owner == fh.auth().user) &&
+                (result.data.permissions.private == "rw") &&
+                (result.data.url == "/testing/v1/datastore/testdata/test.ds")
+            );
+            QUnit.start();
+        });
+});
 
 
 QUnit.asyncTest("Iterate through data", function(assert) {
