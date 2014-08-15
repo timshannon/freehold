@@ -8,6 +8,7 @@
 package store
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"log/syslog"
@@ -101,6 +102,8 @@ func (o *openedFiles) open(name string) (*DS, error) {
 	}
 
 	o.RUnlock()
+
+	o.Lock()
 	db, err := kv.Open(name, options())
 	if err != nil {
 		return nil, err
@@ -114,7 +117,6 @@ func (o *openedFiles) open(name string) (*DS, error) {
 		}),
 	}
 
-	o.Lock()
 	o.files[name] = DS
 	o.Unlock()
 	return DS, nil
@@ -144,33 +146,21 @@ func (o *openedFiles) drop(name string) error {
 	if ok {
 		delete(o.files, name)
 		wal = db.WALName()
+
 		err := db.Close()
 		if err != nil {
 			return err
 		}
 
-	} else {
-		//file hasn't been opened yet in this session
-		// open it to get the wal file, then close and delete
-		db, err := kv.Open(name, options())
-		if err != nil {
-			return err
-		}
-		wal = db.WALName()
-		err = db.Close()
-		if err != nil {
-			return err
-		}
-
-	}
-
-	if _, ferr := os.Stat(wal); ferr == nil {
-		//clean up wal file
-		err := os.Remove(wal)
-		if err != nil {
-			return err
+		if _, ferr := os.Stat(wal); ferr == nil {
+			//clean up wal file
+			err := os.Remove(wal)
+			if err != nil {
+				return err
+			}
 		}
 	}
+	// if db isn't open, then just remove the file
 	return os.Remove(name)
 }
 
@@ -189,6 +179,7 @@ func (d *DS) Get(key []byte) ([]byte, error) {
 		return nil, err
 	}
 	result, err := d.DB.Get(nil, key)
+
 	return result, err
 }
 
@@ -214,6 +205,10 @@ func (d *DS) Put(key, value []byte) error {
 	err := d.reset()
 	if err != nil {
 		return err
+	}
+
+	if Compare(key, []byte("99")) == 0 {
+		fmt.Printf("Put key: %s\n", key)
 	}
 
 	return d.DB.Set(key, value)
@@ -284,23 +279,35 @@ func (i *KvIterator) Next() bool {
 
 	if i.reverse {
 		key, value, err = i.Enumerator.Prev()
+
 		if err == io.EOF {
 			return false
 		}
 		if naturalCompare(key, i.to) == -1 {
 			return false
 		}
+
 	} else {
 		key, value, err = i.Enumerator.Next()
+		if Compare(key, []byte("99")) == 0 || Compare(key, []byte("98")) == 0 {
+			//TODO:  Value PUT, but not retrieved
+			fmt.Printf("Get key: %s\n", key)
+		}
+
 		if err == io.EOF {
 			return false
 		}
 
 		if i.to != nil && naturalCompare(key, i.to) == 1 {
+			fmt.Printf("compare key1: %s, key2: %s \n", key, i.to)
+			//TODO: WTF?  To is i.to is getting manipulated
 			return false
 		}
 	}
-
+	if Compare(key, []byte("99")) == 0 || Compare(key, []byte("98")) == 0 {
+		//TODO:  Value PUT, but not retrieved
+		fmt.Printf("After Get key: %s\n", key)
+	}
 	i.key = key
 	i.value = value
 	i.err = err

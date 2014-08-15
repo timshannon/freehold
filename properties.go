@@ -34,11 +34,9 @@ func resPathFromProperty(propertyPath string) string {
 }
 
 //TODO: Encryption
-// PGP with sane defaults
-// Settings will allow you to change default hash, cypher, compression, etc
-// Store encryption settings with file?
+// AES?
 
-//TODO: Store upload date?
+//TODO: Store upload date?  And Modified date?
 func propertiesGet(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
 	if errHandled(err, w) {
