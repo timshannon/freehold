@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"bitbucket.org/tshannon/freehold/data"
+	"bitbucket.org/tshannon/freehold/data/store"
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/setting"
 )
@@ -59,6 +60,7 @@ func NewEntry(Type string, entry string) {
 }
 
 func Get(iter *Iter) ([]*Log, error) {
+	//FIXME:
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return nil, err
@@ -73,9 +75,32 @@ func Get(iter *Iter) ([]*Log, error) {
 
 	if iter.From != nil {
 		from = []byte(*iter.From)
+	} else {
+		from, err = ds.Min()
+		if err != nil {
+			return nil, err
+		}
 	}
 	if iter.To != nil {
 		to = []byte(*iter.To)
+	} else {
+		to, err = ds.Max()
+		if err != nil {
+			return nil, err
+		}
+
+	}
+
+	if iter.Order != "" {
+		if iter.Order != "asc" && iter.Order != "dsc" {
+			return nil, fail.New("Invalid Order specified", iter)
+		}
+		//Flip from and to if order is specified.  If order isn't specified, then iteration direction
+		// is implied
+		if (iter.Order == "dsc" && store.Compare(from, to) != 1) ||
+			(iter.Order == "asc" && store.Compare(to, from) == -1) {
+			from, to = to, from
+		}
 	}
 
 	i, err := ds.Iter(from, to)
@@ -120,18 +145,7 @@ func Get(iter *Iter) ([]*Log, error) {
 		limit++
 	}
 
-	if iter.Order == "dsc" {
-		reverse(result)
-	}
-
 	return result, nil
-
-}
-
-func reverse(records []*Log) {
-	for i, j := 0, len(records)-1; i < j; i, j = i+1, j-1 {
-		records[i], records[j] = records[j], records[i]
-	}
 }
 
 // Error logs and error to the core log datastore.  For core code the rule for error logging

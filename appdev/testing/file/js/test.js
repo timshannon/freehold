@@ -724,3 +724,19 @@ QUnit.asyncTest("Iterate through reverse order non-string keys with limit", func
         });
 
 });
+
+
+QUnit.module("Logs", {});
+
+QUnit.asyncTest("Log", function(assert) {
+    expect(1);
+
+    fh.logs({})
+        .always(function(result) {
+            assert.ok(
+                (result.status == "success")
+            );
+            QUnit.start();
+        });
+
+});

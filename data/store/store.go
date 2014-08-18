@@ -8,7 +8,6 @@
 package store
 
 import (
-	"fmt"
 	"io"
 	"log"
 	"log/syslog"
@@ -207,10 +206,6 @@ func (d *DS) Put(key, value []byte) error {
 		return err
 	}
 
-	if Compare(key, []byte("99")) == 0 {
-		fmt.Printf("Put key: %s\n", key)
-	}
-
 	return d.DB.Set(key, value)
 }
 
@@ -289,24 +284,14 @@ func (i *KvIterator) Next() bool {
 
 	} else {
 		key, value, err = i.Enumerator.Next()
-		if Compare(key, []byte("99")) == 0 || Compare(key, []byte("98")) == 0 {
-			//TODO:  Value PUT, but not retrieved
-			fmt.Printf("Get key: %s\n", key)
-		}
-
 		if err == io.EOF {
 			return false
 		}
 
 		if i.to != nil && naturalCompare(key, i.to) == 1 {
-			fmt.Printf("compare key1: %s, key2: %s \n", key, i.to)
-			//TODO: WTF?  To is i.to is getting manipulated
 			return false
 		}
-	}
-	if Compare(key, []byte("99")) == 0 || Compare(key, []byte("98")) == 0 {
-		//TODO:  Value PUT, but not retrieved
-		fmt.Printf("After Get key: %s\n", key)
+
 	}
 	i.key = key
 	i.value = value

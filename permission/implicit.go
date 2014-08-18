@@ -139,3 +139,9 @@ func DatastoreDrop(base *Permission) *Permission {
 func DatastoreNewDefault(owner string) *Permission {
 	return FileNewDefault(owner)
 }
+
+func Log() *Permission {
+	return &Permission{
+		admin: Read,
+	}
+}

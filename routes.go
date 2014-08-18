@@ -89,6 +89,10 @@ func setupRoutes() {
 		delete: tokenDelete,
 	})
 
+	rootHandler.Handle("/v1/log/", &methodHandler{
+		get: logGet,
+	})
+
 	//apps
 	appHandler = treemux.NewServeMux()
 	rootHandler.SetChild(appHandler)
