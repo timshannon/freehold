@@ -289,7 +289,7 @@ window.fh = (function() {
                     }),
                 });
             };
-			this.min = function() {
+            this.min = function() {
                 return stdAjax("GET", this.path, {
                     data: JSON.stringify({
                         min: {}
@@ -319,7 +319,6 @@ window.fh = (function() {
 
             };
 
-
             this.drop = function() {
                 return stdAjax("DELETE", this.path);
             };
@@ -330,6 +329,13 @@ window.fh = (function() {
                     }),
                 });
             };
+        },
+        logs: function(iter) {
+            return stdAjax("GET", "/v1/log/", {
+                data: JSON.stringify({
+                    iter: iter
+                }),
+            });
         },
         Ractive: fhRactive(),
     };
