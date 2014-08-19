@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path"
 	"strings"
@@ -143,4 +144,14 @@ func clearEmptyFolder(folder string) error {
 		os.Remove(file.Name())
 	}
 	return nil
+}
+
+//ipAddress returns the actual ip address from the request
+func ipAddress(r *http.Request) string {
+	address := r.RemoteAddr
+	index := strings.LastIndex(address, ":")
+	if index == -1 {
+		return address
+	}
+	return address[:index]
 }

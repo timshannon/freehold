@@ -56,6 +56,8 @@ func sessionPost(w http.ResponseWriter, r *http.Request) {
 	if errHandled(err, w) {
 		return
 	}
+
+	baseSession.IpAddress = ipAddress(r)
 	ses, err := session.New(auth.User, baseSession)
 	if errHandled(err, w) {
 		return
