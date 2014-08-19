@@ -60,7 +60,6 @@ func NewEntry(Type string, entry string) {
 }
 
 func Get(iter *Iter) ([]*Log, error) {
-	//FIXME:
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return nil, err

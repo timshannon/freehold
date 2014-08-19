@@ -136,6 +136,12 @@ func DatastoreDrop(base *Permission) *Permission {
 	return &prm
 }
 
+func DatastoreDownload(base *Permission) *Permission {
+	prm := *base
+	prm.Public = ""
+	return &prm
+}
+
 func DatastoreNewDefault(owner string) *Permission {
 	return FileNewDefault(owner)
 }

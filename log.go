@@ -11,6 +11,10 @@ import (
 	"bitbucket.org/tshannon/freehold/permission"
 )
 
+type LogInput struct {
+	Iter *log.Iter `json:"iter,omitempty"`
+}
+
 func logGet(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
 	if errHandled(err, w) {
@@ -24,14 +28,18 @@ func logGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	input := &log.Iter{}
+	input := &LogInput{}
 
 	err = parseJson(r, input)
 	if errHandled(err, w) {
 		return
 	}
 
-	logs, err := log.Get(input)
+	if input.Iter == nil {
+		input.Iter = &log.Iter{}
+	}
+
+	logs, err := log.Get(input.Iter)
 
 	if errHandled(err, w) {
 		return
@@ -41,4 +49,6 @@ func logGet(w http.ResponseWriter, r *http.Request) {
 		Status: statusSuccess,
 		Data:   logs,
 	})
+	return
+
 }
