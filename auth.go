@@ -13,7 +13,9 @@ import (
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/log"
 	"bitbucket.org/tshannon/freehold/permission"
+	"bitbucket.org/tshannon/freehold/ratelimit"
 	"bitbucket.org/tshannon/freehold/session"
+	"bitbucket.org/tshannon/freehold/setting"
 	"bitbucket.org/tshannon/freehold/token"
 	"bitbucket.org/tshannon/freehold/user"
 )
@@ -23,6 +25,11 @@ const (
 	authTypeBasic   = "basic"
 	authTypeSession = "session"
 	authTypeToken   = "token"
+)
+
+const (
+	publicWriteLimitType = "publicWriteLimit"
+	authRateLimitType    = "authentication"
 )
 
 type Auth struct {
@@ -40,8 +47,14 @@ func authenticate(w http.ResponseWriter, r *http.Request) (*Auth, error) {
 	a := &Auth{
 		AuthType: authTypeNone,
 	}
+
 	headerInfo := r.Header.Get("Authorization")
 	if headerInfo != "" {
+		err := ratelimit.AttemptRequest(ipAddress(r), authRateLimitType, setting.Float("LogonAttemptRateLimit"))
+		if err != nil {
+			return nil, err
+		}
+
 		authInfo := strings.TrimPrefix(headerInfo, "Basic ")
 		if len(authInfo) == len(headerInfo) {
 			return nil, fail.New("Error, malformed basic auth header.", nil)
@@ -61,7 +74,7 @@ func authenticate(w http.ResponseWriter, r *http.Request) (*Auth, error) {
 
 		if u == "" {
 			//public access
-			return a, nil
+			return a, a.attemptWrite(r)
 		}
 
 		user, err := user.Get(u)
@@ -104,7 +117,7 @@ func authenticate(w http.ResponseWriter, r *http.Request) (*Auth, error) {
 	if ses == nil {
 		//No session cookie
 		// public access
-		return a, nil
+		return a, a.attemptWrite(r)
 	}
 
 	if ses.IsExpired() {
@@ -138,6 +151,17 @@ func (a *Auth) canWrite(prm *permission.Permission) bool {
 	}
 	a.Token.SetPermission(prm)
 	return prm.CanWrite(a.User)
+}
+
+func (a *Auth) attemptWrite(r *http.Request) error {
+	if r.Method == "GET" {
+		return nil
+	}
+	if a.User != nil {
+		return nil
+	}
+
+	return ratelimit.AttemptRequest(ipAddress(r), publicWriteLimitType, setting.Float("PublicWriteRateLimit"))
 }
 
 func authGet(w http.ResponseWriter, r *http.Request) {

@@ -35,8 +35,9 @@ func resPathFromProperty(propertyPath string) string {
 
 //TODO: Encryption
 // AES?
-
+//TODO: Individual datastore Write rate limits
 //TODO: Store upload date?  And Modified date?
+
 func propertiesGet(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
 	if errHandled(err, w) {

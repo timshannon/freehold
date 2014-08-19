@@ -230,7 +230,6 @@ func (u *User) Login(password string) error {
 		return loginFailure(u)
 	}
 
-	//TODO: Rate limit login attempts? Or rate limit all public requests?
 	if len(password) < setting.Int("MinPasswordLength") {
 		return loginFailure(u)
 	}
@@ -264,6 +263,7 @@ func loginFailure(u *User) error {
 	if setting.Bool("LogFailedAuth") {
 		log.NewEntry(authLogType, "User "+u.username+" has failed a login attempt.")
 	}
+
 	u.clearPassword()
 	return fail.NewFromErr(FailLogon, u.username)
 
