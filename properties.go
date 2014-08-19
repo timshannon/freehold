@@ -19,6 +19,7 @@ type Properties struct {
 	Url         string                 `json:"url,omitempty"`
 	Permissions *permission.Permission `json:"permissions,omitempty"`
 	Size        int64                  `json:"size,omitempty"`
+	WriteLimit  float64                `json:"writeLimit,omitempty"`
 }
 
 func resPathFromProperty(propertyPath string) string {

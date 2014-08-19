@@ -506,6 +506,8 @@ Properties mirrors the same paths as /v1/file/ or /v1/datastore/ but instead sho
 
 If a user has permissions to the /v1/file/ or /v1/datastore/ it has permissions to the /v1/properties/ path as well.  However PUTting permissions requires Private/owner permissions.  Reading permissions requires read access, but permissions requests are not allowed for public access.
 
+A file or datastore can have a specific *WriteLimit* which is a rate on the number of writes that can be made per minute. The write limit on a particular file or datastore is different than the global *PublicWriteLimit* in that the limit applies to everyone, not just public.  The global limits override any specific file write limits.
+
 TODO: Encryption. Requires key passed in header
 
 **GET** - Get Info on a given file; permissions, size in bytes, etc.
@@ -519,6 +521,8 @@ Response (200):
 		name: "spreadsheet1.ods",
 		url: "/v1/file/important-stuff/spreadsheet1.ods"
 		size: 1048579,
+		uploadDate: "2014-04-23T18:25:43.511Z"
+		modifiedDate: "2014-04-23T18:25:43.511Z"
 		permissions: {
 			owner: "tshannon",
 			public: "",
@@ -643,6 +647,30 @@ Response (200):
 }
 
 ```
+
+*Set Write Limit for a datastore*
+```
+PUT "/v1/properties/datastore/comments.ds"
+
+{
+	permissions: {
+		owner: "tshannon",
+		public: "rw",
+		friend: "rw"
+	},
+	writeLimit: 5
+}
+
+Response (200):
+{
+	status: "success",
+	data: {
+		url: "/v1/datastore/passwords.ds",
+	}
+}
+
+```
+
 
 
 * * *
