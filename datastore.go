@@ -161,6 +161,10 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 	} else {
 		//return entire file
 
+		if !auth.canRead(permission.DatastoreDownload(prm)) {
+			four04(w, r)
+			return
+		}
 		data.Close(filename)
 		dsFile, err := os.Open(filename)
 		if errHandled(err, w) {

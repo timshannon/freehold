@@ -726,15 +726,42 @@ QUnit.asyncTest("Iterate through reverse order non-string keys with limit", func
 });
 
 
-QUnit.module("Logs", {});
+QUnit.module("Logs", {}); // There should be at least on log entry for the firstadmin
 
 QUnit.asyncTest("Log", function(assert) {
     expect(1);
 
-    fh.logs({})
+    fh.logs({
+            limit: 1
+        })
         .always(function(result) {
             assert.ok(
-                (result.status == "success")
+                (result.status == "success") &&
+                (result.data.length == 1)
+            );
+            QUnit.start();
+        });
+
+});
+
+QUnit.asyncTest("Log Type", function(assert) {
+    expect(1);
+
+    fh.logs({
+            type: "authentication"
+        })
+        .always(function(result) {
+            var notAuth;
+
+            for (var i = 0; i < result.data.length; i++) {
+                if (result.data[i].type != "authentication") {
+                    notAuth = true;
+                    break;
+                }
+            }
+            assert.ok(
+                (result.status == "success") &&
+                (!notAuth)
             );
             QUnit.start();
         });
