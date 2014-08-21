@@ -94,18 +94,14 @@ QUnit.asyncTest("Get Properties", function(assert) {
 
     fh.properties.get("/testing/v1/file/testdata/testfile.xml")
         .always(function(result) {
-            assert.deepEqual(result, {
-                "data": {
-                    "name": "testfile.xml",
-                    permissions: {
-                        owner: fh.auth().user,
-                        private: "rw",
-                    },
-                    "size": 42,
-                    "url": "/testing/v1/file/testdata/testfile.xml"
-                },
-                "status": "success"
-            });
+            assert.ok(
+				(result.status == "success") &&
+				(result.data.name =="testfile.xml") && 
+				(result.data.permissions.owner == fh.auth().user) &&
+				(result.data.permissions.private == "rw") &&
+				(result.data.size == 42) &&
+                 (result.data.url ="/testing/v1/file/testdata/testfile.xml")
+            );
             QUnit.start();
         });
 
