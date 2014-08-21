@@ -132,6 +132,13 @@ func fileExists(filename string) bool {
 	return false
 }
 
+func isDir(filename string) bool {
+	if stat, err := os.Stat(filename); err == nil {
+		return stat.IsDir()
+	}
+	return false
+}
+
 func clearEmptyFolder(folder string) error {
 	file, err := os.Open(folder)
 	defer file.Close()

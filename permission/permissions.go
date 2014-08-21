@@ -85,6 +85,20 @@ func Delete(filename string) error {
 	return nil
 }
 
+func Move(from, to string) error {
+	prm, err := Get(from)
+	if err != nil {
+		return err
+	}
+
+	err = Delete(from)
+	if err != nil {
+		return err
+	}
+
+	return Set(to, prm)
+}
+
 func (p *Permission) validate() error {
 	strings.ToLower(p.Private)
 	strings.ToLower(p.Friend)
