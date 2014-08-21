@@ -53,7 +53,7 @@ func FileNewDefault(owner string) *Permission {
 }
 
 //Only owners can update properties.
-// Public can't view any properites
+// Public can't view any properties
 // authenticated users who have read rights can read properties
 func Properties(base *Permission) *Permission {
 	prm := *base

@@ -203,6 +203,25 @@ Response (201):
 }
 ```
 
+**PUT** - Move or rename a previously uploaded file.  You must be the owner.
+```
+PUT "/v1/file/wrong-dir/oldname.txt"
+{
+	move: "/v1/file/new-dir/newname.txt"
+}
+
+
+Response (201):
+{
+	status: "success",
+	data: {
+		url: "/v1/file/new-directory/profile.jpg"
+	}
+}
+```
+
+
+
 **DELETE** - If the last file in a given folder is deleted, the folder is also deleted. Can only be done by file owners.
 
 *Delete a single file*

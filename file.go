@@ -20,6 +20,7 @@ import (
 
 	"bitbucket.org/tshannon/freehold/app"
 	"bitbucket.org/tshannon/freehold/fail"
+	"bitbucket.org/tshannon/freehold/fileinfo"
 	"bitbucket.org/tshannon/freehold/log"
 	"bitbucket.org/tshannon/freehold/permission"
 	"bitbucket.org/tshannon/freehold/setting"
@@ -73,6 +74,7 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 	mp := r.MultipartForm
 	uploadFile(w, r.URL.Path, auth.User, mp)
 }
+
 func uploadFile(w http.ResponseWriter, resourcePath string, owner *user.User, mp *multipart.Form) {
 	var fileList []Properties
 	var failures []error
@@ -115,6 +117,14 @@ func uploadFile(w http.ResponseWriter, resourcePath string, owner *user.User, mp
 				continue
 			}
 
+			err = fileinfo.SetUpload(filename, time.Now())
+			if err != nil {
+				failures = append(failures, fail.NewFromErr(err, resource))
+				status = statusFail
+
+				continue
+			}
+
 			fileList = append(fileList, Properties{
 				Name: filepath.Base(filename),
 				Url:  resource,
@@ -132,19 +142,48 @@ func uploadFile(w http.ResponseWriter, resourcePath string, owner *user.User, mp
 	})
 }
 
+type FileInput struct {
+	Move string `json:"move,omitempty"`
+}
+
 func filePut(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
 	if errHandled(err, w) {
 		return
 	}
-
-	err = r.ParseMultipartForm(setting.Int64("MaxUploadMemory"))
-	if errHandled(err, w) {
+	if !validFilePath(r.URL.Path) {
+		errHandled(fail.New("Invalid path for file update.", r.URL.Path), w)
 		return
 	}
 
-	if !validFilePath(r.URL.Path) {
-		errHandled(fail.New("Invalid path for file update.", r.URL.Path), w)
+	if !r.Header.Get("Content-Type") == "multipart/form-data" {
+		input := &FileInput{}
+		err = parseJson(r, input)
+		if errHandled(err, w) {
+			return
+		}
+		if input.Move == "" {
+			return fail.New("Invalid file PUT call", r.URL.Path)
+		}
+		err = moveFile(urlPathToFile(r.URL.Path), input.Move)
+		if os.IsNotExist(err) {
+			four04Page(w, r)
+			return
+		}
+		if errHandled(err, w) {
+			return
+		}
+
+		respondJsend(w, &JSend{
+			Status: statusSuccess,
+			Data:   r.URL,
+		})
+		return
+
+	}
+
+	err = r.ParseMultipartForm(setting.Int64("MaxUploadMemory"))
+	if errHandled(err, w) {
 		return
 	}
 
@@ -196,6 +235,14 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 			}
 
 			err = writeFile(file, filename, true)
+			if err != nil {
+				failures = append(failures, fail.NewFromErr(err, resource))
+				status = statusFail
+
+				continue
+			}
+
+			err = fileinfo.SetModified(filename, time.Now())
 			if err != nil {
 				failures = append(failures, fail.NewFromErr(err, resource))
 				status = statusFail
@@ -556,4 +603,12 @@ func validFilePath(url string) bool {
 		return false
 	}
 	return true
+}
+
+func moveFile(from, to string) error {
+	file, err := os.Open(from)
+	defer file.Close()
+
+	//move permissions and fileinfo
+
 }
