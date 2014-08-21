@@ -20,7 +20,6 @@ import (
 
 	"bitbucket.org/tshannon/freehold/app"
 	"bitbucket.org/tshannon/freehold/fail"
-	"bitbucket.org/tshannon/freehold/fileinfo"
 	"bitbucket.org/tshannon/freehold/log"
 	"bitbucket.org/tshannon/freehold/permission"
 	"bitbucket.org/tshannon/freehold/setting"
@@ -62,7 +61,7 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !validFilePath(r.URL.Path) {
+	if !validFileUrl(r.URL.Path) {
 		errHandled(fail.New("Invalid path for file upload.", r.URL.Path), w)
 		return
 	}
@@ -117,14 +116,6 @@ func uploadFile(w http.ResponseWriter, resourcePath string, owner *user.User, mp
 				continue
 			}
 
-			err = fileinfo.SetUpload(filename, time.Now())
-			if err != nil {
-				failures = append(failures, fail.NewFromErr(err, resource))
-				status = statusFail
-
-				continue
-			}
-
 			fileList = append(fileList, Properties{
 				Name: filepath.Base(filename),
 				Url:  resource,
@@ -151,32 +142,59 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 	if errHandled(err, w) {
 		return
 	}
-	if !validFilePath(r.URL.Path) {
+	if !validFileUrl(r.URL.Path) {
 		errHandled(fail.New("Invalid path for file update.", r.URL.Path), w)
 		return
 	}
 
-	if !r.Header.Get("Content-Type") == "multipart/form-data" {
+	if !strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
 		input := &FileInput{}
 		err = parseJson(r, input)
 		if errHandled(err, w) {
 			return
 		}
 		if input.Move == "" {
-			return fail.New("Invalid file PUT call", r.URL.Path)
-		}
-		err = moveFile(urlPathToFile(r.URL.Path), input.Move)
-		if os.IsNotExist(err) {
-			four04Page(w, r)
+			errHandled(fail.New("Invalid file PUT call", r.URL.Path), w)
 			return
 		}
+
+		filename := urlPathToFile(r.URL.Path)
+		destFile := urlPathToFile(input.Move)
+		if !fileExists(filename) {
+			four04(w, r)
+			return
+
+		}
+		if !validFileUrl(input.Move) {
+			errHandled(fail.New("Invalid destination for file move.", r.URL.Path), w)
+			return
+
+		}
+
+		if isDir(filename) {
+			errHandled(fail.New("Invalid path for file move.", r.URL.Path), w)
+			return
+		}
+		if fileExists(destFile) {
+			errHandled(fail.New("Destination file already exists", input), w)
+			return
+		}
+
+		err = moveFile(filename, destFile)
+
 		if errHandled(err, w) {
+			return
+		}
+		if errHandled(clearEmptyFolder(filepath.Dir(filename)), w) {
 			return
 		}
 
 		respondJsend(w, &JSend{
 			Status: statusSuccess,
-			Data:   r.URL,
+			Data: Properties{
+				Name: filepath.Base(destFile),
+				Url:  input.Move,
+			},
 		})
 		return
 
@@ -235,14 +253,6 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 			}
 
 			err = writeFile(file, filename, true)
-			if err != nil {
-				failures = append(failures, fail.NewFromErr(err, resource))
-				status = statusFail
-
-				continue
-			}
-
-			err = fileinfo.SetModified(filename, time.Now())
 			if err != nil {
 				failures = append(failures, fail.NewFromErr(err, resource))
 				status = statusFail
@@ -582,7 +592,7 @@ func writeFile(reader io.Reader, filename string, overwrite bool) error {
 	return nil
 }
 
-func validFilePath(url string) bool {
+func validFileUrl(url string) bool {
 	if isDocPath(url) {
 		return false
 	}
@@ -606,9 +616,10 @@ func validFilePath(url string) bool {
 }
 
 func moveFile(from, to string) error {
-	file, err := os.Open(from)
-	defer file.Close()
-
-	//move permissions and fileinfo
-
+	//move permissions
+	err := permission.Move(from, to)
+	if err != nil {
+		return err
+	}
+	return os.Rename(from, to)
 }

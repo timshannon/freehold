@@ -61,6 +61,45 @@ QUnit.asyncTest("Update File", function(assert) {
         });
 });
 
+QUnit.asyncTest("Move File", function(assert) {
+    expect(5);
+
+    fh.file.move("/testing/v1/file/testdata/testfile.xml", "/testing/v1/file/testdata/renamed.xml")
+        .always(function(result) {
+            assert.deepEqual(result, {
+                status: "success",
+                data: {
+                    name: "renamed.xml",
+                    url: "/testing/v1/file/testdata/renamed.xml"
+                }
+            });
+            fh.properties.get("/testing/v1/file/testdata/renamed.xml")
+                .always(function(result) {
+                    assert.ok(
+                        (result.status == "success") &&
+                        (result.data.name == "renamed.xml") &&
+                        (result.data.permissions.owner == fh.auth().user) &&
+                        (result.data.permissions.private == "rw") &&
+                        (result.data.size == 42) &&
+                        (result.data.url = "/testing/v1/file/testdata/renamed.xml")
+                    );
+                    //move file back so it can be clead up after the test
+                    fh.file.move("/testing/v1/file/testdata/renamed.xml", "/testing/v1/file/testdata/testfile.xml")
+                        .always(function(result) {
+                            assert.deepEqual(result, {
+                                status: "success",
+                                data: {
+                                    name: "testfile.xml",
+                                    url: "/testing/v1/file/testdata/testfile.xml"
+                                }
+                            });
+                            QUnit.start();
+                        });
+                });
+        });
+});
+
+
 QUnit.asyncTest("Set Permissions", function(assert) {
     expect(3);
 
@@ -95,12 +134,12 @@ QUnit.asyncTest("Get Properties", function(assert) {
     fh.properties.get("/testing/v1/file/testdata/testfile.xml")
         .always(function(result) {
             assert.ok(
-				(result.status == "success") &&
-				(result.data.name =="testfile.xml") && 
-				(result.data.permissions.owner == fh.auth().user) &&
-				(result.data.permissions.private == "rw") &&
-				(result.data.size == 42) &&
-                 (result.data.url ="/testing/v1/file/testdata/testfile.xml")
+                (result.status == "success") &&
+                (result.data.name == "testfile.xml") &&
+                (result.data.permissions.owner == fh.auth().user) &&
+                (result.data.permissions.private == "rw") &&
+                (result.data.size == 42) &&
+                (result.data.url = "/testing/v1/file/testdata/testfile.xml")
             );
             QUnit.start();
         });

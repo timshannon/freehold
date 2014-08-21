@@ -8,6 +8,7 @@ import (
 	"flag"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
 
 	"bitbucket.org/tshannon/config"
@@ -34,6 +35,7 @@ func init() {
 		"admin option.")
 }
 
+//TODO: datadir setting, specifies where to store Freehold data
 func main() {
 	flag.Parse()
 
@@ -46,6 +48,16 @@ func main() {
 	port := cfg.String("port", "")
 	certFile := cfg.String("certificateFile", "")
 	keyFile := cfg.String("keyFile", "")
+	dataDir := cfg.String("dataDir", "./")
+
+	cwd, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	if err != nil {
+		halt("Error getting current working directory " + err.Error())
+	}
+
+	if fileExists(dataDir) && isDir(dataDir) {
+		os.Chdir(dataDir)
+	}
 
 	firstRun = !fileExists(user.DS)
 
@@ -95,6 +107,13 @@ func main() {
 		if port == "" {
 			port = "443"
 		}
+		if !filepath.IsAbs(keyFile) {
+			keyFile = filepath.Join(cwd, keyFile)
+		}
+		if !filepath.IsAbs(certFile) {
+			certFile = filepath.Join(cwd, certFile)
+		}
+
 		isSSL = true
 		//SSL added and removed here :-)
 		err = http.ListenAndServeTLS(address+":"+port, certFile, keyFile, rootHandler)

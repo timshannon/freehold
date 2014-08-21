@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strings"
 	"time"
 
 	"bitbucket.org/tshannon/freehold/app"
@@ -193,7 +194,7 @@ func datastorePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.Header.Get("Content-Type") == "multipart/form-data" {
+	if strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
 		err = r.ParseMultipartForm(setting.Int64("MaxUploadMemory"))
 		if errHandled(err, w) {
 			return

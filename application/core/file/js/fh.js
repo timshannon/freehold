@@ -80,7 +80,11 @@ window.fh = (function() {
                     contentType: false
                 });
             },
-
+            move: function(from, to) {
+return stdAjax("PUT", from, {
+                    data: JSON.stringify({move: to}),
+                });
+            },
             delete: function(fileurl) {
                 return stdAjax("DELETE", fileurl);
             }

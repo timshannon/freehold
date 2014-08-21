@@ -9,9 +9,9 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"time"
 
 	"bitbucket.org/tshannon/freehold/fail"
-	"bitbucket.org/tshannon/freehold/fileinfo"
 	"bitbucket.org/tshannon/freehold/permission"
 )
 
@@ -20,7 +20,7 @@ type Properties struct {
 	Url         string                 `json:"url,omitempty"`
 	Permissions *permission.Permission `json:"permissions,omitempty"`
 	Size        int64                  `json:"size,omitempty"`
-	*fileinfo.FileInfo
+	Modified    string                 `json:"modified,omitempty"`
 }
 
 func resPathFromProperty(propertyPath string) string {
@@ -74,14 +74,8 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		fInfo, err := fileinfo.Get(filename)
-		if errHandled(err, w) {
-			return
-		}
-
 		if !auth.canRead(propPrm) {
 			prm = nil
-			fInfo = nil
 		}
 
 		respondJsend(w, &JSend{
@@ -91,7 +85,7 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 				Permissions: prm,
 				Url:         resource,
 				Size:        info.Size(),
-				FileInfo:    fInfo,
+				Modified:    info.ModTime().Format(time.RFC3339),
 			},
 		})
 		return
@@ -106,8 +100,8 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 
 	for i := range files {
 		var size int64
+		var modTime string
 		var filePrm *permission.Permission
-		var fInfo *fileinfo.FileInfo
 		if files[i].IsDir() {
 			if auth.User == nil {
 				//Public can't view the existence of directories
@@ -115,6 +109,7 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 			}
 		} else {
 			size = files[i].Size()
+			modTime = files[i].ModTime().Format(time.RFC3339)
 			childName := path.Join(filename, files[i].Name())
 			prm, err := permission.Get(childName)
 			if errHandled(err, w) {
@@ -126,10 +121,6 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 			propPrm := permission.Properties(prm)
 			if auth.canRead(propPrm) {
 				filePrm = prm
-				fInfo, err = fileinfo.Get(childName)
-				if errHandled(err, w) {
-					return
-				}
 			}
 		}
 
@@ -138,7 +129,7 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 			Permissions: filePrm,
 			Url:         path.Join(resource, files[i].Name()),
 			Size:        size,
-			FileInfo:    fInfo,
+			Modified:    modTime,
 		})
 	}
 
