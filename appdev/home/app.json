@@ -2,8 +2,8 @@
 	"id": "home",
 	"name": "Home",
 	"version": "0.1",
-	"description": "Home Page that links to all installed applications.",
+	"description": "Home Page that links to all installed applications, and where applications can be managed.",
 	"author": "Tim Shannon - shannon.timothy@gmail.com",
 	"root": "/v1/file/index.html",
-	"icon": ""
+	"icon": "/home/v1/file/glyphicons_020_home.png"
 }

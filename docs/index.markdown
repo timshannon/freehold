@@ -1262,7 +1262,7 @@ The application zip file must have a file called app.json in the following forma
 	"description": "Application for managing datastore files.",
 	"author": "Tim Shannon - shannon.timothy@gmail.com",
 	"root": "v1/file/index.html",
-	"icon": "v1/file/images/ds-icon.png"
+	"icon": "/datastore-manager/v1/file/images/ds-icon.png"
 }
 ```
 * id - Path on which the application will be installed (`https://host/<app-id>/`). Must not match any existing installed
@@ -1273,9 +1273,6 @@ applications, or any paths used by the freehold instance (i.e. /v1 /v2, etc).
 * author - Who wrote the application
 * root - File to which users will be redirected to when accessing the apps root path: `https://host/<app-id>`
 * icon - Image file usually used in the home app for displaying in the link to a given application
-
-Paths to the root file and icon files are relative to the application, so 
-"v1/file/images/ds-icon.png" refers to `https://host/<app-id>/v1/file/images/ds-icon.png`.
 
 While not part of the server side installation, if you include an install.js file at the root of your application, the core home application will dynamically load that file and execute a function named *installApp*.  Usually this script will consist of any pre-setup permissions (as they will be defaulted to private upon install) or any other setup that can't be done by the normal install process (i.e getting a list of active users and creating personal datastores for them, etc).  
 
@@ -1312,7 +1309,7 @@ Response (200):
 			description: "Application for managing datastore files.",
 			author: "Tim Shannon - shannon.timothy@gmail.com",
 			root: "index.htm",
-			icon: "v1/file/images/ds-icon.png"
+			icon: "/datastore-manager/v1/file/images/ds-icon.png"
 		},
 		"home": {
 			name: "Home",
@@ -1320,7 +1317,7 @@ Response (200):
 			description: "Freehold Homepage",
 			author: "Tim Shannon - shannon.timothy@gmail.com",
 			root: "index.htm",
-			icon: "v1/file/images/home.png"
+			icon: "/home/v1/file/images/home.png"
 		}
 	}
 }
@@ -1342,7 +1339,7 @@ Response (200):
 			description: "Freehold Homepage",
 			author: "Tim Shannon - shannon.timothy@gmail.com",
 			root: "index.htm",
-			icon: "v1/file/images/home.png"
+			icon: "/home/v1/file/images/home.png"
 		}
 }
 ```
@@ -1361,7 +1358,7 @@ Response (200):
 			description: "Software for writing and publish a blog to the public",
 			author: "Tim Shannon - shannon.timothy@gmail.com",
 			root: "index.htm",
-			icon: "v1/file/images/blog.png",
+			icon: "/blog/v1/file/images/blog.png",
 			file: "blog.zip"
 		},
 		"gallery": {
@@ -1370,7 +1367,7 @@ Response (200):
 			description: "Application for showing image files in a gallery format",
 			author: "Tim Shannon - shannon.timothy@gmail.com",
 			root: "index.htm",
-			icon: "v1/file/images/gallery.png",
+			icon: "/gallery/v1/file/images/gallery.png",
 			file: "gallery.zip"
 		}
 	}
@@ -1398,7 +1395,7 @@ Response (201):
 			description: "Software for writing and publish a blog to the public",
 			author: "Tim Shannon - shannon.timothy@gmail.com",
 			root: "index.htm",
-			icon: "v1/file/images/blog.png"
+			icon: "/blog/v1/file/images/blog.png"
 	}
 }
 ```
@@ -1442,7 +1439,7 @@ Response (200):
 			description: "Software for writing and publish a blog to the public",
 			author: "Tim Shannon - shannon.timothy@gmail.com",
 			root: "index.htm",
-			icon: "v1/file/images/blog.png"
+			icon: "/blog/v1/file/images/blog.png"
 	}
 }
 ```
