@@ -5,6 +5,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 		<link href="/core/v1/file/css/bootstrap.min.css" rel="stylesheet" media="screen">
+		<link href="/home/v1/file/css/index.css" rel="stylesheet" media="screen">
 	</head>
 <body>
 <nav class="navbar navbar-default" role="navigation">
@@ -14,69 +15,13 @@
 	</div>
 </nav>
 
-<div id="modalHook"></div>
 
 <div class="container">
-<ul class="nav nav-tabs" role="tablist">
-	<li class="active"><a href="#installed" role="tab" data-toggle="tab">Installed</a>
-	</li>
-	<li><a href="#available" role="tab" data-toggle="tab">Available</a>
-	</li>
-</ul>
+	<div class="thumbnail app-tile">
+		<img class="app-icon img-responsive" src="home/v1/file/glyphicons_020_home.png">	
+		<h3><span class="app-id center-block label label-default">Home</span></h3>
+	</div>
 </div>
-
-<!--tabs-->
-<div class="tab-content">
-	<div class="tab-pane active" id="installed"></div>
-	<div class="tab-pane" id="available"></div>
-</div>
-
-<script id="tAppGrid" type="text/ractive">
-
-<div class="container">
-{{#data:i}}
-	{{#available}}
-		<p><a href="#" on-click="openModal">{{name}}</a>: {{description}}</p>
-	{{/available}}
-	{{^available}}
-		<p><a href="{{id}}">{{name}}</a>: {{description}}</p>
-	{{/available}}
-{{/data}}
-</div>
-</script>
-
-<script id="tAppModal" type="text/ractive">
-
-<div class="modal fade" id="appModal" tabindex="-1" role="dialog" aria-labelledby="Application" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span>
-					<span class="sr-only">Close</span></button>
-        <h4 class="modal-title">Application: {{name}}</h4>
-      </div>
-      <div class="modal-body">
-			{{#error}}
-			<div class="alert alert-danger alert-dismissible" role="alert">
-				<button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span>
-				<span class="sr-only">Close</span></button>
-				{{message}}
-			</div>
-			{{/error}}
-			{{name}}: {{description}}
-			<p><a href="#" on-click="install">{{action}}</a></p>
-			{{#(action != "install") && (id != "home")}}
-			<p><a href="#" on-click="uninstall">uninstall</a></p>
-			{{/}}
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-</script>
 
 <script src="/core/v1/file/js/jquery-2.1.1.min.js"></script>
 <script src="/core/v1/file/js/bootstrap.min.js"></script>

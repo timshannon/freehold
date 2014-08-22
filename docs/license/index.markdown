@@ -20,5 +20,5 @@ Attribution and Credits
 * [blackfriday](https://github.com/russross/blackfriday) - Russ Ross - (BSD) https://github.com/russross/blackfriday/blob/master/README.md
 * [jquery](https://jquery.org) - jQuery Foundation - (MIT) https://jquery.org/license/
 * [bootstrap](http://getbootstrap.com) - Twitter - (MIT) https://github.com/twbs/bootstrap/blob/master/LICENSE
-* [Glyphicons Halflings](http://glyphicons.com) -  Jan Kovarik - (MIT via bootstrap) - http://glyphicons.com/license
+* [Glyphicons](http://glyphicons.com) -  Jan Kovarik - (Creative Commons Attribution 3.0 Unported (CC BY 3.0)) - http://glyphicons.com/license
 * [Ractive.js](http://www.ractivejs.org) - Rich Harris and contributors - (MIT) https://github.com/ractivejs/ractive/blob/dev/LICENSE.md
