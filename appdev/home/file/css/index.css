@@ -1,6 +1,7 @@
 .app-tile {
 	width: 140px;
 	height: 140px;
+	margin-top: 10px;
 }
 
 .app-icon {

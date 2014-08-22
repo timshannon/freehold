@@ -32,9 +32,6 @@ window.fh = (function() {
                 });
     }
 
-
-    //init Ractive events and partials
-
     return {
         auth: function() {
             if (_auth) {
@@ -81,8 +78,10 @@ window.fh = (function() {
                 });
             },
             move: function(from, to) {
-return stdAjax("PUT", from, {
-                    data: JSON.stringify({move: to}),
+                return stdAjax("PUT", from, {
+                    data: JSON.stringify({
+                        move: to
+                    }),
                 });
             },
             delete: function(fileurl) {
@@ -340,20 +339,11 @@ return stdAjax("PUT", from, {
                     iter: iter
                 }),
             });
-        },
-        Ractive: fhRactive(),
+        }
     };
 
 
 
-    function fhRactive() {
-        //TODO: capture bootstrap events like modal, and alerts
-        // partials and components
-        if ("Ractive" in window) {
-            return Ractive.extend({});
-        }
-        return null;
-    }
 
     function propPath(fileurl) {
         var split = fileurl.split("/");

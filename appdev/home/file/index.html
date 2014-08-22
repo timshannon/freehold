@@ -15,14 +15,84 @@
 	</div>
 </nav>
 
+<div id="modalHook"></div>
 
-<div class="container">
-	<div class="thumbnail app-tile">
-		<img class="app-icon img-responsive" src="home/v1/file/glyphicons_020_home.png">	
-		<h3><span class="app-id center-block label label-default">Home</span></h3>
+<div id="appList" class="container">
+			
+</div><!--container-->
+
+<!--templates-->
+<script id="appTile" type="text/ractive">
+		<a href="{{id}}" class="thumbnail app-tile">
+		<img class="app-icon img-responsive" src="{{icon}}">	
+		<h3><span class="app-id center-block label label-default">{{name}}</span></h3>
+		</a>
+</script>
+
+<script id="tApps" type="text/ractive">
+	<div class="app-bar">
+		{{#admin}}
+		<button type="button" id="btnManage" on-click="openModal" class="btn btn-default pull-right">Manage</button>
+		{{/admin}}
+		<ul class="nav nav-tabs" role="tablist">
+			<li class="active"><a href="#starred" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-star"></span></a></li>
+			<li><a href="#all" role="tab" data-toggle="tab">All</a></li>
+		</ul>
+	</div>
+
+<!-- Tab panes -->
+<div class="tab-content">
+  <div class="tab-pane active" id="starred"></div>
+  <div class="tab-pane" id="all">
+		{{#apps:i}}
+			{{>appTile}}
+		{{/apps}}
 	</div>
 </div>
+	
+</script>
 
+<script id="tManageApps" type="text/ractive">
+<div class="modal fade" id="manageAppsModal" tabindex="-1" role="dialog" aria-labelledby="manageAppsLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title" id="manageAppsLabel">Manage Applications</h4>
+      </div>
+      <div class="modal-body">
+
+				<div class="list-group">
+				{{#apps:i}}
+					<div class="list-group-item clearfix">
+						<div class="btn-group-vertical pull-right">
+							{{#install}}
+							<button type="button" class="btn btn-success btn-xs btn-default"><span class="glyphicon glyphicon-plus"></span> Install</button>
+							{{/install}}
+							{{#upgrade}}
+							<button type="button" class="btn btn-info btn-xs btn-default"><span class="glyphicon glyphicon-refresh"></span> Upgrade</button>
+							{{/upgrade}}
+							{{#remove}}
+							<button type="button" class="btn btn-danger btn-xs btn-default"><span class="glyphicon glyphicon-remove"></span> Remove</button>
+							{{/remove}}
+						</div>	
+						<span class="list-group-item-text">
+						<b>{{name}}</b><br>
+						{{description}}
+						</span>
+					</div>
+				{{/apps}}
+				</div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+</script>
+<!--end templates-->
 <script src="/core/v1/file/js/jquery-2.1.1.min.js"></script>
 <script src="/core/v1/file/js/bootstrap.min.js"></script>
 <script src="/core/v1/file/js/ractive.min.js"></script>
