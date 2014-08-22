@@ -1,100 +1,80 @@
-$(document).ready(function() { 
-"use strict";
-$(".alert").alert();
-$("#logoutButton").click(function() {
-	fh.session.logout();
-	window.location = "/";
-});
+$(document).ready(function() {
+    "use strict";
+    $(".alert").alert();
 
-var modal = new Ractive({
-	el: "#modalHook",
-	template: "#tAppModal"
-});
+    $("#logoutButton").click(function() {
+        fh.session.logout();
+        window.location = "/";
+    });
 
-var installed = new Ractive({
-	el: "#installed",
-	template: "#tAppGrid"
-});
+    var rApps = new Ractive({
+        el: "#appList",
+        template: "#tApps",
+    });
 
-var available = new Ractive({
-	el: "#available",
-	template: "#tAppGrid"
-});
+    var rManage = new Ractive({
+        el: "#modalHook",
+        template: "#tManageApps"
+    });
+
+    updateApplications();
+
+    //Events
+    rApps.on({
+        openModal: function(event) {
+            updateManageList();
+            $("#manageAppsModal").modal();
+        }
+    });
+
+    //Functions
+    function updateApplications() {
+        fh.application.installed()
+            .done(function(result) {
+                rApps.set({
+                    apps: result.data,
+                    admin: fh.auth().admin
+                });
+            })
+            .fail(function(result) {
+                //TODO: nav bar based alert
+            });
+    }
+
+    function updateManageList() {
+        fh.application.available()
+            .done(function(result) {
+                var installed = rApps.get("apps");
+                var appList = result.data;
+
+                for (var id in installed) {
+                    if (installed.hasOwnProperty(id)) {
+						var app;
+                        if (appList[id]) {
+                            app = installed[id];
+                            app.remove = true;
+                            if (app.version != appList[id].version) {
+                                app.upgrade = true;
+                            }
+                            appList[id] = app;
+
+                        } else {
+                            app = installed[id];
+                            app.install = true;
+                            appList[id] = app;
+                        }
+                    }
+                }
+
+                rManage.set({
+                    apps: result.data,
+                });
+            })
+            .fail(function(result) {
+                //TODO: nav bar based alert
+            });
+    }
 
 
-fh.application.installed()
-.always(function(result) {
-	installed.set(result);
-});
-
-fh.application.available()
-.always(function(result) {
-	result.available = true;
-	available.set(result);
-});
-
-available.on({
-	openModal: function(event) {
-		var app = event.context;
-		var inApps = installed.data.data;
-
-		app.action = "install";
-		if (inApps[app.id]) {
-			app.action = "re-install";
-			if (app.version != inApps[app.id].version) {
-				app.action = "upgrade";
-			}
-		}
-		if (app.id == "home") {
-			app.action = null;
-		}
-
-		//open modal and set ractive data to the current app
-		modal.set(event.context);
-		$("#appModal").modal("show");
-	}
-});
-
-modal.on({
-	install: function(event) {
-		if ((event.context.action  == "re-install") || 
-			(event.context.action == "upgrade")) {
-			fh.application.upgrade(event.context.file)
-			.done(function(result) {
-				location.reload();
-			})
-			.fail(function(result) {
-				event.context.error = result.data;
-				modal.set(event.context);
-			});
-		} else {
-			//install
-			fh.application.install(event.context.file)
-			.done(function(result) {
-				location.reload();
-			})
-			.fail(function(result) {
-				event.context.error = result.data;
-				modal.set(event.context);
-			});
-		}
-	},
-	uninstall: function(event) {
-		fh.application.uninstall(event.context.id)
-		.done(function(result) {
-			location.reload();
-		})
-		.fail(function(result) {
-			event.context.error = result.data;
-			modal.set(event.context);
-
-		});
-
-	}
-});
 
 }); //end ready
-
-
-
-
