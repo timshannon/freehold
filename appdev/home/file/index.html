@@ -24,8 +24,15 @@
 <!--templates-->
 <script id="appTile" type="text/ractive">
 		<a href="{{id}}" class="thumbnail app-tile">
-		<img class="app-icon img-responsive" src="{{icon}}">	
-		<h3><span class="app-id center-block label label-default">{{name}}</span></h3>
+			{{#icon}}
+				<img class="app-icon img-responsive" src="{{icon}}">	
+			{{/icon}}
+			{{^icon}}
+				<img class="app-icon img-responsive" src="/home/v1/file/image/glyphicons_156_show_thumbnails.png">	
+			{{/icon}}
+			<div class="app-id">
+				<h3><span class="center-block label label-default">{{name}}</span></h3>
+			</div>
 		</a>
 </script>
 
@@ -35,7 +42,8 @@
 		<button type="button" id="btnManage" on-click="openModal" class="btn btn-default pull-right">Manage</button>
 		{{/admin}}
 		<ul class="nav nav-tabs" role="tablist">
-			<li class="active"><a href="#starred" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-star"></span></a></li>
+			<li class="active"><a href="#starred" role="tab" data-toggle="tab">
+			<span class="glyphicon glyphicon-star"></span></a></li>
 			<li><a href="#all" role="tab" data-toggle="tab">All</a></li>
 		</ul>
 	</div>
@@ -57,7 +65,8 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <button type="button" class="close" data-dismiss="modal">
+				<span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
         <h4 class="modal-title" id="manageAppsLabel">Manage Applications</h4>
       </div>
       <div class="modal-body">
@@ -66,14 +75,17 @@
 				{{#apps:i}}
 					<div class="list-group-item clearfix">
 						<div class="btn-group-vertical pull-right">
-							{{#install}}
-							<button type="button" class="btn btn-success btn-xs btn-default"><span class="glyphicon glyphicon-plus"></span> Install</button>
-							{{/install}}
+							{{^installed}}
+								<button type="button" on-click="install" class="btn btn-success btn-xs btn-default">
+								<span class="glyphicon glyphicon-plus"></span> Install</button>
+							{{/installed}}
 							{{#upgrade}}
-							<button type="button" class="btn btn-info btn-xs btn-default"><span class="glyphicon glyphicon-refresh"></span> Upgrade</button>
+								<button type="button" on-click="upgrade" class="btn btn-info btn-xs btn-default">
+								<span class="glyphicon glyphicon-refresh"></span> Upgrade</button>
 							{{/upgrade}}
 							{{#remove}}
-							<button type="button" class="btn btn-danger btn-xs btn-default"><span class="glyphicon glyphicon-remove"></span> Remove</button>
+								<button type="button" on-click="remove" class="btn btn-danger btn-xs btn-default">
+								<span class="glyphicon glyphicon-remove"></span> Remove</button>
 							{{/remove}}
 						</div>	
 						<span class="list-group-item-text">
@@ -82,6 +94,11 @@
 						</span>
 					</div>
 				{{/apps}}
+				{{#failures}}
+					<div class="list-group-item list-group-item-danger">
+						<b>{{data}}</b><br>{{message}}
+					</div>
+				{{/failures}}
 				</div>
 
       </div>
