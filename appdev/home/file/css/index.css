@@ -7,8 +7,10 @@
 
 .app-icon {
 	position: relative;
-	top: 50%;
-	transform: translateY(-50%);
+	min-height: 64px;
+	min-width: 64px;
+	max-height: 140px;
+	max-width: 140px;
 }
 
 .app-id {

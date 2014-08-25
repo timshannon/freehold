@@ -6,3 +6,4 @@ freehold
 settings.json
 ^core$
 ^application$
+^datastore$

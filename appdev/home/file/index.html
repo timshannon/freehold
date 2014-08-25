@@ -38,9 +38,7 @@
 
 <script id="tApps" type="text/ractive">
 	<div class="app-bar">
-		{{#admin}}
 		<button type="button" id="btnManage" on-click="openModal" class="btn btn-default pull-right">Manage</button>
-		{{/admin}}
 		<ul class="nav nav-tabs" role="tablist">
 			<li class="active"><a href="#starred" role="tab" data-toggle="tab">
 			<span class="glyphicon glyphicon-star"></span></a></li>
@@ -51,6 +49,11 @@
 <!-- Tab panes -->
 <div class="tab-content">
   <div class="tab-pane active" id="starred"></div>
+		{{#apps:i}}
+			{{#starred}}
+				{{>appTile}}
+			{{/starred}}
+		{{/apps}}
   <div class="tab-pane" id="all">
 		{{#apps:i}}
 			{{>appTile}}
@@ -74,20 +77,24 @@
 				<div class="list-group">
 				{{#apps:i}}
 					<div class="list-group-item clearfix">
+					{{#admin}}
 						<div class="btn-group-vertical pull-right">
 							{{^installed}}
 								<button type="button" on-click="install" class="btn btn-success btn-xs btn-default">
-								<span class="glyphicon glyphicon-plus"></span> Install</button>
+									<span class="glyphicon glyphicon-plus"></span> Install</button>
 							{{/installed}}
 							{{#upgrade}}
 								<button type="button" on-click="upgrade" class="btn btn-info btn-xs btn-default">
-								<span class="glyphicon glyphicon-refresh"></span> Upgrade</button>
+									<span class="glyphicon glyphicon-refresh"></span> Upgrade</button>
 							{{/upgrade}}
 							{{#remove}}
 								<button type="button" on-click="remove" class="btn btn-danger btn-xs btn-default">
-								<span class="glyphicon glyphicon-remove"></span> Remove</button>
+									<span class="glyphicon glyphicon-remove"></span> Remove</button>
 							{{/remove}}
 						</div>	
+					{{/admin}}
+						<button type="button" class="btn btn-default btn-xs {{#starred}}active{{/starred}}" on-click="star">
+							<span class="glyphicon glyphicon-star"></span></button>
 						<span class="list-group-item-text">
 						<b>{{name}}</b><br>
 						{{description}}
