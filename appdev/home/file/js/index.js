@@ -1,6 +1,11 @@
 $(document).ready(function() {
     "use strict";
-    $(".alert").alert();
+    /*$(".alert").alert();*/
+    var usrSettingsDS = "/v1/datastore/" + fh.auth().user + "/homeSettings.ds";
+    var dsSettings = new fh.Datastore(usrSettingsDS);
+    var appList;
+    var starred = {};
+
 
     $("#logoutButton").click(function() {
         fh.session.logout();
@@ -17,12 +22,36 @@ $(document).ready(function() {
         template: "#tManageApps"
     });
 
-    updateApplications();
+
+    fh.properties.get(usrSettingsDS)
+        .done(function() {
+            dsSettings.get("starredApps")
+                .done(function(result) {
+                    starred = result.data;
+                    refreshApps();
+                })
+                .fail(function(result) {
+                    //TODO: navbar error
+                    refreshApps();
+                });
+        })
+        .fail(function(result) {
+            if (result.message == "Resource not found") {
+                fh.datastore.new(usrSettingsDS)
+                    .done(function() {
+                        refreshApps();
+                    })
+                    .fail(function(result) {
+                        //TODO: navbar alert?
+                    });
+            }
+        });
+
+
 
     //Events
     rApps.on({
         openModal: function(event) {
-            updateManageList();
             $("#manageAppsModal").modal();
         }
     });
@@ -31,8 +60,7 @@ $(document).ready(function() {
         install: function(event) {
             fh.application.install(event.context.file)
                 .done(function() {
-                    updateApplications();
-                    updateManageList();
+                    refreshApps();
                 })
                 .fail(function() {
                     //TODO: nav bar based alert
@@ -41,8 +69,7 @@ $(document).ready(function() {
         upgrade: function(event) {
             fh.application.upgrade(event.context.file)
                 .done(function() {
-                    updateApplications();
-                    updateManageList();
+                    refreshApps();
                 })
                 .fail(function() {
                     //TODO: nav bar based alert
@@ -51,63 +78,79 @@ $(document).ready(function() {
         remove: function(event) {
             fh.application.uninstall(event.context.id)
                 .done(function() {
-                    updateApplications();
-                    updateManageList();
+                    refreshApps();
                 })
                 .fail(function() {
                     //TODO: nav bar based alert
                 });
+        },
+        star: function(event) {
+            if (event.context.starred) {
+                delete starred[event.context.id];
+            } else {
+                starred[event.context.id] = true;
+            }
+            dsSettings.put("starredApps", starred)
+                .done(function() {
+                    refreshApps();
+                })
+                .fail(function(result) {
+                    //todo: navbar alert
+                });
         }
-
     });
 
 
     //Functions
-    function updateApplications() {
+
+    function refreshApps() {
         fh.application.installed()
             .done(function(result) {
-                rApps.set({
-                    apps: result.data,
-                    admin: fh.auth().admin
-                });
+                var installed = result.data;
+                fh.application.available()
+                    .always(function(result) {
+                        var available = result.data;
+
+                        for (var id in installed) {
+                            if (installed.hasOwnProperty(id)) {
+                                var app = installed[id];
+                                app.installed = true;
+
+                                if (available[id]) {
+                                    if (id != "home") {
+                                        app.remove = true;
+                                    }
+                                    if (app.version != available[id].version) {
+                                        app.upgrade = true;
+                                    }
+                                } else {
+                                    app = installed[id];
+                                }
+                                if (starred[id]) {
+                                    app.starred = true;
+                                }
+
+                                available[id] = app;
+                            }
+                        }
+                        rApps.set({
+                            apps: installed
+                        });
+
+                        rManage.set({
+                            apps: available,
+                            admin: fh.auth().admin,
+                            failures: result.failures
+                        });
+                    });
             })
             .fail(function(result) {
                 //TODO: nav bar based alert
             });
+
+
     }
 
-    function updateManageList() {
-        fh.application.available()
-            .always(function(result) {
-                var installed = rApps.get("apps");
-                var available = result.data;
-
-                for (var id in installed) {
-                    if (installed.hasOwnProperty(id)) {
-                        var app = installed[id];
-                        app.installed = true;
-
-                        if (available[id]) {
-                            if (id != "home") {
-                                app.remove = true;
-                            }
-                            if (app.version != available[id].version) {
-                                app.upgrade = true;
-                            }
-                            available[id] = app;
-                        } else {
-                            app = installed[id];
-                            available[id] = app;
-                        }
-                    }
-                }
-
-                rManage.set({
-                    apps: available,
-                    failures: result.failures
-                });
-            });
-    }
 
 
 
