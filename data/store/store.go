@@ -5,21 +5,13 @@
 // store is the wrapper around the cznic/kv to match the minimum interface
 // used by freehold for a KV store.
 
-//TODO: major issue with instance hanging on accessing a datastore
-// that already exists, but freehold thinks it's removed?
-// Need to make removing ds files safer.
-// Only delete files after file timeout?
-// mark for deletion?
-
 package store
 
 import (
-	"fmt"
 	"io"
 	"log"
 	"log/syslog"
 	"os"
-	"os/signal"
 	"sync"
 	"time"
 
@@ -58,19 +50,12 @@ func init() {
 		files:   make(map[string]*DS),
 	}
 
-	//Capture program shutdown, finish closing datastore files
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-	go func() {
-		for sig := range c {
-			if sig == os.Interrupt {
-				for k := range files.files {
-					files.close(k)
-				}
-				os.Exit(1)
-			}
-		}
-	}()
+}
+
+func Halt() {
+	for k := range files.files {
+		files.close(k)
+	}
 }
 
 // SetFileTimeout sets when the file will automatically close
@@ -100,7 +85,6 @@ type openedFiles struct {
 // Open opens an existing datastore file
 func (o *openedFiles) open(name string) (*DS, error) {
 	o.RLock()
-	fmt.Println("Open ", name)
 	if DS, ok := o.files[name]; ok {
 		o.RUnlock()
 		err := DS.reset()
@@ -112,8 +96,8 @@ func (o *openedFiles) open(name string) (*DS, error) {
 
 	o.RUnlock()
 
-	fmt.Println("Open file", name)
 	o.Lock()
+	defer o.Unlock()
 	db, err := kv.Open(name, options())
 	if err != nil {
 		return nil, err
@@ -128,7 +112,6 @@ func (o *openedFiles) open(name string) (*DS, error) {
 	}
 
 	o.files[name] = DS
-	o.Unlock()
 	return DS, nil
 }
 
@@ -140,7 +123,6 @@ func (o *openedFiles) close(name string) {
 		delete(o.files, name)
 		err := db.Close()
 
-		fmt.Println("Close ", name)
 		if err != nil {
 			logError(err)
 		}
@@ -153,7 +135,6 @@ func (o *openedFiles) drop(name string) error {
 	defer o.Unlock()
 	wal := ""
 
-	fmt.Println("Drop ", name)
 	db, ok := o.files[name]
 	if ok {
 		delete(o.files, name)

@@ -31,13 +31,14 @@ func OpenCoreDS(filename string) (*CoreDS, error) {
 		}
 		err = store.Create(filename)
 		if err != nil {
-			return nil, errors.New("Error creating core datastore: " + err.Error())
+			return nil, errors.New("Error creating core datastore " + filename + ": " + err.Error())
 		}
 	}
 
 	ds, err := store.Open(filename)
+
 	if err != nil {
-		return nil, errors.New("Error opening core datastore: " + err.Error())
+		return nil, errors.New("Error opening core datastore " + filename + ": " + err.Error())
 	}
 	return &CoreDS{ds}, nil
 }

@@ -15,6 +15,7 @@ import (
 	"strings"
 
 	"bitbucket.org/tshannon/freehold/app"
+	"bitbucket.org/tshannon/freehold/data/store"
 )
 
 var versions = map[string]struct{}{"v1": struct{}{}}
@@ -113,8 +114,9 @@ func isRestricted(path string) bool {
 }
 
 func halt(msg string) {
+	store.Halt()
 	fmt.Fprintln(os.Stderr, msg)
-	os.Exit(2)
+	os.Exit(1)
 }
 
 func md5Sum(rs io.Reader) string {
