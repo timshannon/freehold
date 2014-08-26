@@ -5,8 +5,12 @@
 package main
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
+	"runtime"
 
+	"bitbucket.org/tshannon/freehold/data/store"
 	"bitbucket.org/tshannon/treemux"
 )
 
@@ -129,6 +133,17 @@ type methodHandler struct {
 }
 
 func (m *methodHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	defer func() {
+		if r := recover(); r != nil {
+			if _, ok := r.(runtime.Error); ok {
+				store.Halt()
+				panic(r)
+			}
+			errHandled(errors.New(fmt.Sprintf("Freehold panicked on %v and has recovered", r)), w)
+			return
+		}
+	}()
+
 	if m.get == nil {
 		m.get = four04
 	}

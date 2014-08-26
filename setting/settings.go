@@ -135,7 +135,7 @@ func Value(settingName string) interface{} {
 		// with the core datastore, which usually means the instance can't really run
 		// anyway.  This will have to do until I think of something better
 		fmt.Fprintln(os.Stderr, "Error getting setting "+settingName+": "+err.Error())
-		os.Exit(2)
+		return settingDefault(settingName).Value
 	}
 	return s.Value
 }

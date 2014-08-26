@@ -151,14 +151,15 @@ func Get(iter *Iter) ([]*Log, error) {
 // is to not log it until it's "bubbled up to the top".  Meaning only the http handler
 // should log the error.  This is to prevent the same error from being logged a bunch of times.
 func Error(err error) {
+	//TODO: Remove
+	fmt.Println("Error: ", err)
+
 	if !setting.Bool("LogErrors") {
 		return
 	}
 	if setting.Bool("LogErrorsToSyslog") {
 		syslogError(err)
 	}
-	//TODO: Remove
-	fmt.Println("Error: ", err)
 	NewEntry("error", err.Error())
 }
 
@@ -170,9 +171,10 @@ func Fail(err error) {
 }
 
 func syslogError(err error) {
-	lWriter, err := syslog.New(syslog.LOG_ERR, "freehold")
-	if err != nil {
+	lWriter, lerr := syslog.New(syslog.LOG_ERR, "freehold")
+	if lerr != nil {
 		log.Fatal("Error writing to syslog: %v", err)
 	}
+
 	lWriter.Err(err.Error())
 }

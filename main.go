@@ -8,6 +8,7 @@ import (
 	"flag"
 	"net/http"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"time"
 
@@ -33,6 +34,17 @@ func init() {
 		"An admin is only added if the core/user datastore doesn't exist.")
 	flag.StringVar(&flagAdminPass, "adminPass", "", "Sets the password for the admin user passed in with the "+
 		"admin option.")
+
+	//Capture program shutdown, to make sure everything shuts down nicely
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	go func() {
+		for sig := range c {
+			if sig == os.Interrupt {
+				halt("Freehold shutting down")
+			}
+		}
+	}()
 }
 
 //TODO: datadir setting, specifies where to store Freehold data
@@ -124,5 +136,3 @@ func main() {
 	}
 
 }
-
-//TODO: recover from any panics and properly close the datastore files
