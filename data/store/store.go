@@ -40,6 +40,7 @@ func options() *kv.Options {
 		VerifyDbAfterClose:  true,
 		VerifyDbBeforeClose: true,
 		Compare:             naturalCompare,
+		Locker:              freeholdLocker,
 	}
 }
 

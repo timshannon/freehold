@@ -2,15 +2,16 @@
 // Use of this source code is governed by the MIT license
 // that can be found in the LICENSE file.
 
-// Nearly identical to https://github.com/cznic/kv/blob/master/lock.go
-// except freehold will manage the lockfilename with a unique identifier
-// so that multiple attempts to create the same database won't have
-// operlapping lock files
+// Same as default KV locker, except with a randmized lockfile name
+// resolves an issue where multiple go routines create and delete
+// a ds file with the same name.  It shouldn't conflict, because
+// the RW mux should prevent it, but occasionally I get lock file
+// exists errors.  This clears it up.
 
 package store
 
 import (
-	"crypto/sha1"
+	"crypto/rand"
 	"fmt"
 	"io"
 	"os"
@@ -18,15 +19,20 @@ import (
 	"sync"
 )
 
-func lockName(dbname string) string {
-	base := filepath.Base(filepath.Clean(dbname)) + "lockfile"
-	h := sha1.New()
-	io.WriteString(h, base)
-	return filepath.Join(filepath.Dir(dbname), fmt.Sprintf(".%x", h.Sum(nil)))
+func lockname(filename string) string {
+	base := filepath.Base(filepath.Clean(filename))
+
+	result := make([]byte, 4)
+	_, err := io.ReadFull(rand.Reader, result)
+	if err != nil {
+		panic(fmt.Sprintf("Error generating random values: %v", err))
+	}
+
+	return filepath.Join(filepath.Dir(filename), fmt.Sprintf(".%x.%s", result, base))
 }
 
 func freeholdLocker(dbname string) (io.Closer, error) {
-	lname := lockName(dbname)
+	lname := lockname(dbname)
 	abs, err := filepath.Abs(lname)
 	if err != nil {
 		return nil, err
