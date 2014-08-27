@@ -5,6 +5,7 @@ $(document).ready(function() {
     var dsSettings = new fh.Datastore(usrSettingsDS);
     var appList;
     var starred = {};
+    var externalApps = true;
 
 
     $("#logoutButton").click(function() {
@@ -52,7 +53,9 @@ $(document).ready(function() {
     //Events
     rApps.on({
         openModal: function(event) {
+            rManage.set("fetchError", false);
             $("#manageAppsModal").modal();
+            $("#externalAdd").collapse("hide");
         }
     });
 
@@ -97,6 +100,9 @@ $(document).ready(function() {
                 .fail(function(result) {
                     //todo: navbar alert
                 });
+        },
+        fetchExternal: function(event) {
+            rManage.set("fetchError", "an error occurred!");
         }
     });
 
@@ -111,28 +117,35 @@ $(document).ready(function() {
                     .always(function(result) {
                         var available = result.data;
 
-                        for (var id in installed) {
+                        var id;
+
+                        for (id in installed) {
                             if (installed.hasOwnProperty(id)) {
-                                var app = installed[id];
-                                app.installed = true;
-
-                                if (available[id]) {
-                                    if (id != "home") {
-                                        app.remove = true;
-                                    }
-                                    if (app.version != available[id].version) {
-                                        app.upgrade = true;
-                                    }
-                                } else {
-                                    app = installed[id];
-                                }
                                 if (starred[id]) {
-                                    app.starred = true;
+                                    installed[id].starred = true;
                                 }
 
-                                available[id] = app;
                             }
                         }
+                        for (id in available) {
+                            if (available.hasOwnProperty(id)) {
+
+                                if (installed[id]) {
+                                    available[id].installed = true;
+                                    if (id != "home") {
+                                        available[id].remove = true;
+                                    }
+                                    if (installed[id].version != available[id].version) {
+                                        available[id].upgrade = true;
+                                    }
+                                }
+                                if (starred[id]) {
+                                    available[id].starred = true;
+                                }
+                            }
+                        }
+
+
                         rApps.set({
                             apps: installed
                         });
@@ -140,7 +153,8 @@ $(document).ready(function() {
                         rManage.set({
                             apps: available,
                             admin: fh.auth().admin,
-                            failures: result.failures
+                            failures: result.failures,
+                            external: externalApps
                         });
                     });
             })

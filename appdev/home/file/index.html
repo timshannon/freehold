@@ -48,12 +48,13 @@
 
 <!-- Tab panes -->
 <div class="tab-content">
-  <div class="tab-pane active" id="starred"></div>
+  <div class="tab-pane active" id="starred">
 		{{#apps:i}}
 			{{#starred}}
 				{{>appTile}}
 			{{/starred}}
 		{{/apps}}
+	</div>
   <div class="tab-pane" id="all">
 		{{#apps:i}}
 			{{>appTile}}
@@ -73,39 +74,61 @@
         <h4 class="modal-title" id="manageAppsLabel">Manage Applications</h4>
       </div>
       <div class="modal-body">
-
 				<div class="list-group">
 				{{#apps:i}}
 					<div class="list-group-item clearfix">
 					{{#admin}}
 						<div class="btn-group-vertical pull-right">
 							{{^installed}}
-								<button type="button" on-click="install" class="btn btn-success btn-xs btn-default">
+								<button type="button" on-click="install" class="btn btn-success btn-xs">
 									<span class="glyphicon glyphicon-plus"></span> Install</button>
 							{{/installed}}
 							{{#upgrade}}
-								<button type="button" on-click="upgrade" class="btn btn-info btn-xs btn-default">
+								<button type="button" on-click="upgrade" class="btn btn-info btn-xs">
 									<span class="glyphicon glyphicon-refresh"></span> Upgrade</button>
 							{{/upgrade}}
 							{{#remove}}
-								<button type="button" on-click="remove" class="btn btn-danger btn-xs btn-default">
+								<button type="button" on-click="remove" class="btn btn-danger btn-xs">
 									<span class="glyphicon glyphicon-remove"></span> Remove</button>
 							{{/remove}}
 						</div>	
 					{{/admin}}
-						<button type="button" class="btn btn-default btn-xs {{#starred}}active{{/starred}}" on-click="star">
-							<span class="glyphicon glyphicon-star"></span></button>
 						<span class="list-group-item-text">
-						<b>{{name}}</b><br>
-						{{description}}
+						<a href="#" on-click="star">
+							<span class="pull-left glyphicon glyphicon-star star {{#starred}}starred{{/starred}}"></span>
+						</a>
+							<dl><dt>{{name}}</dt>
+							<dd>{{description}}</dd>
+							</dl>
 						</span>
 					</div>
 				{{/apps}}
 				{{#failures}}
 					<div class="list-group-item list-group-item-danger">
-						<b>{{data}}</b><br>{{message}}
+						<dl>
+						<dt>{{data}}</dt><dd>{{message}}</dd>
+						</dl>
 					</div>
 				{{/failures}}
+				{{#external}}
+					<a href="#" class="list-group-item list-group-item-info" data-toggle="collapse" data-target="#externalAdd">
+						Fetch External Application File for Install
+					</a>
+					<div id="externalAdd" class="collapse in">
+						<div class="list-group-item ">
+						{{#fetchError}}
+						<span class="label label-danger">{{fetchError}}</span>
+						{{/fetchError}}
+						<div class="form-inline">
+							<div class="form-group">
+								<label class="sr-only" for="appUrl">Application File URL</label>
+								<input type="text" class="form-control" id="appUrl" placeholder="Enter App File URL">
+							</div>
+							<button on-click="fetchExternal" class="btn btn-default">Fetch</button>
+						</div>
+						</div>
+					</div>
+				{{/external}}
 				</div>
 
       </div>

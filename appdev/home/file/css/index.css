@@ -19,3 +19,19 @@
 	bottom: 0px;
 	left: 0px;
 }
+
+.star {
+	font-size: 1.3em;
+	margin-right: 5px;
+}
+
+
+.starred {
+	color: gold;
+}
+
+@media (min-width: 768px) {
+	#appUrl {
+		width: 300px;
+	}
+}
