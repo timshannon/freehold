@@ -982,7 +982,7 @@ Response (200):
 
 **POST**
 
-*Generate new token with no expiration*
+*Generate new token*  - If no expiration is specified then token is set to *TokenMaxDaysTillExpire* [setting](#settings).
 ```
 POST /v1/auth/token
 {
@@ -1107,7 +1107,7 @@ Response (200):
 
 *Creates a new session and writes a cookie to hold it* 
 
- This session cookie expires at the end of the browser's session
+ This session cookie expires at the end of the browser's session since no expiration is specified.
 ```
 POST /v1/auth/session
 
@@ -1117,7 +1117,7 @@ Response (201):
 }
 ```
 
- This session expires in the future. Note, it's not recommended to set session expirations out farther than 15 days.
+ This session expires in the future. Note, it's not recommended to set session expirations out farther than 30 days, and this is enforced by the *SessionMaxDaysTillExpire* [setting](#settings) value.
 ```
 POST /v1/auth/session
 {
