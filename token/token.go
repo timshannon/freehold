@@ -82,6 +82,13 @@ func (t *Token) verify() error {
 		return nil
 	}
 
+	if t.expireTime().IsZero() {
+		t.Expires = time.Now().AddDate(0, 0, setting.Int("TokenMaxDaysTillExpire")).Format(time.RFC3339)
+	}
+	if t.expireTime().After(time.Now().AddDate(0, 0, setting.Int("TokenMaxDaysTillExpire"))) {
+		return fail.New("Token Expiration date is set too far into the future.  See TokenMaxDaysTillExpire setting.", t)
+	}
+
 	prm, err := permission.Get(t.Resource)
 	if err != nil {
 		return err

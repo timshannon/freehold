@@ -126,13 +126,20 @@ func init() {
 		"LogonAttemptRateLimit": Setting{
 			Description: "Number of logon attempts per minute a given IP address can make. Limits can be fractional " +
 				"(0.5 would be 1 request every 2 minutes), but if <= 0 rates are unlimited.",
-			Value: float64(15),
+			Value: float64(10),
 		},
 		"PublicWriteRateLimit": Setting{
 			Description: "Number of write requests (PUT, POST, DELETE) a non-logged in IP Address can make per minute." +
 				" Limits can be fractional (0.5 would be 1 request every 2 minutes), but if <= 0 rates are unlimited.",
-
 			Value: float64(30),
+		},
+		"SessionMaxDaysTillExpire": Setting{
+			Description: "Maximum number of days from today that a sesssion can be set to expire on.",
+			Value:       float64(30),
+		},
+		"TokenMaxDaysTillExpire": Setting{
+			Description: "Maximum number of days from today that a token can be set to expire on.",
+			Value:       float64(90),
 		},
 	}
 }

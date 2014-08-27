@@ -128,6 +128,13 @@ func New(u *user.User, base *Session) (*Session, error) {
 	return &newSession, nil
 }
 
+func (s *Session) verify() error {
+	if s.Expires != "" && s.expireTime().After(time.Now().AddDate(0, 0, setting.Int("SessionMaxDaysTillExpire"))) {
+		return fail.New("Session Expiration date is set too far into the future.  See SessionMaxDaysTillExpire setting.", s)
+	}
+	return nil
+}
+
 func (s *Session) Cookie(isSSL bool) *http.Cookie {
 	if s.key == "" {
 		return nil
