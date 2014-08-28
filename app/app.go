@@ -280,6 +280,8 @@ func appInfoFromZip(file string) (*App, error) {
 }
 
 func appInfoFromJsonFile(f *zip.File) (*App, error) {
+	//TODO: Support other application file formats, if they
+	// support the minimum requirements of freehold
 	app := &App{}
 	rc, err := f.Open()
 	defer rc.Close()
