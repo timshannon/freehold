@@ -5,7 +5,7 @@ $(document).ready(function() {
     var dsSettings = new fh.Datastore(usrSettingsDS);
     var appList;
     var starred = {};
-    var externalApps = true;
+    var externalApps = false;
 
 
     $("#logoutButton").click(function() {
@@ -23,7 +23,7 @@ $(document).ready(function() {
         template: "#tManageApps"
     });
 
-
+    //Get User's setting DS if exists
     fh.properties.get(usrSettingsDS)
         .done(function() {
             dsSettings.get("starredApps")
@@ -37,6 +37,7 @@ $(document).ready(function() {
                 });
         })
         .fail(function(result) {
+            // if not exists, create it
             if (result.message == "Resource not found") {
                 fh.datastore.new(usrSettingsDS)
                     .done(function() {
@@ -48,12 +49,23 @@ $(document).ready(function() {
             }
         });
 
+    //check if external apps can be fetched
+    fh.settings.get("AllowWebAppInstall")
+        .done(function(result) {
+            externalApps = result.data.value;
+        })
+        .fail(function(result) {
+            //TODO: navbar alert
+        });
 
 
     //Events
     rApps.on({
         openModal: function(event) {
-            rManage.set("fetchError", false);
+            rManage.set({
+                "fetchError": false,
+                "url": "",
+            });
             $("#manageAppsModal").modal();
             $("#externalAdd").collapse("hide");
         }
@@ -102,7 +114,31 @@ $(document).ready(function() {
                 });
         },
         fetchExternal: function(event) {
-            rManage.set("fetchError", "an error occurred!");
+            var url = event.context.url;
+            rManage.set("fetchError", false);
+
+            if (!url.match("https?://+")) {
+                rManage.set("fetchError", {
+                    message: "Invalid url"
+                });
+                return;
+            }
+
+            rManage.set("waiting", true);
+            fh.application.postAvailable(url)
+                .done(function(result) {
+                    rManage.set("url", "");
+                    $("#externalAdd").collapse("hide");
+                    refreshApps();
+
+                })
+                .fail(function(result) {
+                    rManage.set("fetchError", result);
+                })
+                .always(function() {
+                    rManage.set("waiting", false);
+                });
+
         }
     });
 

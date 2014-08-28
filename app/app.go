@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 	"time"
 
 	"bitbucket.org/tshannon/freehold/data"
@@ -143,7 +144,7 @@ func Install(file, owner string) (*App, error) {
 		fr, err := f.Open()
 		if err != nil {
 			log.Error(err)
-			return nil, fail.NewFromErr(FailAppInvalid, file)
+			return nil, fail.NewFromErr(FailAppInvalid, filepath.Base(file))
 		}
 
 		defer fr.Close()
@@ -255,8 +256,8 @@ func getAppsFromDir(dir string) (apps map[string]*App, failures []error, err err
 }
 
 func appInfoFromZip(file string) (*App, error) {
-	filepath := path.Join(AvailableAppDir, file)
-	r, err := appFileReader(filepath)
+	zippath := path.Join(AvailableAppDir, file)
+	r, err := appFileReader(zippath)
 	if err != nil {
 		return nil, err
 	}
@@ -268,14 +269,14 @@ func appInfoFromZip(file string) (*App, error) {
 			app.File = file
 			if err != nil {
 				if fail.IsFail(err) {
-					return nil, fail.NewFromErr(err, filepath)
+					return nil, fail.NewFromErr(err, filepath.Base(zippath))
 				}
 				return nil, err
 			}
 			return app, nil
 		}
 	}
-	return nil, fail.NewFromErr(FailAppInvalid, filepath)
+	return nil, fail.NewFromErr(FailAppInvalid, filepath.Base(zippath))
 }
 
 func appInfoFromJsonFile(f *zip.File) (*App, error) {
@@ -321,7 +322,7 @@ func appFileReader(zippath string) (*zip.ReadCloser, error) {
 
 	if err != nil {
 		log.Error(err)
-		return nil, fail.NewFromErr(FailAppInvalid, zippath)
+		return nil, fail.NewFromErr(FailAppInvalid, filepath.Base(zippath))
 	}
 	return r, nil
 }
@@ -349,6 +350,14 @@ func PostAvailable(url string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	if filepath.Ext(filename) != ".zip" {
+		err = os.Remove(path.Join(AvailableAppDir, filename))
+		if err != nil {
+			return "", err
+		}
+		return "", fail.New("Downloaded file is not a zip file.", filename)
+	}
 	return filename, nil
 }
 
@@ -358,10 +367,10 @@ func writeFile(reader io.Reader, filename string) error {
 	if err != nil {
 		return err
 	}
-	newFile, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+	newFile, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
 	if os.IsExist(err) {
 		//capturing is exists error so that too much info isn't exposed to end users
-		return errors.New("File already exists")
+		return fail.New("An application file already exists with this name.", filepath.Base(filename))
 	}
 	if err != nil {
 		return err

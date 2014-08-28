@@ -252,6 +252,7 @@ func appAvailablePost(w http.ResponseWriter, r *http.Request) {
 	if errHandled(err, w) {
 		return
 	}
+
 	respondJsend(w, &JSend{
 		Status: statusSuccess,
 		Data:   file,

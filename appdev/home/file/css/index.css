@@ -32,6 +32,10 @@
 
 @media (min-width: 768px) {
 	#appUrl {
-		width: 300px;
+		width: 470px;
 	}
+}
+
+.progress:last-child {
+	margin-bottom: 0px;
 }
