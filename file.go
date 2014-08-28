@@ -568,7 +568,7 @@ func writeFile(reader io.Reader, filename string, overwrite bool) error {
 	if overwrite {
 		newFile, err = os.Create(filename)
 	} else {
-		newFile, err = os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+		newFile, err = os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
 	}
 
 	if os.IsExist(err) {

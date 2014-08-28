@@ -33,6 +33,10 @@ func respondJsend(w http.ResponseWriter, response *JSend) {
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Content-Type", "application/json")
 
+	if len(response.Failures) > 0 && response.Message == "" {
+		response.Message = "One or more item has failed. Check the individual failures for details."
+	}
+
 	result, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err)

@@ -47,8 +47,9 @@ func errHandled(err error, w http.ResponseWriter) bool {
 
 	if status == statusFail {
 		respondJsend(w, &JSend{
-			Status: status,
-			Data:   err.(*fail.Fail),
+			Status:  status,
+			Message: err.(*fail.Fail).Message,
+			Data:    err.(*fail.Fail).Data,
 		})
 	} else {
 		respondJsend(w, &JSend{
