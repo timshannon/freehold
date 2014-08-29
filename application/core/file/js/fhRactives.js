@@ -1,17 +1,11 @@
 //Freehold ractive components 
 // for things like modals, navbar, etc
-window.FhRactive = (function() {
-    'use strict';
-
-    return Ractive.extend({
-        component: {
-            modal: modal()
-        }
-    });
-
+(function() {
+    Ractive.components.modal = modal();
+    Ractive.components.navbar = navbar();
 
     function modal() {
-        modalTemplate = '<div class="modal fade" id="{{id}}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">' +
+        modalTemplate = '<div class="modal fade" id="{{id}}" tabindex="-1" role="dialog" aria-hidden="true">' +
             '<div class="modal-dialog">' +
             '<div class="modal-content">' +
             '<div class="modal-header">' +
@@ -20,12 +14,14 @@ window.FhRactive = (function() {
             '<h4 class="modal-title">{{title}}</h4>' +
             '</div>' +
             '<div class="modal-body">{{>content}}</div>' +
+            '{{^customFooter}}' +
             '<div class="modal-footer">' +
             '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>' +
-            '{{#buttons}}' +
-            '<button type="button" on-click="{{on-click}}"class="btn btn-primary">{{name}}</button>' +
-            '{{/buttons}}' +
             '</div>' +
+            '{{/customFooter}}' +
+            '{{#customFooter}}' +
+            '{{>modalFooter}}' +
+            '{{/customFooter}}' +
             '</div>' +
             '</div>' +
             '</div>';
@@ -33,9 +29,34 @@ window.FhRactive = (function() {
         return Ractive.extend({
             template: modalTemplate,
             data: {
-                id: "myModal",
                 title: "Modal Title",
-				buttons: {}
+                id: "modalId"
+            }
+        });
+    }
+
+    function navbar() {
+        navbarTemplate = '<nav class="navbar navbar-default" role="navigation">' +
+            '<div class="navbar-header">' +
+            '<a class="navbar-brand" href="{{url}}">{{brand}}</a>' +
+            '{{#authenticated}}' +
+            '<button type="button" id="logoutButton" on-click="logout" class="btn btn-default navbar-btn navbar-right">Log Out</button>' +
+            '{{/authenticated}}' +
+            '</div>' +
+            '</nav>';
+
+        return Ractive.extend({
+            template: navbarTemplate,
+            data: {
+                brand: "freehold",
+                url: "/",
+                authenticated: (fh.auth().type != "none")
+            },
+            init: function() {
+                this.on("logout", function(event) {
+                    fh.session.logout();
+                    window.location = "/";
+                });
             }
         });
     }

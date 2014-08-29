@@ -7,12 +7,6 @@ $(document).ready(function() {
     var starred = {};
     var externalApps = false;
 
-
-    $("#logoutButton").click(function() {
-        fh.session.logout();
-        window.location = "/";
-    });
-
     var rApps = new Ractive({
         el: "#appList",
         template: "#tApps",
@@ -20,7 +14,7 @@ $(document).ready(function() {
 
     var rManage = new Ractive({
         el: "#modalHook",
-        template: "#tManageApps"
+        template: "#tManageApps",
     });
 
     //Get User's setting DS if exists
@@ -100,6 +94,7 @@ $(document).ready(function() {
                 });
         },
         star: function(event) {
+            console.log("starchild");
             if (event.context.starred) {
                 delete starred[event.context.id];
             } else {
