@@ -5,6 +5,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 		<link href="/core/v1/file/css/bootstrap.min.css" rel="stylesheet" media="screen">
+		<link href="/core/v1/file/css/freehold.css" rel="stylesheet" media="screen">
 		<link href="/home/v1/file/css/index.css" rel="stylesheet" media="screen">
 	</head>
 <body>
@@ -58,7 +59,8 @@
 </script>
 
 <script id="tManageApps" type="text/ractive">
-<navbar></navbar>
+<navbar error="{{error}}"></navbar>
+
 <!--TODO: Remove on yield addition-->
 <modal id="manageAppsModal" title="Manage Applications" 
 		on-star="star" on-install="install" on-upgrade="upgrade" on-remove="remove" on-fetchExternal="fetchExternal">
