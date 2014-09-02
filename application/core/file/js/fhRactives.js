@@ -43,19 +43,36 @@
             '<button type="button" id="logoutButton" on-click="logout" class="btn btn-default navbar-btn navbar-right">Log Out</button>' +
             '{{/authenticated}}' +
             '</div>' +
-            '</nav>';
+            '</nav>' +
+            '{{#error}}' +
+            '<div class="overlay"></div>' +
+            '<div class="navbar-alert alert alert-danger container" role="alert">' +
+            '<strong>An error occurred and you may need to refresh this page:</strong> ' +
+            '{{error}}' +
+            '<a href="#" on-click="refresh">' +
+            '<span class="close glyphicon glyphicon-refresh"></span><span class="sr-only">Refresh</span></a>' +
+            '</div>' +
+            '{{/error}}';
 
         return Ractive.extend({
             template: navbarTemplate,
+            isolated: false,
             data: {
                 brand: "freehold",
                 url: "/",
-                authenticated: (fh.auth().type != "none")
+                authenticated: (fh.auth().type != "none"),
+                error: false
             },
             init: function() {
-                this.on("logout", function(event) {
-                    fh.session.logout();
-                    window.location = "/";
+                this.on({
+                    logout: function(event) {
+                        fh.session.logout();
+                        window.location = "/";
+                    },
+                    refresh: function() {
+                        window.location.reload();
+                    }
+
                 });
             }
         });

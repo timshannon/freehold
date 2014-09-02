@@ -1,6 +1,5 @@
 $(document).ready(function() {
     "use strict";
-    /*$(".alert").alert();*/
     var usrSettingsDS = "/v1/datastore/" + fh.auth().user + "/homeSettings.ds";
     var dsSettings = new fh.Datastore(usrSettingsDS);
     var appList;
@@ -26,8 +25,7 @@ $(document).ready(function() {
                     refreshApps();
                 })
                 .fail(function(result) {
-                    //TODO: navbar error
-                    refreshApps();
+                    rManage.set("error", result.message);
                 });
         })
         .fail(function(result) {
@@ -38,7 +36,7 @@ $(document).ready(function() {
                         refreshApps();
                     })
                     .fail(function(result) {
-                        //TODO: navbar alert?
+                        rManage.set("error", result.message);
                     });
             }
         });
@@ -49,8 +47,9 @@ $(document).ready(function() {
             externalApps = result.data.value;
         })
         .fail(function(result) {
-            //TODO: navbar alert
+            rManage.set("error", result.message);
         });
+
 
 
     //Events
@@ -58,7 +57,7 @@ $(document).ready(function() {
         openModal: function(event) {
             rManage.set({
                 "fetchError": false,
-                "url": "",
+                "url": ""
             });
             $("#manageAppsModal").modal();
             $("#externalAdd").collapse("hide");
@@ -72,7 +71,7 @@ $(document).ready(function() {
                     refreshApps();
                 })
                 .fail(function() {
-                    //TODO: nav bar based alert
+                    rManage.set("error", result.message);
                 });
         },
         upgrade: function(event) {
@@ -81,7 +80,7 @@ $(document).ready(function() {
                     refreshApps();
                 })
                 .fail(function() {
-                    //TODO: nav bar based alert
+                    rManage.set("error", result.message);
                 });
         },
         remove: function(event) {
@@ -90,11 +89,10 @@ $(document).ready(function() {
                     refreshApps();
                 })
                 .fail(function() {
-                    //TODO: nav bar based alert
+                    rManage.set("error", result.message);
                 });
         },
         star: function(event) {
-            console.log("starchild");
             if (event.context.starred) {
                 delete starred[event.context.id];
             } else {
@@ -105,7 +103,7 @@ $(document).ready(function() {
                     refreshApps();
                 })
                 .fail(function(result) {
-                    //todo: navbar alert
+                    rManage.set("error", result.message);
                 });
         },
         fetchExternal: function(event) {
@@ -190,7 +188,7 @@ $(document).ready(function() {
                     });
             })
             .fail(function(result) {
-                //TODO: nav bar based alert
+                rManage.set("error", result.message);
             });
 
 
