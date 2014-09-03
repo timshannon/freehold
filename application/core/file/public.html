@@ -4,57 +4,13 @@
 	<title>freehold</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
-	<!-- Bootstrap -->
-	<link href="/core/v1/file/css/bootstrap.min.css" rel="stylesheet" media="screen">
+		<link href="/core/v1/file/css/bootstrap.min.css" rel="stylesheet" media="screen">
+		<link href="/core/v1/file/css/freehold.css" rel="stylesheet" media="screen">
 
 	<!--TODO:<link rel="shortcut icon" href="/core/v1/file/images/favicon.ico">-->
 </head>
 <body>
-<nav class="navbar navbar-default" role="navigation">
-	<div class="navbar-header">
-		<a class="navbar-brand" href="/">freehold</a>
-		<button type="button" id="loginButton" class="btn btn-default navbar-btn navbar-right">Log in</button>
-	</div>
-</nav>
-
-<!-- Modal -->
-<div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="loginModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title" id="loginModalLabel">Log in</h4>
-      </div>
-      <div class="modal-body">
-			<!--content-->
-
-				<form class="form" role="form" id="login" name="login">
-				<span id="err" class="hidden label label-danger"></span>
-					<div class="form-group">
-						<label class="sr-only" for="username">Username</label>	
-						<input class="form-control" id="username" name="username" placeholder="Enter username">
-					</div>
-					<div class="form-group">
-						<label class="sr-only" for="password">Password</label>
-						<input type="password" class="form-control" id="password" name="password" placeholder="Password">
-					</div>
-					<div class="checkbox">
-						<label>
-							<input type="checkbox" id="rememberMe" name="rememberMe" checked="checked"> Remember me
-						</label>
-					</div>
-					<button type="submit" class="btn btn-default">Log In</button>
-				</form>
-
-			<!--content-->
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-      </div>
-    </div>
-  </div>
-</div>
-
+<div id="mainHook"></div>
 <div class="container">
 <div class="jumbotron">
 	<h1> Welcome! </h1>
@@ -76,10 +32,40 @@
 <div class="footer text-center">
 Freehold is a free and open source project released under the MIT license.  License and attribution info can be found at <a target="_blank" href="/docs/license">/docs/license</a>.
 </div>
+<!--templates-->
+<script id="tMain" type="text/ractive">
+<navbar on-loginModal="loginModal" error="{{error}}">
+		<button type="button" id="loginButton" on-click="loginModal" class="btn btn-default navbar-btn navbar-right">Log in</button>
+</navbar>
+
+<modal id="loginModal" title="Log in" on-login="login">
+	{{#loginErr}}
+	<span id="err" class="label label-danger">{{loginErr}}</span>
+	{{/loginErr}}
+		<div class="form-group">
+			<label class="sr-only" for="username">Username</label>	
+			<input class="form-control" id="username" name="username" placeholder="Enter username" value="{{username}}">
+		</div>
+		<div class="form-group">
+			<label class="sr-only" for="password">Password</label>
+			<input type="password" class="form-control" id="password" name="password" placeholder="Password" value="{{password}}">
+		</div>
+		<div class="checkbox">
+			<label>
+				<input type="checkbox" id="rememberMe" name="rememberMe" checked="{{rememberMe}}"> Remember me
+			</label>
+		</div>
+		<button on-click="login" class="btn btn-default">Log In</button>
+</modal>
+
+</script>
+<!--end templates-->
 
 <script src="/core/v1/file/js/jquery-2.1.1.min.js"></script>
 <script src="/core/v1/file/js/bootstrap.min.js"></script>
+<script src="/core/v1/file/js/ractive.min.js"></script>
 <script src="/core/v1/file/js/fh.js"></script>
+<script src="/core/v1/file/js/fhRactives.js"></script>
 <script src="/core/v1/file/js/public.js"></script>
 </body>
 </html>

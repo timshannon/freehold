@@ -91,6 +91,7 @@ func sessionDelete(w http.ResponseWriter, r *http.Request) {
 		if errHandled(auth.Session.Expire(), w) {
 			return
 		}
+
 	}
 
 	cookie, err := r.Cookie(session.CookieName)

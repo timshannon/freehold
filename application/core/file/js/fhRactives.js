@@ -1,8 +1,10 @@
 //Freehold ractive components 
 // for things like modals, navbar, etc
 (function() {
-    Ractive.components.modal = modal();
-    Ractive.components.navbar = navbar();
+    fh.components = {
+        modal: modal(),
+        navbar: navbar()
+    };
 
     function modal() {
         modalTemplate = '<div class="modal fade" id="{{id}}" tabindex="-1" role="dialog" aria-hidden="true">' +
@@ -30,7 +32,8 @@
             template: modalTemplate,
             data: {
                 title: "Modal Title",
-                id: "modalId"
+                id: "modalId",
+				customFooter: false
             }
         });
     }
@@ -42,6 +45,7 @@
             '{{#authenticated}}' +
             '<button type="button" id="logoutButton" on-click="logout" class="btn btn-default navbar-btn navbar-right">Log Out</button>' +
             '{{/authenticated}}' +
+            '{{>content}}' +
             '</div>' +
             '</nav>' +
             '{{#error}}' +
@@ -66,8 +70,13 @@
             init: function() {
                 this.on({
                     logout: function(event) {
-                        fh.session.logout();
-                        window.location = "/";
+                        fh.session.logout()
+                            .done(function() {
+                                window.location = "/";
+                            })
+                            .fail(function(result) {
+                                this.set("error", result.message);
+                            });
                     },
                     refresh: function() {
                         window.location.reload();
