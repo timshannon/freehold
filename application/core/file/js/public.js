@@ -1,42 +1,53 @@
-$(document).ready(function() { 
+$(document).ready(function() {
+    //setup
 
-$("#loginButton").click(function() {
-		clearErr();
-		$("#loginModal").modal();			
+    var rMain = new Ractive({
+        el: "#mainHook",
+        template: "#tMain",
+        components: fh.components
+    });
+
+
+    //Events
+    rMain.on({
+        loginModal: function(event) {
+            rMain.set({
+                "username": "empty",
+                "password": "empty",
+                "rememberMe": false,
+                "loginErr": false
+            });
+
+            $("#loginModal").modal();
+            $("#loginModal").on("shown.bs.modal", function() {
+                $("#username").focus();
+            });
+
+        },
+        login: function(event) {
+            var data = {};
+
+            console.log(event);
+
+            if (event.context.rememberMe) {
+                var today = new date(date.now());
+                today.setdate(today.getdate() + 15);
+                data = today;
+            }
+            if (event.context.username === "") {
+                rMain.set("loginerr", "username is required");
+                return;
+            }
+
+            fh.session.login(event.context.username, event.context.password, data)
+                .done(function(result) {
+                    location.reload();
+                })
+                .fail(function(result) {
+                    rMain.set("loginErr", result.message);
+                });
+        },
+    });
+
+
 });
-
-
-
-$( "#login" ).submit(function( event ) {
-	clearErr();
-	event.preventDefault();
-	var data = {};
-
-	if ($("#rememberMe").prop("checked")) {
-		var today = new Date(Date.now());
-		today.setDate(today.getDate() + 15); 	
-			data = today;
-	}
-	if ($("#username").val() === "") { 
-		err("Username is required");
-		return;
-	}
-
-	fh.session.login($("#username").val(),$("#password").val(),data)
-	.done(function(result) {
-		location.reload();
-	})
-	.fail(function(result) {
-		err(result.message);
-	});
-});
-
-});
-
-function err(msg) {
-	$("#err").removeClass("hidden").text(msg);
-}
-
-function clearErr() {
-	$("#err").addClass("hidden").text("");
-}
