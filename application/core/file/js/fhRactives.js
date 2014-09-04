@@ -58,6 +58,7 @@
             '</div>' +
             '{{/error}}';
 
+//TODO: Notifications ds
         return Ractive.extend({
             template: navbarTemplate,
             isolated: false,
