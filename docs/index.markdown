@@ -1261,7 +1261,7 @@ The application zip file must have a file called app.json in the following forma
 	"version": "0.1",
 	"description": "Application for managing datastore files.",
 	"author": "Tim Shannon - shannon.timothy@gmail.com",
-	"root": "v1/file/index.html",
+	"root": "/datastore-manager/v1/file/index.html",
 	"icon": "/datastore-manager/v1/file/images/ds-icon.png"
 }
 ```
@@ -1316,7 +1316,7 @@ Response (200):
 			version: "0.02",
 			description: "Freehold Homepage",
 			author: "Tim Shannon - shannon.timothy@gmail.com",
-			root: "index.htm",
+			root: "/v1/file/index.htm",
 			icon: "/home/v1/file/images/home.png"
 		}
 	}

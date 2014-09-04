@@ -39,6 +39,7 @@ Freehold is a free and open source project released under the MIT license.  Lice
 </navbar>
 
 <modal id="loginModal" title="Log in" on-login="login">
+	<form>
 	{{#loginErr}}
 	<span id="err" class="label label-danger">{{loginErr}}</span>
 	{{/loginErr}}
@@ -56,6 +57,7 @@ Freehold is a free and open source project released under the MIT license.  Lice
 			</label>
 		</div>
 		<button on-click="login" class="btn btn-default">Log In</button>
+	</form>
 </modal>
 
 </script>

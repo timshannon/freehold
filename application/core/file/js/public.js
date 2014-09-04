@@ -12,9 +12,6 @@ $(document).ready(function() {
     rMain.on({
         loginModal: function(event) {
             rMain.set({
-                "username": "empty",
-                "password": "empty",
-                "rememberMe": false,
                 "loginErr": false
             });
 
@@ -25,13 +22,12 @@ $(document).ready(function() {
 
         },
         login: function(event) {
-            var data = {};
-
-            console.log(event);
+            event.original.preventDefault();
+            var data;
 
             if (event.context.rememberMe) {
-                var today = new date(date.now());
-                today.setdate(today.getdate() + 15);
+                var today = new Date(Date.now());
+                today.setDate(today.getDate() + 15);
                 data = today;
             }
             if (event.context.username === "") {
