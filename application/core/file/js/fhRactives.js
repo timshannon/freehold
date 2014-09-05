@@ -33,7 +33,7 @@
             data: {
                 title: "Modal Title",
                 id: "modalId",
-				customFooter: false
+                customFooter: false
             }
         });
     }
@@ -51,14 +51,14 @@
             '{{#error}}' +
             '<div class="overlay"></div>' +
             '<div class="navbar-alert alert alert-danger container" role="alert">' +
-            '<strong>An error occurred and you may need to refresh this page:</strong> ' +
-            '{{error}}' +
+            '<strong>{{errorLead}}</strong> ' +
+            '{{{error}}}' +
             '<a href="#" on-click="refresh">' +
             '<span class="close glyphicon glyphicon-refresh"></span><span class="sr-only">Refresh</span></a>' +
             '</div>' +
             '{{/error}}';
 
-//TODO: Notifications ds
+        //TODO: Notifications ds
         return Ractive.extend({
             template: navbarTemplate,
             isolated: false,
@@ -66,6 +66,7 @@
                 brand: "freehold",
                 url: "/",
                 authenticated: (fh.auth().type != "none"),
+                errorLead: "An error occurred and you may need to refresh this page: ",
                 error: false
             },
             init: function() {
