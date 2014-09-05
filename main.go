@@ -14,6 +14,7 @@ import (
 
 	"bitbucket.org/tshannon/config"
 	"bitbucket.org/tshannon/freehold/cert"
+	"bitbucket.org/tshannon/freehold/log"
 	"bitbucket.org/tshannon/freehold/user"
 )
 
@@ -47,7 +48,6 @@ func init() {
 	}()
 }
 
-//TODO: datadir setting, specifies where to store Freehold data
 func main() {
 	flag.Parse()
 
@@ -110,11 +110,20 @@ func main() {
 		}
 
 	}
+
+	server := &http.Server{
+		Handler:        rootHandler,
+		ReadTimeout:    time.Duration(cfg.Int("ReadTimeoutSeconds", 0)) * time.Second,
+		WriteTimeout:   time.Duration(cfg.Int("WriteTimeoutSeconds", 0)) * time.Second,
+		MaxHeaderBytes: cfg.Int("MaxHeaderBytes", 0),
+		ErrorLog:       log.FHLogger(),
+	}
 	if certFile == "" || keyFile == "" {
 		if port == "" {
 			port = "80"
 		}
-		err = http.ListenAndServe(address+":"+port, rootHandler)
+		server.Addr = address + ":" + port
+		err = server.ListenAndServe()
 	} else {
 		if port == "" {
 			port = "443"
@@ -128,7 +137,8 @@ func main() {
 
 		isSSL = true
 		//SSL added and removed here :-)
-		err = http.ListenAndServeTLS(address+":"+port, certFile, keyFile, rootHandler)
+		server.Addr = address + ":" + port
+		err = server.ListenAndServeTLS(certFile, keyFile)
 	}
 
 	if err != nil {
