@@ -1,154 +1,90 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>freehold - home</title>
+    <title>freehold - Adminstrator Console</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 		<link href="/core/v1/file/css/bootstrap.min.css" rel="stylesheet" media="screen">
 		<link href="/core/v1/file/css/freehold.css" rel="stylesheet" media="screen">
-		<link href="/home/v1/file/css/index.css" rel="stylesheet" media="screen">
+		<link href="/admin/v1/file/css/index.css" rel="stylesheet" media="screen">
 	</head>
 <body>
-<div id="modalHook"></div>
+<div id="navHook"></div>
 
-<div id="appList" class="container">
-			
+<div class="container">
+	<ul class="nav nav-tabs" role="tablist">
+		<li class="active"><a href="#logs" role="tab" data-toggle="tab">Logs</a></li>
+		<li><a href="#users" role="tab" data-toggle="tab">Users</a></li>
+		<li><a href="#settings" role="tab" data-toggle="tab">Settings</a></li>
+	</ul>
+
+	<!--tab contents-->
+	<div class="tab-content">
+		<div class="tab-pane active" id="logs">
+		</div>
+		<div class="tab-pane" id="users">
+		</div>
+		<div class="tab-pane" id="settings">
+		</div>
+	</div>
+	
 </div><!--container-->
 
 <!--templates-->
-<script id="appTile" type="text/ractive">
-		<a href="{{id}}" class="col-md-3 thumbnail app-tile">
-			{{#icon}}
-				<img class="app-icon img-responsive" src="{{icon}}">	
-			{{/icon}}
-			{{^icon}}
-				<img class="app-icon img-responsive" src="/home/v1/file/image/glyphicons_156_show_thumbnails.png">	
-			{{/icon}}
-			<div class="app-id">
-				<h3><span class="center-block label label-default">{{name}}</span></h3>
-			</div>
-		</a>
+<script id="tLogs" type="text/ractive">
+<table class="table table-condensed table-hover">
+	<thead>
+		<tr>
+			<th>When</th><th>Type</th><th>Message</th>
+		</tr>
+	</thead>
+	<tbody>
+		{{#logs}}
+		<tr class="{{type=='error' ? 'danger' : ''}}">
+			<td>{{when}}</td>
+			<td>{{type}}</td>
+			<td>{{log}}</td>
+		</tr>
+		{{/logs}}
+	</tbody>
+</table>
 </script>
 
-<script id="tApps" type="text/ractive">
-	<div class="app-bar">
-		<button type="button" id="btnManage" on-click="openModal" class="btn btn-default pull-right">Manage</button>
-		<ul class="nav nav-tabs" role="tablist">
-			<li class="active"><a href="#starred" role="tab" data-toggle="tab">
-			<span class="glyphicon glyphicon-star"></span></a></li>
-			<li><a href="#all" role="tab" data-toggle="tab">All</a></li>
-		</ul>
-	</div>
+<script id="tUsers" type="text/ractive">
+<ul class="list-group">
+	{{#users:i}}
+	<li class="list-group-item">
+		<dl>
+			<dt>{{name}}</dt>
+			<dd>
+				<strong>Username:</strong>{{i}}<br>
+				<strong>Email:</strong>{{email}}
+			</dd>
+		</dl>
+	</li>
+	{{/users}}
+</ul>
 
-<!-- Tab panes -->
-<div class="tab-content">
-  <div class="tab-pane active" id="starred">
-		{{#apps:i}}
-			{{#starred}}
-				{{>appTile}}
-			{{/starred}}
-		{{/apps}}
-	</div>
-  <div class="tab-pane" id="all">
-		<div class="row">
-		{{#apps:i}}
-			{{>appTile}}
-		{{/apps}}
-		</div>
-	</div>
-</div>
-	
 </script>
 
-<script id="tManageApps" type="text/ractive">
-<navbar error="{{error}}"></navbar>
-
-<!--TODO: Remove on yield addition-->
-<modal id="manageAppsModal" title="Manage Applications" 
-		on-star="star" on-install="install" on-upgrade="upgrade" on-remove="remove" on-fetchExternal="fetchExternal">
-	<div class="list-group">
-	{{#apps:i}}
-		<div class="list-group-item clearfix">
-		{{#admin}}
-			<div class="btn-group-vertical pull-right">
-				{{^installed}}
-					<button type="button" on-click="install" class="btn btn-success btn-xs">
-						<span class="glyphicon glyphicon-plus"></span> Install</button>
-				{{/installed}}
-				{{#upgrade}}
-					<button type="button" on-click="upgrade" class="btn btn-info btn-xs">
-						<span class="glyphicon glyphicon-refresh"></span> Upgrade</button>
-				{{/upgrade}}
-				{{#remove}}
-					<button type="button" on-click="remove" class="btn btn-danger btn-xs">
-						<span class="glyphicon glyphicon-remove"></span> Remove</button>
-				{{/remove}}
-			</div>	
-		{{/admin}}
-			<span class="list-group-item-text">
-			<a href="#" on-click="star">
-				<span class="pull-left glyphicon glyphicon-star star {{#starred}}starred{{/starred}}"></span>
-			</a>
-				<dl><dt>{{name}}</dt>
-				<dd>{{description}}</dd>
-				</dl>
-			</span>
-		</div>
-	{{/apps}}
-	{{#failures}}
-		<div class="list-group-item list-group-item-danger">
-			<dl>
-			<dt>{{data}}</dt><dd>{{message}}</dd>
-			</dl>
-		</div>
-	{{/failures}}
-	{{#external}}
-		<a href="#" class="list-group-item list-group-item-info" data-toggle="collapse" data-target="#externalAdd">
-			Fetch External Application File for Install
-		</a>
-	{{^waiting}}
-		<div id="externalAdd" class="collapse in">
-			<div class="list-group-item ">
-			<div class="form-inline">
-				<div class="form-group">
-					<label class="sr-only" for="appUrl">Application File URL</label>
-					<input type="text" class="form-control" id="appUrl" value="{{url}}" placeholder="Enter App File URL">
-				</div>
-				<button on-click="fetchExternal" class="btn btn-default">Fetch</button>
-			</div>
-			</div>
-		</div>
-		{{/waiting}}
-		{{#waiting}}
-		<div class="list-group-item disabled">
-			<div class="progress">
-				<div class="progress-bar progress-bar-striped active"  role="progressbar" 
-					aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
-					<span>Loading...</span>
-				</div>
-			</div>
-		</div>
-		{{/waiting}}
-		{{#fetchError}}
-			<div class="list-group-item list-group-item-danger">
-				<dl>
-				<dt>{{data}}</dt><dd>{{message}}</dd>
-				</dl>
-			</div>
-		{{/fetchError}}
-
-	{{/external}}
-	</div>
-
-</div>
-</modal>
+<script id="tSettings" type="text/ractive">
+<ul class="list-group">
+	{{#settings:i}}
+	<li class="list-group-item">
+		<dl>
+			<dt>{{i}}</dt><dd>{{description}}</dd>
+		</dl>
+	</li>
+	{{/settings}}
+</ul>
 </script>
+
 <!--end templates-->
 <script src="/core/v1/file/js/jquery-2.1.1.min.js"></script>
 <script src="/core/v1/file/js/bootstrap.min.js"></script>
 <script src="/core/v1/file/js/ractive.min.js"></script>
 <script src="/core/v1/file/js/fh.js"></script>
 <script src="/core/v1/file/js/fhRactives.js"></script>
-<script src="/home/v1/file/js/index.js"></script>
+<script src="/admin/v1/file/js/index.js"></script>
 </body>
 </html>

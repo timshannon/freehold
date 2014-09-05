@@ -60,6 +60,7 @@ $(document).ready(function() {
                 "fetchError": false,
                 "url": ""
             });
+
             $("#manageAppsModal").modal();
             $("#externalAdd").collapse("hide");
         }
@@ -174,7 +175,6 @@ $(document).ready(function() {
                                 }
                             }
                         }
-
 
                         rApps.set({
                             apps: installed

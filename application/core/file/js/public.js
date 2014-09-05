@@ -12,7 +12,10 @@ $(document).ready(function() {
     rMain.on({
         loginModal: function(event) {
             rMain.set({
-                "loginErr": false
+                "loginErr": false,
+				"username": "",
+				"password": "",
+				"rememberMe": false
             });
 
             $("#loginModal").modal();

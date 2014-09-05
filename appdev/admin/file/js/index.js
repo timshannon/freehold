@@ -1,201 +1,77 @@
 $(document).ready(function() {
     "use strict";
-    var usrSettingsDS = "/v1/datastore/" + fh.auth().user + "/homeSettings.ds";
-    var dsSettings = new fh.Datastore(usrSettingsDS);
-    var appList;
-    var starred = {};
-    var externalApps = false;
+    //setup
 
-    var rApps = new Ractive({
-        el: "#appList",
-        template: "#tApps",
-    });
-
-    var rManage = new Ractive({
-        el: "#modalHook",
-        template: "#tManageApps",
+    var rNav = new Ractive({
+        el: "#navHook",
+        template: '<navbar errorLead="{{errorLead}}" error="{{error}}"></navbar>',
         components: fh.components
     });
 
-    //Get User's setting DS if exists
-    fh.properties.get(usrSettingsDS)
-        .done(function() {
-            dsSettings.get("starredApps")
-                .done(function(result) {
-                    starred = result.data;
-                    refreshApps();
-                })
-                .fail(function(result) {
-                    rManage.set("error", result.message);
-                });
-        })
-        .fail(function(result) {
-            // if not exists, create it
-            if (result.message == "Resource not found") {
-                fh.datastore.new(usrSettingsDS)
-                    .done(function() {
-                        refreshApps();
-                    })
-                    .fail(function(result) {
-                        rManage.set("error", result.message);
-                    });
-            }
-        });
-
-    //check if external apps can be fetched
-    fh.settings.get("AllowWebAppInstall")
-        .done(function(result) {
-            externalApps = result.data.value;
-        })
-        .fail(function(result) {
-            rManage.set("error", result.message);
-        });
-
-
-
-    //Events
-    rApps.on({
-        openModal: function(event) {
-            rManage.set({
-                "fetchError": false,
-                "url": ""
-            });
-            $("#manageAppsModal").modal();
-            $("#externalAdd").collapse("hide");
-        }
+    var rLogs = new Ractive({
+        el: "#logs",
+        template: "#tLogs"
     });
 
-    rManage.on({
-        install: function(event) {
-            fh.application.install(event.context.file)
-                .done(function() {
-                    refreshApps();
-                })
-                .fail(function() {
-                    rManage.set("error", result.message);
-                });
-        },
-        upgrade: function(event) {
-            fh.application.upgrade(event.context.file)
-                .done(function() {
-                    refreshApps();
-                })
-                .fail(function() {
-                    rManage.set("error", result.message);
-                });
-        },
-        remove: function(event) {
-            fh.application.uninstall(event.context.id)
-                .done(function() {
-                    refreshApps();
-                })
-                .fail(function() {
-                    rManage.set("error", result.message);
-                });
-        },
-        star: function(event) {
-            if (event.context.starred) {
-                delete starred[event.context.id];
-            } else {
-                starred[event.context.id] = true;
-            }
-            dsSettings.put("starredApps", starred)
-                .done(function() {
-                    refreshApps();
-                })
-                .fail(function(result) {
-                    rManage.set("error", result.message);
-                });
-        },
-        fetchExternal: function(event) {
-            var url = event.context.url;
-            rManage.set("fetchError", false);
+    var rSettings = new Ractive({
+        el: "#settings",
+        template: "#tSettings"
+    });
 
-            if (!url.match("https?://+")) {
-                rManage.set("fetchError", {
-                    message: "Invalid url"
-                });
-                return;
-            }
-
-            rManage.set("waiting", true);
-            fh.application.postAvailable(url)
-                .done(function(result) {
-                    rManage.set("url", "");
-                    $("#externalAdd").collapse("hide");
-                    refreshApps();
-
-                })
-                .fail(function(result) {
-                    rManage.set("fetchError", result);
-                })
-                .always(function() {
-                    rManage.set("waiting", false);
-                });
-
-        }
+    var rUsers = new Ractive({
+        el: "#users",
+        template: "#tUsers"
     });
 
 
-    //Functions
-
-    function refreshApps() {
-        fh.application.installed()
-            .done(function(result) {
-                var installed = result.data;
-                fh.application.available()
-                    .always(function(result) {
-                        var available = result.data;
-
-                        var id;
-
-                        for (id in installed) {
-                            if (installed.hasOwnProperty(id)) {
-                                if (starred[id]) {
-                                    installed[id].starred = true;
-                                }
-
-                            }
-                        }
-                        for (id in available) {
-                            if (available.hasOwnProperty(id)) {
-
-                                if (installed[id]) {
-                                    available[id].installed = true;
-                                    if (id != "home") {
-                                        available[id].remove = true;
-                                    }
-                                    if (installed[id].version != available[id].version) {
-                                        available[id].upgrade = true;
-                                    }
-                                }
-                                if (starred[id]) {
-                                    available[id].starred = true;
-                                }
-                            }
-                        }
-
-
-                        rApps.set({
-                            apps: installed
-                        });
-
-                        rManage.set({
-                            apps: available,
-                            admin: fh.auth().admin,
-                            failures: result.failures,
-                            external: externalApps
-                        });
-                    });
-            })
-            .fail(function(result) {
-                rManage.set("error", result.message);
-            });
-
-
+    if (!fh.auth().admin) {
+        rNav.set({
+            "errorLead": "You do not have admin rights and cannot use this tool: ",
+            "error": '<a href="/" class="alert-link">Return to your home page</a>'
+        });
     }
 
 
+    loadLogs({
+        order: "dsc"
+    });
+    loadUsers();
+    loadSettings();
 
+    //events
+
+
+
+    //functions
+    function loadLogs(iter) {
+        fh.logs(iter)
+            .done(function(result) {
+                rLogs.set("logs", result.data);
+            })
+            .fail(function(result) {
+                rNav.set("error", result.message);
+            });
+
+    }
+
+    function loadSettings() {
+        fh.settings.all()
+            .done(function(result) {
+                rSettings.set("settings", result.data);
+            })
+            .fail(function(result) {
+                rNav.set("error", result.message);
+            });
+    }
+
+    function loadUsers() {
+        fh.user.all()
+            .done(function(result) {
+                rUsers.set("users", result.data);
+            })
+            .fail(function(result) {
+                rNav.set("error", result.message);
+            });
+    }
 
 }); //end ready
