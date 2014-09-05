@@ -178,3 +178,14 @@ func syslogError(err error) {
 
 	lWriter.Err(err.Error())
 }
+
+type FHLogWriter struct{}
+
+func (w *FHLogWriter) Write(p []byte) (n int, err error) {
+	NewEntry("http error", string(p))
+	return len(p), nil
+}
+
+func FHLogger() *log.Logger {
+	return log.New(&FHLogWriter{}, "", log.LstdFlags)
+}
