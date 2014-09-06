@@ -187,5 +187,5 @@ func (w *FHLogWriter) Write(p []byte) (n int, err error) {
 }
 
 func FHLogger() *log.Logger {
-	return log.New(&FHLogWriter{}, "", log.LstdFlags)
+	return log.New(&FHLogWriter{}, "", 0)
 }
