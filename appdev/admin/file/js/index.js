@@ -1,7 +1,7 @@
 $(document).ready(function() {
     "use strict";
-    //setup
 
+    //setup
     var rNav = new Ractive({
         el: "#navHook",
         template: '<navbar errorLead="{{errorLead}}" error="{{error}}"></navbar>',
