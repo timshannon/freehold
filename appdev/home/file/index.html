@@ -17,16 +17,14 @@
 
 <!--templates-->
 <script id="appTile" type="text/ractive">
-		<a href="{{id}}" class="col-md-3 thumbnail app-tile">
+		<a href="{{id}}" class="thumbnail app-tile">
 			{{#icon}}
 				<img class="app-icon img-responsive" src="{{icon}}">	
 			{{/icon}}
 			{{^icon}}
-				<img class="app-icon img-responsive" src="/home/v1/file/image/glyphicons_156_show_thumbnails.png">	
+				<img class="app-icon img-responsive" src="/home/v1/file/image/app_icon.png">	
 			{{/icon}}
-			<div class="app-id">
-				<h3><span class="center-block label label-default">{{name}}</span></h3>
-			</div>
+			<h3><div class="app-id">{{name}}</div></h3>
 		</a>
 </script>
 
@@ -50,11 +48,9 @@
 		{{/apps}}
 	</div>
   <div class="tab-pane" id="all">
-		<div class="row">
 		{{#apps:i}}
 			{{>appTile}}
 		{{/apps}}
-		</div>
 	</div>
 </div>
 	
