@@ -7,7 +7,6 @@ package log
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"log/syslog"
 	"time"
@@ -151,9 +150,6 @@ func Get(iter *Iter) ([]*Log, error) {
 // is to not log it until it's "bubbled up to the top".  Meaning only the http handler
 // should log the error.  This is to prevent the same error from being logged a bunch of times.
 func Error(err error) {
-	//TODO: Remove
-	fmt.Println("Error: ", err)
-
 	if !setting.Bool("LogErrors") {
 		return
 	}
@@ -182,7 +178,7 @@ func syslogError(err error) {
 type FHLogWriter struct{}
 
 func (w *FHLogWriter) Write(p []byte) (n int, err error) {
-	NewEntry("http error", string(p))
+	NewEntry("server error", string(p))
 	return len(p), nil
 }
 

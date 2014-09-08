@@ -16,6 +16,8 @@ Contents
 	* [Logs](#logs)
 	* [Communication](#communication)
 	* [Calendar](#calendar)
+	* [Tasks](#tasks)
+	* [Backup](#backup)
 
 
 <a name="api"></a>API Conventions
@@ -255,7 +257,7 @@ Response (200):
 ```
 
 
-<a name="datastore"></a>DataStore
+<a name="datastore"></a>Datastore
 ---------
 ### /v1/datastore/`path to datastore`/
 
@@ -367,6 +369,8 @@ Response (200):
 	}
 }
 ```
+
+
 
 *Iterate through values in the collection*
 ```
@@ -485,6 +489,40 @@ Response (200):
 }
 
 ```
+
+*Get count of records*
+```
+GET /v1/datastore/personal/top10.ds
+{
+	count: {}
+}
+
+Response (200):
+{
+	status: "success",
+	data: 10
+}
+
+```
+
+You can combine count with iter.  Note that *limit* in iter object is ignored.
+```
+GET /v1/datastore/50items.ds
+{
+	count{},
+	iter: {
+		from: 43
+	}
+}
+
+Response (200):
+{
+	status: "success",
+	data: 8
+}
+```
+
+
 
 **DELETE** 
 
@@ -1539,6 +1577,12 @@ TODO: WebRTC backend
 
 TODO: IRC client
 
+/v1/com/email
+------------
+
+TODO: email client
+
+
 * * *
 
 <a name="calendar"></a> Calendar
@@ -1546,7 +1590,12 @@ TODO: IRC client
 TODO: built in calendar functionality, exports to ical would be nice.
 
 
-<a name="Backup"></a> Backup
+<a name="tasks"></a> Tasks
+========
+TODO: Scheduled rest requests, scheduled based on calendar functionality
+
+
+<a name="backup"></a> Backup
 =============
 TODO: Backup entire freehold instance into one zip file, or just backup core datastores.
 

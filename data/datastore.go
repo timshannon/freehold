@@ -125,6 +125,21 @@ func (d *Datastore) Delete(key json.RawMessage) error {
 	return d.store.Delete([]byte(key))
 }
 
+func (d *Datastore) Count(iter *Iter) (int, error) {
+	if iter == nil {
+		iter = &Iter{}
+	}
+
+	iter.Limit = -1
+	results, err := d.Iter(iter)
+	if err != nil {
+		return -1, err
+	}
+
+	return len(results), nil
+
+}
+
 func (d *Datastore) Iter(iter *Iter) ([]KeyValue, error) {
 	var rx *regexp.Regexp
 	var err error
@@ -171,6 +186,10 @@ func (d *Datastore) Iter(iter *Iter) ([]KeyValue, error) {
 	i, err := d.store.Iter(from, to)
 	if err != nil {
 		return nil, err
+	}
+
+	if iter.Limit < 0 {
+		iter.Limit = 0
 	}
 
 	skip := 0

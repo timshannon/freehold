@@ -22,10 +22,11 @@ import (
 )
 
 type DatastoreInput struct {
-	Key  *json.RawMessage `json:"key,omitempty"`
-	Max  *json.RawMessage `json:"max,omitempty"`
-	Min  *json.RawMessage `json:"min,omitempty"`
-	Iter *data.Iter       `json:"iter,omitempty"`
+	Key   *json.RawMessage `json:"key,omitempty"`
+	Max   *json.RawMessage `json:"max,omitempty"`
+	Min   *json.RawMessage `json:"min,omitempty"`
+	Iter  *data.Iter       `json:"iter,omitempty"`
+	Count *json.RawMessage `json:"count,omitempty"`
 }
 
 func datastoreGet(w http.ResponseWriter, r *http.Request) {
@@ -52,7 +53,8 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 	input := &DatastoreInput{}
 	parseJson(r, input)
 
-	if input.Key != nil {
+	switch {
+	case input.Key != nil:
 		//return key's value
 		ds, err := data.Open(filename)
 		if os.IsNotExist(err) {
@@ -76,7 +78,25 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 			Status: statusSuccess,
 			Data:   val,
 		})
-	} else if input.Iter != nil {
+	case input.Count != nil:
+		//return count
+		ds, err := data.Open(filename)
+		if os.IsNotExist(err) {
+			four04(w, r)
+			return
+		}
+
+		count, err := ds.Count(input.Iter)
+		if errHandled(err, w) {
+			return
+		}
+
+		respondJsend(w, &JSend{
+			Status: statusSuccess,
+			Data:   count,
+		})
+
+	case input.Iter != nil:
 		//return iter result
 		ds, err := data.Open(filename)
 		if os.IsNotExist(err) {
@@ -88,11 +108,12 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 		if errHandled(err, w) {
 			return
 		}
+
 		respondJsend(w, &JSend{
 			Status: statusSuccess,
 			Data:   val,
 		})
-	} else if input.Max != nil {
+	case input.Max != nil:
 		ds, err := data.Open(filename)
 		if os.IsNotExist(err) {
 			four04(w, r)
@@ -125,7 +146,7 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 				Value: val,
 			},
 		})
-	} else if input.Min != nil {
+	case input.Min != nil:
 		ds, err := data.Open(filename)
 		if os.IsNotExist(err) {
 			four04(w, r)
@@ -159,7 +180,7 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 			},
 		})
 
-	} else {
+	default:
 		//return entire file
 
 		if !auth.canRead(permission.DatastoreDownload(prm)) {

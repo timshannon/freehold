@@ -1,6 +1,6 @@
 $(document).ready(function() {
     "use strict";
-    var usrSettingsDS = "/v1/datastore/" + fh.auth().user + "/homeSettings.ds";
+    var usrSettingsDS = "/v1/datastore/" + fh.auth.user + "/homeSettings.ds";
     var dsSettings = new fh.Datastore(usrSettingsDS);
     var appList;
     var starred = {};
@@ -182,7 +182,7 @@ $(document).ready(function() {
 
                         rManage.set({
                             apps: available,
-                            admin: fh.auth().admin,
+                            admin: fh.auth.admin,
                             failures: result.failures,
                             external: externalApps
                         });

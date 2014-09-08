@@ -78,7 +78,7 @@ QUnit.asyncTest("Move File", function(assert) {
                     assert.ok(
                         (result.status == "success") &&
                         (result.data.name == "renamed.xml") &&
-                        (result.data.permissions.owner == fh.auth().user) &&
+                        (result.data.permissions.owner == fh.auth.user) &&
                         (result.data.permissions.private == "rw") &&
                         (result.data.size == 42) &&
                         (result.data.url = "/testing/v1/file/testdata/renamed.xml")
@@ -105,7 +105,7 @@ QUnit.asyncTest("Set Permissions", function(assert) {
 
     var newPrm = {
         permissions: {
-            owner: fh.auth().user,
+            owner: fh.auth.user,
             public: "",
             private: "rw",
             friend: "r"
@@ -136,7 +136,7 @@ QUnit.asyncTest("Get Properties", function(assert) {
             assert.ok(
                 (result.status == "success") &&
                 (result.data.name == "testfile.xml") &&
-                (result.data.permissions.owner == fh.auth().user) &&
+                (result.data.permissions.owner == fh.auth.user) &&
                 (result.data.permissions.private == "rw") &&
                 (result.data.size == 42) &&
                 (result.data.url = "/testing/v1/file/testdata/testfile.xml")
@@ -513,7 +513,7 @@ QUnit.asyncTest("Datastore Properties", function(assert) {
         .always(function(result) {
             assert.ok(
                 (result.data.name == "test.ds") &&
-                (result.data.permissions.owner == fh.auth().user) &&
+                (result.data.permissions.owner == fh.auth.user) &&
                 (result.data.permissions.private == "rw") &&
                 (result.data.url == "/testing/v1/datastore/testdata/test.ds")
             );
@@ -589,6 +589,42 @@ QUnit.asyncTest("Regex test", function(assert) {
 
 
 });
+
+QUnit.asyncTest("Count + Regex", function(assert) {
+    expect(4);
+
+    var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
+
+    var data = {};
+    for (var i = 0; i <= 100; i++) {
+        if (i < 10) {
+            data["regextest" + i] = fh.uuid();
+        } else {
+            data[i] = fh.uuid();
+        }
+    }
+
+    ds.putObj(data)
+        .always(function(result) {
+            assert.ok(
+                (result.status == "success")
+            );
+            ds.count({
+                    regexp: "regextest"
+                })
+                .always(function(result) {
+                    assert.ok(
+                        (result.status == "success") &&
+                        (result.data == 10)
+                    );
+                    QUnit.start();
+                });
+        });
+
+
+
+});
+
 
 
 QUnit.module("Datastore Iter", {
