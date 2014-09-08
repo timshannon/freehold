@@ -19,7 +19,7 @@ window.fh = (function() {
 
         if ((type.toUpperCase() !== "GET") && (!options.beforeSend)) {
             options.beforeSend = function(xhr) {
-                xhr.setRequestHeader("X-CSRFToken", fh.auth().CSRFToken);
+                xhr.setRequestHeader("X-CSRFToken", fh.auth.CSRFToken);
             };
         }
 
@@ -49,7 +49,7 @@ window.fh = (function() {
                 },
             });
             return _auth;
-        },
+        }(),
         uuid: function() {
             function s4() {
                 return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
@@ -61,7 +61,7 @@ window.fh = (function() {
                 //very simple file upload, feel free to write you own or use a plugin
                 //  with progress handling, polyfills, etc
                 // just be sure to include the X-CSRFToken header:
-                //   xhr.setRequestHeader ("X-CSRFToken", fh.auth().CSRFToken);
+                //   xhr.setRequestHeader ("X-CSRFToken", fh.auth.CSRFToken);
                 return stdAjax("POST", fileurl, {
                     data: formData,
                     cache: false,
@@ -298,6 +298,15 @@ window.fh = (function() {
                         min: {}
                     }),
                 });
+            };
+            this.count = function(iterObject) {
+                return stdAjax("GET", this.path, {
+                    data: JSON.stringify({
+                        count: {},
+                        iter: iterObject
+                    }),
+                });
+
             };
             this.iter = function(iterObject) {
                 return stdAjax("GET", this.path, {

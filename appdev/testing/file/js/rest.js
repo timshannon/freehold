@@ -1,6 +1,6 @@
 $(document).ready(function() { 
 
-if (fh.auth().type != "none") {
+if (fh.auth.type != "none") {
 	$(".public").addClass("hidden");
 	$(".authenticated").removeClass("hidden");
 } else {
@@ -82,7 +82,7 @@ function stdAjax(type, url, options) {
 
 	if ((type.toUpperCase() !== "GET") && (!options.beforeSend)) {
 		options.beforeSend = function (xhr) {
-			xhr.setRequestHeader ("X-CSRFToken", fh.auth().CSRFToken);
+			xhr.setRequestHeader ("X-CSRFToken", fh.auth.CSRFToken);
 		};
 	}
 

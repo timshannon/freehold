@@ -41,7 +41,7 @@
     function navbar() {
         navbarTemplate = '<nav class="navbar navbar-default" role="navigation">' +
             '<div class="navbar-header">' +
-            '<a class="navbar-brand" href="{{url}}">{{brand}}</a>' +
+            '<a class="navbar-brand" href="{{homeUrl}}">{{brand}}</a>' +
             '{{#authenticated}}' +
             '<button type="button" id="logoutButton" on-click="logout" class="btn btn-default navbar-btn navbar-right">Log Out</button>' +
             '{{/authenticated}}' +
@@ -64,8 +64,8 @@
             isolated: false,
             data: {
                 brand: "freehold",
-                url: "/",
-                authenticated: (fh.auth().type != "none"),
+                homeUrl: "/",
+                authenticated: (fh.auth.type != "none"),
                 errorLead: "An error occurred and you may need to refresh this page: ",
                 error: false
             },

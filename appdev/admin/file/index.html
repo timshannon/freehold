@@ -32,15 +32,27 @@
 
 <!--templates-->
 <script id="tLogs" type="text/ractive">
-<table class="table table-condensed table-hover">
+<div class="well form-inline form-group admin-control-group">
+	<label id="filterLabel" class="control-label">Filter:</label>
+	<label class="radio-inline"><input type="radio" name="typeFilter" on-click="filterAll" value="all" checked>All</label>
+	<label class="radio-inline"><input type="radio" name="typeFilter" on-click="filterError" value="error">Errors</label>
+	<label class="radio-inline"><input type="radio" name="typeFilter" on-click="filterFail" value="fail">Failures</label>
+	<label class="radio-inline"><input type="radio" name="typeFilter" on-click="filterAuth" value="auth">Auth Errors</label>
+	<div class="form-group">
+		<input type="text" id="filterText" class="form-control" placeholder="filter" value="{{filterText}}">
+	</div>
+</div>
+<table class="table table-condensed table-striped table-hover">
 	<thead>
 		<tr>
-			<th>When</th><th>Type</th><th>Message</th>
+			<th>
+				<a href="#" on-click="sort">When<span class="caret{{#sortAsc}} caret-up{{/sortAsc}}"></span></a>
+			</th><th>Type</th><th>Message</th>
 		</tr>
 	</thead>
 	<tbody>
 		{{#logs}}
-		<tr class="{{type=='error' ? 'danger' : ''}}">
+		<tr class="{{type=='error' ? 'danger' : ''}} {{type=='fail' ? 'warning' : ''}}">
 			<td>{{when}}</td>
 			<td>{{type}}</td>
 			<td>{{log}}</td>
@@ -48,6 +60,14 @@
 		{{/logs}}
 	</tbody>
 </table>
+<div class="btn-group">
+	<a href="#" class="btn btn-default{{#iter.skip == 0}} disabled{{/iter.skip}}" on-click="prev">
+		<span class="glyphicon glyphicon-chevron-left"></span></a>
+	<a href="#" class="btn btn-default{{#logs.length < iter.limit}} disabled{{/logs}}" on-click="next">
+		<span class="glyphicon glyphicon-chevron-right"></span></a>
+	
+</div>
+
 </script>
 
 <script id="tUsers" type="text/ractive">
@@ -64,7 +84,6 @@
 	</li>
 	{{/users}}
 </ul>
-
 </script>
 
 <script id="tSettings" type="text/ractive">
