@@ -1,6 +1,8 @@
 $(document).ready(function() {
     "use strict";
 
+    var logPageLimit = 5;
+
     //setup
     var rNav = new Ractive({
         el: "#navHook",
@@ -14,8 +16,11 @@ $(document).ready(function() {
         data: {
             iter: {
                 order: "dsc",
-                limit: 5,
-                skip: 0
+                limit: logPageLimit
+            },
+            page: {
+                start: 0,
+                end: logPageLimit,
             }
         }
     });
@@ -44,68 +49,84 @@ $(document).ready(function() {
 
     //events
     rLogs.observe("filterText", function(newValue, oldValue, keypath) {
-        setLogFilter(newValue);
+
+		//FIXME
+        setFilter(newValue);
     });
     rLogs.on({
-        "submit": function(event) {
-            event.original.preventDefault();
-        },
         "sort": function(event) {
-            if (event.context.sortAsc) {
-                event.context.iter.order = "dsc";
+            if (event.context.iter.order == "asc") {
+                rLogs.set("iter.order", "dsc");
             } else {
-                event.context.iter.order = "asc";
+                rLogs.set("iter.order", "asc");
             }
 
             loadLogs();
 
         },
         "filterAll": function(event) {
-            event.context.iter.type = "";
-            event.context.iter.skip = 0;
-
+            rLogs.set("iter.type", "");
             loadLogs();
         },
         "filterError": function(event) {
-            event.context.iter.type = "error";
-            event.context.iter.skip = 0;
+            rLogs.set("iter.type", "error");
             loadLogs();
         },
         "filterFail": function(event) {
-            event.context.iter.type = "fail";
-            event.context.iter.skip = 0;
+            rLogs.set("iter.type", "fail");
             loadLogs();
 
         },
         "filterAuth": function(event) {
-            event.context.iter.type = "authentication";
-            event.context.iter.skip = 0;
+            rLogs.set("iter.type", "authentication");
             loadLogs();
         },
         "next": function(event) {
-            event.context.iter.skip += event.context.iter.limit;
-            loadLogs();
+            var page = rLogs.get("page");
+            var iter = rLogs.get("iter");
+            var logs = rLogs.get("logs");
+            var last = rLogs.get("last");
+
+            page.start += iter.limit;
+            page.end += iter.limit;
+
+            rLogs.set("page", page);
+            if (!last) {
+                if (logs.length < page.end) {
+                    loadNextLogs(page.start);
+                }
+            }
+
         },
         "prev": function(event) {
-            event.context.iter.skip -= event.context.iter.limit;
-            loadLogs();
+            var page = rLogs.get("page");
+            var iter = rLogs.get("iter");
+            if (page.start === 0) {
+                return;
+            }
+            page.start -= iter.limit;
+            page.end -= iter.limit;
+
+            rLogs.set("page", page);
         }
     });
 
     //functions
     function loadLogs() {
         var iter = rLogs.get("iter");
+        rLogs.set("page.start", 0);
+        rLogs.set("page.end", iter.limit);
+        rLogs.set("filterText", "");
+        iter.skip = 0;
+
         fh.logs(iter)
             .done(function(result) {
-
-                if (iter.order == "asc") {
-                    rLogs.set("sortAsc", true);
-                } else {
-                    rLogs.set("sortAsc", false);
-                }
-
+                var logs = result.data;
+                rLogs.set("last", logs.length < iter.limit);
                 rLogs.set("iter", iter);
-                rLogs.set("logs", result.data);
+                rLogs.set("logs", logs);
+
+
             })
             .fail(function(result) {
                 rNav.set("error", result.message);
@@ -113,38 +134,56 @@ $(document).ready(function() {
 
     }
 
-    function setLogFilter(filter) {
-        var logs = rLogs.get("logs");
+    function loadNextLogs(skip) {
         var iter = rLogs.get("iter");
+        iter.skip = skip;
 
-        //reset iterator to first page
-        iter.skip = 0;
+        fh.logs(iter)
+            .done(function(result) {
+                var newLogs = result.data;
+                var logs = rLogs.get("logs");
+                if (!logs) {
+                    logs = [];
+                }
+                var last = newLogs.length < iter.limit;
+                rLogs.set("last", last);
+                rLogs.set("iter", iter);
 
-		//TODO: start here
-        while (logs.length <= iter.limit) {
-            filterLogs(logs, filter, limit);
-
-        }
-
+                logs = logs.concat(newLogs);
+                rLogs.set("logs", logs);
+                setFilter(rLogs.get("filterText"));
+            })
+            .fail(function(result) {
+                rNav.set("error", result.message);
+            });
     }
 
-    function filterLogs(logs, filter, limit) {
+    function setFilter(filter) {
+        var logs = rLogs.get("logs");
+        var iter = rLogs.get("iter");
+        var last = rLogs.get("last");
+        logs = filterLogs(logs, filter);
+        rLogs.set("logs", logs);
+
+        if (logs.length < iter.limit && !last) {
+            loadNextLogs(iter.skip + iter.limit);
+        }
+    }
+
+    function filterLogs(logs, filter) {
         if (!filter) {
-            return;
+            return logs;
         }
         var regEx = new RegExp(filter, "i");
         var filtered = [];
 
         for (var i = 0; i < logs.length; i++) {
             if (regEx.exec(logs[i].log)) {
-                filter.push(logs[i]);
-            }
-            if (filter.length >= limit) {
-                break;
+                filtered.push(logs[i]);
             }
         }
 
-        logs = filter;
+        return filtered;
     }
 
     function loadSettings() {

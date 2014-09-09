@@ -46,26 +46,27 @@
 	<thead>
 		<tr>
 			<th>
-				<a href="#" on-click="sort">When<span class="caret{{#sortAsc}} caret-up{{/sortAsc}}"></span></a>
+				<a href="#" on-click="sort">When<span class="caret{{#iter.order == 'asc'}} caret-up{{/sortAsc}}"></span></a>
 			</th><th>Type</th><th>Message</th>
 		</tr>
 	</thead>
 	<tbody>
-		{{#logs}}
+		{{#logs:i }}
+		{{#i >= page.start && i < page.end}}
 		<tr class="{{type=='error' ? 'danger' : ''}} {{type=='fail' ? 'warning' : ''}}">
 			<td>{{when}}</td>
 			<td>{{type}}</td>
 			<td>{{log}}</td>
 		</tr>
+		{{/i}}
 		{{/logs}}
 	</tbody>
 </table>
 <div class="btn-group">
-	<a href="#" class="btn btn-default{{#iter.skip == 0}} disabled{{/iter.skip}}" on-click="prev">
+	<a href="#" class="btn btn-default{{#page.start === 0}} disabled{{/page}}" on-click="prev">
 		<span class="glyphicon glyphicon-chevron-left"></span></a>
-	<a href="#" class="btn btn-default{{#logs.length < iter.limit}} disabled{{/logs}}" on-click="next">
+	<a href="#" class="btn btn-default{{#page.end > logs.length}} disabled{{/page}}" on-click="next">
 		<span class="glyphicon glyphicon-chevron-right"></span></a>
-	
 </div>
 
 </script>
