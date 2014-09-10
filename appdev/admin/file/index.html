@@ -40,6 +40,9 @@
 	<label class="radio-inline"><input type="radio" name="typeFilter" on-click="filterAuth" value="auth">Auth Errors</label>
 	<div class="form-group">
 		<input type="text" id="filterText" class="form-control" placeholder="filter" value="{{filterText}}">
+		{{#filterWaiting}}
+		<div id="filterSpinner" class="spinner form-group"></div>
+		{{/filterWaiting}}
 	</div>
 </div>
 <table class="table table-condensed table-striped table-hover">

@@ -11,10 +11,25 @@
 	margin-left: 10px;
 }
 
+#filterSpinner {
+		margin-left: -40px;
+		width: 28px;
+		height: 28px;
+	}
 
 @media (min-width: 768px) {
 	#filterText {
 		width: 470px;
 	}
+
 }
+
+@media (max-width: 768px) {
+	#filterSpinner {
+	display: none;
+	}
+
+	
+}
+
 
