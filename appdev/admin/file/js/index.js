@@ -1,7 +1,7 @@
 $(document).ready(function() {
     "use strict";
 
-    var logPageLimit = 5;
+    var logPageLimit = 20;
 
     //setup
     var rNav = new Ractive({
@@ -22,8 +22,9 @@ $(document).ready(function() {
                 start: 0,
                 end: logPageLimit,
             }
-        }
+        },
     });
+
 
     var rSettings = new Ractive({
         el: "#settings",
@@ -48,10 +49,12 @@ $(document).ready(function() {
     loadSettings();
 
     //events
+    var timer;
     rLogs.observe("filterText", function(newValue, oldValue, keypath) {
-
-		//FIXME
-        setFilter(newValue);
+        if (timer) {
+            window.clearTimeout(timer);
+        }
+        timer = window.setTimeout(loadLogs, 200);
     });
     rLogs.on({
         "sort": function(event) {
@@ -113,10 +116,10 @@ $(document).ready(function() {
 
     //functions
     function loadLogs() {
+        rLogs.set("filterWaiting", true);
         var iter = rLogs.get("iter");
         rLogs.set("page.start", 0);
         rLogs.set("page.end", iter.limit);
-        rLogs.set("filterText", "");
         iter.skip = 0;
 
         fh.logs(iter)
@@ -126,7 +129,7 @@ $(document).ready(function() {
                 rLogs.set("iter", iter);
                 rLogs.set("logs", logs);
 
-
+                setFilter(rLogs.get("filterText"));
             })
             .fail(function(result) {
                 rNav.set("error", result.message);
@@ -167,7 +170,9 @@ $(document).ready(function() {
 
         if (logs.length < iter.limit && !last) {
             loadNextLogs(iter.skip + iter.limit);
+            return;
         }
+        rLogs.set("filterWaiting", false);
     }
 
     function filterLogs(logs, filter) {
