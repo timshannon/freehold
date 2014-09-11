@@ -1,5 +1,8 @@
 //Freehold ractive components 
 // for things like modals, navbar, etc
+//
+//	TODO: Use https://github.com/ractivejs/component-spec
+//	add to app build process with require.js
 (function() {
     fh.components = {
         modal: modal(),
@@ -15,7 +18,7 @@
             '<span class="sr-only">Close</span></button>' +
             '<h4 class="modal-title">{{title}}</h4>' +
             '</div>' +
-            '<div class="modal-body">{{>content}}</div>' +
+            '<div class="modal-body">{{yield}}</div>' +
             '{{^customFooter}}' +
             '<div class="modal-footer">' +
             '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>' +
@@ -45,7 +48,7 @@
             '{{#authenticated}}' +
             '<button type="button" id="logoutButton" on-click="logout" class="btn btn-default navbar-btn navbar-right">Log Out</button>' +
             '{{/authenticated}}' +
-            '{{>content}}' +
+            '{{yield}}' +
             '</div>' +
             '</nav>' +
             '{{#error}}' +

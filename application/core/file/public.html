@@ -34,11 +34,11 @@ Freehold is a free and open source project released under the MIT license.  Lice
 </div>
 <!--templates-->
 <script id="tMain" type="text/ractive">
-<navbar on-loginModal="loginModal" error="{{error}}">
+<navbar  error="{{error}}">
 		<button type="button" id="loginButton" on-click="loginModal" class="btn btn-default navbar-btn navbar-right">Log in</button>
 </navbar>
 
-<modal id="loginModal" title="Log in" on-login="login">
+<modal id="loginModal" title="Log in">
 	<form>
 	{{#loginErr}}
 	<span id="err" class="label label-danger">{{loginErr}}</span>
