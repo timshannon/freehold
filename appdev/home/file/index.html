@@ -59,9 +59,7 @@
 <script id="tManageApps" type="text/ractive">
 <navbar error="{{error}}"></navbar>
 
-<!--TODO: Remove on yield addition-->
-<modal id="manageAppsModal" title="Manage Applications" 
-		on-star="star" on-install="install" on-upgrade="upgrade" on-remove="remove" on-fetchExternal="fetchExternal">
+<modal id="manageAppsModal" title="Manage Applications">
 	<div class="list-group">
 	{{#apps:i}}
 		<div class="list-group-item clearfix">

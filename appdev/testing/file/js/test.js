@@ -397,6 +397,9 @@ QUnit.asyncTest("New, Get and Delete Token", function(assert) {
         });
 });
 
+//TODO: Currently errors when multiple threads try to drop and 
+// create test.ds.  Rewrite so it only gets created once
+//  or move all tests into one large test
 QUnit.module("Datastore", {
     setup: function(assert) {
         QUnit.stop();
