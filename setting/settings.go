@@ -47,7 +47,10 @@ func Set(settingName string, value interface{}) error {
 		return err
 	}
 
-	fhSetting := settingDefault(settingName)
+	fhSetting, ok := settingDefaults[settingName]
+	if !ok {
+		return fail.New("Invalid setting name", settingName)
+	}
 
 	if reflect.TypeOf(value) != reflect.TypeOf(fhSetting.Value) {
 		return fail.New("Invalid setting value type", value)
@@ -116,7 +119,11 @@ func Default(settingName string) error {
 		return err
 	}
 
-	fhSetting := settingDefault(settingName)
+	fhSetting, ok := settingDefaults[settingName]
+	if !ok {
+		return fail.New("Invalid setting name", settingName)
+	}
+
 	if fhSetting.setFunc != nil {
 		fhSetting.setFunc()
 	}
