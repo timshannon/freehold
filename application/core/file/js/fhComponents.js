@@ -1,8 +1,21 @@
 //Freehold ractive components 
 // for things like modals, navbar, etc
 //
-//	TODO: Use https://github.com/ractivejs/component-spec
-//	add to app build process with require.js
+//	TODO: Use https://github.com/ractivejs/component-spec?
+//	Thoughts: The whole concatenate everything to cut down on http requests makes a lot of sense
+//	for large webservers that need to conserve bandwith.  Freehold isn't built with that in mind
+//	It's a personal webserver.  However, using the 1 component = 1 html file with scripts and css
+//	all in one file, is a fantastic idea for keeping app code reusable and modular.  But I don't
+//	want to tie the core freehold stuff to one build path (i.e. with a bunch of require() all 
+//	over, forcing all app development to use requirejs.  I could use ractive-load, but currently
+//	it's all multiple async component requests, which result in a stuttering initial load even
+//	when the files are loaded from browser cache.
+//	The current solution is to hardcode the components with the clumsy multi-line concatenation
+//	and global CSS for individual components.  Less than idea, but it keeps the apps snappy,
+//	and doesn't force a build / dependency on the core library.
+//
+//	I could see for larger application it makes a lot of sense to use requirejs, and keep
+//	everything silod into one set of html + js + css which includes all dependencies.
 (function() {
     fh.components = {
         modal: modal(),
