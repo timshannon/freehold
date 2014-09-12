@@ -80,7 +80,7 @@ $(document).ready(function() {
             loadLogs();
         },
         "filterFail": function(event) {
-            rLogs.set("iter.type", "fail");
+            rLogs.set("iter.type", "failure");
             loadLogs();
 
         },
