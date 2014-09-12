@@ -28,6 +28,15 @@ func AppAvailable() *Permission {
 	}
 }
 
+//Default permissions for new application files
+func AppNewDefault(owner string) *Permission {
+	return &Permission{
+		Owner:   owner,
+		Private: Read + Write,
+		Friend:  Read,
+	}
+}
+
 // Any authenticated user can post a new file
 func FileNew() *Permission {
 	return &Permission{

@@ -28,7 +28,10 @@ $(document).ready(function() {
 
     var rSettings = new Ractive({
         el: "#settings",
-        template: "#tSettings"
+        template: "#tSettings",
+        data: {
+            mode: "change"
+        }
     });
 
     var rUsers = new Ractive({
@@ -50,6 +53,7 @@ $(document).ready(function() {
 
     //events
     var timer;
+    //Logs
     rLogs.observe("filterText", function(newValue, oldValue, keypath) {
         if (timer) {
             window.clearTimeout(timer);
@@ -57,7 +61,7 @@ $(document).ready(function() {
         timer = window.setTimeout(loadLogs, 200);
     });
     rLogs.on({
-        "sort": function(event) {
+        "sortLog": function(event) {
             if (event.context.iter.order == "asc") {
                 rLogs.set("iter.order", "dsc");
             } else {
@@ -114,7 +118,60 @@ $(document).ready(function() {
         }
     });
 
+    //settings
+    rSettings.observe("settingsFilter", function(newValue, oldValue, keypath) {
+        if (timer) {
+            window.clearTimeout(timer);
+        }
+        timer = window.setTimeout(filterSettings, 200);
+    });
+    rSettings.on({
+        "changeMode": function(event) {
+            event.context.error = false;
+            if (event.context.change === undefined) {
+                event.context.change = true;
+            } else {
+                event.context.change = !event.context.change;
+            }
+
+
+            if (event.context.change) {
+                //change
+                rSettings.set(event.keypath, event.context);
+                return;
+            }
+            //save
+            fh.settings.set(event.index.i, event.context.value)
+                .done(function() {
+                    loadSettings();
+                })
+                .fail(function(result) {
+                    event.context.error = result.message;
+                    rSettings.set(event.keypath, event.context);
+                });
+
+        },
+        "setDefault": function(event) {
+			fh.settings.default(event.index.i)
+                .done(function() {
+                    loadSettings();
+                })
+                .fail(function(result) {
+                    event.context.error = result.message;
+                    rSettings.set(event.keypath, event.context);
+                });
+
+        },
+        "changeBoolean": function(event) {
+            event.context.value = !event.context.value;
+            rSettings.set(event.keypath, event.context);
+        }
+    });
+
+
     //functions
+
+    //logs
     function loadLogs() {
         rLogs.set("filterWaiting", true);
         var iter = rLogs.get("iter");
@@ -176,31 +233,54 @@ $(document).ready(function() {
     }
 
     function filterLogs(logs, filter) {
-        if (!filter) {
-            return logs;
-        }
         var regEx = new RegExp(filter, "i");
         var filtered = [];
 
         for (var i = 0; i < logs.length; i++) {
             if (regEx.exec(logs[i].log)) {
                 filtered.push(logs[i]);
+                //Format time to more readable timestamp
+                logs[i].when = new Date(logs[i].when).toLocaleString();
             }
         }
 
         return filtered;
     }
 
+
+    //settings
     function loadSettings() {
         fh.settings.all()
             .done(function(result) {
                 rSettings.set("settings", result.data);
+                filterSettings();
             })
             .fail(function(result) {
                 rNav.set("error", result.message);
             });
     }
 
+    function filterSettings() {
+        var regEx = new RegExp(rSettings.get("settingsFilter"), "i");
+        var settings = rSettings.get("settings");
+
+
+        for (var i in settings) {
+            if (settings.hasOwnProperty(i)) {
+                if (!regEx.exec(settings[i].description) && !regEx.exec(settings[i].name)) {
+                    settings[i].filtered = true;
+                } else {
+                    settings[i].filtered = false;
+                }
+                settings[i].type = typeof settings[i].value;
+            }
+        }
+
+        rSettings.set("settings", settings);
+    }
+
+
+    //users
     function loadUsers() {
         fh.user.all()
             .done(function(result) {

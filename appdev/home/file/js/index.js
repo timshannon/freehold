@@ -26,7 +26,18 @@ $(document).ready(function() {
                     refreshApps();
                 })
                 .fail(function(result) {
+                    if (result.status == "error") {
+                        rManage.set("error", result.message);
+					} else {
+dsSettings.put("starredApps", {})
+                .done(function() {
+                    refreshApps();
+                })
+                .fail(function(result) {
                     rManage.set("error", result.message);
+                });
+
+                    }
                 });
         })
         .fail(function(result) {

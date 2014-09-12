@@ -4,7 +4,6 @@
     <title>freehold - Adminstrator Console</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
-		<link href="/core/v1/file/css/bootstrap.min.css" rel="stylesheet" media="screen">
 		<link href="/core/v1/file/css/freehold.css" rel="stylesheet" media="screen">
 		<link href="/admin/v1/file/css/index.css" rel="stylesheet" media="screen">
 	</head>
@@ -39,18 +38,21 @@
 	<label class="radio-inline"><input type="radio" name="typeFilter" on-click="filterFail" value="fail">Failures</label>
 	<label class="radio-inline"><input type="radio" name="typeFilter" on-click="filterAuth" value="auth">Auth Errors</label>
 	<div class="form-group">
-		<input type="text" id="filterText" class="form-control" placeholder="filter" value="{{filterText}}">
+		<input type="text" id="filterText" class="form-control" placeholder="filter message" value="{{filterText}}">
 		{{#filterWaiting}}
 		<div id="filterSpinner" class="spinner form-group"></div>
 		{{/filterWaiting}}
 	</div>
 </div>
+
 <table class="table table-condensed table-striped table-hover">
 	<thead>
 		<tr>
 			<th>
-				<a href="#" on-click="sort">When<span class="caret{{#iter.order == 'asc'}} caret-up{{/sortAsc}}"></span></a>
-			</th><th>Type</th><th>Message</th>
+				<a href="#" on-click="sortLog">When<span class="caret{{#iter.order == 'asc'}} caret-up{{/sortAsc}}"></span></a>
+			</th>
+			<th>Type</th>
+			<th>Message</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -91,15 +93,56 @@
 </script>
 
 <script id="tSettings" type="text/ractive">
+<div class="container">
 <ul class="list-group">
+	<li class="list-group-item row disabled">
+		<p>Note: Settings take effect immediately.</p>
+		<input type="text" class="form-control" placeholder="filter settings" value="{{settingsFilter}}">
+	</li>
 	{{#settings:i}}
-	<li class="list-group-item">
+	{{^filtered}}
+	<li class="list-group-item row{{#change}} list-group-item-info{{/change}}">
+		<div class="col-md-8">
 		<dl>
 			<dt>{{i}}</dt><dd>{{description}}</dd>
 		</dl>
+		</div>
+		<div class="col-md-4">
+		{{#error}}
+		<span class="label label-danger">{{error}}</span>
+		{{/error}}
+		<div class="input-group">
+			{{#type=="string"}}
+			<input type="text" class="form-control" disabled="{{^change}}disabled{{/change}}" value="{{value}}">
+			{{/type}}
+			{{#type=="number"}}
+			<input type="number" class="form-control" disabled="{{^change}}disabled{{/change}}" value="{{value}}">
+			{{/type}}
+			{{#type=="boolean"}}
+			<button type="button" disabled="{{^change}}disabled{{/change}}"  on-click="changeBoolean"
+				class="btn btn-default {{#value}}btn-primary active{{/value}}">
+			{{#value}}
+				True
+			{{else}}
+				False
+			{{/value}}
+			</button>
+			{{/type}}
+
+      <span class="input-group-btn">
+        <button class="btn btn-default" on-click="changeMode" type="button">{{#change}}Save{{else}}Change{{/change}}</button>
+        <button class="btn btn-default" on-click="setDefault" title="set default value" type="button">
+					<span class="glyphicon glyphicon-remove"></span>
+				</button>
+      </span>
+
+    </div>
+		</div>
 	</li>
+	{{/filtered}}
 	{{/settings}}
 </ul>
+</div>
 </script>
 
 <!--end templates-->
@@ -107,7 +150,7 @@
 <script src="/core/v1/file/js/bootstrap.min.js"></script>
 <script src="/core/v1/file/js/ractive.min.js"></script>
 <script src="/core/v1/file/js/fh.js"></script>
-<script src="/core/v1/file/js/fhRactives.js"></script>
+<script src="/core/v1/file/js/fhComponents.js"></script>
 <script src="/admin/v1/file/js/index.js"></script>
 </body>
 </html>
