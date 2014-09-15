@@ -7,7 +7,9 @@ $(document).ready(function() {
     var rNav = new Ractive({
         el: "#navHook",
         template: '<navbar errorLead="{{errorLead}}" error="{{error}}"></navbar>',
-        components: fh.components
+        components: {
+            navbar: fh.components.navbar
+        }
     });
 
     var rLogs = new Ractive({
@@ -30,13 +32,16 @@ $(document).ready(function() {
         el: "#settings",
         template: "#tSettings",
         data: {
-            mode: "change"
+            mode: "change",
         }
     });
 
     var rUsers = new Ractive({
         el: "#users",
-        template: "#tUsers"
+        template: "#tUsers",
+        components: {
+            modal: fh.components.modal
+        },
     });
 
 
@@ -46,6 +51,14 @@ $(document).ready(function() {
             "error": '<a href="/" class="alert-link">Return to your home page</a>'
         });
     }
+
+    fh.application.installed()
+        .done(function(result) {
+            rUsers.set("apps", result.data);
+        })
+        .fail(function(result) {
+            rNav.set("error", result.message);
+        });
 
     loadLogs();
     loadUsers();
@@ -118,6 +131,29 @@ $(document).ready(function() {
         }
     });
 
+    //users
+    rUsers.on({
+        "addUser": function(event) {
+            rUsers.set("mode", "add");
+            rUsers.set("current", false);
+            $("#userModal").modal();
+        },
+        "changeUser": function(event) {
+            rUsers.set("mode", "change");
+            event.context.username = event.index.i;
+            rUsers.set("current", event.context);
+            $("#userModal").modal();
+        },
+        "save": function(event) {
+            var mode = rUsers.get("mode");
+            if (mode == "add") {
+                console.log("add user");
+                return;
+            }
+            console.log("update existing user");
+        }
+    });
+
     //settings
     rSettings.observe("settingsFilter", function(newValue, oldValue, keypath) {
         if (timer) {
@@ -152,7 +188,7 @@ $(document).ready(function() {
 
         },
         "setDefault": function(event) {
-			fh.settings.default(event.index.i)
+            fh.settings.default(event.index.i)
                 .done(function() {
                     loadSettings();
                 })

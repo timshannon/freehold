@@ -12,10 +12,9 @@
 }
 
 #filterSpinner {
-		margin-left: -40px;
-		width: 28px;
-		height: 28px;
-	}
+	width: 28px;
+	height: 28px;
+}
 
 @media (min-width: 768px) {
 	#filterText {
@@ -26,7 +25,7 @@
 
 @media (max-width: 768px) {
 	#filterSpinner {
-	display: none;
+		display: none;
 	}
 
 	

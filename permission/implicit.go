@@ -94,20 +94,7 @@ func User(owner string) *Permission {
 		Owner:   owner,
 		Friend:  Read,
 		Private: Read + Write,
-	}
-}
-
-func UserNew() *Permission {
-	return &Permission{
-		admin: Read + Write,
-	}
-}
-
-func UserDelete(owner string) *Permission {
-	return &Permission{
-		Owner:   owner,
 		admin:   Read + Write,
-		Private: Read + Write,
 	}
 }
 

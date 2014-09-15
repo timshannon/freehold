@@ -58,7 +58,7 @@
 	<tbody>
 		{{#logs:i }}
 		{{#i >= page.start && i < page.end}}
-		<tr class="{{type=='error' ? 'danger' : ''}} {{type=='fail' ? 'warning' : ''}}">
+		<tr class="{{type=='error' ? 'danger' : ''}} {{type=='failure' ? 'warning' : ''}}">
 			<td>{{when}}</td>
 			<td>{{type}}</td>
 			<td>{{log}}</td>
@@ -77,17 +77,78 @@
 </script>
 
 <script id="tUsers" type="text/ractive">
+<modal id="userModal" title="{{#if mode == "add"}}Add New User{{else}}Change User {{current.username}}{{/if}}" customFooter="true">
+	<form class="form-horizontal" role="form">
+	<div class="form-group">
+    <label for="username" class="col-sm-3 control-label">Username</label>
+		{{#if mode=="add"}}
+		<div class="col-sm-9">
+			<input type="text" class="form-control" id="username" placeholder="Enter a username" value="{{current.username}}">
+		</div>
+		{{else}}
+		<div class="col-sm-9">
+      <p class="form-control-static">{{current.username}}</p>
+    </div>
+		{{/if}}
+  </div>
+
+	{{#if mode=="add"}}
+	<div class="form-group">
+    <label for="password" class="col-sm-3 control-label">Password</label>
+		<div class="col-sm-9">
+			<input type="password" class="form-control" id="password" placeholder="Enter a password" value="{{current.password}}">
+		</div>
+  </div>
+	{{/if}}
+
+	<div class="form-group">
+    <label for="name" class="col-sm-3 control-label">Name</label>
+		<div class="col-sm-9">
+			<input type="text" class="form-control" id="name" placeholder="Enter user's name" value="{{current.name}}">
+		</div>
+  </div>
+	<div class="form-group">
+		<label for="email" class="col-sm-3 control-label">User E-mail</label>
+		<div class="col-sm-9">
+			<input type="email" class="form-control" id="email" placeholder="Enter user's email" value="{{current.email}}">
+		</div>
+	</div>
+	<div class="form-group">
+		<label for="homeApp" class="col-sm-3 control-label">User Home App</label>
+		<div class="col-sm-9">
+			<select class="form-control" name="homeApp">
+				{{#apps:i}}
+				<option value="{{i}}">{{name}}</option>
+				{{/apps}}
+			</select>
+		</div>
+	</div>
+	</form>
+
+	<div class="modal-footer">
+		<button type="button" class="btn btn-default" on-click="save">Save</button>
+		<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+	</div>
+</modal>
+
 <ul class="list-group">
+	<li class="list-group-item disabled">
+		<button class="btn btn-success" on-click="addUser" type="button">
+		<span class="glyphicon glyphicon-plus"></span>Add New User</button>
+	</li>
 	{{#users:i}}
 	<li class="list-group-item">
+	<button type="button" on-click="changeUser" class="pull-right btn btn-default">
+			<span class="glyphicon glyphicon-cog"></span></button>
+
 		<dl>
-			<dt>{{name}}</dt>
+			<dt>{{#if name}} {{name}} {{else}} {{i}} {{/if}}</dt>
 			<dd>
 				<strong>Username:</strong>{{i}}<br>
 				<strong>Email:</strong>{{email}}
 			</dd>
 		</dl>
-	</li>
+			</li>
 	{{/users}}
 </ul>
 </script>
@@ -132,7 +193,7 @@
       <span class="input-group-btn">
         <button class="btn btn-default" on-click="changeMode" type="button">{{#change}}Save{{else}}Change{{/change}}</button>
         <button class="btn btn-default" on-click="setDefault" title="set default value" type="button">
-					<span class="glyphicon glyphicon-remove"></span>
+					<span class="glyphicon glyphicon-repeat"></span>
 				</button>
       </span>
 
