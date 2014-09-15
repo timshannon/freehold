@@ -21,8 +21,6 @@ const (
 	authLogType = "authentication"
 )
 
-//TODO: Allow Admin password resets
-
 var FailLogon = errors.New("Invalid user and / or password")
 
 type User struct {

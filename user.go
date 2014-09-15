@@ -76,7 +76,7 @@ func userPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	prm := permission.UserNew()
+	prm := permission.User("")
 
 	if !auth.canWrite(prm) {
 		four04(w, r)
@@ -196,7 +196,7 @@ func userDelete(w http.ResponseWriter, r *http.Request) {
 		errHandled(fail.New("Invalid user input. User field is required", input), w)
 		return
 	}
-	prm := permission.UserDelete(*input.User)
+	prm := permission.User(*input.User)
 
 	if !auth.canWrite(prm) {
 		four04(w, r)
