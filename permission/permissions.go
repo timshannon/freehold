@@ -135,15 +135,13 @@ func Valid(permission string) bool {
 }
 
 func (p *Permission) can(permType rune, u *user.User) bool {
-	if p.admin != "" {
-		if !u.Admin {
-			return false
-		}
-		return strings.ContainsRune(p.admin, permType)
-	}
 
 	if u == nil { //public
 		return strings.ContainsRune(p.Public, permType)
+	}
+
+	if u.Admin && p.admin != "" {
+		return strings.ContainsRune(p.admin, permType)
 	}
 
 	if p.isOwner(u) {
@@ -163,14 +161,11 @@ func (p *Permission) CanWrite(u *user.User) bool {
 }
 
 func (p *Permission) isOwner(u *user.User) bool {
-	if u == nil {
+	if u == nil || p.Owner == "" {
 		return false
 	}
-	if p.Owner == u.Username() {
-		return true
-	}
 
-	return false
+	return p.Owner == u.Username()
 }
 
 func (p *Permission) Resource() string {

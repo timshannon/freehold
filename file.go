@@ -450,6 +450,7 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 		}
 		if isDocPath(resource) {
 			prm = permission.Doc()
+
 		} else {
 			prm, err = permission.Get(path.Join(filename, files[i].Name()))
 			if errHandled(err, w) {
@@ -491,7 +492,6 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 }
 
 func serveFile(w http.ResponseWriter, r *http.Request, file *os.File) {
-
 	var rs io.ReadSeeker
 
 	if isMarkDown(file.Name()) {

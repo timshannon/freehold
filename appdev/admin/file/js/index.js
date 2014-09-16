@@ -2,6 +2,9 @@ $(document).ready(function() {
     "use strict";
 
     var logPageLimit = 20;
+    var defaultHome;
+    var minPassLength;
+    var emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
     //setup
     var rNav = new Ractive({
@@ -44,13 +47,28 @@ $(document).ready(function() {
         },
     });
 
-
     if (!fh.auth.admin) {
         rNav.set({
             "errorLead": "You do not have admin rights and cannot use this tool: ",
             "error": '<a href="/" class="alert-link">Return to your home page</a>'
         });
     }
+
+    fh.settings.get("DefaultHomeApp")
+        .done(function(result) {
+            defaultHome = result.data.value;
+        })
+        .fail(function(result) {
+            rNav.set("error", result.message);
+        });
+
+    fh.settings.get("MinPasswordLength")
+        .done(function(result) {
+            minPassLength = result.data.value;
+        })
+        .fail(function(result) {
+            rNav.set("error", result.message);
+        });
 
     fh.application.installed()
         .done(function(result) {
@@ -135,24 +153,76 @@ $(document).ready(function() {
     rUsers.on({
         "addUser": function(event) {
             rUsers.set("mode", "add");
-            rUsers.set("current", false);
+            rUsers.set("current", null);
+            rUsers.set("errors", null);
+
+            rUsers.set("current.homeApp", defaultHome);
             $("#userModal").modal();
         },
         "changeUser": function(event) {
             rUsers.set("mode", "change");
-            event.context.username = event.index.i;
-            rUsers.set("current", event.context);
+            console.log(event);
+            var user = {
+                user: event.index.i,
+                email: event.context.email,
+                homeApp: event.context.homeApp,
+                name: event.context.name,
+            };
+            rUsers.set("current", user);
+            rUsers.set("errors", null);
+
             $("#userModal").modal();
         },
         "save": function(event) {
             var mode = rUsers.get("mode");
+            rUsers.set("errors", null);
+
+            if (!validUser(mode)) {
+                return;
+            }
+
+            var current = rUsers.get("current");
             if (mode == "add") {
-                console.log("add user");
+				console.log(current);
+                fh.user.new(current)
+                    .done(function() {
+                        $("#userModal").modal("toggle");
+                        loadUsers();
+                    })
+                    .fail(function(result) {
+                        rUsers.set("errors.save", result.message);
+                    });
                 return;
             }
             console.log("update existing user");
+            $("#userModal").modal("toggle");
+        },
+    });
+    rUsers.observe({
+        "current.*": function(newValue, oldValue, keypath) {
+            if (!newValue) {
+                return;
+            }
+            if (timer) {
+                window.clearTimeout(timer);
+            }
+
+            timer = window.setTimeout(function() {
+                switch (keypath) {
+                    case "current.email":
+                        validEmail();
+                        break;
+                    case "current.password":
+                        validPassword();
+                        break;
+                    case "current.password2":
+                        validPassword2();
+                        break;
+                }
+            }, 200);
         }
     });
+
 
     //settings
     rSettings.observe("settingsFilter", function(newValue, oldValue, keypath) {
@@ -325,6 +395,65 @@ $(document).ready(function() {
             .fail(function(result) {
                 rNav.set("error", result.message);
             });
+    }
+
+    function validUser(mode) {
+        var current = rUsers.get("current");
+        var valid = true;
+        rUsers.set("errors", null);
+
+        if (!current.user) {
+            rUsers.set("errors.user", "Username is required");
+            valid = false;
+        }
+
+
+        valid = (validEmail() && validPassword(mode) && validPassword2() && valid);
+
+        return valid;
+    }
+
+    function validEmail() {
+        var current = rUsers.get("current");
+        if (current.email && !emailRegex.test(current.email)) {
+            rUsers.set("errors.email", "Invalid email address format");
+            return false;
+        }
+
+        rUsers.set("errors.email", null);
+        return true;
+    }
+
+    function validPassword(mode) {
+        if (mode != "change") {
+            return true;
+        }
+
+        var current = rUsers.get("current");
+        if (!current.password) {
+            rUsers.set("errors.password", "Password is required");
+            return false;
+        }
+
+        if (current.password.length < minPassLength) {
+            rUsers.set("errors.password", "Password isn't long enough");
+            return false;
+        }
+        rUsers.set("errors.password", null);
+        return true;
+    }
+
+    function validPassword2() {
+        var current = rUsers.get("current");
+
+        if (current.password !== current.password2) {
+            rUsers.set("errors.password2", "Passwords don't match");
+            return false;
+        }
+
+        rUsers.set("errors.password2", null);
+        return true;
+
     }
 
 }); //end ready

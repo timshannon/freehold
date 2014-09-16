@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"runtime"
 
-	"bitbucket.org/tshannon/freehold/data/store"
 	"bitbucket.org/tshannon/treemux"
 )
 
@@ -136,8 +135,7 @@ func (m *methodHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		if r := recover(); r != nil {
 			if _, ok := r.(runtime.Error); ok {
-				store.Halt()
-				panic(r)
+				halt(r.(runtime.Error).Error())
 			}
 			errHandled(errors.New(fmt.Sprintf("Freehold panicked on %v and has recovered", r)), w)
 			return

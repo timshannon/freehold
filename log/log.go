@@ -7,6 +7,7 @@ package log
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"log/syslog"
 	"time"
@@ -156,14 +157,22 @@ func Error(err error) {
 	if setting.Bool("LogErrorsToSyslog") {
 		syslogError(err)
 	}
+	fmt.Println("Error: ", err.Error())
 	NewEntry("error", err.Error())
 }
 
-func Fail(err error) {
+func Fail(err *fail.Fail) {
 	if !setting.Bool("LogFailures") {
 		return
 	}
-	NewEntry("failure", err.Error())
+
+	data, jerr := json.Marshal(err.Data)
+	if jerr != nil {
+		Error(jerr)
+		return
+	}
+
+	NewEntry("failure", fmt.Sprintf("Message: %s, Data: %s", err.Message, data))
 }
 
 func syslogError(err error) {
