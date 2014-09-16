@@ -6,6 +6,9 @@ $(document).ready(function() {
     var starred = {};
     var externalApps = false;
 
+
+	//TODO: Test and fix with non-admins
+
     var rApps = new Ractive({
         el: "#appList",
         template: "#tApps",
@@ -59,7 +62,7 @@ dsSettings.put("starredApps", {})
             externalApps = result.data.value;
         })
         .fail(function(result) {
-            rManage.set("error", result.message);
+			externalApps = false;
         });
 
 

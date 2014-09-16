@@ -903,7 +903,7 @@ Response (201):
 
 **PUT**
 
-*Update an existing user* - Users can only update themselves
+*Update an existing user* - Admin can update all users, users can update themselves only
 ```
 PUT /v1/auth/user
 {

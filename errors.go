@@ -28,13 +28,13 @@ func errHandled(err error, w http.ResponseWriter) bool {
 
 	case *fail.Fail:
 		status = statusFail
-		log.Fail(err)
+		log.Fail(err.(*fail.Fail))
 	case *http.ProtocolError, *json.SyntaxError, *json.UnmarshalTypeError:
 		//Hardcoded external errors which can bubble up to the end users
 		// without exposing internal server information, make them failures
 		err = fail.NewFromErr(err, nil)
 		status = statusFail
-		log.Fail(err)
+		log.Fail(err.(*fail.Fail))
 	default:
 		status = statusError
 		log.Error(err)

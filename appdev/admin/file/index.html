@@ -77,27 +77,44 @@
 </script>
 
 <script id="tUsers" type="text/ractive">
-<modal id="userModal" title="{{#if mode == "add"}}Add New User{{else}}Change User {{current.username}}{{/if}}" customFooter="true">
+<modal id="userModal" title="{{#if mode == "add"}}Add New User{{else}}Change User {{current.user}}{{/if}}" customFooter="true">
 	<form class="form-horizontal" role="form">
-	<div class="form-group">
+
+	<div class="form-group {{#errors.user}}has-error has-feedback{{/errors.user}}" title="{{errors.user}}">
     <label for="username" class="col-sm-3 control-label">Username</label>
 		{{#if mode=="add"}}
 		<div class="col-sm-9">
-			<input type="text" class="form-control" id="username" placeholder="Enter a username" value="{{current.username}}">
+			<input type="text" class="form-control" id="username" placeholder="Enter a username" value="{{current.user}}">
+			{{#errors.user}}
+				<span class="form-control-feedback glyphicon glyphicon-remove"></span>
+			{{/errors.user}}
 		</div>
 		{{else}}
 		<div class="col-sm-9">
-      <p class="form-control-static">{{current.username}}</p>
+      <p class="form-control-static">{{current.user}}</p>
     </div>
 		{{/if}}
   </div>
 
 	{{#if mode=="add"}}
-	<div class="form-group">
+	<div class="form-group {{#errors.password}}has-error has-feedback{{/errors.password}}" title="{{errors.password}}">
     <label for="password" class="col-sm-3 control-label">Password</label>
 		<div class="col-sm-9">
 			<input type="password" class="form-control" id="password" placeholder="Enter a password" value="{{current.password}}">
 		</div>
+		{{#errors.password}}
+			<span class="form-control-feedback glyphicon glyphicon-remove"></span>
+		{{/errors.password}}
+	</div>
+	<div class="form-group {{#errors.password2}}has-error has-feedback{{/errors.password2}}" title="{{errors.password2}}">
+		<label for="password2" class="col-sm-3 control-label">Confirm</label>
+		<div class="col-sm-9">
+			<input type="password" class="form-control" id="password2" placeholder="Enter the password again" value="{{current.password2}}">
+		</div>
+		{{#errors.password2}}
+			<span class="form-control-feedback glyphicon glyphicon-remove"></span>
+		{{/errors.password2}}
+
   </div>
 	{{/if}}
 
@@ -107,25 +124,41 @@
 			<input type="text" class="form-control" id="name" placeholder="Enter user's name" value="{{current.name}}">
 		</div>
   </div>
-	<div class="form-group">
+	<div class="form-group {{#errors.email}}has-error has-feedback{{/errors.email}}" title="{{errors.email}}">
 		<label for="email" class="col-sm-3 control-label">User E-mail</label>
 		<div class="col-sm-9">
 			<input type="email" class="form-control" id="email" placeholder="Enter user's email" value="{{current.email}}">
+			{{#errors.email}}
+				<span class="form-control-feedback glyphicon glyphicon-remove"></span>
+			{{/errors.email}}
+
 		</div>
 	</div>
 	<div class="form-group">
 		<label for="homeApp" class="col-sm-3 control-label">User Home App</label>
 		<div class="col-sm-9">
-			<select class="form-control" name="homeApp">
+			<select class="form-control" name="homeApp" value="{{current.homeApp}}">
 				{{#apps:i}}
 				<option value="{{i}}">{{name}}</option>
 				{{/apps}}
 			</select>
 		</div>
 	</div>
+ <div class="form-group">
+    <div class="col-sm-offset-3 col-sm-9">
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" checked="{{current.admin}}"> Admin?
+        </label>
+      </div>
+    </div>
+  </div>
 	</form>
 
 	<div class="modal-footer">
+		{{#errors.save}}
+		<span class="label label-danger pull-left">{{errors.save}}</span>
+		{{/errors.save}}
 		<button type="button" class="btn btn-default" on-click="save">Save</button>
 		<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
 	</div>
@@ -138,17 +171,13 @@
 	</li>
 	{{#users:i}}
 	<li class="list-group-item">
-	<button type="button" on-click="changeUser" class="pull-right btn btn-default">
-			<span class="glyphicon glyphicon-cog"></span></button>
+	<button type="button" on-click="changeUser" class="pull-right btn btn-default btn-lg">
+		<span class="glyphicon glyphicon-cog"></span></button>
 
-		<dl>
-			<dt>{{#if name}} {{name}} {{else}} {{i}} {{/if}}</dt>
-			<dd>
-				<strong>Username:</strong>{{i}}<br>
-				<strong>Email:</strong>{{email}}
-			</dd>
-		</dl>
-			</li>
+		<h3>{{i}}</h3>
+		<strong>Name:</strong>{{name}}<br>
+		<strong>Email:</strong>{{#email}}<a href="mailto:{{email}}">{{email}}</a>{{/email}}
+	</li>
 	{{/users}}
 </ul>
 </script>
