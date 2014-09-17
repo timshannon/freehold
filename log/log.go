@@ -18,7 +18,11 @@ import (
 	"bitbucket.org/tshannon/freehold/setting"
 )
 
-const DS = "core/log.ds"
+const (
+	DS         = "core/log.ds"
+	AuthType   = "authentication"
+	Four04Type = "404"
+)
 
 type Log struct {
 	When string `json:"when"`
@@ -157,11 +161,11 @@ func Error(err error) {
 	if setting.Bool("LogErrorsToSyslog") {
 		syslogError(err)
 	}
-	fmt.Println("Error: ", err.Error())
 	NewEntry("error", err.Error())
 }
 
 func Fail(err *fail.Fail) {
+	//TODO: Add who to failures
 	if !setting.Bool("LogFailures") {
 		return
 	}

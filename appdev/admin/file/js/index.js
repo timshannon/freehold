@@ -4,7 +4,7 @@ $(document).ready(function() {
     var logPageLimit = 20;
     var defaultHome;
     var minPassLength;
-    var emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    var emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/; //I hate this
 
     //setup
     var rNav = new Ractive({
@@ -45,21 +45,17 @@ $(document).ready(function() {
         components: {
             modal: fh.components.modal
         },
+        data: {
+            auth: fh.auth
+        }
     });
-
-    if (!fh.auth.admin) {
-        rNav.set({
-            "errorLead": "You do not have admin rights and cannot use this tool: ",
-            "error": '<a href="/" class="alert-link">Return to your home page</a>'
-        });
-    }
 
     fh.settings.get("DefaultHomeApp")
         .done(function(result) {
             defaultHome = result.data.value;
         })
         .fail(function(result) {
-            rNav.set("error", result.message);
+            setError(result.message);
         });
 
     fh.settings.get("MinPasswordLength")
@@ -67,7 +63,7 @@ $(document).ready(function() {
             minPassLength = result.data.value;
         })
         .fail(function(result) {
-            rNav.set("error", result.message);
+            setError(result.message);
         });
 
     fh.application.installed()
@@ -75,7 +71,7 @@ $(document).ready(function() {
             rUsers.set("apps", result.data);
         })
         .fail(function(result) {
-            rNav.set("error", result.message);
+            setError(result.message);
         });
 
     loadLogs();
@@ -161,12 +157,11 @@ $(document).ready(function() {
         },
         "changeUser": function(event) {
             rUsers.set("mode", "change");
-            console.log(event);
             var user = {
                 user: event.index.i,
-                email: event.context.email,
                 homeApp: event.context.homeApp,
                 name: event.context.name,
+                admin: event.context.admin
             };
             rUsers.set("current", user);
             rUsers.set("errors", null);
@@ -183,7 +178,7 @@ $(document).ready(function() {
 
             var current = rUsers.get("current");
             if (mode == "add") {
-				console.log(current);
+                console.log(current);
                 fh.user.new(current)
                     .done(function() {
                         $("#userModal").modal("toggle");
@@ -196,6 +191,37 @@ $(document).ready(function() {
             }
             console.log("update existing user");
             $("#userModal").modal("toggle");
+        },
+
+        "delete": function(event) {
+            fh.user.delete(event.context.current.user)
+                .done(function() {
+                    $("#userModal").modal("toggle");
+                    loadUsers();
+                })
+                .fail(function(result) {
+                    rUsers.set("errors.save", result.message);
+                });
+        },
+        "makeAdmin": function(event) {
+            fh.user.makeAdmin(event.context.current.user)
+                .done(function() {
+                    $("#userModal").modal("toggle");
+                    loadUsers();
+                })
+                .fail(function(result) {
+                    rUsers.set("errors.save", result.message);
+                });
+        },
+        "removeAdmin": function(event) {
+            fh.user.removeAdmin(event.context.current.user)
+                .done(function() {
+                    $("#userModal").modal("toggle");
+                    loadUsers();
+                })
+                .fail(function(result) {
+                    rUsers.set("errors.save", result.message);
+                });
         },
     });
     rUsers.observe({
@@ -295,7 +321,7 @@ $(document).ready(function() {
                 setFilter(rLogs.get("filterText"));
             })
             .fail(function(result) {
-                rNav.set("error", result.message);
+                setError(result.message);
             });
 
     }
@@ -320,7 +346,7 @@ $(document).ready(function() {
                 setFilter(rLogs.get("filterText"));
             })
             .fail(function(result) {
-                rNav.set("error", result.message);
+                setError(result.message);
             });
     }
 
@@ -362,7 +388,7 @@ $(document).ready(function() {
                 filterSettings();
             })
             .fail(function(result) {
-                rNav.set("error", result.message);
+                setError(result.message);
             });
     }
 
@@ -393,7 +419,7 @@ $(document).ready(function() {
                 rUsers.set("users", result.data);
             })
             .fail(function(result) {
-                rNav.set("error", result.message);
+                setError(result.message);
             });
     }
 
@@ -454,6 +480,18 @@ $(document).ready(function() {
         rUsers.set("errors.password2", null);
         return true;
 
+    }
+
+    function setError(error) {
+        if (!fh.auth.admin) {
+            rNav.set({
+                "errorLead": "You do not have admin rights and cannot use this tool: ",
+                "error": '<a href="/" class="alert-link">Return to your home page</a>'
+            });
+            return;
+        }
+
+        rNav.set("error", error);
     }
 
 }); //end ready

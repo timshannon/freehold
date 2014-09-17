@@ -78,6 +78,12 @@
 
 <script id="tUsers" type="text/ractive">
 <modal id="userModal" title="{{#if mode == "add"}}Add New User{{else}}Change User {{current.user}}{{/if}}" customFooter="true">
+	<div>
+		{{#errors.save}}
+		<div class="alert alert-danger center-block">{{errors.save}}</div>
+		{{/errors.save}}
+	</div>
+
 	<form class="form-horizontal" role="form">
 
 	<div class="form-group {{#errors.user}}has-error has-feedback{{/errors.user}}" title="{{errors.user}}">
@@ -124,16 +130,6 @@
 			<input type="text" class="form-control" id="name" placeholder="Enter user's name" value="{{current.name}}">
 		</div>
   </div>
-	<div class="form-group {{#errors.email}}has-error has-feedback{{/errors.email}}" title="{{errors.email}}">
-		<label for="email" class="col-sm-3 control-label">User E-mail</label>
-		<div class="col-sm-9">
-			<input type="email" class="form-control" id="email" placeholder="Enter user's email" value="{{current.email}}">
-			{{#errors.email}}
-				<span class="form-control-feedback glyphicon glyphicon-remove"></span>
-			{{/errors.email}}
-
-		</div>
-	</div>
 	<div class="form-group">
 		<label for="homeApp" class="col-sm-3 control-label">User Home App</label>
 		<div class="col-sm-9">
@@ -144,22 +140,35 @@
 			</select>
 		</div>
 	</div>
- <div class="form-group">
-    <div class="col-sm-offset-3 col-sm-9">
-      <div class="checkbox">
+
+	<div class="form-group">
+	<div class="col-sm-offset-3 col-sm-9">
+	{{#if mode=="add"}}
+	      <div class="checkbox">
         <label>
           <input type="checkbox" checked="{{current.admin}}"> Admin?
         </label>
       </div>
-    </div>
-  </div>
-	</form>
+    	{{else}}
+		{{#if !current.admin}}
+		<button type="button" class="btn btn-success" on-click="makeAdmin">Make Admin</button>
+		{{else}}
+			{{#if current.user == auth.user}}
+			<button type="button" class="btn btn-danger" on-click="removeAdmin">Remove Admin Rights</button>
+			{{/if}}
+		{{/if}}
+	{{/if}}
+	</div>
+	</div>
 
+	</form>
+	
 	<div class="modal-footer">
-		{{#errors.save}}
-		<span class="label label-danger pull-left">{{errors.save}}</span>
-		{{/errors.save}}
-		<button type="button" class="btn btn-default" on-click="save">Save</button>
+	{{#if mode=="change"}}
+		<button type="button" class="btn btn-danger pull-left" on-click="delete">
+			<span class="glyphicon glyphicon-remove"></span> Delete</button>
+	{{/if}}
+				<button type="button" class="btn btn-default" on-click="save">Save</button>
 		<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
 	</div>
 </modal>
@@ -167,16 +176,18 @@
 <ul class="list-group">
 	<li class="list-group-item disabled">
 		<button class="btn btn-success" on-click="addUser" type="button">
-		<span class="glyphicon glyphicon-plus"></span>Add New User</button>
+		<span class="glyphicon glyphicon-plus"></span> New User</button>
 	</li>
 	{{#users:i}}
 	<li class="list-group-item">
-	<button type="button" on-click="changeUser" class="pull-right btn btn-default btn-lg">
+
+	<button type="button" on-click="changeUser" class="pull-right btn btn-default btn-lg" title="Modify User">
 		<span class="glyphicon glyphicon-cog"></span></button>
 
-		<h3>{{i}}</h3>
-		<strong>Name:</strong>{{name}}<br>
-		<strong>Email:</strong>{{#email}}<a href="mailto:{{email}}">{{email}}</a>{{/email}}
+
+		<h3 class="list-group-item-heading">{{i}}</h3>
+		<p class="list-group-item-text"><b>Name:</b> {{name}}</p>
+		<p class="list-group-item-text"><b>Home App:</b> {{#homeApp}}<a href="/{{homeApp}}">{{homeApp}}</a>{{/homeApp}}</p>
 	</li>
 	{{/users}}
 </ul>
