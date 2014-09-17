@@ -17,8 +17,7 @@ import (
 )
 
 const (
-	DS          = "core/user.ds"
-	authLogType = "authentication"
+	DS = "core/user.ds"
 )
 
 var FailLogon = errors.New("Invalid user and / or password")
@@ -170,16 +169,6 @@ func (u *User) Update() error {
 	u.EncPassword = u.passFromDs
 	u.Password = ""
 
-	if u.adminFromDS != u.Admin {
-		if setting.Bool("LogAdminChange") {
-			if u.Admin {
-				log.NewEntry(authLogType, "User "+u.username+" has been made an admin.")
-			} else {
-				log.NewEntry(authLogType, "User "+u.username+" has removed their admin rights.")
-			}
-		}
-	}
-
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return err
@@ -205,7 +194,7 @@ func (u *User) UpdatePassword(password string) error {
 	}
 
 	if setting.Bool("LogPasswordChange") {
-		log.NewEntry(authLogType, "User "+u.username+" has changed their password.")
+		log.NewEntry(log.AuthType, "User "+u.username+" has changed their password.")
 	}
 	return nil
 }
@@ -242,7 +231,7 @@ func (u *User) Login(password string) error {
 		return err
 	}
 	if setting.Bool("LogSuccessAuth") {
-		log.NewEntry(authLogType, "User "+u.username+" has logged in successfully.")
+		log.NewEntry(log.AuthType, "User "+u.username+" has logged in successfully.")
 	}
 	//done with password, clear it
 	u.clearPassword()
@@ -261,7 +250,7 @@ func (u *User) clearPassword() {
 
 func loginFailure(u *User) error {
 	if setting.Bool("LogFailedAuth") {
-		log.NewEntry(authLogType, "User "+u.username+" has failed a login attempt.")
+		log.NewEntry(log.AuthType, "User "+u.username+" has failed a login attempt.")
 	}
 
 	u.clearPassword()

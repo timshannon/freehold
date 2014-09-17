@@ -8,7 +8,9 @@ import (
 	"net/http"
 
 	"bitbucket.org/tshannon/freehold/fail"
+	"bitbucket.org/tshannon/freehold/log"
 	"bitbucket.org/tshannon/freehold/permission"
+	"bitbucket.org/tshannon/freehold/setting"
 	"bitbucket.org/tshannon/freehold/user"
 )
 
@@ -143,10 +145,14 @@ func userPut(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if input.isMakeAdmin() {
+
 		prm = permission.UserMakeAdmin()
 		if !auth.canWrite(prm) {
 			errHandled(fail.New("Invalid permissions.  Admin is required to make a new admin user.", input), w)
 			return
+		}
+		if setting.Bool("LogAdminChange") {
+			log.NewEntry(log.AuthType, "User "+usr.Username()+" has been made an admin by "+auth.Username)
 		}
 	}
 
@@ -155,6 +161,9 @@ func userPut(w http.ResponseWriter, r *http.Request) {
 		if !auth.canWrite(prm) {
 			errHandled(fail.New("You do not have permissions to remove admin rights.", input), w)
 			return
+		}
+		if setting.Bool("LogAdminChange") {
+			log.NewEntry(log.AuthType, "User "+usr.Username()+" has removed their admin rights.")
 		}
 
 	}

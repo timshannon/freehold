@@ -828,7 +828,6 @@ core/user.ds
 	value: {
 		password: <password>,
 		name: <name>,
-		email: <email>,
 		homeApp: <app-name>,
 		admin: <true | false>
 	}
@@ -848,14 +847,12 @@ Response (200):
 		"tshannon":
 		{
 			name: "Tim Shannon", 
-			email: "shannon.timothy@gmail.com",
 			homeApp: "home",
 			admin: true
 		},
 		"otheruser":
 		{
 			name: "Other User", 
-			email: "other.user@gmail.com",
 			homeApp: "home",
 			admin: false
 		}
@@ -874,7 +871,6 @@ Response (200):
 	status: "success",
 	data: {
 		name: "Tim Shannon", 
-		email: "shannon.timothy@gmail.com",
 		homeApp: "home",
 		admin: true
 	}	
@@ -890,7 +886,6 @@ POST /v1/auth/user
 	user: "newUser",
 	password: "CorrectHorseBatteryStaple",
 	name: "New User", 
-	email: "new.user@gmail.com",
 	homeApp: "home",
 	admin: false
 }
@@ -909,7 +904,6 @@ PUT /v1/auth/user
 {
 	password: "CorrectHorseBatteryStaple",
 	name: "New User", 
-	email: "new.user@gmail.com",
 	homeApp: "home",
 }
 

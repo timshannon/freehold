@@ -201,7 +201,7 @@ window.fh = (function() {
                     })
                 });
             },
-            relinquishAdmin: function() { //current user 
+            removeAdmin: function() { //current user 
                 return stdAjax("PUT", "/v1/auth/user/", {
                     data: JSON.stringify({
                         admin: false,

@@ -270,21 +270,8 @@ QUnit.asyncTest("Get All Users", function(assert) {
 });
 
 QUnit.asyncTest("Update User", function(assert) {
-    expect(4);
+    expect(3);
 
-    fh.user.update({
-            user: "quinitTestUser",
-            name: "Bob QUnit Test User"
-        })
-        .always(function(result) {
-            //Users can only update themselves
-            assert.ok(
-                (result.status == "fail")
-            );
-            QUnit.start();
-        });
-
-    QUnit.stop();
     $.ajax({
             type: "PUT",
             url: "/v1/auth/user/",
@@ -306,7 +293,6 @@ QUnit.asyncTest("Update User", function(assert) {
                     QUnit.start();
                 });
         });
-
 });
 
 

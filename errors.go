@@ -65,7 +65,7 @@ func errHandled(err error, w http.ResponseWriter) bool {
 // if its a request for a file, then a user will get a four04Page
 func four04(w http.ResponseWriter, r *http.Request) {
 	if setting.Bool("Log404") {
-		log.Error(errors.New("Resource not found: " + r.URL.String()))
+		log.NewEntry(log.Four04Type, "Resource not found: "+r.URL.String())
 	}
 
 	w.Header().Set("Cache-Control", "no-cache")
@@ -92,7 +92,7 @@ func four04(w http.ResponseWriter, r *http.Request) {
 // that doesn't exist, or they don't have the right to know it exists
 func four04Page(w http.ResponseWriter, r *http.Request) {
 	if setting.Bool("Log404") {
-		log.Error(errors.New("Resource not found: " + r.URL.String()))
+		log.NewEntry(log.Four04Type, "Resource not found: "+r.URL.String())
 	}
 
 	prm, err := permission.Get(urlPathToFile(setting.String("404File")))
