@@ -17,7 +17,7 @@ type LogInput struct {
 
 func logGet(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -31,7 +31,7 @@ func logGet(w http.ResponseWriter, r *http.Request) {
 	input := &LogInput{}
 
 	err = parseJson(r, input)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -41,7 +41,7 @@ func logGet(w http.ResponseWriter, r *http.Request) {
 
 	logs, err := log.Get(input.Iter)
 
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 

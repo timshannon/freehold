@@ -55,7 +55,7 @@ func NewEntry(Type string, entry string) {
 		Log:  entry,
 	}
 
-	err = ds.Put(when, log)
+	err = ds.Put(when+"_"+Type, log)
 	if err != nil {
 		syslogError(errors.New("Error can't log entry to freehold instance. Entry: " +
 			entry + " error: " + err.Error()))
@@ -68,6 +68,8 @@ func Get(iter *Iter) ([]*Log, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	//TODO: I don't like that this iter is an exact copy of the data.Iter
 
 	if iter.Order != "asc" && iter.Order != "dsc" && iter.Order != "" {
 		return nil, fail.New("Invalid Order specified", iter)
@@ -164,8 +166,7 @@ func Error(err error) {
 	NewEntry("error", err.Error())
 }
 
-func Fail(err *fail.Fail) {
-	//TODO: Add who to failures
+func Fail(err *fail.Fail, who string) {
 	if !setting.Bool("LogFailures") {
 		return
 	}
@@ -176,7 +177,13 @@ func Fail(err *fail.Fail) {
 		return
 	}
 
-	NewEntry("failure", fmt.Sprintf("Message: %s, Data: %s", err.Message, data))
+	entry := ""
+	if who != "" {
+		entry += "Who: " + who + ", "
+	}
+	entry += fmt.Sprintf("Message: %s, Data: %s", err.Message, data)
+
+	NewEntry("failure", entry)
 }
 
 func syslogError(err error) {

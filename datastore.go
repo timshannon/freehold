@@ -31,7 +31,7 @@ type DatastoreInput struct {
 
 func datastoreGet(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -42,7 +42,7 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	prm, err := permission.Get(filename)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -62,7 +62,7 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if errHandled(err, w) {
+		if errHandled(err, w, auth) {
 			return
 		}
 		val, err := ds.Get(*input.Key)
@@ -70,7 +70,7 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 			ds404(w, r, input.Key)
 			return
 		}
-		if errHandled(err, w) {
+		if errHandled(err, w, auth) {
 			return
 		}
 
@@ -87,7 +87,7 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 		}
 
 		count, err := ds.Count(input.Iter)
-		if errHandled(err, w) {
+		if errHandled(err, w, auth) {
 			return
 		}
 
@@ -105,7 +105,7 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 		}
 
 		val, err := ds.Iter(input.Iter)
-		if errHandled(err, w) {
+		if errHandled(err, w, auth) {
 			return
 		}
 
@@ -120,22 +120,22 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if errHandled(err, w) {
+		if errHandled(err, w, auth) {
 			return
 		}
 		key, err := ds.Max()
-		if errHandled(err, w) {
+		if errHandled(err, w, auth) {
 			return
 		}
 
 		val, err := ds.Get(*key)
 		if err == data.ErrNotFound {
 			//shouldn't happen
-			errHandled(errors.New(fmt.Sprintf("Max key was retrieved but value was not key: %s", key)), w)
+			errHandled(errors.New(fmt.Sprintf("Max key was retrieved but value was not key: %s", key)), w, auth)
 			return
 		}
 
-		if errHandled(err, w) {
+		if errHandled(err, w, auth) {
 			return
 		}
 
@@ -153,22 +153,22 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if errHandled(err, w) {
+		if errHandled(err, w, auth) {
 			return
 		}
 		key, err := ds.Min()
-		if errHandled(err, w) {
+		if errHandled(err, w, auth) {
 			return
 		}
 
 		val, err := ds.Get(*key)
 		if err == data.ErrNotFound {
 			//shouldn't happen
-			errHandled(errors.New(fmt.Sprintf("Max key was retrieved but value was not key: %s", key)), w)
+			errHandled(errors.New(fmt.Sprintf("Max key was retrieved but value was not key: %s", key)), w, auth)
 			return
 		}
 
-		if errHandled(err, w) {
+		if errHandled(err, w, auth) {
 			return
 		}
 
@@ -189,7 +189,7 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 		}
 		data.Close(filename)
 		dsFile, err := os.Open(filename)
-		if errHandled(err, w) {
+		if errHandled(err, w, auth) {
 			return
 		}
 		defer dsFile.Close()
@@ -199,31 +199,31 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 
 func datastorePost(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	prm := permission.DatastoreNew()
 
 	if !auth.canWrite(prm) {
-		errHandled(fail.New("You do not have permissions to a post a datastore.", nil), w)
+		errHandled(fail.New("You do not have permissions to a post a datastore.", nil), w, auth)
 		return
 	}
 
 	if !validDSPath(r.URL.Path) {
-		errHandled(fail.New("Invalid path for a datastore.", r.URL.Path), w)
+		errHandled(fail.New("Invalid path for a datastore.", r.URL.Path), w, auth)
 		return
 	}
 
 	if strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
 		err = r.ParseMultipartForm(setting.Int64("MaxUploadMemory"))
-		if errHandled(err, w) {
+		if errHandled(err, w, auth) {
 			return
 		}
 
 		mp := r.MultipartForm
 		err = os.MkdirAll(urlPathToFile(r.URL.Path), 0777)
-		if errHandled(err, w) {
+		if errHandled(err, w, auth) {
 			return
 		}
 		//Is a datastore upload, use file upload
@@ -233,18 +233,18 @@ func datastorePost(w http.ResponseWriter, r *http.Request) {
 
 	//not an upload, create the datastore instead
 	err = os.MkdirAll(urlPathToFile(path.Dir(r.URL.Path)), 0777)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	filename := urlPathToFile(r.URL.Path)
 	err = data.Create(filename)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	err = permission.Set(filename, permission.DatastoreNewDefault(auth.User.Username()))
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
@@ -259,7 +259,7 @@ func datastorePost(w http.ResponseWriter, r *http.Request) {
 
 func datastorePut(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -270,7 +270,7 @@ func datastorePut(w http.ResponseWriter, r *http.Request) {
 	}
 
 	prm, err := permission.Get(filename)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -279,18 +279,18 @@ func datastorePut(w http.ResponseWriter, r *http.Request) {
 			four04(w, r)
 			return
 		}
-		errHandled(fail.New("You do not have permissions to update this datastore.", nil), w)
+		errHandled(fail.New("You do not have permissions to update this datastore.", nil), w, auth)
 		return
 	}
 
 	input := make(data.Data)
 	err = parseJson(r, &input)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	ds, err := data.Open(filename)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -311,7 +311,7 @@ func datastorePut(w http.ResponseWriter, r *http.Request) {
 
 func datastoreDelete(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -325,7 +325,7 @@ func datastoreDelete(w http.ResponseWriter, r *http.Request) {
 	parseJson(r, input)
 
 	prm, err := permission.Get(filename)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -334,17 +334,17 @@ func datastoreDelete(w http.ResponseWriter, r *http.Request) {
 			four04(w, r)
 			return
 		}
-		errHandled(fail.New("You do not have permissions to a delete from this datastore.", nil), w)
+		errHandled(fail.New("You do not have permissions to a delete from this datastore.", nil), w, auth)
 		return
 	}
 
 	if input.Key != nil {
 		ds, err := data.Open(filename)
-		if errHandled(err, w) {
+		if errHandled(err, w, auth) {
 			return
 		}
 		err = ds.Delete(*input.Key)
-		if errHandled(err, w) {
+		if errHandled(err, w, auth) {
 			return
 		}
 		respondJsend(w, &JSend{
@@ -361,17 +361,17 @@ func datastoreDelete(w http.ResponseWriter, r *http.Request) {
 			four04(w, r)
 			return
 		}
-		errHandled(fail.New("You do not have permissions to drop this datastore.", nil), w)
+		errHandled(fail.New("You do not have permissions to drop this datastore.", nil), w, auth)
 		return
 	}
 
 	err = data.Drop(filename)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	err = clearEmptyFolder(path.Dir(filename))
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 	respondJsend(w, &JSend{

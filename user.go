@@ -24,7 +24,7 @@ type UserInput struct {
 
 func userGet(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -37,14 +37,14 @@ func userGet(w http.ResponseWriter, r *http.Request) {
 
 	input := &UserInput{}
 	err = parseJson(r, input)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	if input.User != nil {
 		u, err := user.Get(*input.User)
 
-		if errHandled(err, w) {
+		if errHandled(err, w, auth) {
 			return
 		}
 
@@ -61,7 +61,7 @@ func userGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	users, err := user.All()
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -74,7 +74,7 @@ func userGet(w http.ResponseWriter, r *http.Request) {
 
 func userPost(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -87,19 +87,19 @@ func userPost(w http.ResponseWriter, r *http.Request) {
 
 	input := &UserInput{}
 	err = parseJson(r, input)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	if input.User == nil {
-		errHandled(fail.New("Invalid user input. User field is required", input), w)
+		errHandled(fail.New("Invalid user input. User field is required", input), w, auth)
 		return
 	}
 
 	newUsr := input.makeUser(&user.User{})
 
 	err = user.New(*input.User, newUsr)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -114,13 +114,13 @@ func userPost(w http.ResponseWriter, r *http.Request) {
 
 func userPut(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	input := &UserInput{}
 	err = parseJson(r, input)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -132,7 +132,7 @@ func userPut(w http.ResponseWriter, r *http.Request) {
 	prm := permission.User(*input.User)
 
 	if !auth.canWrite(prm) {
-		errHandled(fail.New("You do not have permissions to update this user.", input), w)
+		errHandled(fail.New("You do not have permissions to update this user.", input), w, auth)
 		return
 	}
 
@@ -140,7 +140,7 @@ func userPut(w http.ResponseWriter, r *http.Request) {
 	if fail.IsEqual(err, user.FailLogon) {
 		err = fail.New("Invalid user", input)
 	}
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -148,7 +148,7 @@ func userPut(w http.ResponseWriter, r *http.Request) {
 
 		prm = permission.UserMakeAdmin()
 		if !auth.canWrite(prm) {
-			errHandled(fail.New("Invalid permissions.  Admin is required to make a new admin user.", input), w)
+			errHandled(fail.New("Invalid permissions.  Admin is required to make a new admin user.", input), w, auth)
 			return
 		}
 		if setting.Bool("LogAdminChange") {
@@ -159,7 +159,7 @@ func userPut(w http.ResponseWriter, r *http.Request) {
 	if input.isRemoveAdmin() {
 		prm = permission.UserRemoveAdmin(*input.User)
 		if !auth.canWrite(prm) {
-			errHandled(fail.New("You do not have permissions to remove admin rights.", input), w)
+			errHandled(fail.New("You do not have permissions to remove admin rights.", input), w, auth)
 			return
 		}
 		if setting.Bool("LogAdminChange") {
@@ -171,13 +171,13 @@ func userPut(w http.ResponseWriter, r *http.Request) {
 	newUsr := input.makeUser(usr)
 	if input.isPasswordChange() {
 		err = newUsr.UpdatePassword(*input.Password)
-		if errHandled(err, w) {
+		if errHandled(err, w, auth) {
 			return
 		}
 	}
 
 	err = newUsr.Update()
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -191,18 +191,18 @@ func userPut(w http.ResponseWriter, r *http.Request) {
 
 func userDelete(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	input := &UserInput{}
 	err = parseJson(r, input)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	if input.User == nil {
-		errHandled(fail.New("Invalid user input. User field is required", input), w)
+		errHandled(fail.New("Invalid user input. User field is required", input), w, auth)
 		return
 	}
 	prm := permission.User(*input.User)
@@ -212,7 +212,7 @@ func userDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	err = user.Delete(*input.User)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 

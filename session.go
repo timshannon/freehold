@@ -14,7 +14,7 @@ import (
 
 func sessionGet(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 	prm := permission.Session()
@@ -24,7 +24,7 @@ func sessionGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sessions, err := session.All(auth.User)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -36,7 +36,7 @@ func sessionGet(w http.ResponseWriter, r *http.Request) {
 
 func sessionPost(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -47,19 +47,19 @@ func sessionPost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		//should never happen
-		errHandled(fail.New("You do not have proper permissions to post a new session.", nil), w)
+		errHandled(fail.New("You do not have proper permissions to post a new session.", nil), w, auth)
 		return
 	}
 
 	baseSession := &session.Session{}
 	err = parseJson(r, baseSession)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	baseSession.IpAddress = ipAddress(r)
 	ses, err := session.New(auth.User, baseSession)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -72,7 +72,7 @@ func sessionPost(w http.ResponseWriter, r *http.Request) {
 
 func sessionDelete(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -83,12 +83,12 @@ func sessionDelete(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		//should never happen
-		errHandled(fail.New("You do not have proper permissions to delete a session.", nil), w)
+		errHandled(fail.New("You do not have proper permissions to delete a session.", nil), w, auth)
 		return
 	}
 
 	if auth.Session != nil {
-		if errHandled(auth.Session.Expire(), w) {
+		if errHandled(auth.Session.Expire(), w, auth) {
 			return
 		}
 

@@ -9,7 +9,6 @@ import (
 	"errors"
 	"os"
 	"path"
-
 	"bitbucket.org/tshannon/freehold/data/store"
 )
 
@@ -81,4 +80,8 @@ func (c *CoreDS) Delete(key interface{}) error {
 	}
 
 	return c.Storer.Delete(dsKey)
+}
+
+func (c *CoreDS) MakeDatastore() *Datastore {
+	return &Datastore{c.Storer}
 }

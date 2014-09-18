@@ -27,14 +27,14 @@ func rootGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	if auth.User != nil {
 		if auth.User.HomeApp != "" {
 			app, err := app.Get(auth.User.HomeApp)
-			if errHandled(err, w) {
+			if errHandled(err, w, auth) {
 				return
 			}
 			if app != nil {
