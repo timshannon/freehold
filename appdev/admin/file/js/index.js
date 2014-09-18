@@ -157,6 +157,7 @@ $(document).ready(function() {
         },
         "changeUser": function(event) {
             rUsers.set("mode", "change");
+            rUsers.set("changePassword", false);
             var user = {
                 user: event.index.i,
                 homeApp: event.context.homeApp,
@@ -178,7 +179,7 @@ $(document).ready(function() {
 
             var current = rUsers.get("current");
             if (mode == "add") {
-                console.log(current);
+                //add new user
                 fh.user.new(current)
                     .done(function() {
                         $("#userModal").modal("toggle");
@@ -189,10 +190,22 @@ $(document).ready(function() {
                     });
                 return;
             }
-            console.log("update existing user");
-            $("#userModal").modal("toggle");
+            //update user
+            delete current.admin;
+
+            fh.user.update(current)
+                .done(function() {
+                    $("#userModal").modal("toggle");
+                    loadUsers();
+                })
+                .fail(function(result) {
+                    rUsers.set("errors.save", result.message);
+                });
         },
 
+        "changePassword": function(event) {
+            rUsers.set("changePassword", true);
+        },
         "delete": function(event) {
             fh.user.delete(event.context.current.user)
                 .done(function() {
@@ -369,8 +382,9 @@ $(document).ready(function() {
         var filtered = [];
 
         for (var i = 0; i < logs.length; i++) {
-            if (regEx.exec(logs[i].log)) {
+            if (regEx.exec(logs[i].log) || regEx.exec(logs[i].type)) {
                 filtered.push(logs[i]);
+
                 //Format time to more readable timestamp
                 logs[i].when = new Date(logs[i].when).toLocaleString();
             }
@@ -423,7 +437,7 @@ $(document).ready(function() {
             });
     }
 
-    function validUser(mode) {
+    function validUser() {
         var current = rUsers.get("current");
         var valid = true;
         rUsers.set("errors", null);
@@ -434,7 +448,7 @@ $(document).ready(function() {
         }
 
 
-        valid = (validEmail() && validPassword(mode) && validPassword2() && valid);
+        valid = (validEmail() && validPassword() && validPassword2() && valid);
 
         return valid;
     }
@@ -450,8 +464,10 @@ $(document).ready(function() {
         return true;
     }
 
-    function validPassword(mode) {
-        if (mode == "change") {
+    function validPassword() {
+        var mode = rUsers.get("mode");
+        var pass = rUsers.get("changePassword");
+        if (mode == "change" && !pass) {
             return true;
         }
 

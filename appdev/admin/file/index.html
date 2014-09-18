@@ -38,7 +38,7 @@
 	<label class="radio-inline"><input type="radio" name="typeFilter" on-click="filterFail" value="fail">Failures</label>
 	<label class="radio-inline"><input type="radio" name="typeFilter" on-click="filterAuth" value="auth">Auth Errors</label>
 	<div class="form-group">
-		<input type="text" id="filterText" class="form-control" placeholder="filter message" value="{{filterText}}">
+		<input type="text" id="filterText" class="form-control" placeholder="filter logs" value="{{filterText}}">
 		{{#filterWaiting}}
 		<div id="filterSpinner" class="spinner form-group"></div>
 		{{/filterWaiting}}
@@ -96,13 +96,17 @@
 			{{/errors.user}}
 		</div>
 		{{else}}
-		<div class="col-sm-9">
+		<div class="col-sm-6">
       <p class="form-control-static">{{current.user}}</p>
     </div>
+		<div class="col-sm-3">
+			<button type="button" on-click="changePassword" class="form-control btn btn-default btn-xs">Change Password</button>
+    </div>
+
 		{{/if}}
   </div>
 
-	{{#if mode=="add"}}
+	{{#if mode=="add" || changePassword}}
 	<div class="form-group {{#errors.password}}has-error has-feedback{{/errors.password}}" title="{{errors.password}}">
     <label for="password" class="col-sm-3 control-label">Password</label>
 		<div class="col-sm-9">
@@ -185,7 +189,7 @@
 		<span class="glyphicon glyphicon-cog"></span></button>
 
 
-		<h3 class="list-group-item-heading">{{i}}</h3>
+		<h3 class="list-group-item-heading">{{i}}{{#admin}} <small>(admin)</small>{{/admin}}</h3>
 		<p class="list-group-item-text"><b>Name:</b> {{name}}</p>
 		<p class="list-group-item-text"><b>Home App:</b> {{#homeApp}}<a href="/{{homeApp}}">{{homeApp}}</a>{{/homeApp}}</p>
 	</li>

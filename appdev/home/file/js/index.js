@@ -7,7 +7,6 @@ $(document).ready(function() {
     var externalApps = false;
 
 
-	//TODO: Test and fix with non-admins
 
     var rApps = new Ractive({
         el: "#appList",
@@ -31,14 +30,14 @@ $(document).ready(function() {
                 .fail(function(result) {
                     if (result.status == "error") {
                         rManage.set("error", result.message);
-					} else {
-dsSettings.put("starredApps", {})
-                .done(function() {
-                    refreshApps();
-                })
-                .fail(function(result) {
-                    rManage.set("error", result.message);
-                });
+                    } else {
+                        dsSettings.put("starredApps", {})
+                            .done(function() {
+                                refreshApps();
+                            })
+                            .fail(function(result) {
+                                rManage.set("error", result.message);
+                            });
 
                     }
                 });
@@ -62,7 +61,7 @@ dsSettings.put("starredApps", {})
             externalApps = result.data.value;
         })
         .fail(function(result) {
-			externalApps = false;
+            externalApps = false;
         });
 
 
@@ -158,21 +157,33 @@ dsSettings.put("starredApps", {})
         fh.application.installed()
             .done(function(result) {
                 var installed = result.data;
+
+                for (var id in installed) {
+                    if (installed.hasOwnProperty(id)) {
+                        if (starred[id]) {
+                            installed[id].starred = true;
+                        }
+                    }
+                }
+                rApps.set({
+                    apps: installed
+                });
+
+                if (!fh.auth.admin) {
+                    rManage.set({
+                        apps: installed,
+                        admin: fh.auth.admin,
+                        failures: false,
+                        external: false,
+                    });
+                    return;
+                }
+
                 fh.application.available()
-                    .always(function(result) {
+                    .done(function(result) {
                         var available = result.data;
 
-                        var id;
-
-                        for (id in installed) {
-                            if (installed.hasOwnProperty(id)) {
-                                if (starred[id]) {
-                                    installed[id].starred = true;
-                                }
-
-                            }
-                        }
-                        for (id in available) {
+                        for (var id in available) {
                             if (available.hasOwnProperty(id)) {
 
                                 if (installed[id]) {
@@ -190,9 +201,7 @@ dsSettings.put("starredApps", {})
                             }
                         }
 
-                        rApps.set({
-                            apps: installed
-                        });
+
 
                         rManage.set({
                             apps: available,
@@ -200,6 +209,10 @@ dsSettings.put("starredApps", {})
                             failures: result.failures,
                             external: externalApps
                         });
+                    })
+                    .fail(function(result) {
+
+                        rManage.set("error", result.message);
                     });
             })
             .fail(function(result) {
