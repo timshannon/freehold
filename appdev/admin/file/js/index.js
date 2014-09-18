@@ -451,7 +451,7 @@ $(document).ready(function() {
     }
 
     function validPassword(mode) {
-        if (mode != "change") {
+        if (mode == "change") {
             return true;
         }
 
