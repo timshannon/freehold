@@ -22,7 +22,7 @@ type TokenInput struct {
 
 func tokenGet(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -34,13 +34,13 @@ func tokenGet(w http.ResponseWriter, r *http.Request) {
 
 	input := &TokenInput{}
 	err = parseJson(r, input)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	if input.Token != nil {
 		t, err := token.Get(auth.User, *input.Token)
-		if errHandled(err, w) {
+		if errHandled(err, w, auth) {
 			return
 		}
 
@@ -56,7 +56,7 @@ func tokenGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tokens, err := token.All(auth.User)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -69,32 +69,32 @@ func tokenGet(w http.ResponseWriter, r *http.Request) {
 
 func tokenPost(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	input := &TokenInput{}
 	err = parseJson(r, input)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	if input.Name == nil {
-		errHandled(fail.New("You must specify a name for the new token.", input), w)
+		errHandled(fail.New("You must specify a name for the new token.", input), w, auth)
 		return
 	}
 
 	prm := permission.Token(auth.User.Username())
 
 	if !auth.canWrite(prm) {
-		errHandled(fail.New("You do not have permissions to generate a new token.", input), w)
+		errHandled(fail.New("You do not have permissions to generate a new token.", input), w, auth)
 		return
 	}
 
 	tkn := input.makeToken()
 
 	tkn, err = token.New(tkn, auth.User)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -109,7 +109,7 @@ func tokenPost(w http.ResponseWriter, r *http.Request) {
 
 func tokenDelete(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -121,17 +121,17 @@ func tokenDelete(w http.ResponseWriter, r *http.Request) {
 
 	input := &TokenInput{}
 	err = parseJson(r, input)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	if input.Token == nil {
-		errHandled(fail.New("You must specify a token to delete.", input), w)
+		errHandled(fail.New("You must specify a token to delete.", input), w, auth)
 		return
 	}
 
 	err = token.Delete(auth.User, *input.Token)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 

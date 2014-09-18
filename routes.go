@@ -137,7 +137,7 @@ func (m *methodHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			if _, ok := r.(runtime.Error); ok {
 				halt(r.(runtime.Error).Error())
 			}
-			errHandled(errors.New(fmt.Sprintf("Freehold panicked on %v and has recovered", r)), w)
+			errHandled(errors.New(fmt.Sprintf("Freehold panicked on %v and has recovered", r)), w, nil)
 			return
 		}
 	}()

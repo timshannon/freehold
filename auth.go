@@ -166,7 +166,7 @@ func (a *Auth) attemptWrite(r *http.Request) error {
 
 func authGet(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 

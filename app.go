@@ -22,7 +22,7 @@ type ApplicationInput struct {
 
 func appGet(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -33,13 +33,13 @@ func appGet(w http.ResponseWriter, r *http.Request) {
 
 	input := &ApplicationInput{}
 	err = parseJson(r, input)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	if input.Id != nil {
 		a, err := app.Get(*input.Id)
-		if errHandled(err, w) {
+		if errHandled(err, w, auth) {
 			return
 		}
 
@@ -55,7 +55,7 @@ func appGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	apps, err := app.All()
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 	respondJsend(w, &JSend{
@@ -68,27 +68,27 @@ func appGet(w http.ResponseWriter, r *http.Request) {
 
 func appPost(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	if !auth.canWrite(permission.Application()) {
-		errHandled(fail.New("You do not have permissions to install an application.", nil), w)
+		errHandled(fail.New("You do not have permissions to install an application.", nil), w, auth)
 		return
 	}
 
 	input := &ApplicationInput{}
 	err = parseJson(r, input)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 	if input.File == nil {
-		errHandled(fail.New("JSON request must contain file property", nil), w)
+		errHandled(fail.New("JSON request must contain file property", nil), w, auth)
 		return
 	}
 
 	a, err := app.Install(*input.File, auth.User.Username())
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -102,26 +102,26 @@ func appPost(w http.ResponseWriter, r *http.Request) {
 
 func appPut(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	if !auth.canWrite(permission.Application()) {
-		errHandled(fail.New("You do not have permissions to update an application.", nil), w)
+		errHandled(fail.New("You do not have permissions to update an application.", nil), w, auth)
 		return
 	}
 
 	input := &ApplicationInput{}
 	err = parseJson(r, input)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 	if input.File == nil {
-		errHandled(fail.New("JSON request must contain file property", nil), w)
+		errHandled(fail.New("JSON request must contain file property", nil), w, auth)
 		return
 	}
 	a, err := app.Upgrade(*input.File, auth.User.Username())
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 	respondJsend(w, &JSend{
@@ -132,28 +132,28 @@ func appPut(w http.ResponseWriter, r *http.Request) {
 
 func appDelete(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	if !auth.canWrite(permission.Application()) {
-		errHandled(fail.New("You do not have permissions to uninstall an application.", nil), w)
+		errHandled(fail.New("You do not have permissions to uninstall an application.", nil), w, auth)
 		return
 	}
 
 	input := &ApplicationInput{}
 	err = parseJson(r, input)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	if input.Id == nil {
-		errHandled(fail.New("JSON request must contain the id property", nil), w)
+		errHandled(fail.New("JSON request must contain the id property", nil), w, auth)
 		return
 	}
 
 	err = app.Uninstall(*input.Id)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -169,7 +169,7 @@ func appRootGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 	serveApp(w, r, appHandler.Root(r), auth)
@@ -179,7 +179,7 @@ func appRootGet(w http.ResponseWriter, r *http.Request) {
 func serveApp(w http.ResponseWriter, r *http.Request, appid string, auth *Auth) {
 	a, err := app.Get(appid)
 
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 	if a == nil {
@@ -203,17 +203,17 @@ func serveApp(w http.ResponseWriter, r *http.Request, appid string, auth *Auth) 
 
 func appAvailableGet(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	if !auth.canRead(permission.AppAvailable()) {
-		errHandled(fail.New("You do not have permissions to view available applications.", nil), w)
+		errHandled(fail.New("You do not have permissions to view available applications.", nil), w, auth)
 		return
 	}
 
 	apps, fails, err := app.Available()
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -234,27 +234,27 @@ func appAvailableGet(w http.ResponseWriter, r *http.Request) {
 
 func appAvailablePost(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	if !auth.canWrite(permission.AppAvailable()) {
-		errHandled(fail.New("You do not have permissions to post a new available application.", nil), w)
+		errHandled(fail.New("You do not have permissions to post a new available application.", nil), w, auth)
 		return
 	}
 
 	input := &ApplicationInput{}
 	err = parseJson(r, input)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 	if input.File == nil {
-		errHandled(fail.New("JSON request must contain file property", nil), w)
+		errHandled(fail.New("JSON request must contain file property", nil), w, auth)
 		return
 	}
 
 	file, err := app.PostAvailable(*input.File)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 

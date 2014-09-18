@@ -32,7 +32,7 @@ var markdownTypes = []string{".markdown", ".md"}
 
 func fileGet(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -47,27 +47,27 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 	// read it?
 
 	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	if !auth.canWrite(permission.FileNew()) {
-		errHandled(fail.New("You do not have permissions to a post a file.", nil), w)
+		errHandled(fail.New("You do not have permissions to a post a file.", nil), w, auth)
 		return
 	}
 
 	err = r.ParseMultipartForm(setting.Int64("MaxUploadMemory"))
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	if !validFileUrl(r.URL.Path) {
-		errHandled(fail.New("Invalid path for file upload.", r.URL.Path), w)
+		errHandled(fail.New("Invalid path for file upload.", r.URL.Path), w, auth)
 		return
 	}
 
 	err = os.MkdirAll(urlPathToFile(r.URL.Path), 0777)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 	mp := r.MultipartForm
@@ -139,22 +139,22 @@ type FileInput struct {
 
 func filePut(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 	if !validFileUrl(r.URL.Path) {
-		errHandled(fail.New("Invalid path for file update.", r.URL.Path), w)
+		errHandled(fail.New("Invalid path for file update.", r.URL.Path), w, auth)
 		return
 	}
 
 	if !strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
 		input := &FileInput{}
 		err = parseJson(r, input)
-		if errHandled(err, w) {
+		if errHandled(err, w, auth) {
 			return
 		}
 		if input.Move == "" {
-			errHandled(fail.New("Invalid file PUT call", r.URL.Path), w)
+			errHandled(fail.New("Invalid file PUT call", r.URL.Path), w, auth)
 			return
 		}
 
@@ -166,26 +166,26 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 
 		}
 		if !validFileUrl(input.Move) {
-			errHandled(fail.New("Invalid destination for file move.", r.URL.Path), w)
+			errHandled(fail.New("Invalid destination for file move.", r.URL.Path), w, auth)
 			return
 
 		}
 
 		if isDir(filename) {
-			errHandled(fail.New("Invalid path for file move.", r.URL.Path), w)
+			errHandled(fail.New("Invalid path for file move.", r.URL.Path), w, auth)
 			return
 		}
 		if fileExists(destFile) {
-			errHandled(fail.New("Destination file already exists", input), w)
+			errHandled(fail.New("Destination file already exists", input), w, auth)
 			return
 		}
 
 		err = moveFile(filename, destFile)
 
-		if errHandled(err, w) {
+		if errHandled(err, w, auth) {
 			return
 		}
-		if errHandled(clearEmptyFolder(filepath.Dir(filename)), w) {
+		if errHandled(clearEmptyFolder(filepath.Dir(filename)), w, auth) {
 			return
 		}
 
@@ -201,7 +201,7 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = r.ParseMultipartForm(setting.Int64("MaxUploadMemory"))
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -277,7 +277,7 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 
 func fileDelete(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -292,18 +292,18 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	info, err := file.Stat()
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	if !info.IsDir() {
 		prm, err := permission.Get(filename)
-		if errHandled(err, w) {
+		if errHandled(err, w, auth) {
 			return
 		}
 
@@ -315,16 +315,16 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			errHandled(fail.New("You do not have owner permissions on this resource.", resource), w)
+			errHandled(fail.New("You do not have owner permissions on this resource.", resource), w, auth)
 			return
 		}
 		os.Remove(filename)
 		err = permission.Delete(filename)
-		if errHandled(err, w) {
+		if errHandled(err, w, auth) {
 			return
 		}
 
-		if errHandled(clearEmptyFolder(filepath.Dir(file.Name())), w) {
+		if errHandled(clearEmptyFolder(filepath.Dir(file.Name())), w, auth) {
 			return
 		}
 
@@ -340,7 +340,7 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	files, err := file.Readdir(0)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -355,7 +355,7 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 			cRes := path.Join(resource, files[i].Name())
 
 			prm, err := permission.Get(child)
-			if errHandled(err, w) {
+			if errHandled(err, w, auth) {
 				return
 			}
 			prm = permission.FileUpdate(prm)
@@ -363,7 +363,7 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 			if auth.canWrite(prm) {
 				os.Remove(child)
 				err = permission.Delete(child)
-				if errHandled(err, w) {
+				if errHandled(err, w, auth) {
 					return
 				}
 				fileList = append(fileList, Properties{
@@ -386,7 +386,7 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if errHandled(clearEmptyFolder(file.Name()), w) {
+	if errHandled(clearEmptyFolder(file.Name()), w, auth) {
 		return
 	}
 	respondJsend(w, &JSend{
@@ -407,12 +407,12 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 		return
 	}
 
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	info, err := file.Stat()
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -422,7 +422,7 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 			prm = permission.Doc()
 		} else {
 			prm, err = permission.Get(filename)
-			if errHandled(err, w) {
+			if errHandled(err, w, auth) {
 				return
 			}
 		}
@@ -432,12 +432,12 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 			return
 		}
 
-		serveFile(w, r, file)
+		serveFile(w, r, file, auth)
 		return
 	}
 
 	files, err := file.Readdir(0)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -453,7 +453,7 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 
 		} else {
 			prm, err = permission.Get(path.Join(filename, files[i].Name()))
-			if errHandled(err, w) {
+			if errHandled(err, w, auth) {
 				return
 			}
 		}
@@ -466,10 +466,10 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 				indexFile, err := os.Open(path.Join(filename, files[i].Name()))
 				defer indexFile.Close()
 
-				if errHandled(err, w) {
+				if errHandled(err, w, auth) {
 					return
 				}
-				serveFile(w, r, indexFile)
+				serveFile(w, r, indexFile, auth)
 				return
 
 			}
@@ -491,12 +491,12 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 	four04Page(w, r)
 }
 
-func serveFile(w http.ResponseWriter, r *http.Request, file *os.File) {
+func serveFile(w http.ResponseWriter, r *http.Request, file *os.File, auth *Auth) {
 	var rs io.ReadSeeker
 
 	if isMarkDown(file.Name()) {
 		buf, err := writeMarkdown(file)
-		if errHandled(err, w) {
+		if errHandled(err, w, auth) {
 			return
 		}
 
@@ -505,6 +505,8 @@ func serveFile(w http.ResponseWriter, r *http.Request, file *os.File) {
 	} else {
 		rs = file
 	}
+
+	//TODO: Setting for modified date instead of etag?
 
 	//ETag is an MD5 sum of the contents of the file.  If the file changes
 	// clients should know to grab the new version because the md5 won't match.

@@ -39,7 +39,7 @@ func resPathFromProperty(propertyPath string) string {
 
 func propertiesGet(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -53,18 +53,18 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	info, err := file.Stat()
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	if !info.IsDir() {
 		prm, err := permission.Get(filename)
-		if errHandled(err, w) {
+		if errHandled(err, w, auth) {
 			return
 		}
 		propPrm := permission.Properties(prm)
@@ -92,7 +92,7 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	files, err := file.Readdir(0)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -112,7 +112,7 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 			modTime = files[i].ModTime().Format(time.RFC3339)
 			childName := path.Join(filename, files[i].Name())
 			prm, err := permission.Get(childName)
-			if errHandled(err, w) {
+			if errHandled(err, w, auth) {
 				return
 			}
 			if !auth.canRead(prm) {
@@ -174,18 +174,18 @@ func (pi *PermissionsInput) makePermission(curPrm *permission.Permission) *permi
 func propertiesPut(w http.ResponseWriter, r *http.Request) {
 	input := &PropertyInput{}
 
-	err := parseJson(r, input)
-	if errHandled(err, w) {
+	auth, err := authenticate(w, r)
+	if errHandled(err, w, auth) {
+		return
+	}
+
+	err = parseJson(r, input)
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	if input.Permissions == nil {
-		errHandled(fail.New("No permissions passed in.", nil), w)
-		return
-	}
-
-	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+		errHandled(fail.New("No permissions passed in.", nil), w, auth)
 		return
 	}
 
@@ -199,18 +199,18 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	info, err := file.Stat()
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	if !info.IsDir() {
 		prm, err := permission.Get(filename)
-		if errHandled(err, w) {
+		if errHandled(err, w, auth) {
 			return
 		}
 
@@ -227,13 +227,13 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 				&Properties{
 					Name: filepath.Base(file.Name()),
 					Url:  resource,
-				}), w)
+				}), w, auth)
 
 			return
 		}
 		err = permission.Set(filename, newprm)
 
-		if errHandled(err, w) {
+		if errHandled(err, w, auth) {
 			return
 		}
 
@@ -248,7 +248,7 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 	}
 
 	files, err := file.Readdir(0)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -262,7 +262,7 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 			cRes := path.Join(resource, files[i].Name())
 
 			prm, err := permission.Get(child)
-			if errHandled(err, w) {
+			if errHandled(err, w, auth) {
 				return
 			}
 			newprm := input.Permissions.makePermission(prm)
@@ -270,7 +270,7 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 			propPrm := permission.Properties(prm)
 			if auth.canWrite(propPrm) {
 				err = permission.Set(child, newprm)
-				if errHandled(err, w) {
+				if errHandled(err, w, auth) {
 					return
 				}
 

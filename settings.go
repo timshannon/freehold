@@ -19,7 +19,7 @@ type SettingInput struct {
 
 func settingsGet(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -32,14 +32,14 @@ func settingsGet(w http.ResponseWriter, r *http.Request) {
 
 	input := &SettingInput{}
 	err = parseJson(r, input)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	if input.Setting != nil {
 		s, err := setting.Get(*input.Setting)
 
-		if errHandled(err, w) {
+		if errHandled(err, w, auth) {
 			return
 		}
 
@@ -55,7 +55,7 @@ func settingsGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	settings, err := setting.All()
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 	respondJsend(w, &JSend{
@@ -69,30 +69,30 @@ func settingsGet(w http.ResponseWriter, r *http.Request) {
 func settingsPut(w http.ResponseWriter, r *http.Request) {
 	input := &SettingInput{}
 
-	err := parseJson(r, input)
-	if errHandled(err, w) {
+	auth, err := authenticate(w, r)
+	if errHandled(err, w, auth) {
+		return
+	}
+
+	err = parseJson(r, input)
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	if input.Setting == nil || input.Value == nil {
-		errHandled(fail.New("No setting or value passed in.", nil), w)
-		return
-	}
-
-	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+		errHandled(fail.New("No setting or value passed in.", nil), w, auth)
 		return
 	}
 
 	prm := permission.Settings()
 
 	if !auth.canWrite(prm) {
-		errHandled(fail.New("You do not have permissions to update settings.  Admin rights are required.", nil), w)
+		errHandled(fail.New("You do not have permissions to update settings.  Admin rights are required.", nil), w, auth)
 		return
 	}
 
 	err = setting.Set(*input.Setting, input.Value)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -102,30 +102,29 @@ func settingsPut(w http.ResponseWriter, r *http.Request) {
 func settingsDelete(w http.ResponseWriter, r *http.Request) {
 	input := &SettingInput{}
 
-	err := parseJson(r, input)
-	if errHandled(err, w) {
+	auth, err := authenticate(w, r)
+	if errHandled(err, w, auth) {
+		return
+	}
+	err = parseJson(r, input)
+	if errHandled(err, w, auth) {
 		return
 	}
 
 	if input.Setting == nil {
-		errHandled(fail.New("No setting passed in.", nil), w)
-		return
-	}
-
-	auth, err := authenticate(w, r)
-	if errHandled(err, w) {
+		errHandled(fail.New("No setting passed in.", nil), w, auth)
 		return
 	}
 
 	prm := permission.Settings()
 
 	if !auth.canWrite(prm) {
-		errHandled(fail.New("You do not have permissions to update settings.  Admin rights are required.", nil), w)
+		errHandled(fail.New("You do not have permissions to update settings.  Admin rights are required.", nil), w, auth)
 		return
 	}
 
 	err = setting.Default(*input.Setting)
-	if errHandled(err, w) {
+	if errHandled(err, w, auth) {
 		return
 	}
 
