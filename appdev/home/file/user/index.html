@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>freehold - User</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+		<link href="/core/v1/file/css/freehold.css" rel="stylesheet" media="screen">
+		<link href="/home/v1/file/user/css/index.css" rel="stylesheet" media="screen">
+	</head>
+<body>
+<main>
+
+</main>
+
+</body>
+
+
+<!--templates-->
+<script id="tMain" type="text/ractive">
+<navbar error="{{error}}"></navbar>
+
+<div class="container">
+	<div class="row">
+		<div class="col-md-3">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h3 class="panel-title">{{user.user}}</h3>
+				</div>
+				<div class="panel-body">
+					Panel content
+				</div>
+			</div>
+		</div>
+		<div class="col-md-9">
+			<table class="table table-condensed table-striped table-hover">
+				<thead>
+					<tr>
+						<th>
+							Created Date
+						</th>
+						<th>Expires</th>
+						<th>Ip Address</th>
+					</tr>
+				</thead>
+				<tbody>
+					{{#sessions}}
+					<tr class="">
+						<td>{{created}}</td>
+						<td>{{expires}}</td>
+						<td>{{ipAddress}}</td>
+					</tr>
+					{{/sessions}}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-12">
+			security tokens
+		</div>
+	</div>
+</div>
+
+</script>
+<!--end templates-->
+
+<script src="/core/v1/file/js/jquery-2.1.1.min.js"></script>
+<script src="/core/v1/file/js/bootstrap.min.js"></script>
+<script src="/core/v1/file/js/ractive.min.js"></script>
+<script src="/core/v1/file/js/fh.js"></script>
+<script src="/core/v1/file/js/fhComponents.js"></script>
+<script src="/home/v1/file/user/js/index.js"></script>
+</body>
+</html>
