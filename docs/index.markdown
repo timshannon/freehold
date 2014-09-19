@@ -64,7 +64,7 @@ For multiple failures, there will be a failure item with a message for each that
 
 ```
 
-For most cases with multiple item returns data will return an array, but for instances where there is a unique identifier for a given row (such as a datastore key / value record), a hash map will instead be returned with the unique identifier as the hash key.  Pay attention to the documentation to see whether an array or a map is used.
+For most cases with multiple item returns data will return an array, but for instances where there is a unique identifier for a given row (such as a Users, applications, etc), a hash map will instead be returned with the unique identifier as the hash key.  Pay attention to the documentation to see whether an array or a map is used.
 
 Authentication will be done through the Basic HTTP Auth in the header
 

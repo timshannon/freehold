@@ -55,8 +55,14 @@
         navbarTemplate = '<nav class="navbar navbar-default" role="navigation">' +
             '<div class="navbar-header">' +
             '<a class="navbar-brand" href="{{homeUrl}}">{{brand}}</a>' +
+            '</div>' +
+            '<div class="container-fluid">' +
             '{{#authenticated}}' +
-            '<button type="button" id="logoutButton" on-click="logout" class="btn btn-default navbar-btn navbar-right">Log Out</button>' +
+            '<div class="btn-group navbar-right">' +
+            '<button type="button" id="userButton" on-click="openUser" class="btn btn-default navbar-btn" title="User Info">' +
+            '<span class="glyphicon glyphicon-user"></span></button>' +
+            '<button type="button" id="logoutButton" on-click="logout" class="btn btn-default navbar-btn">Log Out</button>' +
+            '</div>' +
             '{{/authenticated}}' +
             '{{yield}}' +
             '</div>' +
@@ -92,6 +98,9 @@
                             .fail(function(result) {
                                 this.set("error", result.message);
                             });
+                    },
+                    openUser: function(event) {
+                        window.location = "/home/v1/file/user/";
                     },
                     refresh: function() {
                         window.location.reload();
