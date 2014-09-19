@@ -439,13 +439,11 @@ QUnit.asyncTest("Get, Put and Delete Data in datastore", function(assert) {
                     );
                     ds.delete(10)
                         .always(function(result) {
-                            console.log("delete record");
                             assert.ok(
                                 (result.status == "success")
                             );
                             ds.get(10)
                                 .always(function(result) {
-                                    console.log("2nd get");
                                     assert.ok(
                                         (result.status == "fail") //should not be found
                                     );
@@ -786,7 +784,7 @@ QUnit.asyncTest("Iterate through reverse order non-string keys with limit", func
 });
 
 
-QUnit.module("Logs", {}); // There should be at least on log entry for the firstadmin
+QUnit.module("Logs", {}); // There needs to be at least on log entry 
 
 QUnit.asyncTest("Log", function(assert) {
     expect(1);
