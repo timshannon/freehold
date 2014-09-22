@@ -235,8 +235,16 @@ window.fh = (function() {
                     data: JSON.stringify(expData),
                 });
             },
-            logout: function() {
-                return stdAjax("DELETE", "/v1/auth/session/");
+            logout: function(session) {
+                if (!session) {
+                    return stdAjax("DELETE", "/v1/auth/session/");
+                }
+                return stdAjax("DELETE", "/v1/auth/session/", {
+                    data: JSON.stringify({
+                        id: session
+                    }),
+                });
+
             },
         },
         token: {

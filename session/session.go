@@ -37,12 +37,23 @@ type Session struct {
 	CSRFToken string `json:"CSRFToken,omitempty"`
 	IpAddress string `json:"ipAddress,omitempty"`
 	Created   string `json:"created,omitempty"`
+	UserAgent string `json:"userAgent,omitempty"`
 }
 
 func Get(r *http.Request) (*Session, error) {
+
+	key := sessionCookieValue(r)
+	if key == "" {
+		return nil, nil
+	}
+
+	return get(key)
+}
+
+func get(key string) (*Session, error) {
 	session := &Session{}
 
-	session.key = sessionCookieValue(r)
+	session.key = key
 	if session.key == "" {
 		return nil, nil
 	}
@@ -65,6 +76,11 @@ func Get(r *http.Request) (*Session, error) {
 		return nil, err
 	}
 	return session, nil
+}
+
+func GetByID(id string, user *user.User) (*Session, error) {
+	k := makeKey(user.Username(), id)
+	return get(k)
 }
 
 func All(user *user.User) ([]*Session, error) {
@@ -105,7 +121,7 @@ func New(u *user.User, base *Session) (*Session, error) {
 	newSession.ID = random(128)
 	newSession.CSRFToken = random(128)
 
-	newSession.key = u.Username() + "_" + newSession.ID
+	newSession.key = makeKey(u.Username(), newSession.ID)
 
 	newSession.Created = time.Now().Format(time.RFC3339)
 
@@ -126,6 +142,14 @@ func New(u *user.User, base *Session) (*Session, error) {
 	newSession.user = u
 
 	return &newSession, nil
+}
+
+func makeKey(username, id string) string {
+	return username + "_" + id
+}
+
+func (s *Session) Key() string {
+	return s.key
 }
 
 func (s *Session) verify() error {

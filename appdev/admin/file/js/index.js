@@ -4,12 +4,11 @@ $(document).ready(function() {
     var logPageLimit = 20;
     var defaultHome;
     var minPassLength;
-    var emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/; //I hate this
 
     //setup
     var rNav = new Ractive({
         el: "#navHook",
-        template: '<navbar errorLead="{{errorLead}}" error="{{error}}"></navbar>',
+        template: '<navbar app="Admin Console" errorLead="{{errorLead}}" error="{{error}}"></navbar>',
         components: {
             navbar: fh.components.navbar
         }
@@ -173,7 +172,7 @@ $(document).ready(function() {
             var mode = rUsers.get("mode");
             rUsers.set("errors", null);
 
-            if (!validUser(mode)) {
+            if (!validUser()) {
                 return;
             }
 
@@ -248,9 +247,6 @@ $(document).ready(function() {
 
             timer = window.setTimeout(function() {
                 switch (keypath) {
-                    case "current.email":
-                        validEmail();
-                        break;
                     case "current.password":
                         validPassword();
                         break;
@@ -413,10 +409,10 @@ $(document).ready(function() {
 
         for (var i in settings) {
             if (settings.hasOwnProperty(i)) {
-                if (!regEx.exec(settings[i].description) && !regEx.exec(settings[i].name)) {
-                    settings[i].filtered = true;
-                } else {
+                if (regEx.test(settings[i].description) || regEx.test(i)) {
                     settings[i].filtered = false;
+                } else {
+                    settings[i].filtered = true;
                 }
                 settings[i].type = typeof settings[i].value;
             }
@@ -448,20 +444,9 @@ $(document).ready(function() {
         }
 
 
-        valid = (validEmail() && validPassword() && validPassword2() && valid);
+        valid = (validPassword() && validPassword2() && valid);
 
         return valid;
-    }
-
-    function validEmail() {
-        var current = rUsers.get("current");
-        if (current.email && !emailRegex.test(current.email)) {
-            rUsers.set("errors.email", "Invalid email address format");
-            return false;
-        }
-
-        rUsers.set("errors.email", null);
-        return true;
     }
 
     function validPassword() {

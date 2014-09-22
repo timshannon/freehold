@@ -58,6 +58,7 @@ func sessionPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	baseSession.IpAddress = ipAddress(r)
+	baseSession.UserAgent = r.UserAgent()
 	ses, err := session.New(auth.User, baseSession)
 	if errHandled(err, w, auth) {
 		return
@@ -87,19 +88,37 @@ func sessionDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if auth.Session != nil {
-		if errHandled(auth.Session.Expire(), w, auth) {
+	input := &session.Session{}
+	err = parseJson(r, input)
+	if errHandled(err, w, auth) {
+		return
+	}
+
+	ses := auth.Session
+
+	if input.ID != "" && input.ID != ses.ID {
+		ses, err = session.GetByID(input.ID, auth.User)
+		if errHandled(err, w, auth) {
 			return
 		}
+		if ses == nil {
+			four04(w, r)
+			return
+		}
+	}
 
+	if errHandled(ses.Expire(), w, auth) {
+		return
 	}
 
 	cookie, err := r.Cookie(session.CookieName)
 
 	if err != http.ErrNoCookie {
-		cookie.MaxAge = 0
-		cookie.Value = ""
-		http.SetCookie(w, cookie)
+		if cookie.Value == ses.Key() {
+			cookie.MaxAge = 0
+			cookie.Value = ""
+			http.SetCookie(w, cookie)
+		}
 	}
 
 	respondJsend(w, &JSend{

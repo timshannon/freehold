@@ -1174,6 +1174,19 @@ Response (200):
 }
 ```
 
+*Log out of a specific session* - Expires a specific session based on ID, If client cookie matches session ID, it will be expired as well.
+```
+DELETE /v1/auth/session
+{
+	id: "222222222222222222222"
+}
+
+Response (200):
+{
+	status: "success",
+}
+```
+
 * * *
 
 <a name="settings"></a> Core Settings 
