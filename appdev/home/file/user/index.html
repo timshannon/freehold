@@ -17,21 +17,113 @@
 
 <!--templates-->
 <script id="tMain" type="text/ractive">
-<navbar error="{{error}}"></navbar>
+<navbar error="{{error}}" app="User Info"></navbar>
+
+<modal id="userModal" title="Change User {{current.user}}" customFooter="true">
+	<div>
+		{{#errors.save}}
+		<div class="alert alert-danger center-block">{{errors.save}}</div>
+		{{/errors.save}}
+	</div>
+
+	<form class="form-horizontal" role="form">
+
+	<div class="form-group">
+    <label for="username" class="col-sm-3 control-label">Username</label>
+		<div class="col-sm-6">
+      <p class="form-control-static">{{current.user}}</p>
+    </div>
+		<div class="col-sm-3">
+			<button type="button" on-click="changePassword" class="form-control btn btn-default btn-xs">Change Password</button>
+    </div>
+  </div>
+
+	{{#changePassword}}
+	<div class="form-group {{#errors.password}}has-error has-feedback{{/errors.password}}" title="{{errors.password}}">
+    <label for="password" class="col-sm-3 control-label">Password</label>
+		<div class="col-sm-9">
+			<input type="password" class="form-control" id="password" placeholder="Enter a password" value="{{current.password}}">
+		</div>
+		{{#errors.password}}
+			<span class="form-control-feedback glyphicon glyphicon-remove"></span>
+		{{/errors.password}}
+	</div>
+	<div class="form-group {{#errors.password2}}has-error has-feedback{{/errors.password2}}" title="{{errors.password2}}">
+		<label for="password2" class="col-sm-3 control-label">Confirm</label>
+		<div class="col-sm-9">
+			<input type="password" class="form-control" id="password2" placeholder="Enter the password again" value="{{current.password2}}">
+		</div>
+		{{#errors.password2}}
+			<span class="form-control-feedback glyphicon glyphicon-remove"></span>
+		{{/errors.password2}}
+  </div>
+	{{/changePassword}}
+
+	<div class="form-group">
+    <label for="name" class="col-sm-3 control-label">Name</label>
+		<div class="col-sm-9">
+			<input type="text" class="form-control" id="name" placeholder="Enter user's name" value="{{current.name}}">
+		</div>
+  </div>
+	<div class="form-group">
+		<label for="homeApp" class="col-sm-3 control-label">User Home App</label>
+		<div class="col-sm-9">
+			<select class="form-control" name="homeApp" value="{{current.homeApp}}">
+				{{#apps:i}}
+				<option value="{{i}}">{{name}}</option>
+				{{/apps}}
+			</select>
+		</div>
+	</div>
+
+	{{#admin}}
+	<div class="form-group">
+		<div class="col-sm-offset-3 col-sm-9">
+			<button type="button" class="btn btn-danger" on-click="removeAdmin">Remove Admin Rights</button>
+		</div>
+	</div>
+	{{/admin}}
+
+	</form>
+	
+	<div class="modal-footer">
+		<button type="button" class="btn btn-default" on-click="save">Save</button>
+		<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+	</div>
+</modal>
 
 <div class="container">
 	<div class="row">
-		<div class="col-md-3">
+		<div class="col-md-4">
+			{{#user}}
 			<div class="panel panel-default">
 				<div class="panel-heading">
-					<h3 class="panel-title">{{user.user}}</h3>
+					<h3 class="panel-title">{{user}}{{#admin}} <small>(admin)</small>{{/admin}}</h3>
+
 				</div>
 				<div class="panel-body">
-					Panel content
+					<button type="button" on-click="changeUser" class="pull-right btn btn-default btn-sm" title="Modify User">
+						<span class="glyphicon glyphicon-cog"></span> Change User</button>
+					
+					<p><b>Name: </b>{{name}}</p>
+					<p><b>Home App: </b>{{homeApp}}</p>
+
 				</div>
 			</div>
+			{{/user}}
 		</div>
-		<div class="col-md-9">
+		</div> <!--row-->
+	<div class="row">
+	<div class="container">
+	<ul class="nav nav-tabs" role="tablist">
+		<li class="active"><a href="#sessions" role="tab" data-toggle="tab">Sessions</a></li>
+		<li><a href="#tokens" role="tab" data-toggle="tab">Tokens</a></li>
+	</ul>
+
+	<!--tab contents-->
+	<div class="tab-content">
+		<div class="tab-pane active" id="sessions">
+		<div class="col-md-12">
 			<table class="table table-condensed table-striped table-hover">
 				<thead>
 					<tr>
@@ -40,6 +132,8 @@
 						</th>
 						<th>Expires</th>
 						<th>Ip Address</th>
+						<th>User Agent</th>
+						<th></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -48,17 +142,26 @@
 						<td>{{created}}</td>
 						<td>{{expires}}</td>
 						<td>{{ipAddress}}</td>
+						<td>{{userAgent}}</td>
+						<td>
+							<button type="button" class="btn btn-danger btn-sm" on-click="logout" title="Log Out Session">
+							<span class="glyphicon glyphicon-remove"></span></button>
+						</td>
 					</tr>
 					{{/sessions}}
 				</tbody>
 			</table>
+		</div> <!-- sessions -->
 		</div>
-	</div>
-	<div class="row">
+		<div class="tab-pane" id="tokens">
 		<div class="col-md-12">
 			security tokens
 		</div>
+	</div> 	<!--tokens-->
 	</div>
+	</div>
+
+</div>
 </div>
 
 </script>

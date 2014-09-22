@@ -54,7 +54,11 @@
     function navbar() {
         navbarTemplate = '<nav class="navbar navbar-default" role="navigation">' +
             '<div class="navbar-header">' +
-            '<a class="navbar-brand" href="{{homeUrl}}">{{brand}}</a>' +
+            '<a class="navbar-brand" href="/" title="home">{{brand}}</a>' +
+            '{{#app}}' +
+            '<ul class="nav navbar-nav">' +
+            '<li class="active"><a href="#" on-click="refresh">{{app}}</a></li>' +
+            '</ul>{{/app}}' +
             '</div>' +
             '<div class="container-fluid">' +
             '{{#authenticated}}' +
@@ -83,20 +87,21 @@
             isolated: false,
             data: {
                 brand: "freehold",
-                homeUrl: "/",
                 authenticated: (fh.auth.type != "none"),
                 errorLead: "An error occurred and you may need to refresh this page: ",
-                error: false
+                error: false,
+                app: false,
             },
             init: function() {
                 this.on({
                     logout: function(event) {
+                        var r = this;
                         fh.session.logout()
                             .done(function() {
-                                window.location = "/";
+								window.location = "/";
                             })
                             .fail(function(result) {
-                                this.set("error", result.message);
+                                r.set("error", result.message);
                             });
                     },
                     openUser: function(event) {
