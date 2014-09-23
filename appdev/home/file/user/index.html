@@ -19,7 +19,7 @@
 <script id="tMain" type="text/ractive">
 <navbar error="{{error}}" app="User Info"></navbar>
 
-<modal id="userModal" title="Change User {{current.user}}" customFooter="true">
+<modal id="userModal" title="Modify User {{current.user}}" customFooter="true">
 	<div>
 		{{#errors.save}}
 		<div class="alert alert-danger center-block">{{errors.save}}</div>
@@ -92,6 +92,45 @@
 	</div>
 </modal>
 
+
+{{#token}}
+<modal id="tokenModal" title="Add New Security Token" customFooter="true">
+	<div>
+		{{#errors.save}}
+		<div class="alert alert-danger center-block">{{errors.save}}</div>
+		{{/errors.save}}
+	</div>
+
+	<form class="form-horizontal" role="form">
+		<div class="form-group {{#errors.name}}has-error has-feedback{{/errors.name}}" title="{{errors.name}}">
+			<label for="tokenName" class="col-sm-3 control-label">Name</label>
+			<div class="col-sm-9">
+				<input type="text" class="form-control" id="tokenName" placeholder="Enter a name e.g. Desktop Sync" value="{{name}}">
+			</div>
+			{{#errors.name}}
+				<span class="form-control-feedback glyphicon glyphicon-remove"></span>
+			{{/errors.name}}
+		</div>
+		<div class="form-group {{#errors.expires}}has-error has-feedback{{/errors.expires}}" title="{{errors.expires}}">
+			<label for="tokenExpire" class="col-sm-3 control-label">Expiration</label>
+			<div class="col-sm-9">
+				<input type="date" class="form-control" id="tokenExpire" placeholder="Enter an expiration date" value="{{expires}}">
+			</div>
+			{{#errors.expires}}
+				<span class="form-control-feedback glyphicon glyphicon-remove"></span>
+			{{/errors.expires}}
+
+		</div>
+
+	</form>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-default" on-click="saveToken">Save</button>
+		<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+	</div>
+
+</modal>
+{{/token}}
+
 <div class="container">
 	<div class="row">
 		<div class="col-md-4">
@@ -103,7 +142,7 @@
 				</div>
 				<div class="panel-body">
 					<button type="button" on-click="changeUser" class="pull-right btn btn-default btn-sm" title="Modify User">
-						<span class="glyphicon glyphicon-cog"></span> Change User</button>
+						<span class="glyphicon glyphicon-cog"></span> Modify User</button>
 					
 					<p><b>Name: </b>{{name}}</p>
 					<p><b>Home App: </b>{{homeApp}}</p>
@@ -116,8 +155,8 @@
 	<div class="row">
 	<div class="container">
 	<ul class="nav nav-tabs" role="tablist">
-		<li class="active"><a href="#sessions" role="tab" data-toggle="tab">Sessions</a></li>
-		<li><a href="#tokens" role="tab" data-toggle="tab">Tokens</a></li>
+		<li class="active"><a href="#sessions" on-click="clearHelp" role="tab" data-toggle="tab">Sessions</a></li>
+		<li><a href="#tokens" role="tab" on-click="setHelp" data-toggle="tab">Tokens</a></li>
 	</ul>
 
 	<!--tab contents-->
@@ -162,11 +201,22 @@
 						<th>Expires</th>
 						<th>Resource</th>
 						<th>Permission</th>
+						<th></th> <!-- delete button-->
 					</tr>
 				</thead>
 				<tbody>
+					<tr class="active">
+						<td>
+						<button type="button"  class="btn btn-xs btn-success" on-click="addToken">
+						 <span class="glyphicon glyphicon-plus"></span> Add new token</a>
+						</td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+					</tr>
 					{{#tokens}}
-					<tr class="">
+					<tr>
 						<td>{{name}}</td>
 						<td>{{expires}}</td>
 						<td>{{resource}}</td>
@@ -178,7 +228,8 @@
 					</tr>
 					{{/tokens}}
 				</tbody>
-			</table>		</div>
+			</table>		
+			</div>
 	</div> 	<!--tokens-->
 	</div>
 	</div>

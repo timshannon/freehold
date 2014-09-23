@@ -3,15 +3,14 @@ $(document).ready(function() {
 
     var minPassLength;
 
+
     //setup
     var rMain = new Ractive({
         el: "main",
         template: "#tMain",
         components: fh.components,
-		data: {
-		}
+        data: {}
     });
-
 
     fh.application.installed()
         .done(function(result) {
@@ -31,8 +30,8 @@ $(document).ready(function() {
 
     loadUser();
     loadSessions();
-	loadTokens();
-	
+    loadTokens();
+
     var timer;
 
     //events
@@ -94,6 +93,71 @@ $(document).ready(function() {
                     rMain.set("error", result.message);
                 });
 
+        },
+        "addToken": function(event) {
+            rMain.set("token", {
+                name: "",
+                expires: null,
+                errors: null
+            });
+
+            $("#tokenModal").modal();
+        },
+        "clearHelp": function(event) {
+            rMain.set("help", false);
+        },
+        "setHelp": function(event) {
+            rMain.set("help", {
+                title: "Security Tokens",
+                text: "Tokens are unique ID's used to grant temporary access to some or all of " +
+                    "the permissions of a user. For use with temporary access, or external " +
+                    "applications. More info in the <a href='/docs/#token'>documentation</a>."
+            });
+        },
+        "saveToken": function(event) {
+            var errors = {};
+
+            if (!event.context.name) {
+                errors.name = "A name is required";
+            }
+
+            if (event.context.expires) {
+                var exp = new Date(event.context.expires);
+                if (isNaN(exp.getTime())) {
+                    errors.expires = "Invalid Date";
+                } else {
+                    exp.setHours(0); //set to midnight of local timezone
+                    event.context.expires = exp.toJSON();
+                }
+            }
+
+
+            if (Object.getOwnPropertyNames(errors).length > 0) {
+                rMain.set("token.errors", errors);
+                return;
+            }
+
+            fh.token.new({
+                    name: event.context.name,
+                    expires: event.context.expires
+                })
+                .done(function() {
+                    loadTokens();
+                    $("#tokenModal").modal("hide");
+                })
+                .fail(function(result) {
+                    rMain.set("token.errors.save", result.message);
+                });
+
+        },
+        "delete": function(event) {
+            fh.token.delete(event.context.token)
+                .done(function() {
+                    loadTokens();
+                })
+                .fail(function(result) {
+                    rMain.set("error", result.message);
+                });
         }
     });
 
@@ -159,11 +223,10 @@ $(document).ready(function() {
             .done(function(result) {
                 var tokens = result.data;
                 for (var i = 0; i < tokens.length; i++) {
-                    tokens[i].expires = new Date(tokens[i].expires).toLocaleString();
                     if (!tokens[i].expires) {
                         tokens[i].expires = "No expiration";
                     } else {
-                        tokens[i].expires = new Date(tokens[i].expires).toLocaleString();
+                        tokens[i].expires = new Date(tokens[i].expires).toLocaleDateString();
                     }
                 }
                 rMain.set("tokens", tokens);

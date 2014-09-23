@@ -11,12 +11,17 @@
 //	it's all multiple async component requests, which result in a stuttering initial load even
 //	when the files are loaded from browser cache.
 //	The current solution is to hardcode the components with the clumsy multi-line concatenation
-//	and global CSS for individual components.  Less than idea, but it keeps the apps snappy,
+//	and global CSS for individual components.  Less than ideal, but it keeps the apps snappy,
 //	and doesn't force a build / dependency on the core library.
 //
 //	I could see for larger application it makes a lot of sense to use requirejs, and keep
-//	everything silod into one set of html + js + css which includes all dependencies.
+//	everything silo'd into one set of html + js + css which includes all dependencies.
+//
+//	Maybe hardcode navbar, load ajax load the rest?  Navbar appears to be the only one immediately visible
 (function() {
+
+	//TODO: filetree
+	//TODO: permissions
     fh.components = {
         modal: modal(),
         navbar: navbar()
@@ -59,6 +64,11 @@
             '<ul class="nav navbar-nav">' +
             '<li class="active"><a href="#" on-click="refresh">{{app}}</a></li>' +
             '</ul>{{/app}}' +
+            '{{#help}}' +
+            '<ul class="nav navbar-nav">' +
+            '<li><a href="#" id="navHelp" tabindex="0"  title="{{title}}" ' +
+            'data-content="{{text}}" on-click="help"><span class="glyphicon glyphicon-question-sign"></span></a></li>' +
+            '</ul>{{/help}}' +
             '</div>' +
             '<div class="container-fluid">' +
             '{{#authenticated}}' +
@@ -98,7 +108,7 @@
                         var r = this;
                         fh.session.logout()
                             .done(function() {
-								window.location = "/";
+                                window.location = "/";
                             })
                             .fail(function(result) {
                                 r.set("error", result.message);
@@ -109,10 +119,29 @@
                     },
                     refresh: function() {
                         window.location.reload();
+                    },
+                    help: function() {
+
+                        $("#navHelp").popover({
+                            animation: true,
+                            placement: "bottom",
+                            trigger: "manual",
+                            html: true,
+                            container: "body",
+                        });
+
+                        $("#navHelp").popover("toggle");
                     }
 
+                });
+
+                this.observe("help", function(newValue, oldValue, keypath) {
+                    if (!newValue) {
+                        $("#navHelp").popover("destroy");
+                    }
                 });
             }
         });
     }
+
 }()); //end
