@@ -155,8 +155,30 @@
 		</div>
 		<div class="tab-pane" id="tokens">
 		<div class="col-md-12">
-			security tokens
-		</div>
+			<table class="table table-condensed table-striped table-hover">
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Expires</th>
+						<th>Resource</th>
+						<th>Permission</th>
+					</tr>
+				</thead>
+				<tbody>
+					{{#tokens}}
+					<tr class="">
+						<td>{{name}}</td>
+						<td>{{expires}}</td>
+						<td>{{resource}}</td>
+						<td>{{permission}}</td>
+						<td>
+							<button type="button" class="btn btn-danger btn-sm" on-click="delete" title="Delete Token">
+							<span class="glyphicon glyphicon-remove"></span></button>
+						</td>
+					</tr>
+					{{/tokens}}
+				</tbody>
+			</table>		</div>
 	</div> 	<!--tokens-->
 	</div>
 	</div>
