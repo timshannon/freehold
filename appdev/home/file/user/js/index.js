@@ -31,6 +31,8 @@ $(document).ready(function() {
 
     loadUser();
     loadSessions();
+	loadTokens();
+	
     var timer;
 
     //events
@@ -151,6 +153,27 @@ $(document).ready(function() {
                 rMain.set("error", result.message);
             });
     }
+
+    function loadTokens() {
+        fh.token.get()
+            .done(function(result) {
+                var tokens = result.data;
+                for (var i = 0; i < tokens.length; i++) {
+                    tokens[i].expires = new Date(tokens[i].expires).toLocaleString();
+                    if (!tokens[i].expires) {
+                        tokens[i].expires = "No expiration";
+                    } else {
+                        tokens[i].expires = new Date(tokens[i].expires).toLocaleString();
+                    }
+                }
+                rMain.set("tokens", tokens);
+            })
+            .fail(function(result) {
+                rMain.set("error", result.message);
+            });
+    }
+
+
 
 
     function validUser() {
