@@ -966,7 +966,7 @@ In this case the user generating the token grants their permissions but only if 
 
 Security tokens cannot be updated once created.  If you want to change permissions, or resource on a token, you need to delete the token and generate a new one with a new token identifier.
 
-//TODO Temporary urls.  
+Use cases for Security Tokens would be setting up external applications without needing to use your password (like a local desktop sync, or a smartphone application), or temporarily sharing a file with another person without needing to give them a logon to your freehold instance.
 
 ```
 core/token.ds

@@ -11,6 +11,14 @@ $(document).ready(function() {
         template: '<navbar app="Admin Console" errorLead="{{errorLead}}" error="{{error}}"></navbar>',
         components: {
             navbar: fh.components.navbar
+        },
+        data: {
+            help: {
+                title: "Admin Console",
+                text: "This is where admins can manage <a href='/docs/#user'>users</a>, " +
+                    "global freehold <a href='/docs/#settings'>settings</a> and monitor the " +
+                    "<a href='/docs/#logs'>logs</a> for errors."
+            }
         }
     });
 
