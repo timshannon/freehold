@@ -12,6 +12,7 @@ import (
 
 	"bitbucket.org/tshannon/freehold/data"
 	"bitbucket.org/tshannon/freehold/fail"
+	"bitbucket.org/tshannon/freehold/setting"
 )
 
 const (
@@ -64,6 +65,9 @@ func AttemptRequest(ipAddress string, requestType string, limit float64) error {
 	// the fraction limit
 	if (limit >= 1 && float64(len(pAttempt)) > attempt.limit) ||
 		(limit < 1 && len(pAttempt) > 1) {
+		if setting.Float("RateLimitWait") > 0 {
+			time.Sleep(time.Duration(setting.Float("RateLimitWait")) * time.Second)
+		}
 		return fail.NewFromErr(FailExceededLimit, attempt)
 	}
 
