@@ -3,5 +3,9 @@
 	include: "components.dev",
 	out: "components.js",
 	optimize: "none",
+	wrap: true,
+	paths: {
+        "ractive": "../../application/core/file/js/ractive.min"
+	},
 	stubModules: [ 'rvc' ]
 }
