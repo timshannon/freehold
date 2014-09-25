@@ -1,0 +1,7 @@
+{
+	name: "almond",
+	include: "components.dev",
+	out: "components.js",
+	optimize: "none",
+	stubModules: [ 'rvc' ]
+}

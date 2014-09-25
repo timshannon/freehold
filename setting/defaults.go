@@ -141,6 +141,11 @@ func init() {
 			Description: "Maximum number of days from today that a token can be set to expire on.",
 			Value:       float64(90),
 		},
+		"RateLimitWait": Setting{
+			Description: "Time in seconds a request that has gone over it's rate limit will be forced to wait " +
+				"until it gets a response from the server.",
+			Value: float64(0),
+		},
 	}
 }
 

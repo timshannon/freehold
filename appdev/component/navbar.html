@@ -1,0 +1,114 @@
+<nav class="navbar navbar-default" role="navigation"> 
+	<div class="navbar-header"> 
+		<a class="navbar-brand" href="/" title="home">{{brand}}</a> 
+		{{#app}} 
+			<ul class="nav navbar-nav"> 
+				<li class="active"><a href="#" on-click="refresh">{{app}}</a></li> 
+			</ul>
+		{{/app}} 
+		{{#help}} 
+			<ul class="nav navbar-nav"> 
+				<li><a href="#" id="navHelp" tabindex="0"  title="{{title}}"  
+				data-content="{{text}}" on-click="help"><span class="glyphicon glyphicon-question-sign"></span></a></li> 
+			</ul>
+		{{/help}} 
+	</div> 
+	<div class="container-fluid"> 
+		{{#authenticated}} 
+			<div class="btn-group navbar-right"> 
+				<button type="button" id="userButton" on-click="openUser" class="btn btn-default navbar-btn" title="User Info"> 
+				<span class="glyphicon glyphicon-user"></span></button> 
+				<button type="button" id="logoutButton" on-click="logout" class="btn btn-default navbar-btn">Log Out</button> 
+			</div> 
+		{{/authenticated}} 
+		{{yield}} 
+	</div> 
+</nav> 
+{{#error}} 
+	<div class="overlay"></div> 
+	<div class="navbar-alert alert alert-danger container" role="alert"> 
+		<strong>{{errorLead}}</strong>  
+		{{{error}}} 
+		<a href="#" on-click="refresh"> 
+		<span class="close glyphicon glyphicon-refresh"></span><span class="sr-only">Refresh</span></a> 
+	</div> 
+{{/error}}
+
+        
+<style>
+.overlay {
+	position: fixed;
+	z-index: 10000;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	opacity: .7;
+	background: #aaaaaa;
+}
+
+
+.navbar-alert {
+	position: absolute;
+	z-index: 10500;
+	left: 0;
+	right: 0;
+	margin-left: auto;
+	margin-right: auto;
+	min-width: 100px;
+	border-color: #777;
+}
+</style>
+
+<script>
+//TODO: Notifications ds
+component.export = {
+	isolated: false,
+	data: {
+			brand: "freehold",
+			authenticated: (fh.auth.type != "none"),
+			errorLead: "An error occurred and you may need to refresh this page: ",
+			error: false,
+			app: false,
+	},
+	init: function() {
+		this.on({
+				logout: function(event) {
+						var r = this;
+						fh.session.logout()
+								.done(function() {
+										window.location = "/";
+								})
+								.fail(function(result) {
+										r.set("error", result.message);
+								});
+				},
+				openUser: function(event) {
+						window.location = "/home/v1/file/user/";
+				},
+				refresh: function() {
+						window.location.reload();
+				},
+				help: function() {
+
+						$("#navHelp").popover({
+								animation: true,
+								placement: "bottom",
+								trigger: "manual",
+								html: true,
+								container: "body",
+						});
+
+						$("#navHelp").popover("toggle");
+				}
+
+		});
+
+		this.observe("help", function(newValue, oldValue, keypath) {
+				if (!newValue) {
+						$("#navHelp").popover("destroy");
+				}
+		});
+	}
+};
+</script>

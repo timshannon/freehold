@@ -5,6 +5,8 @@ $(document).ready(function() {
     var defaultHome;
     var minPassLength;
 
+    console.log(fh.components.navbar);
+
     //setup
     var rNav = new Ractive({
         el: "#navHook",
