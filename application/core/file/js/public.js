@@ -1,6 +1,7 @@
 $(document).ready(function() {
     //setup
 
+	console.log("public");
     var rMain = new Ractive({
         el: "#mainHook",
         template: "#tMain",
