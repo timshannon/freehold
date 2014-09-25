@@ -1,11 +1,10 @@
 $(document).ready(function() {
     //setup
 
-	console.log("public");
+    console.log(Ractive.components.navbar);
     var rMain = new Ractive({
         el: "#mainHook",
         template: "#tMain",
-        components: fh.components
     });
 
 
@@ -14,9 +13,9 @@ $(document).ready(function() {
         loginModal: function(event) {
             rMain.set({
                 "loginErr": false,
-				"username": "",
-				"password": "",
-				"rememberMe": false
+                "username": "",
+                "password": "",
+                "rememberMe": false
             });
 
             $("#loginModal").modal();
