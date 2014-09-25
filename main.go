@@ -111,6 +111,9 @@ func main() {
 
 	}
 
+	//TODO: Dev - Remove
+	//setupCore("tshannon")
+
 	server := &http.Server{
 		Handler:        rootHandler,
 		ReadTimeout:    time.Duration(cfg.Int("ReadTimeoutSeconds", 0)) * time.Second,

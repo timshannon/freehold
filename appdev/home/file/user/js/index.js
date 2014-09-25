@@ -8,7 +8,6 @@ $(document).ready(function() {
     var rMain = new Ractive({
         el: "main",
         template: "#tMain",
-        components: fh.components,
         data: {}
     });
 

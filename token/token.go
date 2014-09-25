@@ -167,6 +167,16 @@ func All(u *user.User) ([]*Token, error) {
 			return nil, iter.Err()
 		}
 
+		k := ""
+
+		err = json.Unmarshal(iter.Key(), &k)
+		if err != nil {
+			return nil, err
+		}
+		if username(k) != u.Username() {
+			break
+		}
+
 		err = json.Unmarshal(iter.Value(), t)
 		if err != nil {
 			return nil, err
@@ -196,6 +206,10 @@ func Delete(u *user.User, token string) error {
 
 func key(username, token string) string {
 	return username + "_" + token
+}
+
+func username(key string) string {
+	return strings.Split(key, "_")[0]
 }
 
 func generateToken() string {

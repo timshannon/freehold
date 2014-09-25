@@ -5,6 +5,12 @@ import os
 import shutil
 
 def package(app):
+
+    if app == "components":
+        print "packaging components file" 
+        subprocess.call(["r.js", "-o", "components/build.json"])
+        return
+
     print "packaging " + app
     tmpDir = "."+app+"_tmp"
 
@@ -31,7 +37,7 @@ def minifyFolder(folder):
 def minify(filename):
     print "minify file " + filename
     subprocess.call(["uglifyjs", filename, "-c", "-o", filename])
-    
+
 
 
 if len(sys.argv) > 1:

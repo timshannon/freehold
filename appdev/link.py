@@ -5,6 +5,9 @@ import os
 import shutil
 
 def link(app):
+    if app == "components":
+        return
+
     print "linking " + app
     os.chdir("../application")
     if os.path.islink(app):

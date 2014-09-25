@@ -1,0 +1,14 @@
+{
+	name: "almond",
+	include: "components.dev",
+	out: "../../application/core/file/js/components.js",
+	paths: {
+        ractive: "empty:"
+    },
+	optimize: "none",
+	wrap: {
+		start: "(function () {",
+		end:  "   require('ractive', null, true);}());"
+	},
+	stubModules: [ 'rvc' ]
+}
