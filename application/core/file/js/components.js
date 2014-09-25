@@ -480,7 +480,7 @@ define("rvc!navbar",["require","ractive"],function(require,Ractive){
   component={};
 
 //TODO: Notifications ds
-component.export = {
+component.exports = {
 	isolated: false,
 	data: {
 			brand: "freehold",
@@ -542,19 +542,19 @@ component.export = {
 });
 //Freehold ractive components 
 // for things like modals, navbar, etc
-//
 
-//TODO: Just register than with Ractive global
+//FIXME: ForceSync?  Everyone else seems to wrap start and end fragments
+// this seems to work fine for now
 
 require(['rvc!modal'], function(Modal) {
     Ractive.components.modal = Modal;
-});
+}, null, true);
+
+
 
 require(['rvc!navbar'], function(Navbar) {
-    console.log("navbar");
     Ractive.components.navbar = Navbar;
-});
-
+}, null, true);
 
 
 //TODO: filetree
@@ -562,4 +562,4 @@ require(['rvc!navbar'], function(Navbar) {
 ;
 define("components.dev", function(){});
 
-}());
+   require('ractive', null, true);}());

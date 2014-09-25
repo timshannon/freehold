@@ -5,15 +5,10 @@ $(document).ready(function() {
     var defaultHome;
     var minPassLength;
 
-    console.log(fh.components.navbar);
-
     //setup
     var rNav = new Ractive({
         el: "#navHook",
         template: '<navbar app="Admin Console" errorLead="{{errorLead}}" error="{{error}}"></navbar>',
-        components: {
-            navbar: fh.components.navbar
-        },
         data: {
             help: {
                 title: "Admin Console",
@@ -51,9 +46,6 @@ $(document).ready(function() {
     var rUsers = new Ractive({
         el: "#users",
         template: "#tUsers",
-        components: {
-            modal: fh.components.modal
-        },
         data: {
             auth: fh.auth
         }

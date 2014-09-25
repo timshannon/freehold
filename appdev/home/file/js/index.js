@@ -16,7 +16,6 @@ $(document).ready(function() {
     var rManage = new Ractive({
         el: "#modalHook",
         template: "#tManageApps",
-        components: fh.components
     });
 
     //Get User's setting DS if exists
