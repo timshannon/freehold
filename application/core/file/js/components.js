@@ -1,13 +1,12 @@
 ;(function() {
-var ractive, rvc, rvc_modal, rvc_navbar, require, Ractive;
-(function () {
-  ractive = Ractive = {};
+var rvc, rvc_modal, rvc_navbar;
+(function (ractive) {
   rvc = {
     load: function (id) {
       throw new Error('Dynamic load not allowed: ' + id);
     }
   };
-  rvc_modal = function (Ractive) {
+  rvc_modal = function (require, Ractive) {
     var __options__ = {
         template: {
           v: 1,
@@ -126,8 +125,8 @@ var ractive, rvc, rvc_modal, rvc_navbar, require, Ractive;
       }
     }
     return Ractive.extend(__options__);
-  }(ractive);
-  rvc_navbar = function (Ractive) {
+  }({}, ractive);
+  rvc_navbar = function (require, Ractive) {
     var __options__ = {
         template: {
           v: 1,
@@ -388,7 +387,7 @@ var ractive, rvc, rvc_modal, rvc_navbar, require, Ractive;
       }
     }
     return Ractive.extend(__options__);
-  }(ractive);
+  }({}, ractive);
   //Freehold ractive components 
   // for things like modals, navbar, etc
   //TODO: filetree
@@ -399,5 +398,5 @@ var ractive, rvc, rvc_modal, rvc_navbar, require, Ractive;
   (function (Navbar) {
     Ractive.components.navbar = Navbar;
   }(rvc_navbar));
-}());
+}(Ractive));
 }());

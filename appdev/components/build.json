@@ -1,20 +1,21 @@
 {
 	name: "components.dev",
+	exclude: ["ractive"],
 	out: "../../application/core/file/js/components.js",
-	optimize: "none",
-	stubModules: [ 'rvc' , 'ractive'],
-	wrap: true,
+	stubModules: [ 'rvc' ],
+	wrap: {
+        start: "(function(ractive) {",
+        end: "}(Ractive));"
+    },
+	skipModuleInsertion: true,
 	onModuleBundleComplete: function (data) {
-		var fs = module.require('fs'),
+	  var fs = module.require('fs'),
 		amdclean = module.require('amdclean'),
 		outputFile = data.path,
 		cleanedCode = amdclean.clean({
-			'filePath': outputFile,
-			'transformAMDChecks': false,
-			aggressiveOptimizations: true,
+		  'filePath': outputFile,
 		});
 
-		fs.writeFileSync(outputFile, cleanedCode);
-	},
-	skipModuleInsertion: true,
+	  fs.writeFileSync(outputFile, cleanedCode);
+	}
 }
