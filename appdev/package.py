@@ -42,7 +42,10 @@ def minify(filename):
 
 if len(sys.argv) > 1:
     #package passed in app
-    package(sys.argv[1])
+    app = sys.argv[1]
+    if app.endswith("/"):
+        app = app.rstrip("/")
+    package(app)
 else:
     #package all apps in appdev dir
     apps = [f for f in os.listdir("./") if not os.path.isfile(f)]
