@@ -20,7 +20,10 @@ def link(app):
 
 if len(sys.argv) > 1:
     #link passed in app
-    link(sys.argv[1])
+    app = sys.argv[1]
+    if app.endswith("/"):
+        app = app.rstrip("/")
+    link(app)
 else:
     #link all apps in appdev dir
     apps = [f for f in os.listdir("./") if not os.path.isfile(f)]
