@@ -1,14 +1,20 @@
 {
-	name: "almond",
-	include: "components.dev",
+	name: "components.dev",
 	out: "../../application/core/file/js/components.js",
-	paths: {
-        ractive: "empty:"
-    },
 	optimize: "none",
-	wrap: {
-		start: "(function () {",
-		end:  "   require('ractive', null, true);}());"
+	stubModules: [ 'rvc' , 'ractive'],
+	wrap: true,
+	onModuleBundleComplete: function (data) {
+		var fs = module.require('fs'),
+		amdclean = module.require('amdclean'),
+		outputFile = data.path,
+		cleanedCode = amdclean.clean({
+			'filePath': outputFile,
+			'transformAMDChecks': false,
+			aggressiveOptimizations: true,
+		});
+
+		fs.writeFileSync(outputFile, cleanedCode);
 	},
-	stubModules: [ 'rvc' ]
+	skipModuleInsertion: true,
 }
