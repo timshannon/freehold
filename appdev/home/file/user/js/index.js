@@ -97,6 +97,11 @@ $(document).ready(function() {
             rMain.set("token", {
                 name: "",
                 expires: null,
+				permission: {
+					private: "rw",
+					friend: "r",
+					public: ""
+				},
                 errors: null
             });
 

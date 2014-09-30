@@ -1,0 +1,29 @@
+<div class="permissions-group"> 
+	{{#if horizontal}}
+		horizontal
+	{{else}}
+		<p><label>Private:</label> {{private}}</p>
+		<p><label>Friend:</label> {{friend}}</p>
+		<p><label>Public:</label> {{public}}</p>
+	{{/if}}
+</div>
+
+<style>
+.permissions-group {
+	
+}
+
+</style>
+
+<script>
+	component.exports = {
+		data: {
+			public: "",
+			private: "",
+			friend: "",
+			horizontal: false,
+		},
+
+
+	};
+</script>

@@ -1,5 +1,10 @@
 {
 	name: "components.dev",
+	paths: {
+		"ractive": "./lib/ractive",
+		"rvc": "./lib/rvc",
+		"amdclean": "./lib/amdclean"
+	},
 	exclude: ["ractive"],
 	out: "../../application/core/file/js/components.js",
 	stubModules: [ 'rvc' ],
