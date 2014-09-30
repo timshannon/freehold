@@ -11,3 +11,7 @@ require(['rvc!modal'], function(Modal) {
 require(['rvc!navbar'], function(Navbar) {
     Ractive.components.navbar = Navbar;
 });
+
+require(['rvc!permissions'], function(Permissions) {
+    Ractive.components.permissions = Permissions;
+});
