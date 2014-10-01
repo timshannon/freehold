@@ -9,7 +9,7 @@
 		{{#help}} 
 			<ul class="nav navbar-nav"> 
 				<li><a href="#" id="navHelp" tabindex="0"  title="{{title}}"  
-				data-content="{{text}}" on-click="help"><span class="glyphicon glyphicon-question-sign"></span></a></li> 
+				data-content="{{text}}" decorator="help"><span class="glyphicon glyphicon-question-sign"></span></a></li> 
 			</ul>
 		{{/help}} 
 	</div> 
@@ -71,7 +71,24 @@ component.exports = {
 			error: false,
 			app: false,
 	},
+	decorators: {
+		help: function (node) {
+			$(node).popover({
+							animation: true,
+							placement: "bottom",
+							trigger: "focus",
+							html: true,
+							container: "body",
+				});
+			return {
+				teardown: function () {
+					$(node).popover("destroy");
+				}
+			};
+		},
+	},
 	init: function() {
+		
 		this.on({
 				logout: function(event) {
 						var r = this;
@@ -89,25 +106,6 @@ component.exports = {
 				refresh: function() {
 						window.location.reload();
 				},
-				help: function() {
-
-						$("#navHelp").popover({
-								animation: true,
-								placement: "bottom",
-								trigger: "manual",
-								html: true,
-								container: "body",
-						});
-
-						$("#navHelp").popover("toggle");
-				}
-
-		});
-
-		this.observe("help", function(newValue, oldValue, keypath) {
-				if (!newValue) {
-						$("#navHelp").popover("destroy");
-				}
 		});
 	}
 };

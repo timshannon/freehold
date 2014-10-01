@@ -3,14 +3,16 @@
 	paths: {
 		"ractive": "./lib/ractive",
 		"rvc": "./lib/rvc",
+		"jquery": "./lib/jquery",
 		"amdclean": "./lib/amdclean"
 	},
-	exclude: ["ractive"],
+	exclude: ["ractive", "jquery"],
 	out: "../../application/core/file/js/components.js",
 	stubModules: [ 'rvc' ],
+	optimize: "none",
 	wrap: {
-        start: "(function(ractive) {",
-        end: "}(Ractive));"
+        start: "(function(ractive, jquery) {",
+        end: "}(Ractive, $));"
     },
 	skipModuleInsertion: true,
 	onModuleBundleComplete: function (data) {
