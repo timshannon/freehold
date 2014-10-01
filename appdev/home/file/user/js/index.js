@@ -3,7 +3,6 @@ $(document).ready(function() {
 
     var minPassLength;
 
-
     //setup
     var rMain = new Ractive({
         el: "main",

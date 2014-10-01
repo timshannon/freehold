@@ -15,3 +15,8 @@ require(['rvc!navbar'], function(Navbar) {
 require(['rvc!permissions'], function(Permissions) {
     Ractive.components.permissions = Permissions;
 });
+
+
+require(["rvc!datepicker", "./lib/jquery-ui/datepicker"], function(DatePicker, $) {
+    Ractive.components.datepicker = DatePicker;
+});

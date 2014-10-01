@@ -5,7 +5,6 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 		<link href="/core/v1/file/css/freehold.css" rel="stylesheet" media="screen">
-		<link href="/home/v1/file/user/css/index.css" rel="stylesheet" media="screen">
 	</head>
 <body>
 <main>
@@ -114,7 +113,7 @@
 		<div class="form-group {{#errors.expires}}has-error has-feedback{{/errors.expires}}" title="{{errors.expires}}">
 			<label for="tokenExpire" class="col-sm-3 control-label">Expiration</label>
 			<div class="col-sm-9">
-				<input type="date" class="form-control" id="tokenExpire" placeholder="Enter an expiration date" value="{{expires}}">
+				<datepicker id="tokenExpire" class="form-control" placeholder="Enter an expiration date" value="{{expires}}"></datepicker>
 			</div>
 			{{#errors.expires}}
 				<span class="form-control-feedback glyphicon glyphicon-remove"></span>
