@@ -165,7 +165,6 @@ $(document).ready(function() {
                 });
         },
         "showToken": function(event) {
-            console.log(event);
             rMain.set(event.keypath + ".showToken", true);
         },
 
