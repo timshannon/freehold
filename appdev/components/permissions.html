@@ -1,17 +1,42 @@
-<div class="permissions-group"> 
-	{{#if horizontal}}
-		horizontal
-	{{else}}
-		<p><label>Private:</label> {{private}}</p>
-		<p><label>Friend:</label> {{friend}}</p>
-		<p><label>Public:</label> {{public}}</p>
-	{{/if}}
+<div class="panel panel-default"> 
+	<div class="row">
+		<div class="col-sm-3">
+			<label class="control-label">Private:</label>
+		</div>
+		<div class="col-sm-9">
+		<div class="btn-group">
+			<button type="button" class="btn btn-sm {{private=='r' || private =='rw' ? 'active btn-primary' : 'btn-default'}}">R</button>
+			<button type="button" class="btn btn-sm {{private=='w' || private =='rw' ? 'active btn-primary' : 'btn-default'}}">W</button>
+		</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-3">
+			<label class="control-label">Friend:</label>
+		</div>
+		<div class="col-sm-9">
+		<div class="btn-group">
+			<button type="button" class="btn btn-sm {{friend=='r' || friend =='rw' ? 'active btn-primary' : 'btn-default'}}">R</button>
+			<button type="button" class="btn btn-sm {{friend=='w' || friend =='rw' ? 'active btn-primary' : 'btn-default'}}">W</button>
+		</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-3">
+			<label class="control-label">Public:</label>
+		</div>
+		<div class="col-sm-9">
+		<div class="btn-group">
+			<button type="button" class="btn btn-sm {{public=='r' || public =='rw' ? 'active btn-primary' : 'btn-default'}}">R</button>
+			<button type="button" class="btn btn-sm {{public=='w' || public =='rw' ? 'active btn-primary' : 'btn-default'}}">W</button>
+		</div>
+		</div>
+	</div>
+
+
 </div>
 
 <style>
-.permissions-group {
-	
-}
 
 </style>
 
@@ -21,7 +46,6 @@
 			public: "",
 			private: "",
 			friend: "",
-			horizontal: false,
 		},
 
 

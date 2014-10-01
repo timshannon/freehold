@@ -97,15 +97,17 @@ $(document).ready(function() {
             rMain.set("token", {
                 name: "",
                 expires: null,
-				permission: {
-					private: "rw",
-					friend: "r",
-					public: ""
-				},
+                permission: "",
+                isResource: false,
+                resource: "",
                 errors: null
             });
 
             $("#tokenModal").modal();
+        },
+        "tokenMakeResource": function(event) {
+            rMain.set("token.isResource", !event.context.isResource);
+            rMain.set("token.resource", "");
         },
         "clearHelp": function(event) {
             rMain.set("help", false);
@@ -162,7 +164,12 @@ $(document).ready(function() {
                 .fail(function(result) {
                     rMain.set("error", result.message);
                 });
-        }
+        },
+        "showToken": function(event) {
+            console.log(event);
+            rMain.set(event.keypath + ".showToken", true);
+        },
+
     });
 
     rMain.observe({
