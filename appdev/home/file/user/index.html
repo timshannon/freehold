@@ -122,18 +122,13 @@
 
 		</div>
 
-		<div class="form-group {{#errors.permissions}}has-error has-feedback{{/errors.permissions}}" title="{{errors.permissions}}">
-			<label class="col-sm-3 control-label">Permissions</label>
-			<div class="col-sm-9">
-				{{#permission}}
-				<permissions public="{{public}}" private="{{private}}" friend="{{friend}}">
-
-				</permissions>
-				{{/permission}}
-			</div>
+		<div class="form-group">
+		<div class="col-sm-offset-3 col-sm-9">
+			<p class="help-block">This will generate a security token which grants all the permissions your user has.</p>
+		</div>
 		</div>
 
-	</form>
+		</form>
 	<div class="modal-footer">
 		<button type="button" class="btn btn-default" on-click="saveToken">Save</button>
 		<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
@@ -209,6 +204,7 @@
 				<thead>
 					<tr>
 						<th>Name</th>
+						<th>Token</th>
 						<th>Expires</th>
 						<th>Resource</th>
 						<th>Permission</th>
@@ -225,10 +221,16 @@
 						<td></td>
 						<td></td>
 						<td></td>
+						<td></td>
 					</tr>
 					{{#tokens}}
 					<tr>
 						<td>{{name}}</td>
+						{{#if !showToken}}
+							<td><a href="#" on-click="showToken">Click to show token id</a></td>
+						{{else}}
+							<td>{{token}}</td>
+						{{/if}}
 						<td>{{expires}}</td>
 						<td>{{resource}}</td>
 						<td>{{permission}}</td>
