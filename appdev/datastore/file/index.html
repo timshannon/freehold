@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>freehold - Datastore Viewer</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<link href="/core/v1/file/css/freehold.css" rel="stylesheet" media="screen"> 
+	</head>
+<body>
+<main>
+	</main>
+			
+<!--templates-->
+<script id="tMain" type="text/ractive">
+<navbar error="{{error}}" app="Datastore Viewer"></navbar>
+<div class="container">
+	<table class="table table-condensed table-striped table-hover">
+		<thead>
+			<tr>
+				{{#columns}}
+				<th>column</th>
+				{{/columns}}
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>{{name}}</td>
+			</tr>
+		</tbody>
+	</table>		
+</div>
+</script>
+<!--end templates-->
+
+<script src="/core/v1/file/js/jquery-2.1.1.min.js"></script>
+<script src="/core/v1/file/js/bootstrap.min.js"></script>
+<script src="/core/v1/file/js/ractive.min.js"></script>
+<script src="/core/v1/file/js/fh.js"></script>
+<script src="/core/v1/file/js/components.js"></script>
+<script src="/datastore/v1/file/js/index.js"></script>
+</body>
+</html>
