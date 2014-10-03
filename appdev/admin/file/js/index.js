@@ -376,7 +376,12 @@ $(document).ready(function() {
     }
 
     function filterLogs(logs, filter) {
-        var regEx = new RegExp(filter, "i");
+        var regEx;
+        try {
+            regEx = new RegExp(filter, "i");
+        } catch (e) {
+            regEx = new RegExp("", "i");
+        }
         var filtered = [];
 
         for (var i = 0; i < logs.length; i++) {
