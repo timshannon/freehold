@@ -4,6 +4,7 @@
     <title>freehold - Datastore Viewer</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 		<link href="/core/v1/file/css/freehold.css" rel="stylesheet" media="screen"> 
+		<link href="/datastore/v1/file/css/index.css" rel="stylesheet" media="screen"> 
 	</head>
 <body>
 <main>
@@ -13,20 +14,77 @@
 <script id="tMain" type="text/ractive">
 <navbar error="{{error}}" app="Datastore Viewer"></navbar>
 <div class="container">
-	<table class="table table-condensed table-striped table-hover">
+	<div class="well">
+		<div class="row">
+			<div id="dsOpen" class="col-sm-6">
+				<button type="button" class="btn btn-default" on-click="open">
+				<span class="glyphicon glyphicon-folder-open"></span> Open</button>
+				<span id="openLabel" class="label label-default">{{file}}</span>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-6">
+				<form on-submit="search">
+				<div class="input-group">
+					<input type="text" class="form-control" id="keySearch"  placeholder="Search Key" value="{{search}}">
+					<span class="input-group-btn">
+						<button type="button" class="btn btn-default" on-click="search">
+							<span class="glyphicon glyphicon-search"></span></button>
+					</span>
+				</div>
+				</form>
+			</div>
+			<div class="col-sm-offset-4 col-sm-2">
+				<div class="input-group">
+					<input type="number" class="form-control" value="{{iter.limit}}">
+					<span class="input-group-addon">of {{count}}</span>
+				</div>
+			</div>
+		</div>
+	</div>
+		<table class="table table-condensed table-striped table-hover">
 		<thead>
 			<tr>
-				{{#columns}}
-				<th>column</th>
-				{{/columns}}
+				<th>
+					<a href="#" on-click="sort">Key<span class="caret{{#iter.order == 'asc'}} caret-up{{/sortAsc}}"></span></a>
+				</th>
+				<th>Value
+					<a href="#" class="pull-right" on-click="showFilter" title="Filter Values">
+						<span class="glyphicon glyphicon-filter"></span>
+					</a>
+				</th>
 			</tr>
 		</thead>
 		<tbody>
+			{{#showFilter}}
 			<tr>
-				<td>{{name}}</td>
+				<td>
+					{{#waiting}}
+					<div id="filterSpinner" class="spinner"></div>
+					{{/waiting}}
+				</td>
+				<td>
+					<input type="text" class="form-control" id="filter" placeholder="Filter Values" value="{{filter}}">
+				</td>
 			</tr>
+			{{/showFilter}}
+			{{#data:i}}
+				{{#if i >= ((page-1)*iter.limit) && i < (page*iter.limit)}}
+				<tr>
+					<td>{{JSON.stringify(key)}}</td>
+					<td>{{JSON.stringify(value)}}</td>
+				</tr>
+			{{/if}}
+			{{/data}}
 		</tbody>
 	</table>		
+	<ul class="pagination">
+		<li><a href="#">&laquo;</a></li>
+		{{#pagination:i}}
+			<li><a href="#">5</a></li>
+		{{/pagination}}
+		<li><a href="#">&raquo;</a></li>
+	</ul>
 </div>
 </script>
 <!--end templates-->
