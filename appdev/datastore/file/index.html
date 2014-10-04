@@ -13,13 +13,17 @@
 <!--templates-->
 <script id="tMain" type="text/ractive">
 <navbar error="{{error}}" app="Datastore Viewer"></navbar>
+<modal id="fileBrowse" title="Open a Datastore">
+	<filetree></filetree>
+</modal>
 <div class="container">
 	<div class="well">
 		<div class="row">
 			<div id="dsOpen" class="col-sm-6">
 				<button type="button" class="btn btn-default" on-click="open">
 				<span class="glyphicon glyphicon-folder-open"></span> Open</button>
-				<span id="openLabel" class="label label-default">{{file}}</span>
+				<span class="file-label label label-default">{{file}}</span>
+				<span class="file-label label label-danger">{{fileError}}</span>
 			</div>
 		</div>
 		<div class="row">
@@ -36,8 +40,8 @@
 			</div>
 			<div class="col-sm-offset-4 col-sm-2">
 				<div class="input-group">
+					<span class="input-group-addon">Limit</span>
 					<input type="number" class="form-control" value="{{iter.limit}}">
-					<span class="input-group-addon">of {{count}}</span>
 				</div>
 			</div>
 		</div>
@@ -74,17 +78,17 @@
 					<td>{{JSON.stringify(key)}}</td>
 					<td>{{JSON.stringify(value)}}</td>
 				</tr>
-			{{/if}}
+				{{/if}}
 			{{/data}}
 		</tbody>
 	</table>		
-	<ul class="pagination">
-		<li><a href="#">&laquo;</a></li>
-		{{#pagination:i}}
-			<li><a href="#">5</a></li>
-		{{/pagination}}
-		<li><a href="#">&raquo;</a></li>
-	</ul>
+	<div class="btn-group">
+		<a href="#" class="btn btn-default{{#page <= 1}} disabled{{/page}}" on-click="prev">
+			<span class="glyphicon glyphicon-chevron-left"></span></a>
+		<a href="#" class="btn btn-default{{#if data.length < (page*iter.limit)}} disabled{{/if}}" on-click="next">
+			<span class="glyphicon glyphicon-chevron-right"></span></a>
+	</div>
+	
 </div>
 </script>
 <!--end templates-->

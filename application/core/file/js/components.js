@@ -1,5 +1,5 @@
 ;(function() {
-var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_jquery_ui, rvc_datepicker, lib_jquery_ui_core, lib_jquery_ui_datepicker;
+var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_filetree, rvc_jquery_ui, rvc_datepicker, lib_jquery_ui_core, lib_jquery_ui_datepicker;
 (function (ractive, jquery) {
   rvc = {
     load: function (id) {
@@ -618,6 +618,29 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_jquery_ui, rvc_datepicker, 
         friend: ''
       }
     };
+    if (typeof component.exports === 'object') {
+      for (var __prop__ in component.exports) {
+        if (component.exports.hasOwnProperty(__prop__)) {
+          __options__[__prop__] = component.exports[__prop__];
+        }
+      }
+    }
+    return Ractive.extend(__options__);
+  }({}, ractive);
+  rvc_filetree = function (require, Ractive) {
+    var __options__ = {
+        template: {
+          v: 1,
+          t: [{
+              t: 7,
+              e: 'div',
+              a: { 'class': 'container' },
+              f: []
+            }]
+        },
+        css: ''
+      }, component = {};
+    component.exports = { data: { root: '/v1/file/' } };
     if (typeof component.exports === 'object') {
       for (var __prop__ in component.exports) {
         if (component.exports.hasOwnProperty(__prop__)) {
@@ -2893,9 +2916,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_jquery_ui, rvc_datepicker, 
     return $.datepicker;
   }));
   //Freehold ractive components 
-  // for things like modals, navbar, etc
-  //TODO: filetree
-  //TODO: permissions
+  // for things like modals, navbar, file browser, etc
   (function (Modal) {
     Ractive.components.modal = Modal;
   }(rvc_modal));
@@ -2905,6 +2926,9 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_jquery_ui, rvc_datepicker, 
   (function (Permissions) {
     Ractive.components.permissions = Permissions;
   }(rvc_permissions));
+  (function (Filetree) {
+    Ractive.components.filetree = Filetree;
+  }(rvc_filetree));
   (function (DatePicker, $) {
     Ractive.components.datepicker = DatePicker;
   }(rvc_datepicker, lib_jquery_ui_datepicker));
