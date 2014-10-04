@@ -10,10 +10,19 @@ $(document).ready(function() {
 
 
     //Setup DS
-
-    rMain.set("ds", new fh.Datastore(urlDS));
-
-    loadData();
+    if (!urlDS) {
+        setEmpty();
+    } else {
+        fh.properties.get(urlDS)
+            .done(function() {
+                rMain.set("ds", new fh.Datastore(urlDS));
+                loadData();
+            })
+            .fail(function(result) {
+                rMain.set("fileError", result.message);
+                setEmpty();
+            });
+    }
 
 
     //events
@@ -40,11 +49,33 @@ $(document).ready(function() {
             }
             loadData();
         },
+        "prev": function(event) {
+            var page = rMain.get("page");
+            if (page <= 1) {
+                return;
+            }
+            page -= 1;
+            rMain.set("page", page);
+            loadPage(page);
+        },
+        "next": function(event) {
+            var page = rMain.get("page");
+            var last = rMain.get("last");
 
+            page += 1;
+            rMain.set("page", page);
+            loadPage(page);
+        },
+        "open": function(event) {
+            $("#fileBrowse").modal();
+        },
     });
 
     rMain.observe({
         "iter.limit": function(newValue, oldValue, keypath) {
+            if (newValue === oldValue) {
+                return;
+            }
             if (newValue < 0) {
                 rMain.set("iter.limit", 0);
                 newValue = 0;
@@ -56,6 +87,9 @@ $(document).ready(function() {
             timer = window.setTimeout(loadData, 200);
         },
         "filter": function(newValue, oldValue, keypath) {
+            if (newValue === oldValue) {
+                return;
+            }
             if (timer) {
                 window.clearTimeout(timer);
             }
@@ -67,36 +101,31 @@ $(document).ready(function() {
 
     //functions
     function loadData() {
+        var ds = rMain.get("ds");
+        if (!ds) {
+            return;
+        }
         rMain.set("waiting", true);
+        rMain.set("last", false);
+        rMain.set("page", 1);
         var iter = rMain.get("iter");
         if (!iter) {
             iter = {
                 limit: 20,
                 order: "asc",
-                skip: 0,
             };
         }
-        var ds = rMain.get("ds");
 
-        ds.count(iter)
+        iter.skip = 0;
+
+        ds.iter(iter)
             .done(function(result) {
-                var count = result.data;
-                rMain.set("count", count);
-                rMain.set("pagination", getPagination(result.data));
-                ds.iter(iter)
-                    .done(function(result) {
-
-                        rMain.set("last", result.data.length >= count);
-                        rMain.set("file", ds.path);
-                        rMain.set("iter", iter);
-                        rMain.set("page", 1);
-                        rMain.set("data", result.data);
-                        setFilter();
-                    })
-                    .fail(function(result) {
-                        rMain.set("error", result.message);
-                    });
-
+                rMain.set("last", result.data.length < iter.limit);
+                rMain.set("file", ds.path);
+                rMain.set("iter", iter);
+                rMain.set("page", 1);
+                rMain.set("data", result.data);
+                setFilter();
             })
             .fail(function(result) {
                 rMain.set("error", result.message);
@@ -104,12 +133,21 @@ $(document).ready(function() {
 
     }
 
-    function loadNext(skip) {
+    function loadPage(page) {
+        var data = rMain.get("data");
+        var iter = rMain.get("iter");
+
+        if (data.length < (page * iter.limit)) {
+            loadNext();
+        }
+    }
+
+    function loadNext() {
         var iter = rMain.get("iter");
         var ds = rMain.get("ds");
-        var count = rMain.get("count");
-        iter.skip = skip;
+        iter.skip += iter.limit;
 
+        rMain.set("waiting", true);
         ds.iter(iter)
             .done(function(result) {
                 var newData = result.data;
@@ -118,7 +156,7 @@ $(document).ready(function() {
                     data = [];
                 }
 
-                var last = (skip + newData.length) >= count;
+                var last = (newData.length < iter.limit);
 
                 rMain.set("last", last);
                 rMain.set("iter", iter);
@@ -137,13 +175,14 @@ $(document).ready(function() {
         var filter = rMain.get("filter");
         var data = rMain.get("data");
         var last = rMain.get("last");
-        var iter = rMain.get("ds.iter");
+        var iter = rMain.get("iter");
+        var page = rMain.get("page");
 
         data = filterData(filter, data);
         rMain.set("data", data);
 
-        if (data.length < iter.limit && !last) {
-            loadNext(iter.skip + iter.limit);
+        if (data.length < (page * iter.limit) && !last) {
+            loadNext();
             return;
         }
 
@@ -162,7 +201,7 @@ $(document).ready(function() {
         var filtered = [];
 
         for (var i = 0; i < data.length; i++) {
-            if (regEx.exec(data[i].value)) {
+            if (regEx.exec(JSON.stringify(data[i].value))) {
                 filtered.push(data[i]);
             }
         }
@@ -170,10 +209,11 @@ $(document).ready(function() {
         return filtered;
     }
 
-    function getPagination(count) {
+    function setEmpty() {
+        rMain.set("page", 0);
+        rMain.set("last", true);
+        rMain.set("data", []);
 
     }
-
-
 
 }); //end ready

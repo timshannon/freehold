@@ -28,7 +28,20 @@ window.fh = (function() {
                     return data;
                 },
                 function(data) {
-                    return data.responseJSON;
+                    if (data.responseJSON) {
+                        return data.responseJSON;
+                    }
+                    if (data.status == 404) {
+                        return {
+                            status: "fail",
+                            message: "Resource not found"
+                        };
+                    } else {
+                        return {
+                            status: "error",
+                            message: "An error occurred: Status (" + data.status + ")",
+                        };
+                    }
                 });
     }
 
@@ -357,18 +370,18 @@ window.fh = (function() {
                 }),
             });
         },
-		util: {
-        urlParm: function(sParam) {
-            var sPageURL = window.location.search.substring(1);
-            var sURLVariables = sPageURL.split('&');
-            for (var i = 0; i < sURLVariables.length; i++) {
-                var sParameterName = sURLVariables[i].split('=');
-                if (sParameterName[0] == sParam) {
-                    return sParameterName[1];
+        util: {
+            urlParm: function(sParam) {
+                var sPageURL = window.location.search.substring(1);
+                var sURLVariables = sPageURL.split('&');
+                for (var i = 0; i < sURLVariables.length; i++) {
+                    var sParameterName = sURLVariables[i].split('=');
+                    if (sParameterName[0] == sParam) {
+                        return sParameterName[1];
+                    }
                 }
             }
         }
-		}
     };
 
 
