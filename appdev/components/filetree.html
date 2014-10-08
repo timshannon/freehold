@@ -1,6 +1,30 @@
-<div class="container">
-
+<div class="filetree">
+	{{#error}}
+		<div class="alert alert-danger" role="alert">{{error}}</div>
+	{{/error}}
+	{{#root}}
+		{{>folder}}
+	{{/root}}
+	
+	
 </div>
+
+<!-- {{>folder}} -->
+<ul>
+  {{#files}}
+    {{>file}}
+  {{/files}}
+</ul>
+<!-- {{/folder}} -->
+
+<!-- {{>file}} -->
+<li>
+  <span><a href="#" class="{{#selected}}selected{{/selected}}" on-click="select">{{name}}</a></span>
+  {{#if type === "folder"}}
+    {{>folder}}
+  {{/if}}
+</li>
+<!-- {{/file}} -->
 
 <style>
 
@@ -9,8 +33,43 @@
 <script>
 component.exports = {
 	data: {
-		root: "/v1/file/"
-	}
+		rootDir: "/v1/file/",
+		root: {},
+	},
+	init: function() {
+		var r = this;
+
+		getFile(r.get("rootDir"), "root");
+		
+		this.on({
+			"select": function(event) {
+					r.set(event.keypath+".selected", true);
+					if (event.context.isFolder) {
+						getFile(event.context.url);
+						return;
+					} 
+			},
+
+		});
+
+		function getFile(file, keypath) {
+			fh.properties.get(file)
+				.done(function(result) {
+					var files = result.data;
+					for (var i = 0; i < files.length; i++) {
+						if (!files[i].hasOwnProperty("size")) {
+							files[i].type = "folder";	
+						}
+					}
+
+					r.set(keypath+".files", files);	
+				})
+				.fail(function(result) {
+					r.set("error", result.message);
+				});
+
+		}
+	},
 
 };
 </script>

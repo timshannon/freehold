@@ -76,9 +76,9 @@ $(document).ready(function() {
             if (newValue === oldValue) {
                 return;
             }
-            if (newValue < 0) {
-                rMain.set("iter.limit", 0);
-                newValue = 0;
+            if (!newValue || newValue < 1) {
+                rMain.set("iter.limit", 1);
+                newValue = 1;
             }
 
             if (timer) {
@@ -210,7 +210,8 @@ $(document).ready(function() {
     }
 
     function setEmpty() {
-        rMain.set("page", 0);
+        rMain.set("page", 1);
+        rMain.set("iter.limit", 20);
         rMain.set("last", true);
         rMain.set("data", []);
 
