@@ -9,7 +9,6 @@
 	exclude: ["ractive", "jquery"],
 	out: "../../application/core/file/js/components.js",
 	stubModules: [ 'rvc' ],
-	optimize: "none",
 	wrap: {
         start: "(function(ractive, jquery) {",
         end: "}(Ractive, $));"
