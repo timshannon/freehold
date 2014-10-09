@@ -42,10 +42,14 @@
 				</div>
 				</form>
 			</div>
-			<div class="col-sm-offset-4 col-sm-2">
+			<div class="col-sm-offset-3 col-sm-3">
 				<div class="input-group">
-					<span class="input-group-addon">Limit</span>
 					<input type="number" class="form-control" value="{{iter.limit}}">
+					<span class="input-group-addon">of {{count-filtered}}
+						{{#if filtered > 0}}
+							<span class="glyphicon glyphicon-filter" title="{{filtered}} rows filtered"></span>
+						{{/if}}
+					</span>
 				</div>
 			</div>
 		</div>
@@ -89,7 +93,7 @@
 	<div class="btn-group">
 		<a href="#" class="btn btn-default{{#page <= 1}} disabled{{/page}}" on-click="prev">
 			<span class="glyphicon glyphicon-chevron-left"></span></a>
-		<a href="#" class="btn btn-default{{#if data.length < (page*iter.limit)}} disabled{{/if}}" on-click="next">
+		<a href="#" class="btn btn-default{{#if  (page*iter.limit) >= (count-filtered)}} disabled{{/if}}" on-click="next">
 			<span class="glyphicon glyphicon-chevron-right"></span></a>
 	</div>
 	
