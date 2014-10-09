@@ -106,6 +106,7 @@ $(document).ready(function() {
             return;
         }
         rMain.set("waiting", true);
+        rMain.set("filtered", 0);
         rMain.set("last", false);
         rMain.set("page", 1);
         var iter = rMain.get("iter");
@@ -120,12 +121,21 @@ $(document).ready(function() {
 
         ds.iter(iter)
             .done(function(result) {
-                rMain.set("last", result.data.length < iter.limit);
-                rMain.set("file", ds.path);
-                rMain.set("iter", iter);
-                rMain.set("page", 1);
-                rMain.set("data", result.data);
-                setFilter();
+                var data = result.data;
+                ds.count(iter)
+                    .done(function(result) {
+                        var count = result.data;
+                        rMain.set("count", count);
+                        rMain.set("last", data.length >= count);
+                        rMain.set("file", ds.path);
+                        rMain.set("iter", iter);
+                        rMain.set("page", 1);
+                        rMain.set("data", data);
+                        setFilter();
+                    })
+                    .fail(function(result) {
+                        rMain.set("error", result.message);
+                    });
             })
             .fail(function(result) {
                 rMain.set("error", result.message);
@@ -145,6 +155,8 @@ $(document).ready(function() {
     function loadNext() {
         var iter = rMain.get("iter");
         var ds = rMain.get("ds");
+        var filtered = rMain.get("filtered");
+        var count = rMain.get("count");
         iter.skip += iter.limit;
 
         rMain.set("waiting", true);
@@ -156,12 +168,12 @@ $(document).ready(function() {
                     data = [];
                 }
 
-                var last = (newData.length < iter.limit);
-
-                rMain.set("last", last);
                 rMain.set("iter", iter);
 
                 data = data.concat(newData);
+
+                rMain.set("last", ((data.length + filtered) >= count));
+
                 rMain.set("data", data);
                 setFilter();
             })
@@ -190,6 +202,7 @@ $(document).ready(function() {
     }
 
     function filterData(filter, data) {
+        var curFiltered = rMain.get("filtered") || 0;
         var regEx;
         try {
             regEx = new RegExp(filter, "i");
@@ -205,6 +218,8 @@ $(document).ready(function() {
                 filtered.push(data[i]);
             }
         }
+
+        rMain.set("filtered", curFiltered + (data.length - filtered.length));
 
         return filtered;
     }
