@@ -12,7 +12,7 @@
 <!-- {{>folder}} -->
 <ul>
   {{#files}}
-    {{>file}}
+		{{>file}}
   {{/files}}
 </ul>
 <!-- {{/folder}} -->
@@ -20,9 +20,9 @@
 <!-- {{>file}} -->
 <li>
   <span><a href="#" class="{{#selected}}selected{{/selected}}" on-click="select">{{name}}</a></span>
-  {{#if type === "folder"}}
-    {{>folder}}
-  {{/if}}
+	{{#if this.hasOwnProperty("size")}}
+		{{>folder}}
+	{{/if}}
 </li>
 <!-- {{/file}} -->
 
@@ -34,7 +34,9 @@
 component.exports = {
 	data: {
 		rootDir: "/v1/file/",
-		root: {},
+		root: {
+			files: [],
+		},
 	},
 	init: function() {
 		var r = this;
@@ -44,8 +46,8 @@ component.exports = {
 		this.on({
 			"select": function(event) {
 					r.set(event.keypath+".selected", true);
-					if (event.context.isFolder) {
-						getFile(event.context.url);
+					if (!event.context.hasOwnProperty("size")) {
+						getFile(event.context.url, event.keypath);
 						return;
 					} 
 			},
@@ -56,13 +58,10 @@ component.exports = {
 			fh.properties.get(file)
 				.done(function(result) {
 					var files = result.data;
-					for (var i = 0; i < files.length; i++) {
-						if (!files[i].hasOwnProperty("size")) {
-							files[i].type = "folder";	
-						}
-					}
 
+					console.log("keypath: ", keypath);
 					r.set(keypath+".files", files);	
+					console.log(r.get("root"));
 				})
 				.fail(function(result) {
 					r.set("error", result.message);
