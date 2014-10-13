@@ -228,6 +228,8 @@ $(document).ready(function() {
         rMain.set("page", 1);
         rMain.set("iter.limit", 20);
         rMain.set("last", true);
+        rMain.set("count", 0);
+        rMain.set("filtered", 1);
         rMain.set("data", []);
 
     }
