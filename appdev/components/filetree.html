@@ -1,3 +1,8 @@
+<link rel='ractive' href='jquery-ui.html' name='jquery-ui'>
+<!--used to bring in shared jquery-ui css-->
+<jquery-ui>
+</jquery-ui>
+
 <div class="filetree">
 	{{#error}}
 		<div class="alert alert-danger" role="alert">{{error}}</div>
@@ -5,28 +10,59 @@
 	{{#root}}
 		{{>folder}}
 	{{/root}}
-	
-	
 </div>
 
 <!-- {{>folder}} -->
 <ul>
-  {{#files}}
+  {{#.files}}
 		{{>file}}
   {{/files}}
 </ul>
 <!-- {{/folder}} -->
 
 <!-- {{>file}} -->
-<li>
-  <span><a href="#" class="{{#selected}}selected{{/selected}}" on-click="select">{{name}}</a></span>
-	{{#if this.hasOwnProperty("size")}}
+<li >
+	<div class="{{#if .selected}} selected bg-info{{/if}}">
+		{{#if .isFolder}}
+			<a href="#" on-click="open">
+				<span class="glyphicon glyphicon-{{#if .open}}minus{{else}}plus{{/if}}"></span>
+			</a>
+			<span class="icon glyphicon glyphicon-folder-close"></span>
+			{{#if folderOnly}}
+				<a href="#"  on-click="select">{{name}}</a>
+			{{else}}
+				{{name}}
+			{{/if}}
+		{{else}}
+			<span class="icon glyphicon glyphicon-file"></span>
+			{{#if folderOnly}}
+				{{name}}
+			{{else}}
+				<a href="#"  on-click="select">{{name}}</a>
+			{{/if}}
+		{{/if}}
+	</div>
+	{{#if .isFolder}}
 		{{>folder}}
 	{{/if}}
 </li>
 <!-- {{/file}} -->
 
 <style>
+	.selected {
+	}
+
+	.filetree {
+		cursor: default;
+	}
+
+	ul {
+		list-style: none;
+	}
+
+	.icon {
+		color: #555;
+	}
 
 </style>
 
@@ -34,9 +70,12 @@
 component.exports = {
 	data: {
 		rootDir: "/v1/file/",
+		selected: "",
 		root: {
 			files: [],
 		},
+		folderOnly: false,
+		filterRegex: ""
 	},
 	init: function() {
 		var r = this;
@@ -44,29 +83,66 @@ component.exports = {
 		getFile(r.get("rootDir"), "root");
 		
 		this.on({
-			"select": function(event) {
-					r.set(event.keypath+".selected", true);
-					if (!event.context.hasOwnProperty("size")) {
-						getFile(event.context.url, event.keypath);
+			"open": function(event) {
+				if (event.context.isFolder) {
+					if (event.context.files) {
+						r.set(event.keypath+".open", false);
+						r.set(event.keypath+".files", null);	
 						return;
-					} 
+					}
+					r.set(event.keypath+".open", true);
+					getFile(event.context.url, event.keypath);
+					return;
+				}
+			},
+			"select": function(event) {
+					clearSelected(r.get("root.files"));
+					r.set(event.keypath+".selected", true);
+					r.set("selected", event.context.url);
+					r.update("root");
 			},
 
 		});
 
 		function getFile(file, keypath) {
+			var regEx;
+			try {
+					regEx = new RegExp(r.get("filterRegex"), "i");
+			} catch (e) {
+					regEx = new RegExp("", "i");
+			}
 			fh.properties.get(file)
 				.done(function(result) {
 					var files = result.data;
 
-					console.log("keypath: ", keypath);
+					for (var i = 0; i < files.length; i++) {
+						if (files[i].hasOwnProperty("size")) {
+							if (r.get("folderOnly") || (!regEx.exec(files[i].name))) {
+								files.splice(i,1);
+							}
+						} else {
+							files[i].isFolder = true;
+						}
+					}
+
 					r.set(keypath+".files", files);	
-					console.log(r.get("root"));
 				})
 				.fail(function(result) {
 					r.set("error", result.message);
 				});
 
+		}
+
+		function clearSelected(files) {
+			if (!files) {
+				return;
+			}
+			for (var i = 0; i < files.length; i++) {
+				files[i].selected = false;	
+				if (files[i].hasOwnProperty("files")) {
+					clearSelected(files[i].files);
+				}
+			}
 		}
 	},
 

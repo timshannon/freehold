@@ -69,6 +69,9 @@ $(document).ready(function() {
         "open": function(event) {
             $("#fileBrowse").modal();
         },
+        "selectFile": function(event) {
+            window.location = "/datastore/?file=" + rMain.get("selected");
+        }
     });
 
     rMain.observe({

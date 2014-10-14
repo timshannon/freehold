@@ -5,12 +5,10 @@
 package permission
 
 import (
-	"errors"
 	"strings"
 
 	"bitbucket.org/tshannon/freehold/data"
 	"bitbucket.org/tshannon/freehold/fail"
-	"bitbucket.org/tshannon/freehold/log"
 	"bitbucket.org/tshannon/freehold/user"
 )
 
@@ -40,7 +38,6 @@ func Get(filename string) (*Permission, error) {
 	prm := &Permission{}
 	err = ds.Get(filename, prm)
 	if err == data.ErrNotFound {
-		log.Error(errors.New("Permissions not found for resource: " + filename))
 		return &Permission{}, nil
 	}
 	if err != nil {

@@ -80,7 +80,7 @@
 		{{/admin}}
 			<span class="list-group-item-text">
 			<a href="#" on-click="star">
-				<span class="pull-left glyphicon glyphicon-star star {{#starred}}starred{{/starred}}"></span>
+				<span class="pull-left glyphicon glyphicon-star{{#if !starred}}-empty{{/if}} star {{#starred}}starred{{/starred}}"></span>
 			</a>
 				<dl><dt>{{name}}</dt>
 				<dd>{{description}}</dd>
