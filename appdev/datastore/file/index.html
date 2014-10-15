@@ -20,6 +20,9 @@
 		<button type="button" class="btn btn-primary" on-click="selectFile">Select</button>
 	</div>
 </modal>
+<modal id="viewValue" title="View Value">
+	<jsonviewer></jsonviewer>
+</modal>
 <div class="container">
 	<div class="well">
 		<div class="row">
@@ -78,13 +81,17 @@
 				<td>
 					<input type="text" class="form-control" id="filter" placeholder="Filter Values" value="{{filter}}">
 				</td>
+				<td></td>
 			</tr>
 			{{/showFilter}}
 			{{#data:i}}
 				{{#if i >= ((page-1)*iter.limit) && i < (page*iter.limit)}}
 				<tr>
 					<td>{{JSON.stringify(key)}}</td>
-					<td>{{JSON.stringify(value)}}</td>
+					<td>
+						{{JSON.stringify(value)}}
+						<a href="#" title="view json data" on-click="viewValue"><span class="pull-right glyphicon glyphicon-new-window"></span></a>
+					</td>
 				</tr>
 				{{/if}}
 			{{/data}}

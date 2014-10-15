@@ -71,7 +71,11 @@ $(document).ready(function() {
         },
         "selectFile": function(event) {
             window.location = "/datastore/?file=" + rMain.get("selected");
-        }
+        },
+        "viewValue": function(event) {
+            $("#viewValue").modal();
+            rMain.set("currentValue", JSON.stringify(event.context.value, null, '\t'));
+        },
     });
 
     rMain.observe({
