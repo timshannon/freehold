@@ -18,7 +18,9 @@ require(['rvc!filetree'], function(Filetree) {
     Ractive.components.filetree = Filetree;
 });
 
-
+require(['rvc!jsonviewer'], function(JsonViewer) {
+    Ractive.components.jsonviewer = JsonViewer;
+});
 
 require(["rvc!datepicker", "./lib/jquery-ui/datepicker"], function(DatePicker, $) {
     Ractive.components.datepicker = DatePicker;

@@ -1,0 +1,80 @@
+<div class="jsonviewer">
+	{{#root}}
+		{{>child}}
+	{{/root}}
+</div>
+
+
+<!-- {{>child}} -->
+<ul>
+	{{#.:i}}
+		{{>value}}
+	{{/.}}
+</ul>
+<!-- {{/child}} -->
+
+<!-- {{>value}} -->
+<li>
+	{{#if .type === "object"}}
+		{{.key}} : { {{>child}} }
+	{{/if}}
+	{{#if .type ==="string"}}
+		{{.key}}: {{.value}}
+	{{/if}}
+</li>
+<!-- {{/value}} -->
+
+<script>
+component.exports = {
+	data: {
+		root: {},
+		object: {
+			"test1": "testdata",
+			"test2": "testdata2",
+			"object": {
+				"child1": "child",
+				"child2": 1,
+				"child3": [
+					1,2,3,{
+						"arrchild": "arrchilddata",
+					}
+
+				],
+			}
+		}
+	},
+	init: function() {
+		var r = this;
+		r.set("root", parseObj(r.get("object")));
+
+		function parseObj(object) {
+			var kv = [];
+			for (var key in object) {
+				if (object.hasOwnProperty(key)) {
+					var type = typeof object[key];
+					var value;
+					if (type === "object") {
+						value = parseObj(object[key]);
+					} else if (type === "array") {
+						var arr = object[key];
+						for (var i = 0; i < arr.length; i++) {
+							if(typeof arr[i] === "object") {
+								arr[i] = parseObj(arr[i]);
+							}
+						}
+						value = arr;
+					} else {
+						value = object[key];
+					}
+					kv.push({
+						key: key,
+						type: type,
+						value: value,
+					});	
+				}
+			}
+			return kv;
+		}
+	},
+};
+</script>

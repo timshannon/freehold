@@ -44,7 +44,6 @@ Below are the steps you would take to create a new application called *new-app*
 	</head>
 <body>
 <main>
-	<!--templates attach here-->
 </main>
 			
 <!--templates-->
