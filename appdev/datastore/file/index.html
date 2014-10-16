@@ -21,7 +21,7 @@
 	</div>
 </modal>
 <modal id="viewValue" title="Value for key: {{currentKey}}">
-	<jsonviewer removemeobject="{{currentValue}}"></jsonviewer>
+	<jsonviewer object="{{currentValue}}"></jsonviewer>
 </modal>
 <div class="container">
 	<div class="well">
@@ -32,11 +32,13 @@
 				<span class="file-label label label-default">{{file}}</span>
 				<span class="file-label label label-danger">{{fileError}}</span>
 			</div>
+			{{#urlDS}}
 			<div class="col-sm-offset-5 col-sm-1">
 				<a href="{{urlDS}}" class="btn btn-default pull-right">
 					<span class="glyphicon glyphicon-download"></span> Download
 				</a>
 			</div>
+			{{/urlDS}}
 		</div>
 		<div class="row">
 			<div class="col-sm-6">
