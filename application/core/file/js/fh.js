@@ -295,8 +295,8 @@ window.fh = (function() {
                     processData: false,
                     contentType: false
                 });
-            }
-        },
+            },
+                    },
         Datastore: function(dsPath) {
             this.path = dsPath;
             this.get = function(key) {

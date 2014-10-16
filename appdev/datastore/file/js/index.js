@@ -13,6 +13,7 @@ $(document).ready(function() {
     if (!urlDS) {
         setEmpty();
     } else {
+        rMain.set("urlDS", urlDS);
         fh.properties.get(urlDS)
             .done(function() {
                 rMain.set("ds", new fh.Datastore(urlDS));
@@ -75,6 +76,7 @@ $(document).ready(function() {
         "viewValue": function(event) {
             $("#viewValue").modal();
             rMain.set("currentValue", JSON.stringify(event.context.value, null, '\t'));
+            rMain.set("currentKey", JSON.stringify(event.context.key));
         },
     });
 

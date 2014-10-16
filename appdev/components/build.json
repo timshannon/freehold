@@ -23,5 +23,6 @@
 		});
 
 	  fs.writeFileSync(outputFile, cleanedCode);
-	}
+	},
+	optimize: "none",
 }

@@ -20,17 +20,22 @@
 		<button type="button" class="btn btn-primary" on-click="selectFile">Select</button>
 	</div>
 </modal>
-<modal id="viewValue" title="View Value">
-	<jsonviewer></jsonviewer>
+<modal id="viewValue" title="Value for key: {{currentKey}}">
+	<jsonviewer removemeobject="{{currentValue}}"></jsonviewer>
 </modal>
 <div class="container">
 	<div class="well">
 		<div class="row">
 			<div id="dsOpen" class="col-sm-6">
-				<button type="button" class="btn btn-default" on-click="open">
+				<button type="button" class="btn btn-primary" on-click="open">
 				<span class="glyphicon glyphicon-folder-open"></span> Open</button>
 				<span class="file-label label label-default">{{file}}</span>
 				<span class="file-label label label-danger">{{fileError}}</span>
+			</div>
+			<div class="col-sm-offset-5 col-sm-1">
+				<a href="{{urlDS}}" class="btn btn-default pull-right">
+					<span class="glyphicon glyphicon-download"></span> Download
+				</a>
 			</div>
 		</div>
 		<div class="row">
@@ -81,7 +86,6 @@
 				<td>
 					<input type="text" class="form-control" id="filter" placeholder="Filter Values" value="{{filter}}">
 				</td>
-				<td></td>
 			</tr>
 			{{/showFilter}}
 			{{#data:i}}
@@ -90,7 +94,9 @@
 					<td>{{JSON.stringify(key)}}</td>
 					<td>
 						{{JSON.stringify(value)}}
-						<a href="#" title="view json data" on-click="viewValue"><span class="pull-right glyphicon glyphicon-new-window"></span></a>
+						{{#if typeof value === "object"}}
+							<a href="#" title="view json data" on-click="viewValue"><span class="pull-right glyphicon glyphicon-new-window"></span></a>
+						{{/if}}
 					</td>
 				</tr>
 				{{/if}}

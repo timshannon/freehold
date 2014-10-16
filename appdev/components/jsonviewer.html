@@ -1,29 +1,81 @@
 <div class="jsonviewer">
-	{{#root}}
-		{{>child}}
+	<div class="pull-right btn-group">
+		<button type="button" class="btn btn-success btn-xs" on-click="expandAll">
+			<span class="glyphicon glyphicon-plus" title="Expand all"></span>
+		</button>
+		<button type="button" class="btn btn-danger btn-xs" on-click="collapseAll">
+			<span class="glyphicon glyphicon-minus" title="Collapse all"></span>
+		</button>
+	</div>
+	<span class="json-item">
+	{<ul>
+	{{#root:i}}
+			{{>value}}
 	{{/root}}
+	</ul>}
+	</span>
 </div>
 
 
 <!-- {{>child}} -->
 <ul>
-	{{#.:i}}
+	{{#.children:i}}
 		{{>value}}
-	{{/.}}
+	{{/.children}}
 </ul>
 <!-- {{/child}} -->
 
 <!-- {{>value}} -->
+{{#if !../../collapsed}}
+{{#this}}
 <li>
+	<span class="json-item">
+	{{#if .children}}
+		<a href="#" on-click="collapse">
+			<span class="collapser glyphicon glyphicon-{{#if .collapsed}}plus{{else}}minus{{/if}}"></span>
+		</a>
+	{{/if}}
+	{{#if ../../type !== "array"}}
+		{{.key}} :
+	{{/if}}
+
 	{{#if .type === "object"}}
-		{{.key}} : { {{>child}} }
+		{ {{>child}} }
 	{{/if}}
-	{{#if .type ==="string"}}
-		{{.key}}: {{.value}}
+	{{#if .type ==="array"}}
+		[ {{>child}} ]
 	{{/if}}
+	{{#if .type !=="object" && .type !== "array"}}
+		{{.value}}
+	{{/if}}
+		,
+	</span>
 </li>
+{{/this}}
+{{/if}}
 <!-- {{/value}} -->
 
+
+<style>
+	ul {
+		list-style: none;
+	}
+
+	.json-item {
+		padding: 5px;
+	}
+
+	.collapser {
+		color: #555;
+	}
+
+	.json-item:hover {
+		background-color: #f5f5f5;
+	}
+	.jsonviewer {
+		cursor: default;
+	}
+</style>
 <script>
 component.exports = {
 	data: {
@@ -31,7 +83,7 @@ component.exports = {
 		object: {
 			"test1": "testdata",
 			"test2": "testdata2",
-			"object": {
+			"objectItem": {
 				"child1": "child",
 				"child2": 1,
 				"child3": [
@@ -45,36 +97,55 @@ component.exports = {
 	},
 	init: function() {
 		var r = this;
-		r.set("root", parseObj(r.get("object")));
 
-		function parseObj(object) {
+		this.on({
+			"collapse": function(event) {
+				if (event.context.collapsed) {
+					r.set(event.keypath+".collapsed", false);
+				} else {
+					r.set(event.keypath+".collapsed", true);
+				}
+			},
+			"expandAll": function(event) {
+				r.set("root", parseObj(r.get("object"), false));
+			},
+			"collapseAll": function(event) {
+				r.set("root", parseObj(r.get("object"), true));
+			},
+		});
+
+		this.observe("object", function(newvalue, oldvalue, keypath) {
+			if (typeof newvalue === "string") {
+				r.set("root", parseObj(JSON.parse(newvalue)));
+			} else {
+				r.set("root", parseObj(newvalue));
+			}
+		});
+
+		function parseObj(object, collapsed) {
 			var kv = [];
 			for (var key in object) {
+				var obj = {
+					key: key,
+					collapsed: collapsed,
+				};
 				if (object.hasOwnProperty(key)) {
-					var type = typeof object[key];
-					var value;
-					if (type === "object") {
-						value = parseObj(object[key]);
-					} else if (type === "array") {
-						var arr = object[key];
-						for (var i = 0; i < arr.length; i++) {
-							if(typeof arr[i] === "object") {
-								arr[i] = parseObj(arr[i]);
-							}
-						}
-						value = arr;
-					} else {
-						value = object[key];
+					obj.type = typeof object[key];
+					if (object[key] instanceof Array) {
+						obj.type = "array";
 					}
-					kv.push({
-						key: key,
-						type: type,
-						value: value,
-					});	
+
+					if (obj.type === "object" || obj.type === "array")  {
+						obj.children = parseObj(object[key], collapsed);
+					} else {
+						obj.value = object[key];
+					}
+					kv.push(obj);	
 				}
 			}
 			return kv;
 		}
+		
 	},
 };
 </script>
