@@ -16,13 +16,13 @@
 <!-- {{/folder}} -->
 
 <!-- {{>file}} -->
-<li >
-	<div class="file {{#if .selected}} selected bg-info{{/if}}">
+<li>
+	<span class="file {{#if .selected}} selected bg-info{{/if}}">
 		{{#if .isFolder}}
 			<a href="#" on-click="open">
 				<span class="icon glyphicon glyphicon-{{#if .open}}minus{{else}}plus{{/if}}"></span>
 			</a>
-			<span class="icon glyphicon glyphicon-folder-close"></span>
+			<span class="icon glyphicon glyphicon-folder-close"></span> 
 			{{#if folderOnly}}
 				<a href="#"  on-click="select">{{name}}</a>
 			{{else}}
@@ -36,7 +36,7 @@
 				<a href="#"  on-click="select">{{name}}</a>
 			{{/if}}
 		{{/if}}
-	</div>
+	</span>
 	{{#if .isFolder}}
 		{{>folder}}
 	{{/if}}
@@ -47,6 +47,9 @@
 	.selected {
 	}
 
+	.file {
+		padding: 5px;
+	}
 
 	.file:hover {
 		background-color: #f5f5f5;
