@@ -1111,20 +1111,8 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_filetree, rvc_jsonviewer, r
     component.exports = {
       data: {
         root: {},
-        object: {
-          'test1': 'testdata',
-          'test2': 'testdata2',
-          'objectItem': {
-            'child1': 'child',
-            'child2': 1,
-            'child3': [
-              1,
-              2,
-              3,
-              { 'arrchild': 'arrchilddata' }
-            ]
-          }
-        }
+        object: {},
+        startCollapsed: false
       },
       init: function () {
         var r = this;
@@ -1137,19 +1125,22 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_filetree, rvc_jsonviewer, r
             }
           },
           'expandAll': function (event) {
-            r.set('root', parseObj(r.get('object'), false));
+            setRoot(r.get('object'), false);
           },
           'collapseAll': function (event) {
-            r.set('root', parseObj(r.get('object'), true));
+            setRoot(r.get('object'), true);
           }
         });
         this.observe('object', function (newvalue, oldvalue, keypath) {
-          if (typeof newvalue === 'string') {
-            r.set('root', parseObj(JSON.parse(newvalue)));
-          } else {
-            r.set('root', parseObj(newvalue));
-          }
+          setRoot(newvalue, r.get('startCollapsed'));
         });
+        function setRoot(object, collapsed) {
+          if (typeof object === 'string') {
+            r.set('root', parseObj(JSON.parse(object), collapsed));
+          } else {
+            r.set('root', parseObj(object, collapsed));
+          }
+        }
         function parseObj(object, collapsed) {
           var kv = [];
           for (var key in object) {

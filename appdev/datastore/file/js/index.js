@@ -238,7 +238,7 @@ $(document).ready(function() {
         rMain.set("iter.limit", 20);
         rMain.set("last", true);
         rMain.set("count", 0);
-        rMain.set("filtered", 1);
+        rMain.set("filtered", 0);
         rMain.set("data", []);
 
     }
