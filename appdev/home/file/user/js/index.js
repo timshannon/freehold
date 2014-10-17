@@ -116,7 +116,8 @@ $(document).ready(function() {
                 title: "Security Tokens",
                 text: "Tokens are unique ID's used to grant temporary access to some or all of " +
                     "the permissions of a user. For use with temporary access, or external " +
-                    "applications. More info in the <a href='/docs/#token'>documentation</a>."
+                    "applications. More info can be found in the " +
+                    "<a href='/docs/#token'>documentation</a>."
             });
         },
         "saveToken": function(event) {

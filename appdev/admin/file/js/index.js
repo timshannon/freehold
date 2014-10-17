@@ -143,6 +143,13 @@ $(document).ready(function() {
             page.end -= iter.limit;
 
             rLogs.set("page", page);
+        },
+        "viewJSON": function(event) {
+            event.original.preventDefault();
+            rLogs.set("currentBefore", event.context.before);
+            rLogs.set("currentValue", event.context.linkData);
+            rLogs.set("currentAfter", event.context.after);
+            $("#viewJSON").modal();
         }
     });
 
@@ -390,10 +397,27 @@ $(document).ready(function() {
 
                 //Format time to more readable timestamp
                 logs[i].when = new Date(logs[i].when).toLocaleString();
+
+                logs[i].jsonValue = linkJSON(logs[i].log);
             }
         }
 
         return filtered;
+    }
+
+    //linkJSON checks if the passed in string contains a JSON string, and if so
+    function linkJSON(value) {
+        //check if log contains a json string
+        var res = value.match(/{.*}$|^\[.*\]$/);
+        if (!res) {
+            return;
+        }
+
+        return {
+            before: value.slice(0, res.index),
+            linkData: res[0],
+            after: value.slice((res.index + res[0].length)),
+        };
     }
 
 

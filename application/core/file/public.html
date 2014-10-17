@@ -5,6 +5,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 		<link href="/core/v1/file/css/freehold.css" rel="stylesheet" media="screen">
+		<link href="/core/v1/file/css/public.css" rel="stylesheet" media="screen">
 
 	<!--TODO:<link rel="shortcut icon" href="/core/v1/file/images/favicon.ico">-->
 </head>
@@ -55,7 +56,12 @@ Freehold is a free and open source project released under the MIT license.  Lice
 				<input type="checkbox" id="rememberMe" name="rememberMe" checked="{{rememberMe}}"> Remember me
 			</label>
 		</div>
-		<button on-click="login" class="btn btn-default">Log In</button>
+		<button on-click="login" class="btn btn-primary{{#waiting}} disabled{{/waiting}}">Log In</button>
+		{{#waiting}}
+		<span id="spinnerContainer">
+			<span id="loginSpinner" class="spinner"></span>
+		</span>
+		{{/waiting}}
 	</form>
 </modal>
 

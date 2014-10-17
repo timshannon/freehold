@@ -1035,6 +1035,23 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_filetree, rvc_jsonviewer, r
               a: { 'class': 'jsonviewer' },
               f: [
                 {
+                  t: 4,
+                  r: 'error',
+                  f: [{
+                      t: 7,
+                      e: 'div',
+                      a: {
+                        'class': 'alert alert-danger',
+                        role: 'alert'
+                      },
+                      f: [{
+                          t: 2,
+                          r: 'error'
+                        }]
+                    }]
+                },
+                ' ',
+                {
                   t: 7,
                   e: 'div',
                   a: { 'class': 'pull-right btn-group' },
@@ -1135,8 +1152,14 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_filetree, rvc_jsonviewer, r
           setRoot(newvalue, r.get('startCollapsed'));
         });
         function setRoot(object, collapsed) {
+          r.set('error', null);
+          r.set('root', {});
           if (typeof object === 'string') {
-            r.set('root', parseObj(JSON.parse(object), collapsed));
+            try {
+              r.set('root', parseObj(JSON.parse(object), collapsed));
+            } catch (e) {
+              r.set('error', 'invalid JSON: ' + e);
+            }
           } else {
             r.set('root', parseObj(object, collapsed));
           }

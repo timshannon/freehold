@@ -1,4 +1,7 @@
 <div class="jsonviewer">
+	{{#error}}
+		<div class="alert alert-danger" role="alert">{{error}}</div>
+	{{/error}}
 	<div class="pull-right btn-group">
 		<button type="button" class="btn btn-success btn-xs" on-click="expandAll">
 			<span class="glyphicon glyphicon-plus" title="Expand all"></span>
@@ -107,8 +110,14 @@ component.exports = {
 		});
 
 		function setRoot(object, collapsed) {
+			r.set("error", null);
+			r.set("root", {});
 			if (typeof object === "string") {
-				r.set("root", parseObj(JSON.parse(object),collapsed));
+				try {
+					r.set("root", parseObj(JSON.parse(object),collapsed));
+				} catch (e) {
+					r.set("error", "invalid JSON: " + e);
+				}
 			} else {
 				r.set("root", parseObj(object, collapsed));
 			}
