@@ -31,12 +31,17 @@
 
 <!--templates-->
 <script id="tLogs" type="text/ractive">
+<modal id="viewJSON" title="JSON Data">
+	{{currentBefore}}
+	<jsonviewer object="{{currentValue}}"></jsonviewer>
+	{{currentAfter}}
+</modal>
 <div class="well form-inline form-group admin-control-group">
 	<label id="filterLabel" class="control-label">Filter:</label>
 	<label class="radio-inline"><input type="radio" name="typeFilter" on-click="filterAll" value="all" checked>All</label>
 	<label class="radio-inline"><input type="radio" name="typeFilter" on-click="filterError" value="error">Errors</label>
 	<label class="radio-inline"><input type="radio" name="typeFilter" on-click="filterFail" value="fail">Failures</label>
-	<label class="radio-inline"><input type="radio" name="typeFilter" on-click="filterAuth" value="auth">Auth Errors</label>
+	<label class="radio-inline"><input type="radio" name="typeFilter" on-click="filterAuth" value="auth">Authentication</label>
 	<div class="form-group">
 		<input type="text" id="filterText" class="form-control" placeholder="filter logs" value="{{filterText}}">
 		{{#filterWaiting}}
@@ -61,7 +66,12 @@
 		<tr class="{{type=='error' ? 'danger' : ''}} {{type=='failure' ? 'warning' : ''}}">
 			<td>{{when}}</td>
 			<td>{{type}}</td>
-			<td>{{log}}</td>
+			{{#jsonValue}}
+				<td>{{before}}<a href="" on-click="viewJSON">{{linkData}}</a>{{after}}</td>
+			{{/jsonValue}}
+			{{^jsonValue}}
+				<td>{{log}}</td>
+			{{/jsonValue}}
 		</tr>
 		{{/i}}
 		{{/logs}}

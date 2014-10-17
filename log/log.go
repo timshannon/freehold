@@ -181,7 +181,7 @@ func Fail(err *fail.Fail, who string) {
 	if who != "" {
 		entry += "Who: " + who + ", "
 	}
-	entry += fmt.Sprintf("Message: %s, Data: %s", err.Message, data)
+	entry += fmt.Sprintf("Message: %s  Data: %s", err.Message, data)
 
 	NewEntry("failure", entry)
 }

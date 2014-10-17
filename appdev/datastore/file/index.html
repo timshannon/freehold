@@ -108,6 +108,7 @@
 	<div class="btn-group">
 		<a href="#" class="btn btn-default{{#page <= 1}} disabled{{/page}}" on-click="prev">
 			<span class="glyphicon glyphicon-chevron-left"></span></a>
+		<span class="btn btn-default disabled">{{page}}</span>
 		<a href="#" class="btn btn-default{{#if  (page*iter.limit) >= (count-filtered)}} disabled{{/if}}" on-click="next">
 			<span class="glyphicon glyphicon-chevron-right"></span></a>
 	</div>

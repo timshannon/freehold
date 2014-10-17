@@ -24,6 +24,8 @@ $(document).ready(function() {
 
         },
         login: function(event) {
+            rMain.set("waiting", true);
+            rMain.set("loginErr", null);
             event.original.preventDefault();
             var data;
 
@@ -34,6 +36,7 @@ $(document).ready(function() {
             }
             if (event.context.username === "") {
                 rMain.set("loginerr", "username is required");
+                rMain.set("waiting", false);
                 return;
             }
 
@@ -43,6 +46,7 @@ $(document).ready(function() {
                 })
                 .fail(function(result) {
                     rMain.set("loginErr", result.message);
+                    rMain.set("waiting", false);
                 });
         },
     });
