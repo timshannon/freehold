@@ -17,7 +17,7 @@
 
 <!-- {{>file}} -->
 <li>
-	<span class="file {{#if .selected}} selected bg-info{{/if}}">
+	<span class="{{#if .selected}}selected bg-info{{else}}file{{/if}}">
 		{{#if .isFolder}}
 			<a href="#" on-click="open">
 				<span class="icon glyphicon glyphicon-{{#if .open}}minus{{else}}plus{{/if}}"></span>
@@ -45,6 +45,10 @@
 
 <style>
 	.selected {
+		border-color: #ccc;
+		border: 1px solid transparent;
+		border-radius: 4px;
+		padding: 5px;
 	}
 
 	.file {
@@ -53,6 +57,9 @@
 
 	.file:hover {
 		background-color: #f5f5f5;
+		border: 1px solid transparent;
+		border-radius: 4px;
+
 	}
 
 	.filetree {
