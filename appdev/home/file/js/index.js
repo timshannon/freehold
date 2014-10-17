@@ -6,6 +6,7 @@ $(document).ready(function() {
     var starred = {};
     var externalApps = false;
 
+    var timer;
 
 
     var rApps = new Ractive({
@@ -149,6 +150,12 @@ $(document).ready(function() {
         }
     });
 
+    rManage.observe("filterText", function(newValue, oldValue, keypath) {
+        if (timer) {
+            window.clearTimeout(timer);
+        }
+        timer = window.setTimeout(filterApps, 200);
+    });
 
     //Functions
 
@@ -222,6 +229,28 @@ $(document).ready(function() {
     }
 
 
+    function filterApps() {
+        var regEx;
+        try {
+            regEx = new RegExp(rManage.get("filterText"), "i");
+        } catch (e) {
+            regEx = new RegExp("", "i");
+        }
+        var apps = rManage.get("apps");
+
+
+        for (var i in apps) {
+            if (apps.hasOwnProperty(i)) {
+                if (regEx.test(apps[i].description) || regEx.test(apps[i].description)) {
+                    apps[i].filtered = false;
+                } else {
+                    apps[i].filtered = true;
+                }
+            }
+        }
+
+        rManage.set("apps", apps);
+    }
 
 
 }); //end ready

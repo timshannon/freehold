@@ -60,7 +60,11 @@
 
 <modal id="manageAppsModal" title="Manage Applications">
 	<div class="list-group">
+		<div class="list-group-item form-group">
+			<input type="text" id="filterText" class="form-control" placeholder="filter applications" value="{{filterText}}">
+		</div>
 	{{#apps:i}}
+		{{#if !filtered}}
 		<div class="list-group-item clearfix">
 		{{#admin}}
 			<div class="btn-group-vertical pull-right">
@@ -87,6 +91,7 @@
 				</dl>
 			</span>
 		</div>
+		{{/if}}
 	{{/apps}}
 	{{#failures}}
 		<div class="list-group-item list-group-item-danger">

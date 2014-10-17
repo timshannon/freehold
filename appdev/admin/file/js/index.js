@@ -434,7 +434,12 @@ $(document).ready(function() {
     }
 
     function filterSettings() {
-        var regEx = new RegExp(rSettings.get("settingsFilter"), "i");
+var regEx;
+        try {
+            regEx = new RegExp(rSettings.get("settingsFilter"), "i");
+        } catch (e) {
+            regEx = new RegExp("", "i");
+        }
         var settings = rSettings.get("settings");
 
 
