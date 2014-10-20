@@ -137,7 +137,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_filetree, rvc_jsonviewer, r
               t: 7,
               e: 'nav',
               a: {
-                'class': 'navbar navbar-default',
+                'class': 'navbar navbar-default navbar-static-top',
                 role: 'navigation'
               },
               f: [
@@ -650,7 +650,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_filetree, rvc_jsonviewer, r
                 f: [
                   {
                     t: 7,
-                    e: 'span',
+                    e: 'div',
                     a: {
                       'class': [
                         {
@@ -726,8 +726,14 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_filetree, rvc_jsonviewer, r
                             t: 4,
                             n: 51,
                             f: [{
-                                t: 2,
-                                r: 'name'
+                                t: 7,
+                                e: 'a',
+                                a: { href: '#' },
+                                v: { click: 'open' },
+                                f: [{
+                                    t: 2,
+                                    r: 'name'
+                                  }]
                               }],
                             r: 'folderOnly'
                           }
@@ -810,26 +816,82 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_filetree, rvc_jsonviewer, r
                 {
                   t: 4,
                   r: 'root',
-                  f: [{
+                  f: [
+                    {
+                      t: 7,
+                      e: 'div',
+                      a: {
+                        'class': [
+                          {
+                            t: 4,
+                            n: 50,
+                            r: '.selected',
+                            f: ['selected bg-info']
+                          },
+                          {
+                            t: 4,
+                            n: 51,
+                            f: ['file'],
+                            r: '.selected'
+                          }
+                        ]
+                      },
+                      f: [
+                        {
+                          t: 7,
+                          e: 'span',
+                          a: { 'class': 'icon glyphicon glyphicon-folder-open' }
+                        },
+                        ' ',
+                        {
+                          t: 4,
+                          n: 50,
+                          r: 'folderOnly',
+                          f: [{
+                              t: 7,
+                              e: 'a',
+                              a: { href: '#' },
+                              v: { click: 'select' },
+                              f: [{
+                                  t: 2,
+                                  r: 'rootDir'
+                                }]
+                            }]
+                        },
+                        {
+                          t: 4,
+                          n: 51,
+                          f: [{
+                              t: 2,
+                              r: 'rootDir'
+                            }],
+                          r: 'folderOnly'
+                        }
+                      ]
+                    },
+                    ' ',
+                    {
                       t: 8,
                       r: 'folder'
-                    }]
+                    }
+                  ]
                 }
               ]
             }]
         },
-        css: '.selected {\nborder-color: #ccc;\nborder: 1px solid transparent;\nborder-radius: 4px;\npadding: 5px;\n}\n.file {\npadding: 5px;\n}\n.file:hover {\nbackground-color: #f5f5f5;\nborder: 1px solid transparent;\nborder-radius: 4px;\n}\n.filetree {\ncursor: default;\n}\nul {\nlist-style: none;\n}\n.icon {\ncolor: #555;\n}\n'
+        css: '.selected {\nborder-color: #ccc;\nborder: 0px solid transparent;\nborder-radius: 4px;\npadding: 5px;\nfont-weight:bold;\n}\n.file {\npadding: 5px;\n}\n.file:hover {\nbackground-color: #f5f5f5;\nborder: 0px solid transparent;\nborder-radius: 4px;\n}\na:hover {\ntext-decoration: none;\t\ncolor: #333;\n}\na {\ncolor: #333;\n}\n.filetree {\ncursor: default;\noverflow: auto;\n}\nul {\nlist-style: none;\n}\nli {\nmargin-left: -22px;\n}\n.icon {\ncolor: #555;\n}\n'
       }, component = {};
     component.exports = {
       data: {
         rootDir: '/v1/file/',
-        selected: '',
+        selected: {},
         root: { files: [] },
         folderOnly: false,
         filterRegex: ''
       },
       init: function () {
         var r = this;
+        r.set('root.url', r.get('rootDir'));
         getFile(r.get('rootDir'), 'root');
         this.on({
           'open': function (event) {
@@ -845,10 +907,15 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_filetree, rvc_jsonviewer, r
             }
           },
           'select': function (event) {
+            r.set('root.selected', false);
             clearSelected(r.get('root.files'));
-            r.set(event.keypath + '.selected', true);
-            r.set('selected', event.context.url);
             r.update('root');
+            r.set(event.keypath + '.selected', true);
+            r.set('selected', {
+              url: event.context.url,
+              name: event.context.name,
+              keypath: event.keypath
+            });
           }
         });
         function getFile(file, keypath) {
@@ -860,14 +927,16 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_filetree, rvc_jsonviewer, r
           }
           fh.properties.get(file).done(function (result) {
             var files = result.data;
-            for (var i = 0; i < files.length; i++) {
+            for (var i = 0; i < files.length;) {
               if (files[i].hasOwnProperty('size')) {
                 if (r.get('folderOnly') || !regEx.exec(files[i].name)) {
                   files.splice(i, 1);
+                  continue;
                 }
               } else {
                 files[i].isFolder = true;
               }
+              i++;
             }
             r.set(keypath + '.files', files);
           }).fail(function (result) {

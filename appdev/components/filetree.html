@@ -3,6 +3,14 @@
 		<div class="alert alert-danger" role="alert">{{error}}</div>
 	{{/error}}
 	{{#root}}
+	<div class="{{#if .selected}}selected bg-info{{else}}file{{/if}}">
+		<span class="icon glyphicon glyphicon-folder-open"></span> 
+		{{#if folderOnly}}
+			<a href="#"  on-click="select">{{rootDir}}</a>
+		{{else}}
+			{{rootDir}}
+		{{/if}}
+	</div>  
 		{{>folder}}
 	{{/root}}
 </div>
@@ -17,7 +25,7 @@
 
 <!-- {{>file}} -->
 <li>
-	<span class="{{#if .selected}}selected bg-info{{else}}file{{/if}}">
+	<div class="{{#if .selected}}selected bg-info{{else}}file{{/if}}">
 		{{#if .isFolder}}
 			<a href="#" on-click="open">
 				<span class="icon glyphicon glyphicon-{{#if .open}}minus{{else}}plus{{/if}}"></span>
@@ -26,7 +34,7 @@
 			{{#if folderOnly}}
 				<a href="#"  on-click="select">{{name}}</a>
 			{{else}}
-				{{name}}
+				<a href="#"  on-click="open">{{name}}</a>
 			{{/if}}
 		{{else}}
 			<span class="icon glyphicon glyphicon-file"></span>
@@ -36,7 +44,7 @@
 				<a href="#"  on-click="select">{{name}}</a>
 			{{/if}}
 		{{/if}}
-	</span>
+	</div>
 	{{#if .isFolder}}
 		{{>folder}}
 	{{/if}}
@@ -46,9 +54,10 @@
 <style>
 	.selected {
 		border-color: #ccc;
-		border: 1px solid transparent;
+		border: 0px solid transparent;
 		border-radius: 4px;
 		padding: 5px;
+		font-weight:bold;
 	}
 
 	.file {
@@ -57,17 +66,30 @@
 
 	.file:hover {
 		background-color: #f5f5f5;
-		border: 1px solid transparent;
+		border: 0px solid transparent;
 		border-radius: 4px;
+	}
 
+	a:hover {
+		text-decoration: none;	
+		color: #333;
+	}
+
+	a {
+		color: #333;
 	}
 
 	.filetree {
 		cursor: default;
+		overflow: auto;
 	}
 
 	ul {
 		list-style: none;
+	}
+
+	li {
+		margin-left: -22px;
 	}
 
 	.icon {
@@ -80,7 +102,7 @@
 component.exports = {
 	data: {
 		rootDir: "/v1/file/",
-		selected: "",
+		selected: {},
 		root: {
 			files: [],
 		},
@@ -89,6 +111,7 @@ component.exports = {
 	},
 	init: function() {
 		var r = this;
+		r.set("root.url", r.get("rootDir"));
 
 		getFile(r.get("rootDir"), "root");
 		
@@ -106,10 +129,16 @@ component.exports = {
 				}
 			},
 			"select": function(event) {
+					r.set("root.selected", false);
 					clearSelected(r.get("root.files"));
-					r.set(event.keypath+".selected", true);
-					r.set("selected", event.context.url);
 					r.update("root");
+
+					r.set(event.keypath+".selected", true);
+					r.set("selected", {
+						url: event.context.url,
+						name: event.context.name,
+						keypath: event.keypath
+					});
 			},
 
 		});
@@ -125,14 +154,16 @@ component.exports = {
 				.done(function(result) {
 					var files = result.data;
 
-					for (var i = 0; i < files.length; i++) {
+					for (var i = 0; i < files.length;) {
 						if (files[i].hasOwnProperty("size")) {
 							if (r.get("folderOnly") || (!regEx.exec(files[i].name))) {
 								files.splice(i,1);
+								continue;
 							}
 						} else {
 							files[i].isFolder = true;
 						}
+						i++;
 					}
 
 					r.set(keypath+".files", files);	
