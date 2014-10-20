@@ -1,0 +1,9 @@
+#sidebar {
+	border-right: 1px solid #555;
+}
+
+#pageContainer {
+	width: 100%;
+	padding-right: 25px;
+	padding-left: 25px;
+}

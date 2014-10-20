@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>freehold - Explorer</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<link href="/core/v1/file/css/freehold.css" rel="stylesheet" media="screen"> 
+		<link href="/explorer/v1/file/css/index.css" rel="stylesheet" media="screen"> 
+	</head>
+<body>
+<div id="nb"></div>
+<div id="pageContainer">
+</div>
+	
+<!--templates-->
+<script id="tNav" type="text/ractive">
+<navbar error="{{error}}" app="Explorer"></navbar>
+</script>
+
+<script id="tMain" type="text/ractive">
+<div class="row">
+	<div id="sidebar" class="col-sm-3">
+		<filetree folderOnly="true" rootDir="{{dir}}" on-select="selectFolder">
+		</filetree>
+	</div>
+	<div id="fileList" class="col-sm-9">
+		<ol class="breadcrumb">
+			<li><a href="#">todo</a></li>
+		</ol>
+		{{#files}}
+			{{name}}
+			{{size}}
+		{{/files}}
+	</div>	
+</div>
+</script>
+<!--end templates-->
+
+<script src="/core/v1/file/js/jquery-2.1.1.min.js"></script>
+<script src="/core/v1/file/js/bootstrap.min.js"></script>
+<script src="/core/v1/file/js/ractive.min.js"></script>
+<script src="/core/v1/file/js/fh.js"></script>
+<script src="/core/v1/file/js/components.js"></script>
+<script src="/explorer/v1/file/js/index.js"></script>
+</body>
+</html>

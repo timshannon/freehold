@@ -14,7 +14,7 @@
 <script id="tMain" type="text/ractive">
 <navbar error="{{error}}" app="Datastore Viewer"></navbar>
 <modal id="fileBrowse" title="Open a Datastore" customFooter="true">
-	<filetree rootDir="/v1/datastore/" selected="{{selected}}"></filetree>
+	<filetree rootDir="/v1/datastore/" selected.url="{{selected}}"></filetree>
 	<div class="modal-footer">
 		<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
 		<button type="button" class="btn btn-primary" on-click="selectFile">Select</button>

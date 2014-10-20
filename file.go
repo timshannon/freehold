@@ -28,6 +28,10 @@ import (
 	"github.com/russross/blackfriday"
 )
 
+//FIXME: Users must be able to create and delete folders
+// how to handle permissions?
+// deleting folders with files in them?
+
 var markdownTypes = []string{".markdown", ".md"}
 
 func fileGet(w http.ResponseWriter, r *http.Request) {
