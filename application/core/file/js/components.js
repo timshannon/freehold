@@ -1197,7 +1197,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_filetree, rvc_jsonviewer, r
               ]
             }]
         },
-        css: 'ul {\nlist-style: none;\n}\n.json-item {\npadding: 5px;\n}\n.collapser {\ncolor: #555;\n}\n.json-item:hover {\nbackground-color: #f5f5f5;\nborder: 1px solid #ccc;\nborder-radius: 4px;\n}\n.jsonviewer {\ncursor: default;\n}\n'
+        css: 'ul {\nlist-style: none;\n}\n.json-item {\npadding: 5px;\n}\n.collapser {\ncolor: #555;\n}\n.json-item:hover {\nbackground-color: #f5f5f5;\nborder: 1px solid #ccc;\nborder-radius: 4px;\npadding: 4px;\n}\n.jsonviewer {\ncursor: default;\n}\n'
       }, component = {};
     component.exports = {
       data: {
