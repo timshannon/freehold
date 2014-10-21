@@ -28,10 +28,6 @@ import (
 	"github.com/russross/blackfriday"
 )
 
-//FIXME: Users must be able to create and delete folders
-// how to handle permissions?
-// deleting folders with files in them?
-
 var markdownTypes = []string{".markdown", ".md"}
 
 func fileGet(w http.ResponseWriter, r *http.Request) {
@@ -85,11 +81,16 @@ func uploadFile(w http.ResponseWriter, resourcePath string, owner *user.User, mp
 
 	for _, files := range mp.File {
 		for i := range files {
+
 			if path.Base(files[i].Filename) != files[i].Filename {
 				failures = append(failures, fail.New("File name must not contain a path.", files[i].Filename))
 				status = statusFail
 
 				continue
+			}
+			if isHidden(files[i].Filename) {
+				continue
+
 			}
 			resource := path.Join(resourcePath, files[i].Filename)
 			filename := urlPathToFile(resource)
@@ -223,6 +224,10 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 
 				continue
 			}
+			if isHidden(files[i].Filename) {
+				continue
+
+			}
 			resource := path.Join(r.URL.Path, files[i].Filename)
 			filename := urlPathToFile(resource)
 
@@ -305,6 +310,11 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if isHidden(info.Name()) {
+		four04Page(w, r)
+		return
+	}
+
 	if !info.IsDir() {
 		prm, err := permission.Get(filename)
 		if errHandled(err, w, auth) {
@@ -355,6 +365,9 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 
 	for i := range files {
 		if !files[i].IsDir() {
+			if isHidden(files[i].Name()) {
+				continue
+			}
 			child := path.Join(dir, files[i].Name())
 			cRes := path.Join(resource, files[i].Name())
 
@@ -387,7 +400,7 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 					}))
 
 			}
-		}
+		} //TODO: Recursive delete or only one folder deep?
 	}
 
 	if errHandled(clearEmptyFolder(file.Name()), w, auth) {
@@ -420,6 +433,11 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 		return
 	}
 
+	if isHidden(info.Name()) {
+		four04Page(w, r)
+		return
+	}
+
 	if !info.IsDir() {
 		var prm *permission.Permission
 		if isDocPath(resource) {
@@ -449,7 +467,7 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 
 	for i := range files {
 		var prm *permission.Permission
-		if files[i].IsDir() {
+		if files[i].IsDir() || isHidden(files[i].Name()) {
 			continue
 		}
 		if isDocPath(resource) {

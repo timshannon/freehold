@@ -134,6 +134,10 @@ func fileExists(filename string) bool {
 	return false
 }
 
+func isHidden(filename string) bool {
+	return strings.HasPrefix(path.Base(filename), ".")
+}
+
 func isDir(filename string) bool {
 	if stat, err := os.Stat(filename); err == nil {
 		return stat.IsDir()
@@ -150,7 +154,7 @@ func clearEmptyFolder(folder string) error {
 		return err
 	}
 	if len(files) == 0 {
-		os.Remove(file.Name())
+		return os.Remove(file.Name())
 	}
 	return nil
 }

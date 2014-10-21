@@ -24,15 +24,15 @@ QUnit.module("files", {
     },
     teardown: function(assert) {
         QUnit.stop();
-        //delete file
-        fh.file.delete("/testing/v1/file/testdata/testfile.xml")
+        //delete folder
+        fh.file.delete("/testing/v1/file/testdata/")
             .always(function(result) {
                 assert.deepEqual(result, {
                     status: "success",
-                    data: {
+                    data:[ {
                         name: "testfile.xml",
                         url: "/testing/v1/file/testdata/testfile.xml"
-                    }
+                    }]
                 });
                 QUnit.start();
             });

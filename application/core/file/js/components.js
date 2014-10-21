@@ -782,7 +782,13 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_filetree, rvc_jsonviewer, r
                   {
                     t: 4,
                     n: 50,
-                    r: '.isFolder',
+                    x: {
+                      r: [
+                        '.isFolder',
+                        '.open'
+                      ],
+                      s: '_0&&_1'
+                    },
                     f: [{
                         t: 8,
                         r: 'folder'
@@ -891,33 +897,39 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_filetree, rvc_jsonviewer, r
       },
       init: function () {
         var r = this;
-        r.set('root.url', r.get('rootDir'));
-        getFile(r.get('rootDir'), 'root');
         this.on({
           'open': function (event) {
             if (event.context.isFolder) {
-              if (event.context.files) {
+              if (event.context.open) {
                 r.set(event.keypath + '.open', false);
-                r.set(event.keypath + '.files', null);
                 return;
               }
               r.set(event.keypath + '.open', true);
-              getFile(event.context.url, event.keypath);
-              return;
+              if (!event.context.files) {
+                getFile(event.context.url, event.keypath);
+              }
             }
           },
           'select': function (event) {
-            r.set('root.selected', false);
-            clearSelected(r.get('root.files'));
-            r.update('root');
-            r.set(event.keypath + '.selected', true);
-            r.set('selected', {
-              url: event.context.url,
-              name: event.context.name,
-              keypath: event.keypath
-            });
+            selectFile(event.keypath);
           }
         });
+        this.observe({
+          'selectKeypath': function (newvalue, oldvalue, keypath) {
+            selectFile(newvalue);
+          },
+          'rootDir': function (newvalue, oldvalue, keypath) {
+            r.set('root.url', r.get('rootDir'));
+            getFile(r.get('rootDir'), 'root');
+          }
+        });
+        function selectFile(keypath) {
+          r.set('root.selected', false);
+          clearSelected(r.get('root.files'));
+          r.update('root');
+          r.set(keypath + '.selected', true);
+          r.set('selected', r.get(keypath));
+        }
         function getFile(file, keypath) {
           var regEx;
           try {
