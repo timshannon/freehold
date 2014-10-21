@@ -1,6 +1,5 @@
 $(document).ready(function() {
     var timer;
-    var dir = fh.util.urlParm("dir") || "/v1/file/";
 
     var rNav = new Ractive({
         el: "#nb",
@@ -11,20 +10,19 @@ $(document).ready(function() {
         el: "#pageContainer",
         template: "#tMain",
         data: {
-            dir: dir,
+            rootDir: "/v1/file",
         }
     });
 
-    getFiles(dir);
+    getFiles(rMain.get("rootDir"));
 
 
     //events
     rMain.on({
-        selectFolder: function(event) {
-			//TODO: get keypath
+        "selectFolder": function(event) {
+            buildBreadcrumbs(event.keypath);
             getFiles(event.context.url);
-        }
-
+        },
     });
 
     //functions
@@ -36,6 +34,17 @@ $(document).ready(function() {
             .fail(function(result) {
                 error(result.message);
             });
+    }
+
+    function buildBreadcrumbs(keypath) {
+        var crumbs = [];
+        var comp = rMain.findComponent("filetree");
+        while (keypath.lastIndexOf(".files") > 0) {
+            keypath = keypath.slice(0, keypath.lastIndexOf(".files"));
+            crumbs.push(comp.get(keypath));
+        }
+        crumbs.reverse();
+        rMain.set("breadcrumbs", crumbs);
     }
 
     function error(errMsg) {

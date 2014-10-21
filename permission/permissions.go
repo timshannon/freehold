@@ -9,6 +9,7 @@ import (
 
 	"bitbucket.org/tshannon/freehold/data"
 	"bitbucket.org/tshannon/freehold/fail"
+	"bitbucket.org/tshannon/freehold/setting"
 	"bitbucket.org/tshannon/freehold/user"
 )
 
@@ -38,7 +39,7 @@ func Get(filename string) (*Permission, error) {
 	prm := &Permission{}
 	err = ds.Get(filename, prm)
 	if err == data.ErrNotFound {
-		return &Permission{}, nil
+		return orphanedFile(filename)
 	}
 	if err != nil {
 		return nil, err
@@ -46,6 +47,23 @@ func Get(filename string) (*Permission, error) {
 
 	prm.resource = filename
 
+	return prm, nil
+}
+
+func orphanedFile(filename string) (*Permission, error) {
+	o := setting.String("OrphanedPermissionOwner")
+	if o == "" {
+		return &Permission{}, nil
+	}
+	_, err := user.Get(o)
+	if err != nil {
+		return nil, err
+	}
+	prm := FileNewDefault(o)
+	err = Set(filename, prm)
+	if err != nil {
+		return nil, err
+	}
 	return prm, nil
 }
 

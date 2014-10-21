@@ -146,6 +146,13 @@ func init() {
 				"until it gets a response from the server.",
 			Value: float64(0),
 		},
+		"OrphanedPermissionOwner": Setting{
+			Description: "Default owner set for files which are found on the server, but do not have any permissions set. " +
+				"If blank, no permissions will be set, and these files will not be visible to freehold.  If set to a " +
+				"valid user, then that user will be given ownership and the default file permissions for new files will " +
+				"be set (Private RW). This can be used to back-load files into freehold.",
+			Value: "",
+		},
 	}
 }
 

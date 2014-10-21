@@ -36,7 +36,7 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	filename := urlPathToFile(r.URL.Path)
-	if !fileExists(filename) {
+	if !fileExists(filename) || isHidden(filename) {
 		four04(w, r)
 		return
 	}
@@ -264,7 +264,7 @@ func datastorePut(w http.ResponseWriter, r *http.Request) {
 	}
 
 	filename := urlPathToFile(r.URL.Path)
-	if !fileExists(filename) {
+	if !fileExists(filename) || isHidden(filename) {
 		four04(w, r)
 		return
 	}
@@ -316,7 +316,7 @@ func datastoreDelete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	filename := urlPathToFile(r.URL.Path)
-	if !fileExists(filename) {
+	if !fileExists(filename) || isHidden(filename) {
 		four04(w, r)
 		return
 	}
@@ -366,6 +366,10 @@ func datastoreDelete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = data.Drop(filename)
+	if errHandled(err, w, auth) {
+		return
+	}
+	err = permission.Delete(filename)
 	if errHandled(err, w, auth) {
 		return
 	}

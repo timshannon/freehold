@@ -45,6 +45,11 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 
 	resource := resPathFromProperty(r.URL.Path)
 	filename := urlPathToFile(resource)
+	if isHidden(filename) {
+		four04(w, r)
+		return
+	}
+
 	file, err := os.Open(filename)
 	defer file.Close()
 
@@ -99,6 +104,9 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 	fileList := make([]Properties, 0, len(files))
 
 	for i := range files {
+		if isHidden(files[i].Name()) {
+			continue
+		}
 		var size int64
 		var modTime string
 		var filePrm *permission.Permission
@@ -191,6 +199,11 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 
 	resource := resPathFromProperty(r.URL.Path)
 	filename := urlPathToFile(resource)
+	if isHidden(filename) {
+		four04(w, r)
+		return
+	}
+
 	file, err := os.Open(filename)
 	defer file.Close()
 
@@ -257,6 +270,9 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 	status := statusSuccess
 
 	for i := range files {
+		if isHidden(files[i].Name()) {
+			continue
+		}
 		if !files[i].IsDir() {
 			child := path.Join(filename, files[i].Name())
 			cRes := path.Join(resource, files[i].Name())

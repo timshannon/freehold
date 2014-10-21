@@ -118,7 +118,7 @@ GET at a directory redirects to the /v1/properties/file/ listing of the director
 If a GET is called against a file of extension type *.markdown* the markdown will automatically be
 rendered as html (thanks to https://github.com/russross/blackfriday) such as with this file.
 
-**POST** - Add a new file.  Any non existent folders in the path will be automatically created.
+**POST** - Add a new file.  Any non existent folders in the path will be automatically created.  Can be used to create an empty folder if now form-data is passed in.
 multipart/formdata are accepted.
 
 This example will create a new directory and put profile.jpg in it
@@ -224,7 +224,7 @@ Response (201):
 
 
 
-**DELETE** - If the last file in a given folder is deleted, the folder is also deleted. Can only be done by file owners.
+**DELETE** - Can only be done by file owners.
 
 *Delete a single file*
 ```
@@ -526,7 +526,7 @@ Response (200):
 
 **DELETE** 
 
-*Delete a datastore file* - Requires private/owner permissions
+*Delete a datastore file* - Requires private/owner permissions, if the last file in a datastore folder is deleted, then the folder is cleaned up.
 ```
 DELETE /v1/datastore/personal/bookmarks.ds
 
@@ -559,11 +559,9 @@ Response (200):
 or
 ### /v1/properties/datastore/<path to datastore>
 
-Properties mirrors the same paths as /v1/file/ or /v1/datastore/ but instead shows meta data on the files instead of retrieving the files themselves.  This allows us to take advantage of browser caching for serving files without interfering with making GET requests to retrieve information on the files themselves.  It also allows for a way to retrieve folder listings for folders which contain index files.
+Properties mirrors the same paths as /v1/file/ or /v1/datastore/ but instead shows meta data on the files instead of retrieving the files themselves.  This allows us to take advantage of browser caching for serving files without interfering with making GET requests to retrieve information on the files themselves.  It also allows for a way to retrieve folder listings for folders which contain index files.  Files that start with "." are ignored by freehold, regardless of the platform it's running on.
 
 If a user has permissions to the /v1/file/ or /v1/datastore/ it has permissions to the /v1/properties/ path as well.  However PUTting permissions requires Private/owner permissions.  Reading permissions requires read access, but permissions requests are not allowed for public access.
-
-A file or datastore can have a specific *WriteLimit* which is a rate on the number of writes that can be made per minute. The write limit on a particular file or datastore is different than the global *PublicWriteLimit* in that the limit applies to everyone, not just public.  The global limits override any specific file write limits.
 
 TODO: Encryption. Requires key passed in header
 
