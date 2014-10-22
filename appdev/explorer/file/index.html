@@ -19,14 +19,15 @@
 <script id="tMain" type="text/ractive">
 <div class="row">
 	<div id="sidebar" class="col-sm-3">
-		<filetree folderOnly="true" rootDir="{{rootDir}}" on-select="selectFolder" selected="{{selected}}">
+		<filetree folderOnly="true" rootDir="{{rootDir}}" on-select="selectFolder" 
+		 selectKeypath="{{fileKeypath}}"	selected="{{selected}}">
 		</filetree>
 	</div>
 	<div id="fileList" class="col-sm-9">
 		<ol class="breadcrumb">
 			<li><a href="#" on-click="crumb">{{rootDir}}</a></li>
 			{{#breadcrumbs:i}}
-				<li><a href="#" on-click="crumb">{{name}}</a></li>
+				<li><a href="#" on-click="crumb">{{file.name}}</a></li>
 			{{/breadcrumbs}}
 			<li class="active">{{selected.name}}</li>
 		</ol>

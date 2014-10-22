@@ -388,9 +388,10 @@ window.fh = (function() {
 
 
     function propPath(fileurl) {
-        if (!fileurl) {
+        if (!fileurl || typeof fileurl !== "string") {
             return "";
         }
+
         var split = fileurl.split("/");
 
         if (split[0] === "") {
