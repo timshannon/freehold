@@ -45,10 +45,10 @@ $(document).ready(function() {
 
         for (var i = 0; i < files.length; i++) {
             if (!files[i].hasOwnProperty("size")) {
-                files[i].icon = "/explorer/v1/file/image/folder.png";
+                files[i].icon = "/explorer/v1/file/image/icons/folder.png";
                 files[i].url = "#";
             } else {
-                files[i].icon = "/explorer/v1/file/image/file.png";
+                files[i].icon = "/explorer/v1/file/image/icons/file.png";
             }
         }
 
