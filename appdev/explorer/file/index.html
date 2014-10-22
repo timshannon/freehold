@@ -40,7 +40,7 @@
 <!-- {{>fileTile}} -->
 	<a href="{{url}}" class="file-tile">
 		<img class="file-icon" src="{{icon}}">	
-		<span class="filename" title="{{name}}">{{name}}</span>
+		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
 	</a>
 
 <!-- {{/fileTile}} -->
