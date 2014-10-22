@@ -11,19 +11,25 @@
 
 .file-tile {
 	position: relative;
-	width: 84px;
-	height: 84px;
+	width: 128px;
+	height: 128px;
 	margin-top: 10px;
 	margin-right: 10px;
 	display: inline-block;
 }
 
+.file-tile:hover {
+	background-color: #f5f5f5;
+	border: 0px solid transparent;
+	border-radius: 4px;
+}
+
 .file-icon {
 	position: relative;
-	min-height: 64px;
-	min-width: 64px;
-	max-height: 64px;
-	max-width: 64px;
+	margin-left: auto;
+	margin-right: auto;
+	top: 10px;
+	display: block;
 }
 
 .filename {
@@ -43,3 +49,10 @@
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
+
+.filename:hover {
+	overflow: visible;
+	text-overflow: auto;
+	white-space: normal;
+}
+
