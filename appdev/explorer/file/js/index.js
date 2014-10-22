@@ -23,11 +23,16 @@ $(document).ready(function() {
             buildBreadcrumbs(event.keypath);
             getFiles(event.context.url);
         },
+        "crumb": function(event) {
+            rMain.set("fileKeypath", event.context.keypath);
+            buildBreadcrumbs(event.context.keypath);
+            getFiles(rMain.get("selected.url"));
+        },
     });
 
     //functions
-    function getFiles(folder) {
-        fh.properties.get(folder)
+    function getFiles(url) {
+        fh.properties.get(url)
             .done(function(result) {
                 rMain.set("files", result.data);
             })
@@ -41,7 +46,10 @@ $(document).ready(function() {
         var comp = rMain.findComponent("filetree");
         while (keypath.lastIndexOf(".files") > 0) {
             keypath = keypath.slice(0, keypath.lastIndexOf(".files"));
-            crumbs.push(comp.get(keypath));
+            crumbs.push({
+                keypath: keypath,
+                file: comp.get(keypath)
+            });
         }
         crumbs.reverse();
         rMain.set("breadcrumbs", crumbs);
