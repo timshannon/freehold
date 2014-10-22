@@ -15,7 +15,7 @@ $(document).ready(function() {
     });
 
     getFiles(rMain.get("rootDir"));
-
+    rMain.set("fileKeypath", "root");
 
     //events
     rMain.on({
@@ -34,11 +34,25 @@ $(document).ready(function() {
     function getFiles(url) {
         fh.properties.get(url)
             .done(function(result) {
-                rMain.set("files", result.data);
+                rMain.set("files", setFileType(result.data));
             })
             .fail(function(result) {
                 error(result.message);
             });
+    }
+
+    function setFileType(files) {
+
+        for (var i = 0; i < files.length; i++) {
+            if (!files[i].hasOwnProperty("size")) {
+                files[i].icon = "/explorer/v1/file/image/folder.png";
+                files[i].url = "#";
+            } else {
+                files[i].icon = "/explorer/v1/file/image/file.png";
+            }
+        }
+
+        return files;
     }
 
     function buildBreadcrumbs(keypath) {

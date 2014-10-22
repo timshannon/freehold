@@ -126,7 +126,7 @@ component.exports = {
 				}
 			},
 			"select": function(event) {
-				selectFile(event.keypath);
+				r.set("selectKeypath", event.keypath);
 			},
 
 		});
@@ -137,6 +137,7 @@ component.exports = {
 			},
 			"rootDir": function(newvalue, oldvalue, keypath) {
 				r.set("root.url", r.get("rootDir"));
+				r.set("root.name", r.get("rootDir"));
 				getFile(r.get("rootDir"), "root");
 			},
 		});
