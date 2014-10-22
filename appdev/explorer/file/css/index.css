@@ -7,3 +7,39 @@
 	padding-right: 25px;
 	padding-left: 25px;
 }
+
+
+.file-tile {
+	position: relative;
+	width: 84px;
+	height: 84px;
+	margin-top: 10px;
+	margin-right: 10px;
+	display: inline-block;
+}
+
+.file-icon {
+	position: relative;
+	min-height: 64px;
+	min-width: 64px;
+	max-height: 64px;
+	max-width: 64px;
+}
+
+.filename {
+	position: absolute;
+	bottom: 5px;
+	left: 0;
+	width: 100%;
+	display: inline;
+	padding: 0.2em 0.6em 0.3em;
+	font-weight: 700;
+	line-height: 1;
+	color: #FFF;
+	text-align: center;
+	vertical-align: baseline;
+	background-color:rgba(0, 0, 0, 0.5);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}

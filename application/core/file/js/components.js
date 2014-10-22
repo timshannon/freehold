@@ -911,7 +911,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_filetree, rvc_jsonviewer, r
             }
           },
           'select': function (event) {
-            selectFile(event.keypath);
+            r.set('selectKeypath', event.keypath);
           }
         });
         this.observe({
@@ -920,6 +920,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_filetree, rvc_jsonviewer, r
           },
           'rootDir': function (newvalue, oldvalue, keypath) {
             r.set('root.url', r.get('rootDir'));
+            r.set('root.name', r.get('rootDir'));
             getFile(r.get('rootDir'), 'root');
           }
         });

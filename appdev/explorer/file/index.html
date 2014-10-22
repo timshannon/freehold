@@ -25,18 +25,26 @@
 	</div>
 	<div id="fileList" class="col-sm-9">
 		<ol class="breadcrumb">
-			<li><a href="#" on-click="crumb">{{rootDir}}</a></li>
 			{{#breadcrumbs:i}}
 				<li><a href="#" on-click="crumb">{{file.name}}</a></li>
 			{{/breadcrumbs}}
 			<li class="active">{{selected.name}}</li>
 		</ol>
 		{{#files}}
-			{{name}}
-			{{size}}
+			{{>fileTile}}
 		{{/files}}
 	</div>	
 </div>
+
+
+<!-- {{>fileTile}} -->
+	<a href="{{url}}" class="thumbnail file-tile">
+		<img class="file-icon img-responsive" src="{{icon}}">	
+		<span class="filename">{{name}}</span>
+	</a>
+
+<!-- {{/fileTile}} -->
+
 </script>
 <!--end templates-->
 
