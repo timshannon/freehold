@@ -26,7 +26,7 @@
 	<div id="fileList" class="col-sm-9">
 		<ol class="breadcrumb">
 			{{#breadcrumbs:i}}
-				<li><a href="#" on-click="crumb">{{file.name}}</a></li>
+				<li><a href="#" on-click="selectKeypath">{{file.name}}</a></li>
 			{{/breadcrumbs}}
 			<li class="active">{{selected.name}}</li>
 		</ol>
@@ -38,12 +38,18 @@
 
 
 <!-- {{>fileTile}} -->
+{{#if .isFolder}}
+	<a href="#" on-click="selectKeypath" class="file-tile">
+		<img class="file-icon" src="{{icon}}">	
+		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
+	</a>
+{{else}}
 	<a href="{{url}}" class="file-tile">
 		<img class="file-icon" src="{{icon}}">	
 		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
 	</a>
-
-<!-- {{/fileTile}} -->
+{{/if}}
+		<!-- {{/fileTile}} -->
 
 </script>
 <!--end templates-->

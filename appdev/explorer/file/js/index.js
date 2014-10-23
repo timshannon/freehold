@@ -23,7 +23,7 @@ $(document).ready(function() {
             buildBreadcrumbs(event.keypath);
             getFiles(event.context.url);
         },
-        "crumb": function(event) {
+        "selectKeypath": function(event) {
             rMain.set("fileKeypath", event.context.keypath);
             buildBreadcrumbs(event.context.keypath);
             getFiles(rMain.get("selected.url"));
@@ -46,13 +46,24 @@ $(document).ready(function() {
         for (var i = 0; i < files.length; i++) {
             if (!files[i].hasOwnProperty("size")) {
                 files[i].icon = "/explorer/v1/file/image/icons/folder.png";
-                files[i].url = "#";
+                files[i].isFolder = true;
+				files[i].keypath = keypathFromURL(files[i].url);
             } else {
                 files[i].icon = "/explorer/v1/file/image/icons/file.png";
             }
         }
 
         return files;
+    }
+
+    function keypathFromURL(url) {
+        var folder = rMain.get("selected");
+
+        for (var i = 0; i < folder.files.length; i++) {
+            if (folder.files[i].url === url) {
+                return folder.files[i].keypath;
+            }
+        }
     }
 
     function buildBreadcrumbs(keypath) {
