@@ -949,6 +949,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_filetree, rvc_jsonviewer, r
               } else {
                 files[i].isFolder = true;
               }
+              files[i].keypath = keypath + '.files.' + i;
               i++;
             }
             r.set(keypath + '.files', files);
