@@ -1,0 +1,188 @@
+<div class="tree">
+	{{#root}}
+	<div class="{{#if .selected}}selected bg-info{{else}}child{{/if}}">
+		{{#glyphicon}}
+			<span class="glyphicon glyphicon-{{glyphicon}}"></span> 
+		{{/glyphicon}}
+		{{#icon}}
+			<img class="icon" src="{{icon}}">
+		{{/icon}}
+		{{#if canSelect}}
+			<a href="#"  on-click="select">{{name}}</a>
+		{{else}}
+			 {{name}}
+		{{/if}}
+	</div>  
+		{{>children}}
+	{{/root}}
+</div>
+
+<!-- {{>children}} -->
+<ul>
+  {{#.children}}
+		{{^.hide}}
+			{{>child}}
+		{{/.hide}}
+  {{/children}}
+</ul>
+<!-- {{/children}} -->
+
+<!-- {{>child}} -->
+<li>
+	<div class="{{#if .selected}}selected bg-info{{else}}child{{/if}}">
+		{{#tree.hasChildren(this)}}
+			<a href="#" on-click="open">
+				<span class="glyphicon glyphicon-{{#if .open}}minus{{else}}plus{{/if}}"></span>
+			</a>
+		{{/this}}
+		{{#.glyphicon}}
+			<span class="glyphicon glyphicon-{{.glyphicon}}"></span> 
+		{{/.glyphicon}}
+		{{#.icon}}
+			<img class="icon" src="{{icon}}">
+		{{/.icon}}
+		{{#if .canSelect}}
+			<a href="#"  on-click="select">{{.name}}</a>
+		{{else}}
+			{{#tree.hasChildren(this)}}
+				<a href="#"  on-click="open">{{.name}}</a>
+			{{/tree}}
+			{{^tree.hasChildren(this)}}
+				{{.name}}
+			{{/tree}}
+		{{/if}}
+	</div>
+	{{#tree.hasChildren(this)}} 
+		{{#if .open}}
+			{{>children}}
+		{{/if}}
+	{{/this}}
+</li>
+<!-- {{/child}} -->
+
+<style>
+	.selected {
+		border-color: #ccc;
+		border: 0px solid transparent;
+		border-radius: 4px;
+		padding: 5px;
+		font-weight:bold;
+	}
+
+	.child {
+		padding: 5px;
+	}
+
+	.child:hover {
+		background-color: #f5f5f5;
+		border: 0px solid transparent;
+		border-radius: 4px;
+		padding: 5px;
+	}
+
+	a:hover {
+		text-decoration: none;	
+		color: #333;
+	}
+
+	a {
+		color: #333;
+	}
+
+	.tree {
+		cursor: default;
+		overflow: auto;
+	}
+
+	ul {
+		list-style: none;
+	}
+
+	li {
+		margin-left: -22px;
+	}
+
+	.glyphicon {
+		color: #555;
+	}
+
+	.icon {
+		max-width: 14px;
+		max-height: 14px;	
+	}
+
+</style>
+
+<script>
+component.exports = {
+	data: {
+		tree: {
+			hasChildren: function(child) {
+				return (typeof child.children !== "undefined" && child.children.length >= 0);
+			},
+		},
+		root: {
+			name: "Sample data that should be overwritten",canSelect: true,
+			glyphicon: "folder-open",	
+			children: [
+				{name: "child1", glyphicon: "file", canSelect: true, children: []},
+				{name: "child2", glyphicon: "file", canSelect: true},
+				{name: "child3", glyphicon: "folder-closed", children: [
+					{name: "subchild1", glyphicon: "file", canSelect: true},
+					{name: "subchild2", glyphicon: "file", canSelect: true, hide: true},
+					{name: "subchild3", glyphicon: "file", canSelect: true},
+					{name: "child3", glyphicon: "folder-closed", children: [
+						{name: "subchild1", glyphicon: "file", canSelect: true},
+						{name: "subchild2", glyphicon: "file", canSelect: true},
+						{name: "subchild3", glyphicon: "file", canSelect: true},
+					]},
+				]},
+			]
+		},
+	},
+	init: function() {
+		var r = this;
+		
+		this.on({
+			"open": function(event) {
+				if (event.context.open) {
+					r.set(event.keypath+".open", false);
+					return;
+				}
+				r.set(event.keypath+".open", true);
+			},
+			"select": function(event) {
+				r.set("selectKeypath", event.keypath);
+			},
+		});
+
+		this.observe({
+			"selectKeypath": function(newvalue, oldvalue, keypath) {
+				select(newvalue);
+			},
+		});
+
+		function select(keypath) {
+			r.set("root.selected", false);
+			clearSelected(r.get("root.children"));
+			r.update("root");
+
+			r.set(keypath+".selected", true);
+			r.set("selected", r.get(keypath));
+		}
+
+		function clearSelected(children) {
+			if (!children) {
+				return;
+			}
+			for (var i = 0; i < children.length; i++) {
+				children[i].selected = false;	
+				if (children[i].hasOwnProperty("children")) {
+					clearSelected(children[i].children);
+				}
+			}
+		}
+	},
+
+};
+</script>
