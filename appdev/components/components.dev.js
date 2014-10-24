@@ -14,6 +14,10 @@ require(['rvc!permissions'], function(Permissions) {
     Ractive.components.permissions = Permissions;
 });
 
+require(['rvc!tree'], function(Tree) {
+    Ractive.components.tree = Tree;
+});
+
 require(['rvc!filetree'], function(Filetree) {
     Ractive.components.filetree = Filetree;
 });

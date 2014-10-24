@@ -1,5 +1,5 @@
 ;(function() {
-var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_filetree, rvc_jsonviewer, rvc_jquery_ui, rvc_datepicker, lib_jquery_ui_core, lib_jquery_ui_datepicker;
+var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jsonviewer, rvc_jquery_ui, rvc_datepicker, lib_jquery_ui_core, lib_jquery_ui_datepicker;
 (function (ractive, jquery) {
   rvc = {
     load: function (id) {
@@ -627,24 +627,29 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_filetree, rvc_jsonviewer, r
     }
     return Ractive.extend(__options__);
   }({}, ractive);
-  rvc_filetree = function (require, Ractive) {
+  rvc_tree = function (require, Ractive) {
     var __options__ = {
         template: {
           v: 1,
           p: {
-            folder: [{
+            children: [{
                 t: 7,
                 e: 'ul',
                 f: [{
                     t: 4,
-                    r: '.files',
+                    r: '.children',
                     f: [{
-                        t: 8,
-                        r: 'file'
+                        t: 4,
+                        r: '.hide',
+                        f: [{
+                            t: 8,
+                            r: 'child'
+                          }],
+                        n: 51
                       }]
                   }]
               }],
-            file: [{
+            child: [{
                 t: 7,
                 e: 'li',
                 f: [
@@ -662,7 +667,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_filetree, rvc_jsonviewer, r
                         {
                           t: 4,
                           n: 51,
-                          f: ['file'],
+                          f: ['child'],
                           r: '.selected'
                         }
                       ]
@@ -670,10 +675,14 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_filetree, rvc_jsonviewer, r
                     f: [
                       {
                         t: 4,
-                        n: 50,
-                        r: '.isFolder',
-                        f: [
-                          {
+                        x: {
+                          r: [
+                            'tree',
+                            '.'
+                          ],
+                          s: '_0.hasChildren(_1)'
+                        },
+                        f: [{
                             t: 7,
                             e: 'a',
                             a: { href: '#' },
@@ -683,7 +692,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_filetree, rvc_jsonviewer, r
                                 e: 'span',
                                 a: {
                                   'class': [
-                                    'icon glyphicon glyphicon-',
+                                    'glyphicon glyphicon-',
                                     {
                                       t: 4,
                                       n: 50,
@@ -699,32 +708,71 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_filetree, rvc_jsonviewer, r
                                   ]
                                 }
                               }]
-                          },
-                          ' ',
-                          {
+                          }]
+                      },
+                      ' ',
+                      {
+                        t: 4,
+                        r: '.glyphicon',
+                        f: [{
                             t: 7,
                             e: 'span',
-                            a: { 'class': 'icon glyphicon glyphicon-folder-close' }
-                          },
-                          ' ',
-                          {
-                            t: 4,
-                            n: 50,
-                            r: 'folderOnly',
+                            a: {
+                              'class': [
+                                'glyphicon glyphicon-',
+                                {
+                                  t: 2,
+                                  r: '.glyphicon'
+                                }
+                              ]
+                            }
+                          }]
+                      },
+                      ' ',
+                      {
+                        t: 4,
+                        r: '.icon',
+                        f: [{
+                            t: 7,
+                            e: 'img',
+                            a: {
+                              'class': 'icon',
+                              src: [{
+                                  t: 2,
+                                  r: 'icon'
+                                }]
+                            }
+                          }]
+                      },
+                      ' ',
+                      {
+                        t: 4,
+                        n: 50,
+                        r: '.canSelect',
+                        f: [{
+                            t: 7,
+                            e: 'a',
+                            a: { href: '#' },
+                            v: { click: 'select' },
                             f: [{
-                                t: 7,
-                                e: 'a',
-                                a: { href: '#' },
-                                v: { click: 'select' },
-                                f: [{
-                                    t: 2,
-                                    r: 'name'
-                                  }]
+                                t: 2,
+                                r: '.name'
                               }]
-                          },
+                          }]
+                      },
+                      {
+                        t: 4,
+                        n: 51,
+                        f: [
                           {
                             t: 4,
-                            n: 51,
+                            x: {
+                              r: [
+                                'tree',
+                                '.'
+                              ],
+                              s: '_0.hasChildren(_1)'
+                            },
                             f: [{
                                 t: 7,
                                 e: 'a',
@@ -732,71 +780,274 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_filetree, rvc_jsonviewer, r
                                 v: { click: 'open' },
                                 f: [{
                                     t: 2,
-                                    r: 'name'
+                                    r: '.name'
                                   }]
-                              }],
-                            r: 'folderOnly'
-                          }
-                        ]
-                      },
-                      {
-                        t: 4,
-                        n: 51,
-                        f: [
-                          {
-                            t: 7,
-                            e: 'span',
-                            a: { 'class': 'icon glyphicon glyphicon-file' }
+                              }]
                           },
                           ' ',
                           {
                             t: 4,
-                            n: 50,
-                            r: 'folderOnly',
+                            x: {
+                              r: [
+                                'tree',
+                                '.'
+                              ],
+                              s: '_0.hasChildren(_1)'
+                            },
                             f: [{
                                 t: 2,
-                                r: 'name'
-                              }]
-                          },
-                          {
-                            t: 4,
-                            n: 51,
-                            f: [{
-                                t: 7,
-                                e: 'a',
-                                a: { href: '#' },
-                                v: { click: 'select' },
-                                f: [{
-                                    t: 2,
-                                    r: 'name'
-                                  }]
+                                r: '.name'
                               }],
-                            r: 'folderOnly'
+                            n: 51
                           }
                         ],
-                        r: '.isFolder'
+                        r: '.canSelect'
                       }
                     ]
                   },
                   ' ',
                   {
                     t: 4,
-                    n: 50,
                     x: {
                       r: [
-                        '.isFolder',
-                        '.open'
+                        'tree',
+                        '.'
                       ],
-                      s: '_0&&_1'
+                      s: '_0.hasChildren(_1)'
                     },
                     f: [{
-                        t: 8,
-                        r: 'folder'
+                        t: 4,
+                        n: 50,
+                        r: '.open',
+                        f: [{
+                            t: 8,
+                            r: 'children'
+                          }]
                       }]
                   }
                 ]
               }]
           },
+          t: [{
+              t: 7,
+              e: 'div',
+              a: { 'class': 'tree' },
+              f: [{
+                  t: 4,
+                  r: 'root',
+                  f: [
+                    {
+                      t: 7,
+                      e: 'div',
+                      a: {
+                        'class': [
+                          {
+                            t: 4,
+                            n: 50,
+                            r: '.selected',
+                            f: ['selected bg-info']
+                          },
+                          {
+                            t: 4,
+                            n: 51,
+                            f: ['child'],
+                            r: '.selected'
+                          }
+                        ]
+                      },
+                      f: [
+                        {
+                          t: 4,
+                          r: 'glyphicon',
+                          f: [{
+                              t: 7,
+                              e: 'span',
+                              a: {
+                                'class': [
+                                  'glyphicon glyphicon-',
+                                  {
+                                    t: 2,
+                                    r: 'glyphicon'
+                                  }
+                                ]
+                              }
+                            }]
+                        },
+                        ' ',
+                        {
+                          t: 4,
+                          r: 'icon',
+                          f: [{
+                              t: 7,
+                              e: 'img',
+                              a: {
+                                'class': 'icon',
+                                src: [{
+                                    t: 2,
+                                    r: 'icon'
+                                  }]
+                              }
+                            }]
+                        },
+                        ' ',
+                        {
+                          t: 4,
+                          n: 50,
+                          r: 'canSelect',
+                          f: [{
+                              t: 7,
+                              e: 'a',
+                              a: { href: '#' },
+                              v: { click: 'select' },
+                              f: [{
+                                  t: 2,
+                                  r: 'name'
+                                }]
+                            }]
+                        },
+                        {
+                          t: 4,
+                          n: 51,
+                          f: [{
+                              t: 2,
+                              r: 'name'
+                            }],
+                          r: 'canSelect'
+                        }
+                      ]
+                    },
+                    ' ',
+                    {
+                      t: 8,
+                      r: 'children'
+                    }
+                  ]
+                }]
+            }]
+        },
+        css: '.selected {\nborder-color: #ccc;\nborder: 0px solid transparent;\nborder-radius: 4px;\npadding: 5px;\nfont-weight:bold;\n}\n.child {\npadding: 5px;\n}\n.child:hover {\nbackground-color: #f5f5f5;\nborder: 0px solid transparent;\nborder-radius: 4px;\npadding: 5px;\n}\na:hover {\ntext-decoration: none;\t\ncolor: #333;\n}\na {\ncolor: #333;\n}\n.tree {\ncursor: default;\noverflow: auto;\n}\nul {\nlist-style: none;\n}\nli {\nmargin-left: -22px;\n}\n.glyphicon {\ncolor: #555;\n}\n.icon {\nmax-width: 14px;\nmax-height: 14px;\t\n}\n'
+      }, component = {};
+    component.exports = {
+      data: {
+        tree: {
+          hasChildren: function (child) {
+            return typeof child.children !== 'undefined' && child.children.length >= 0;
+          }
+        },
+        root: {
+          name: 'Sample data that should be overwritten',
+          canSelect: true,
+          glyphicon: 'folder-open',
+          children: [
+            {
+              name: 'child1',
+              glyphicon: 'file',
+              canSelect: true,
+              children: []
+            },
+            {
+              name: 'child2',
+              glyphicon: 'file',
+              canSelect: true
+            },
+            {
+              name: 'child3',
+              glyphicon: 'folder-closed',
+              children: [
+                {
+                  name: 'subchild1',
+                  glyphicon: 'file',
+                  canSelect: true
+                },
+                {
+                  name: 'subchild2',
+                  glyphicon: 'file',
+                  canSelect: true,
+                  hide: true
+                },
+                {
+                  name: 'subchild3',
+                  glyphicon: 'file',
+                  canSelect: true
+                },
+                {
+                  name: 'child3',
+                  glyphicon: 'folder-closed',
+                  children: [
+                    {
+                      name: 'subchild1',
+                      glyphicon: 'file',
+                      canSelect: true
+                    },
+                    {
+                      name: 'subchild2',
+                      glyphicon: 'file',
+                      canSelect: true
+                    },
+                    {
+                      name: 'subchild3',
+                      glyphicon: 'file',
+                      canSelect: true
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      init: function () {
+        var r = this;
+        this.on({
+          'open': function (event) {
+            if (event.context.open) {
+              r.set(event.keypath + '.open', false);
+              return;
+            }
+            r.set(event.keypath + '.open', true);
+          },
+          'select': function (event) {
+            r.set('selectKeypath', event.keypath);
+          }
+        });
+        this.observe({
+          'selectKeypath': function (newvalue, oldvalue, keypath) {
+            select(newvalue);
+          }
+        });
+        function select(keypath) {
+          r.set('root.selected', false);
+          clearSelected(r.get('root.children'));
+          r.update('root');
+          r.set(keypath + '.selected', true);
+          r.set('selected', r.get(keypath));
+        }
+        function clearSelected(children) {
+          if (!children) {
+            return;
+          }
+          for (var i = 0; i < children.length; i++) {
+            children[i].selected = false;
+            if (children[i].hasOwnProperty('children')) {
+              clearSelected(children[i].children);
+            }
+          }
+        }
+      }
+    };
+    if (typeof component.exports === 'object') {
+      for (var __prop__ in component.exports) {
+        if (component.exports.hasOwnProperty(__prop__)) {
+          __options__[__prop__] = component.exports[__prop__];
+        }
+      }
+    }
+    return Ractive.extend(__options__);
+  }({}, ractive);
+  rvc_filetree = function (require, Ractive, _import_0) {
+    var __options__ = {
+        template: {
+          v: 1,
           t: [{
               t: 7,
               e: 'div',
@@ -820,153 +1071,84 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_filetree, rvc_jsonviewer, r
                 },
                 ' ',
                 {
-                  t: 4,
-                  r: 'root',
-                  f: [
-                    {
-                      t: 7,
-                      e: 'div',
-                      a: {
-                        'class': [
-                          {
-                            t: 4,
-                            n: 50,
-                            r: '.selected',
-                            f: ['selected bg-info']
-                          },
-                          {
-                            t: 4,
-                            n: 51,
-                            f: ['file'],
-                            r: '.selected'
-                          }
-                        ]
-                      },
-                      f: [
-                        {
-                          t: 7,
-                          e: 'span',
-                          a: { 'class': 'icon glyphicon glyphicon-folder-open' }
-                        },
-                        ' ',
-                        {
-                          t: 4,
-                          n: 50,
-                          r: 'folderOnly',
-                          f: [{
-                              t: 7,
-                              e: 'a',
-                              a: { href: '#' },
-                              v: { click: 'select' },
-                              f: [{
-                                  t: 2,
-                                  r: 'rootDir'
-                                }]
-                            }]
-                        },
-                        {
-                          t: 4,
-                          n: 51,
-                          f: [{
-                              t: 2,
-                              r: 'rootDir'
-                            }],
-                          r: 'folderOnly'
-                        }
-                      ]
-                    },
-                    ' ',
-                    {
-                      t: 8,
-                      r: 'folder'
-                    }
-                  ]
+                  t: 7,
+                  e: 'tree',
+                  a: {
+                    root: [{
+                        t: 2,
+                        r: 'root'
+                      }],
+                    selected: [{
+                        t: 2,
+                        r: 'selected'
+                      }]
+                  }
                 }
               ]
             }]
         },
-        css: '.selected {\nborder-color: #ccc;\nborder: 0px solid transparent;\nborder-radius: 4px;\npadding: 5px;\nfont-weight:bold;\n}\n.file {\npadding: 5px;\n}\n.file:hover {\nbackground-color: #f5f5f5;\nborder: 0px solid transparent;\nborder-radius: 4px;\n}\na:hover {\ntext-decoration: none;\t\ncolor: #333;\n}\na {\ncolor: #333;\n}\n.filetree {\ncursor: default;\noverflow: auto;\n}\nul {\nlist-style: none;\n}\nli {\nmargin-left: -22px;\n}\n.icon {\ncolor: #555;\n}\n'
+        css: '',
+        components: { 'tree': _import_0 }
       }, component = {};
     component.exports = {
       data: {
         rootDir: '/v1/file/',
-        selected: {},
-        root: { files: [] },
         folderOnly: false,
         filterRegex: ''
       },
       init: function () {
         var r = this;
+        this._super();
         this.on({
-          'open': function (event) {
+          'tree.open': function (event) {
             if (event.context.isFolder) {
-              if (event.context.open) {
-                r.set(event.keypath + '.open', false);
-                return;
-              }
-              r.set(event.keypath + '.open', true);
-              if (!event.context.files) {
+              if (event.context.children.length == 0) {
                 getFile(event.context.url, event.keypath);
               }
             }
-          },
-          'select': function (event) {
-            r.set('selectKeypath', event.keypath);
           }
         });
         this.observe({
-          'selectKeypath': function (newvalue, oldvalue, keypath) {
-            selectFile(newvalue);
-          },
           'rootDir': function (newvalue, oldvalue, keypath) {
-            r.set('root.url', r.get('rootDir'));
-            r.set('root.name', r.get('rootDir'));
+            r.set('root', {
+              url: r.get('rootDir'),
+              name: r.get('rootDir'),
+              glyphicon: 'folder-open'
+            });
             getFile(r.get('rootDir'), 'root');
           }
         });
-        function selectFile(keypath) {
-          r.set('root.selected', false);
-          clearSelected(r.get('root.files'));
-          r.update('root');
-          r.set(keypath + '.selected', true);
-          r.set('selected', r.get(keypath));
-        }
         function getFile(file, keypath) {
+          fh.properties.get(file).done(function (result) {
+            r.set(keypath + '.children', prepFiles(result.data));
+          }).fail(function (result) {
+            r.set('error', result.message);
+          });
+        }
+        function prepFiles(files) {
           var regEx;
           try {
             regEx = new RegExp(r.get('filterRegex'), 'i');
           } catch (e) {
             regEx = new RegExp('', 'i');
           }
-          fh.properties.get(file).done(function (result) {
-            var files = result.data;
-            for (var i = 0; i < files.length;) {
-              if (files[i].hasOwnProperty('size')) {
-                if (r.get('folderOnly') || !regEx.exec(files[i].name)) {
-                  files.splice(i, 1);
-                  continue;
-                }
-              } else {
-                files[i].isFolder = true;
-              }
-              files[i].keypath = keypath + '.files.' + i;
-              i++;
-            }
-            r.set(keypath + '.files', files);
-          }).fail(function (result) {
-            r.set('error', result.message);
-          });
-        }
-        function clearSelected(files) {
-          if (!files) {
-            return;
-          }
           for (var i = 0; i < files.length; i++) {
-            files[i].selected = false;
-            if (files[i].hasOwnProperty('files')) {
-              clearSelected(files[i].files);
+            if (files[i].hasOwnProperty('size')) {
+              if (r.get('folderOnly') || !regEx.exec(files[i].name)) {
+                files[i].hide = true;
+              }
+              files[i].canSelect = true;
+              files[i].glyphicon = 'file';
+            } else {
+              if (r.get('folderOnly')) {
+                files[i].canSelect = true;
+              }
+              files[i].isFolder = true;
+              files[i].glyphicon = 'folder-close';
+              files[i].children = [];
             }
           }
+          return files;
         }
       }
     };
@@ -978,7 +1160,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_filetree, rvc_jsonviewer, r
       }
     }
     return Ractive.extend(__options__);
-  }({}, ractive);
+  }({}, ractive, rvc_tree);
   rvc_jsonviewer = function (require, Ractive) {
     var __options__ = {
         template: {
@@ -3561,6 +3743,9 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_filetree, rvc_jsonviewer, r
   (function (Permissions) {
     Ractive.components.permissions = Permissions;
   }(rvc_permissions));
+  (function (Tree) {
+    Ractive.components.tree = Tree;
+  }(rvc_tree));
   (function (Filetree) {
     Ractive.components.filetree = Filetree;
   }(rvc_filetree));

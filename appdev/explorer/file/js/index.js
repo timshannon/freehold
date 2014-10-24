@@ -10,74 +10,81 @@ $(document).ready(function() {
         el: "#pageContainer",
         template: "#tMain",
         data: {
-            rootDir: "/v1/file",
+            root: {
+                url: "/v1/file",
+                name: "/v1/file"
+            }
         }
     });
 
-    getFiles(rMain.get("rootDir"));
-    rMain.set("fileKeypath", "root");
+    updateFolder(rMain.get("root.url"), "root");
 
     //events
     rMain.on({
         "selectFolder": function(event) {
-            buildBreadcrumbs(event.keypath);
-            getFiles(event.context.url);
+            updateFolder(event.context.url, event.keypath);
+            rMain.set("currentFolder", rMain.get(keypath));
+            //rMain.set("selectKeypath", keypath);
+
         },
-        "selectKeypath": function(event) {
-            rMain.set("fileKeypath", event.context.keypath);
-            buildBreadcrumbs(event.context.keypath);
-            getFiles(rMain.get("selected.url"));
-        },
+        "tree.open": function(event) {
+            updateFolder(event.context.url, event.keypath);
+        }
     });
 
     //functions
-    function getFiles(url) {
+    function updateFolder(url, keypath) {
         fh.properties.get(url)
             .done(function(result) {
-                rMain.set("files", setFileType(result.data));
+                mergeFolder(result.data, keypath + ".children");
             })
             .fail(function(result) {
                 error(result.message);
             });
     }
 
-    function setFileType(files) {
+    function mergeFolder(newFiles, keypath) {
+        var current = rMain.get(keypath);
+        var index = -1;
 
-        for (var i = 0; i < files.length; i++) {
-            if (!files[i].hasOwnProperty("size")) {
-                files[i].icon = "/explorer/v1/file/image/icons/folder.png";
-                files[i].isFolder = true;
-				files[i].keypath = keypathFromURL(files[i].url);
-            } else {
-                files[i].icon = "/explorer/v1/file/image/icons/file.png";
+		//merge the current data with the new data so that
+		// tree attributes like open and selected aren't lost
+        for (var i = 0; i < newFiles.length; i++) {
+            if (current) {
+                for (var j = 0; j < current.length; j++) {
+                    if (newFiles[i].url === current[j].url) {
+                        index = j;
+                        break;
+                    }
+                }
+                if (index >= 0) {
+                    mergeAttribute(current[index], newFiles[i]);
+                }
             }
+            newFiles[i] = setFileType(newFiles[i]);
         }
 
-        return files;
+		rMain.set(keypath, newFiles);
     }
 
-    function keypathFromURL(url) {
-        var folder = rMain.get("selected");
-
-        for (var i = 0; i < folder.files.length; i++) {
-            if (folder.files[i].url === url) {
-                return folder.files[i].keypath;
+    function mergeAttribute(current, newval) {
+        for (var a in current) {
+            if (!newval.hasOwnProperty(a)) {
+                newval[a] = current[a];
             }
         }
     }
 
-    function buildBreadcrumbs(keypath) {
-        var crumbs = [];
-        var comp = rMain.findComponent("filetree");
-        while (keypath.lastIndexOf(".files") > 0) {
-            keypath = keypath.slice(0, keypath.lastIndexOf(".files"));
-            crumbs.push({
-                keypath: keypath,
-                file: comp.get(keypath)
-            });
+
+    function setFileType(file) {
+        if (!file.hasOwnProperty("size")) {
+            file.icon = "/explorer/v1/file/image/icons/folder.png";
+            file.isFolder = true;
+        } else {
+            file.icon = "/explorer/v1/file/image/icons/file.png";
         }
-        crumbs.reverse();
-        rMain.set("breadcrumbs", crumbs);
+
+        return file;
     }
 
     function error(errMsg) {

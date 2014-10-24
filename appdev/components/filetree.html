@@ -1,198 +1,86 @@
+<link rel="ractive" href="tree.html" name="tree">
 <div class="filetree">
 	{{#error}}
 		<div class="alert alert-danger" role="alert">{{error}}</div>
 	{{/error}}
-	{{#root}}
-	<div class="{{#if .selected}}selected bg-info{{else}}file{{/if}}">
-		<span class="icon glyphicon glyphicon-folder-open"></span> 
-		{{#if folderOnly}}
-			<a href="#"  on-click="select">{{rootDir}}</a>
-		{{else}}
-			{{rootDir}}
-		{{/if}}
-	</div>  
-		{{>folder}}
-	{{/root}}
+	<tree root="{{root}}" selected="{{selected}}"></tree>
 </div>
 
-<!-- {{>folder}} -->
-<ul>
-  {{#.files}}
-		{{>file}}
-  {{/files}}
-</ul>
-<!-- {{/folder}} -->
-
-<!-- {{>file}} -->
-<li>
-	<div class="{{#if .selected}}selected bg-info{{else}}file{{/if}}">
-		{{#if .isFolder}}
-			<a href="#" on-click="open">
-				<span class="icon glyphicon glyphicon-{{#if .open}}minus{{else}}plus{{/if}}"></span>
-			</a>
-			<span class="icon glyphicon glyphicon-folder-close"></span> 
-			{{#if folderOnly}}
-				<a href="#"  on-click="select">{{name}}</a>
-			{{else}}
-				<a href="#"  on-click="open">{{name}}</a>
-			{{/if}}
-		{{else}}
-			<span class="icon glyphicon glyphicon-file"></span>
-			{{#if folderOnly}}
-				{{name}}
-			{{else}}
-				<a href="#"  on-click="select">{{name}}</a>
-			{{/if}}
-		{{/if}}
-	</div>
-	{{#if .isFolder && .open}}
-		{{>folder}}
-	{{/if}}
-</li>
-<!-- {{/file}} -->
-
 <style>
-	.selected {
-		border-color: #ccc;
-		border: 0px solid transparent;
-		border-radius: 4px;
-		padding: 5px;
-		font-weight:bold;
-	}
-
-	.file {
-		padding: 5px;
-	}
-
-	.file:hover {
-		background-color: #f5f5f5;
-		border: 0px solid transparent;
-		border-radius: 4px;
-	}
-
-	a:hover {
-		text-decoration: none;	
-		color: #333;
-	}
-
-	a {
-		color: #333;
-	}
-
-	.filetree {
-		cursor: default;
-		overflow: auto;
-	}
-
-	ul {
-		list-style: none;
-	}
-
-	li {
-		margin-left: -22px;
-	}
-
-	.icon {
-		color: #555;
-	}
-
 </style>
 
 <script>
 component.exports = {
 	data: {
 		rootDir: "/v1/file/",
-		selected: {},
-		root: {
-			files: [],
-		},
 		folderOnly: false,
 		filterRegex: ""
 	},
 	init: function() {
 		var r = this;
 		
+		this._super();
+		
 		this.on({
-			"open": function(event) {
+			"tree.open": function(event) {
 				if (event.context.isFolder) {
-					if (event.context.open) {
-						r.set(event.keypath+".open", false);
-						return;
-					}
-					r.set(event.keypath+".open", true);
-					if (!event.context.files) {
+					if (event.context.children.length == 0) {
 						getFile(event.context.url, event.keypath);
 					}
 				}
 			},
-			"select": function(event) {
-				r.set("selectKeypath", event.keypath);
-			},
-
 		});
 
 		this.observe({
-			"selectKeypath": function(newvalue, oldvalue, keypath) {
-				selectFile(newvalue);
-			},
 			"rootDir": function(newvalue, oldvalue, keypath) {
-				r.set("root.url", r.get("rootDir"));
-				r.set("root.name", r.get("rootDir"));
+				r.set("root", {
+					url: r.get("rootDir"),
+					name: r.get("rootDir"),
+					glyphicon: "folder-open",
+				});
+
 				getFile(r.get("rootDir"), "root");
 			},
 		});
 
-		function selectFile(keypath) {
-			r.set("root.selected", false);
-			clearSelected(r.get("root.files"));
-			r.update("root");
-
-			r.set(keypath+".selected", true);
-			r.set("selected", r.get(keypath));
-		}
-
 		function getFile(file, keypath) {
-			var regEx;
-			try {
-					regEx = new RegExp(r.get("filterRegex"), "i");
-			} catch (e) {
-					regEx = new RegExp("", "i");
-			}
 			fh.properties.get(file)
 				.done(function(result) {
-					var files = result.data;
-
-					for (var i = 0; i < files.length;) {
-						if (files[i].hasOwnProperty("size")) {
-							if (r.get("folderOnly") || (!regEx.exec(files[i].name))) {
-								files.splice(i,1);
-								continue;
-							}
-						} else {
-							files[i].isFolder = true;
-						}
-						files[i].keypath = keypath+".files."+i
-						i++;
-					}
-
-					r.set(keypath+".files", files);	
+					r.set(keypath+".children", prepFiles(result.data));
 				})
 				.fail(function(result) {
 					r.set("error", result.message);
 				});
 		}
 
-		function clearSelected(files) {
-			if (!files) {
-				return;
+		function prepFiles(files) {
+			var regEx;
+			try {
+					regEx = new RegExp(r.get("filterRegex"), "i");
+			} catch (e) {
+					regEx = new RegExp("", "i");
 			}
-			for (var i = 0; i < files.length; i++) {
-				files[i].selected = false;	
-				if (files[i].hasOwnProperty("files")) {
-					clearSelected(files[i].files);
+
+			for (var i = 0; i < files.length;i++) {
+				if (files[i].hasOwnProperty("size")) {
+					if (r.get("folderOnly") || (!regEx.exec(files[i].name))) {
+						files[i].hide = true;
+					}
+					files[i].canSelect = true;
+					files[i].glyphicon = "file";
+				} else {
+					if (r.get("folderOnly")) {
+						files[i].canSelect = true;
+					}
+					files[i].isFolder = true;
+					files[i].glyphicon = "folder-close";
+					files[i].children = [];
 				}
 			}
+
+			return files;
 		}
+
 	},
 
 };
