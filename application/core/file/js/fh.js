@@ -82,6 +82,9 @@ window.fh = (function() {
                     contentType: false
                 });
             },
+            newFolder: function(fileurl) {
+                return stdAjax("POST", fileurl);
+            },
             update: function(fileurl, formData) {
                 return stdAjax("PUT", fileurl, {
                     data: formData,
@@ -296,7 +299,7 @@ window.fh = (function() {
                     contentType: false
                 });
             },
-                    },
+        },
         Datastore: function(dsPath) {
             this.path = dsPath;
             this.get = function(key) {

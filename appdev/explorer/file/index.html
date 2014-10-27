@@ -17,34 +17,46 @@
 </script>
 
 <script id="tMain" type="text/ractive">
+<!--<div class="row">
+	<div class="col-sm-3">
+		<button type="button" class="btn btn-sm btn-success" on-click="newFolder">
+			<span class="glyphicon glyphicon-plus"></span> New Folder
+		</button>
+	</div>
+	<div class="col-sm-9">
+	</div>
+</div>-->
 <div class="row">
 	<div id="sidebar" class="col-sm-3">
-		<tree root="{{root}}" on-select="selectFolder" selectKeypath="{{selectKeypath}}">
+		<tree root="{{root}}" on-select="treeSelect" selectKeypath="{{selectKeypath}}">
 		</tree>
 	</div>
 	<div id="fileList" class="col-sm-9">
 		<ol class="breadcrumb">
 			{{#breadcrumbs:i}}
-				<li><a href="#" on-click="selectKeypath">{{file.name}}</a></li>
+				<li><a href="#" on-click="crumbSelect">{{file.name}}</a></li>
 			{{/breadcrumbs}}
 			<li class="active">{{currentFolder.name}}</li>
+			<a href="#" on-click="star" title="Bookmark Folder">
+				<span class="pull-right glyphicon glyphicon-star star {{#starred}}starred{{/starred}}"></span>
+			</a>	
 		</ol>
-		{{#currentFolder.files:i}}
+		{{#currentFolder.children:i}}
 			{{>fileTile}}
-		{{/currentFolder.files}}
+		{{/currentFolder.children}}
 	</div>	
 </div>
 
 
 <!-- {{>fileTile}} -->
 {{#if .isFolder}}
-	<a href="#" on-click="selectKeypath" class="file-tile">
-		<img class="file-icon" src="{{icon}}">	
+	<a href="#" on-click="explorerSelect" class="file-tile">
+		<img class="file-icon" src="{{explorerIcon}}">	
 		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
 	</a>
 {{else}}
 	<a href="{{url}}" class="file-tile">
-		<img class="file-icon" src="{{icon}}">
+		<img class="file-icon" src="{{explorerIcon}}">
 		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
 	</a>
 {{/if}}
