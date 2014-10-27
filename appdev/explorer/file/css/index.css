@@ -59,3 +59,12 @@
 	white-space: normal;
 }
 
+.star {
+	font-size: 1.3em;
+	margin-right: 5px;
+}
+
+
+.starred {
+	color: gold;
+}
