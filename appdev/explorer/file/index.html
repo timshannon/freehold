@@ -17,21 +17,31 @@
 </script>
 
 <script id="tMain" type="text/ractive">
-<!--<div class="row">
-	<div class="col-sm-3">
-		<button type="button" class="btn btn-sm btn-success" on-click="newFolder">
-			<span class="glyphicon glyphicon-plus"></span> New Folder
-		</button>
+<modal id="properties" title="{{currentFile.name}}" >
+</modal>
+
+<modal id="newFolder" title="New Folder" customFooter="true">
+	<form class="form-horizontal" role="form" on-submit="newFolderSave">
+		<div class="form-group">
+			<label for="folderName" class="col-sm-3 control-label">Folder</label>
+			<div class="col-sm-9">
+				<input type="text" class="form-control" id="folderName" placeholder="Enter a folder name" value="{{newFolderName}}">
+			</div>
+		</div>
+	</form>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+		<button type="button" class="btn btn-primary" on-click="newFolderSave">Save</button>
 	</div>
-	<div class="col-sm-9">
-	</div>
-</div>-->
+</modal>
 <div class="row">
 	<div id="sidebar" class="col-sm-3">
 		<ul class="nav nav-tabs" role="tablist">
-			<li class="active"><a href="#tree" role="tab" data-toggle="tab">File Tree</a></li>
+			<li class="active"><a href="#tree" role="tab" data-toggle="tab">Folders</a></li>
 			<li><a href="#starred" role="tab" data-toggle="tab">
 			<span class="glyphicon glyphicon-star"></span></a></li>
+			<a href="#" on-click="newFolder" class="btn btn-sm btn-success pull-right">
+				<span class="glyphicon glyphicon-plus"></span> New Folder</a>
 		</ul>
 		<div class="tab-content">
 			<div class="tab-pane active" id="tree">
@@ -39,11 +49,11 @@
 				</tree>
 			</div>
 			<div class="tab-pane" id="starred">
-				<ul>
+				<div class="bookmarks">
 				{{#starred:i}}
-					<li><a href="/explorer/?file={{i}}">{{.}}</a></li>
+					<a class="bookmark" href="/explorer/?file={{i}}" title="{{i}}"><span class="glyphicon glyphicon-star"></span>  {{.}}</a>
 				{{/starred}}
-				</ul>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -55,7 +65,7 @@
 			{{#currentFolder}}
 			<li class="active">{{name}}</li>
 			<a href="#" on-click="star" title="Bookmark Folder">
-				<span class="pull-right glyphicon glyphicon-star star {{#starred}}starred{{/starred}}"></span>
+				<span class="pull-right glyphicon glyphicon-star star {{#.starred}}starred{{/.starred}}"></span>
 			</a>	
 			{{/currentFolder}}
 		</ol>
@@ -67,6 +77,7 @@
 
 
 <!-- {{>fileTile}} -->
+<span>
 {{#if .isFolder}}
 	<a href="#" on-click="explorerSelect" class="file-tile">
 		<img class="file-icon" src="{{explorerIcon}}">	
@@ -78,6 +89,7 @@
 		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
 	</a>
 {{/if}}
+</span>
 <!-- {{/fileTile}} -->
 
 </script>

@@ -25,7 +25,6 @@ $(document).ready(function() {
 
     getSettings();
 
-
     if (file) {
         openUrl(file);
     } else {
@@ -48,13 +47,32 @@ $(document).ready(function() {
         },
         "star": function(event) {
             var starred = rMain.get("starred");
-            if (starred[event.context.url]) {
-                delete starred[event.context.url];
+            var url = encodeURI(event.context.url);
+            if (starred[url]) {
+                delete starred[url];
+                rMain.set("currentFolder.starred", false);
             } else {
-                starred[event.context.url] = event.context.name;
+                starred[url] = event.context.name;
+                rMain.set("currentFolder.starred", true);
             }
             rMain.set("starred", starred);
             dsSettings.put("starred", starred)
+                .fail(function(result) {
+                    error(result.message);
+                });
+        },
+        "newFolder": function(event) {
+            rMain.set("newFolderName", null);
+            $("#newFolder").modal();
+        },
+        "newFolderSave": function(event) {
+            $("#newFolder").modal("hide");
+            event.original.preventDefault();
+            var newUrl = fh.util.urlJoin(event.context.currentFolder.url, event.context.newFolderName);
+            fh.file.newFolder(newUrl)
+                .done(function() {
+                    updateFolder(event.context.currentFolder.url, event.context.currentKeypath);
+                })
                 .fail(function(result) {
                     error(result.message);
                 });
@@ -73,8 +91,6 @@ $(document).ready(function() {
 
         var starred = rMain.get("starred") || {};
 
-		console.log(starred.hasOwnProperty(folder.url));
-
         if (starred.hasOwnProperty(folder.url)) {
             rMain.set("currentFolder.starred", true);
         }
@@ -92,6 +108,7 @@ $(document).ready(function() {
 
 
     function openUrl(url) {
+		url = decodeURI(url);
         if (url.lastIndexOf("/v1/datastore") !== -1) {
             rMain.set("root.url", "/v1/datastore");
             rMain.set("root.name", "/v1/datastore");
@@ -222,7 +239,11 @@ $(document).ready(function() {
             .done(function() {
                 dsSettings.get("starred")
                     .done(function(result) {
+                        var starred = result.data;
                         rMain.set("starred", result.data);
+                        if (starred[rMain.get("currentFolder.url")]) {
+                            rMain.set("currentFolder.starred", true);
+                        }
                     })
                     .fail(function(result) {
                         if (result.status == "error") {
