@@ -56,9 +56,11 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = r.ParseMultipartForm(setting.Int64("MaxUploadMemory"))
-	if errHandled(err, w, auth) {
-		return
+	if r.ContentLength != 0 {
+		err = r.ParseMultipartForm(setting.Int64("MaxUploadMemory"))
+		if errHandled(err, w, auth) {
+			return
+		}
 	}
 
 	if !validFileUrl(r.URL.Path) {
@@ -70,8 +72,19 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 	if errHandled(err, w, auth) {
 		return
 	}
-	mp := r.MultipartForm
-	uploadFile(w, r.URL.Path, auth.User, mp)
+
+	if r.ContentLength != 0 {
+		mp := r.MultipartForm
+		uploadFile(w, r.URL.Path, auth.User, mp)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	respondJsend(w, &JSend{
+		Status: statusSuccess,
+		Data:   r.URL.Path,
+	})
+
 }
 
 func uploadFile(w http.ResponseWriter, resourcePath string, owner *user.User, mp *multipart.Form) {

@@ -1,5 +1,5 @@
-#sidebar {
-	border-right: 1px solid #555;
+#fileList {
+	border-left: 1px solid #555;
 }
 
 #pageContainer {
@@ -69,3 +69,23 @@
 .starred {
 	color: gold;
 }
+
+#starred, #tree {
+	margin-top: 10px;
+}
+
+a.bookmark {
+	padding: 5px;
+	color: #333;
+	display: block;
+}
+
+a.bookmark:hover {
+	background-color: #f5f5f5;
+	border: 0px solid transparent;
+	border-radius: 4px;
+	padding: 5px;
+	text-decoration: none;	
+	color: #333;
+}
+

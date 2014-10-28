@@ -374,6 +374,13 @@ window.fh = (function() {
             });
         },
         util: {
+            urlJoin: function() {
+                var j = [].slice.call(arguments, 0).join("/");
+                return j.replace(/[\/]+/g, '/')
+                    .replace(/\/\?/g, '?')
+                    .replace(/\/\#/g, '#')
+                    .replace(/\:\//g, '://');
+            },
             urlParm: function(sParam) {
                 var sPageURL = window.location.search.substring(1);
                 var sURLVariables = sPageURL.split('&');
