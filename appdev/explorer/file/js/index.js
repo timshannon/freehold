@@ -45,7 +45,20 @@ $(document).ready(function() {
         },
         "tree.open": function(event) {
             updateFolder(event.context.url, event.keypath);
-        }
+        },
+        "star": function(event) {
+            var starred = rMain.get("starred");
+            if (starred[event.context.url]) {
+                delete starred[event.context.url];
+            } else {
+                starred[event.context.url] = event.context.name;
+            }
+            rMain.set("starred", starred);
+            dsSettings.put("starred", starred)
+                .fail(function(result) {
+                    error(result.message);
+                });
+        },
     });
 
     //functions
@@ -57,6 +70,14 @@ $(document).ready(function() {
         updateFolder(folder.url, keypath);
         buildBreadcrumbs(keypath);
         rMain.set("selectKeypath", keypath);
+
+        var starred = rMain.get("starred") || {};
+
+		console.log(starred.hasOwnProperty(folder.url));
+
+        if (starred.hasOwnProperty(folder.url)) {
+            rMain.set("currentFolder.starred", true);
+        }
     }
 
     function updateFolder(url, keypath) {
@@ -71,7 +92,13 @@ $(document).ready(function() {
 
 
     function openUrl(url) {
-        if (url.lastIndexOf("/v1/datastore/") === -1 && url.lastIndexOf("/v1/file/") === -1) {
+        if (url.lastIndexOf("/v1/datastore") !== -1) {
+            rMain.set("root.url", "/v1/datastore");
+            rMain.set("root.name", "/v1/datastore");
+        } else if (url.lastIndexOf("/v1/file") !== -1) {
+            rMain.set("root.url", "/v1/file");
+            rMain.set("root.name", "/v1/file");
+        } else {
             error("Invalid URL parameter specified.  File must start wtih /v1/datastore/ or /v1/file/");
             return;
         }
@@ -85,8 +112,8 @@ $(document).ready(function() {
     }
 
 
-	//updateFilesTo recursively updates the filetree to the destination url
-	// used for url parms and bookmarks
+    //updateFilesTo recursively updates the filetree to the destination url
+    // used for url parms and bookmarks
     function updateFilesTo(fromKeypath, to) {
         var newUrl = rMain.get(fromKeypath + ".url");
 
@@ -195,21 +222,16 @@ $(document).ready(function() {
             .done(function() {
                 dsSettings.get("starred")
                     .done(function(result) {
-                        starred = result.data;
-                        //TODO
+                        rMain.set("starred", result.data);
                     })
                     .fail(function(result) {
                         if (result.status == "error") {
                             error(result.message);
                         } else {
                             dsSettings.put("starred", {})
-                                .done(function() {
-                                    //TODO
-                                })
                                 .fail(function(result) {
                                     error(result.message);
                                 });
-
                         }
                     });
             })
@@ -217,15 +239,11 @@ $(document).ready(function() {
                 // if not exists, create it
                 if (result.message == "Resource not found") {
                     fh.datastore.new(usrSettingsDS)
-                        .done(function() {
-                            //TODO
-                        })
                         .fail(function(result) {
                             error(result.message);
                         });
                 }
             });
-
     }
 
 }); //end ready
