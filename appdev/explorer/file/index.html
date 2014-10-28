@@ -28,18 +28,36 @@
 </div>-->
 <div class="row">
 	<div id="sidebar" class="col-sm-3">
-		<tree root="{{root}}" on-select="treeSelect" selectKeypath="{{selectKeypath}}">
-		</tree>
+		<ul class="nav nav-tabs" role="tablist">
+			<li class="active"><a href="#tree" role="tab" data-toggle="tab">File Tree</a></li>
+			<li><a href="#starred" role="tab" data-toggle="tab">
+			<span class="glyphicon glyphicon-star"></span></a></li>
+		</ul>
+		<div class="tab-content">
+			<div class="tab-pane active" id="tree">
+				<tree root="{{root}}" on-select="treeSelect" selectKeypath="{{selectKeypath}}">
+				</tree>
+			</div>
+			<div class="tab-pane" id="starred">
+				<ul>
+				{{#starred:i}}
+					<li><a href="/explorer/?file={{i}}">{{.}}</a></li>
+				{{/starred}}
+				</ul>
+			</div>
+		</div>
 	</div>
 	<div id="fileList" class="col-sm-9">
 		<ol class="breadcrumb">
 			{{#breadcrumbs:i}}
 				<li><a href="#" on-click="crumbSelect">{{file.name}}</a></li>
 			{{/breadcrumbs}}
-			<li class="active">{{currentFolder.name}}</li>
+			{{#currentFolder}}
+			<li class="active">{{name}}</li>
 			<a href="#" on-click="star" title="Bookmark Folder">
 				<span class="pull-right glyphicon glyphicon-star star {{#starred}}starred{{/starred}}"></span>
 			</a>	
+			{{/currentFolder}}
 		</ol>
 		{{#currentFolder.children:i}}
 			{{>fileTile}}

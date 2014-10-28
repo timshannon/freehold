@@ -48,6 +48,7 @@
 	text-align: center;
 	vertical-align: baseline;
 	background-color:rgba(0, 0, 0, 0.5);
+
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
