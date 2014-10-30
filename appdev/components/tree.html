@@ -1,9 +1,9 @@
 <div class="tree">
 	{{#root}}
 	<div class="{{#if .selected}}selected bg-info{{else}}child{{/if}}">
-		{{#glyphicon}}
-			<span class="glyphicon glyphicon-{{glyphicon}}"></span> 
-		{{/glyphicon}}
+		{{#iconClass}}
+			<span class="icon {{iconClass}}"></span> 
+		{{/iconClass}}
 		{{#icon}}
 			<img class="icon" src="{{icon}}">
 		{{/icon}}
@@ -35,9 +35,9 @@
 				<span class="glyphicon glyphicon-{{#if .open}}minus{{else}}plus{{/if}}"></span>
 			</a>
 		{{/this}}
-		{{#.glyphicon}}
-			<span class="glyphicon glyphicon-{{.glyphicon}}"></span> 
-		{{/.glyphicon}}
+		{{#.iconClass}}
+			<span class="icon {{.iconClass}}"></span> 
+		{{/iconClass}}
 		{{#.icon}}
 			<img class="icon" src="{{icon}}">
 		{{/.icon}}
@@ -102,7 +102,7 @@
 		margin-left: -22px;
 	}
 
-	.glyphicon {
+	.icon {
 		color: #555;
 	}
 
@@ -123,18 +123,18 @@ component.exports = {
 		},
 		root: {
 			name: "Sample data that should be overwritten",canSelect: true,
-			glyphicon: "folder-open",	
+			iconClass: "folder-open",	
 			children: [
-				{name: "child1", glyphicon: "file", canSelect: true, children: []},
-				{name: "child2", glyphicon: "file", canSelect: true},
-				{name: "child3", glyphicon: "folder-closed", children: [
-					{name: "subchild1", glyphicon: "file", canSelect: true},
-					{name: "subchild2", glyphicon: "file", canSelect: true, hide: true},
-					{name: "subchild3", glyphicon: "file", canSelect: true},
-					{name: "child3", glyphicon: "folder-closed", children: [
-						{name: "subchild1", glyphicon: "file", canSelect: true},
-						{name: "subchild2", glyphicon: "file", canSelect: true},
-						{name: "subchild3", glyphicon: "file", canSelect: true},
+				{name: "child1", iconClass: "glyphicon glyphicon-file", canSelect: true, children: []},
+				{name: "child2", iconClass: "glyphicon glyphicon-file", canSelect: true},
+				{name: "child3", iconClass: "glyphicon glyphicon-folder-closed", children: [
+					{name: "subchild1", iconClass: "glyphicon glyphicon-file", canSelect: true},
+					{name: "subchild2", iconClass: "glyphicon glyphicon-file", canSelect: true, hide: true},
+					{name: "subchild3", iconClass: "glyphicon glyphicon-file", canSelect: true},
+					{name: "child3", iconClass: "glyphicon glyphicon-folder-closed", children: [
+						{name: "subchild1", iconClass: "glyphicon glyphicon-file", canSelect: true},
+						{name: "subchild2", iconClass: "glyphicon glyphicon-file", canSelect: true},
+						{name: "subchild3", iconClass: "glyphicon glyphicon-file", canSelect: true},
 					]},
 				]},
 			]

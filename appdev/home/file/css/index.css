@@ -36,9 +36,14 @@
 	margin-right: 5px;
 }
 
+.star:hover {
+	font-size: 1.35em;
+}
+
 
 .starred {
 	color: gold;
+	font-size: 1.35em;
 }
 
 @media (min-width: 768px) {
