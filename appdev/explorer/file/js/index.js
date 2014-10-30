@@ -1,6 +1,5 @@
 $(document).ready(function() {
     var timer;
-    var file = fh.util.urlParm("file");
 
     var usrSettingsDS = "/v1/datastore/" + fh.auth.user + "/explorerSettings.ds";
     var dsSettings = new fh.Datastore(usrSettingsDS);
@@ -14,22 +13,16 @@ $(document).ready(function() {
         el: "#pageContainer",
         template: "#tMain",
         data: {
-            root: {
-                url: "/v1/file",
-                name: "/v1/file",
-                canSelect: true,
-                glyphicon: "folder-open"
+            sidebar: {
+                view: "files",
             }
         }
     });
 
     getSettings();
+    getApps();
+    setRoot();
 
-    if (file) {
-        openUrl(file);
-    } else {
-        selectFolder("root");
-    }
 
     //events
     rMain.on({
@@ -43,11 +36,12 @@ $(document).ready(function() {
             selectFolder(event.context.keypath);
         },
         "tree.open": function(event) {
+            rMain.set(event.keypath, setFileType(event.context));
             updateFolder(event.context.url, event.keypath);
         },
         "star": function(event) {
             var starred = rMain.get("starred");
-            var url = encodeURI(event.context.url);
+            var url = event.context.url;
             if (starred[url]) {
                 delete starred[url];
                 rMain.set("currentFolder.starred", false);
@@ -60,6 +54,9 @@ $(document).ready(function() {
                 .fail(function(result) {
                     error(result.message);
                 });
+        },
+        "bookmarkSelect": function(event) {
+            openUrl(event.index.i);
         },
         "newFolder": function(event) {
             rMain.set("newFolderName", null);
@@ -77,6 +74,35 @@ $(document).ready(function() {
                     error(result.message);
                 });
         },
+        "removeBookmark": function(event) {
+            var starred = rMain.get("starred");
+            var url = event.index.i;
+            delete starred[url];
+            rMain.set("currentFolder.starred", false);
+            rMain.set("starred", starred);
+            dsSettings.put("starred", starred)
+                .fail(function(result) {
+                    error(result.message);
+                });
+
+        },
+        "showFiles": function(event) {
+            rMain.set("sidebar.view", "files");
+            setRoot(rMain.get("root.app"));
+        },
+        "showDS": function(event) {
+            rMain.set("sidebar.view", "DS");
+            setRoot(rMain.get("root.app"), true);
+        },
+        "showStarred": function(event) {
+            rMain.set("sidebar.view", "starred");
+        },
+        "selectApp": function(event) {
+            setRoot(event.index.i, rMain.get("sidebar.view") === "DS");
+        },
+        "selectBase": function(event) {
+            setRoot("", rMain.get("sidebar.view") === "DS");
+        }
     });
 
     //functions
@@ -85,6 +111,7 @@ $(document).ready(function() {
         rMain.set("currentFolder", folder);
         rMain.set("currentKeypath", keypath);
         rMain.set(keypath + ".open", true);
+        folder.iconClass = "fa fa-folder-open";
         updateFolder(folder.url, keypath);
         buildBreadcrumbs(keypath);
         rMain.set("selectKeypath", keypath);
@@ -106,18 +133,34 @@ $(document).ready(function() {
             });
     }
 
+    function setRoot(app, datastore) {
+        var root = datastore ? "/v1/datastore" : "/v1/file";
+
+        rMain.set("root", {
+            app: app,
+            url: fh.util.urlJoin(app, root),
+            name: root,
+            canSelect: true,
+            iconClass: "fa fa-folder-open",
+        });
+
+        selectFolder("root");
+    }
 
     function openUrl(url) {
-		url = decodeURI(url);
-        if (url.lastIndexOf("/v1/datastore") !== -1) {
-            rMain.set("root.url", "/v1/datastore");
-            rMain.set("root.name", "/v1/datastore");
-        } else if (url.lastIndexOf("/v1/file") !== -1) {
-            rMain.set("root.url", "/v1/file");
-            rMain.set("root.name", "/v1/file");
+        var urlParts = url.split("/");
+        var app;
+        var rootPlace = 2;
+
+        if (urlParts[1] !== "v1") {
+            app = urlParts[1];
+            rootPlace = 3;
+        }
+
+        if (urlParts[rootPlace] === "datastore") {
+            setRoot(app, true);
         } else {
-            error("Invalid URL parameter specified.  File must start wtih /v1/datastore/ or /v1/file/");
-            return;
+            setRoot(app, false);
         }
 
         if (url.lastIndexOf("/") === url.length - 1) {
@@ -201,15 +244,19 @@ $(document).ready(function() {
 
     function setFileType(file) {
         if (!file.hasOwnProperty("size")) {
-            file.explorerIcon = "/explorer/v1/file/image/icons/folder.png";
+            file.explorerIcon = "folder";
             file.isFolder = true;
             file.canSelect = true;
-            file.glyphicon = "folder-close";
+            if (file.open) {
+                file.iconClass = "fa fa-folder-open";
+            } else {
+                file.iconClass = "fa fa-folder";
+            }
             if (!file.hasOwnProperty("children")) {
                 file.children = [];
             }
         } else {
-            file.explorerIcon = "/explorer/v1/file/image/icons/file.png";
+            file.explorerIcon = "file-o";
             file.hide = true;
         }
 
@@ -264,6 +311,16 @@ $(document).ready(function() {
                             error(result.message);
                         });
                 }
+            });
+    }
+
+    function getApps() {
+        fh.application.installed()
+            .done(function(result) {
+                rMain.set("apps", result.data);
+            })
+            .fail(function(result) {
+                error(result.message);
             });
     }
 

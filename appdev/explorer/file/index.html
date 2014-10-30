@@ -4,6 +4,7 @@
     <title>freehold - Explorer</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 		<link href="/core/v1/file/css/freehold.css" rel="stylesheet" media="screen"> 
+		<link href="/core/v1/file/css/font-awesome.min.css" rel="stylesheet" media="screen"> 
 		<link href="/explorer/v1/file/css/index.css" rel="stylesheet" media="screen"> 
 	</head>
 <body>
@@ -18,6 +19,7 @@
 
 <script id="tMain" type="text/ractive">
 <modal id="properties" title="{{currentFile.name}}" >
+	TODO
 </modal>
 
 <modal id="newFolder" title="New Folder" customFooter="true">
@@ -35,28 +37,63 @@
 	</div>
 </modal>
 <div class="row">
+
 	<div id="sidebar" class="col-sm-3">
-		<ul class="nav nav-tabs" role="tablist">
-			<li class="active"><a href="#tree" role="tab" data-toggle="tab">Folders</a></li>
-			<li><a href="#starred" role="tab" data-toggle="tab">
-			<span class="glyphicon glyphicon-star"></span></a></li>
-			<a href="#" on-click="newFolder" class="btn btn-sm btn-success pull-right">
-				<span class="glyphicon glyphicon-plus"></span> New Folder</a>
-		</ul>
-		<div class="tab-content">
-			<div class="tab-pane active" id="tree">
-				<tree root="{{root}}" on-select="treeSelect" selectKeypath="{{selectKeypath}}">
-				</tree>
-			</div>
-			<div class="tab-pane" id="starred">
-				<div class="bookmarks">
-				{{#starred:i}}
-					<a class="bookmark" href="/explorer/?file={{i}}" title="{{i}}"><span class="glyphicon glyphicon-star"></span>  {{.}}</a>
-				{{/starred}}
+		<div class="panel panel-default">
+			<div class="panel-heading sidebar-header">
+				<div class="btn-group">
+					<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+						{{#if root.app}}
+							{{root.app}}
+						{{else}} 
+							<span class="glyphicon glyphicon-hdd"></span>
+						{{/if}}
+						<span class="caret"></span>
+					</button>
+					<ul class="dropdown-menu" role="menu">
+						<li><a href="#" on-click="selectBase"><span class="glyphicon glyphicon-hdd"></span></a></li>
+						<li class="divider"></li>
+						{{#apps:i}}
+							<li><a href="#" on-click="selectApp">{{name}}</a></li>
+						{{/apps}}
+					</ul>
 				</div>
-			</div>
-		</div>
-	</div>
+
+				<div class="btn-group pull-right">
+					<button class="btn btn-{{#if sidebar.view === 'files'}}primary{{else}}default{{/if}} btn-hdr" title="Files" on-click="showFiles">
+						<span class="fa fa-file"></span></button>
+					<button class="btn btn-{{#if sidebar.view === 'DS'}}primary{{else}}default{{/if}} btn-hdr" title="Datastores" on-click="showDS">
+						<span class="fa fa-database"></span></button>
+					<button class="btn btn-{{#if sidebar.view === 'starred'}}primary{{else}}default{{/if}} btn-hdr" title="Favorites" on-click="showStarred">
+						<span class="glyphicon glyphicon-star"></span></button>
+				</div>
+			</div>	
+			<div class="panel-body">
+				{{#sidebar}}
+				{{#if view === "files" || view === "DS"}}
+				<div  id="tree">
+					<tree root="{{root}}" on-select="treeSelect" selectKeypath="{{selectKeypath}}">
+					</tree>
+				</div>
+				{{else}}
+				<div id="starred">
+					<div class="bookmarks">
+					{{#starred:i}}
+						<div class="bookmark">
+						<a href="#" on-click="bookmarkSelect" class="bookmark" title="{{i}}">{{.}}</a>
+							<a href="#" class="pull-right text-danger" on-click="removeBookmark" title="Remove Bookmark">
+								<span class="glyphicon glyphicon-remove"></span>
+							</a>
+						</div>
+					{{/starred}}
+					</div>
+				</div>
+				{{/if}}
+			{{/sidebar}}
+		</div> <!-- panel body -->
+	</div> <!-- panel -->
+</div> <!-- sidebar -->
+
 	<div id="fileList" class="col-sm-9">
 		<ol class="breadcrumb">
 			{{#breadcrumbs:i}}
@@ -80,12 +117,12 @@
 <span>
 {{#if .isFolder}}
 	<a href="#" on-click="explorerSelect" class="file-tile">
-		<img class="file-icon" src="{{explorerIcon}}">	
+		<span class="file-icon fa fa-5x fa-{{explorerIcon}}"></span>
 		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
 	</a>
 {{else}}
 	<a href="{{url}}" class="file-tile">
-		<img class="file-icon" src="{{explorerIcon}}">
+		<span class="file-icon fa fa-5x fa-{{explorerIcon}}"></span>
 		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
 	</a>
 {{/if}}

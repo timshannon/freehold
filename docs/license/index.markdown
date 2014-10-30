@@ -22,5 +22,5 @@ Attribution and Credits
 * [bootstrap](http://getbootstrap.com) - Twitter - (MIT) https://github.com/twbs/bootstrap/blob/master/LICENSE
 * [Glyphicons](http://glyphicons.com) -  Jan Kovarik - (Creative Commons Attribution 3.0 Unported (CC BY 3.0)) - http://glyphicons.com/license
 * [Ractive.js](http://www.ractivejs.org) - Rich Harris and contributors - (MIT) https://github.com/ractivejs/ractive/blob/dev/LICENSE.md
-* [Opticons](https://octicons.github.com) - Github - (MIT / SIL)
 * [jQuery-UI](http://jqueryui.com) - Jquery UI Team - (MIT) https://github.com/jquery/jquery-ui/blob/master/LICENSE.txt
+* [Font Awesome](http://fortawesome.github.io/Font-Awesome/) - Dave Gandy - (SIL OFL 1.1 / MIT) http://fortawesome.github.io/Font-Awesome/license/

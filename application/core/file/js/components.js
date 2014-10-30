@@ -713,16 +713,16 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
                       ' ',
                       {
                         t: 4,
-                        r: '.glyphicon',
+                        r: '.iconClass',
                         f: [{
                             t: 7,
                             e: 'span',
                             a: {
                               'class': [
-                                'glyphicon glyphicon-',
+                                'icon ',
                                 {
                                   t: 2,
-                                  r: '.glyphicon'
+                                  r: '.iconClass'
                                 }
                               ]
                             }
@@ -858,16 +858,16 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
                       f: [
                         {
                           t: 4,
-                          r: 'glyphicon',
+                          r: 'iconClass',
                           f: [{
                               t: 7,
                               e: 'span',
                               a: {
                                 'class': [
-                                  'glyphicon glyphicon-',
+                                  'icon ',
                                   {
                                     t: 2,
-                                    r: 'glyphicon'
+                                    r: 'iconClass'
                                   }
                                 ]
                               }
@@ -925,7 +925,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
                 }]
             }]
         },
-        css: '.selected {\nborder-color: #ccc;\nborder: 0px solid transparent;\nborder-radius: 4px;\npadding: 5px;\nfont-weight:bold;\n}\n.child {\npadding: 5px;\n}\n.child:hover {\nbackground-color: #f5f5f5;\nborder: 0px solid transparent;\nborder-radius: 4px;\npadding: 5px;\n}\na:hover {\ntext-decoration: none;\t\ncolor: #333;\n}\na {\ncolor: #333;\n}\n.tree {\ncursor: default;\noverflow: auto;\n}\nul {\nlist-style: none;\n}\nli {\nmargin-left: -22px;\n}\n.glyphicon {\ncolor: #555;\n}\n.icon {\nmax-width: 14px;\nmax-height: 14px;\t\n}\n'
+        css: '.selected {\nborder-color: #ccc;\nborder: 0px solid transparent;\nborder-radius: 4px;\npadding: 5px;\nfont-weight:bold;\n}\n.child {\npadding: 5px;\n}\n.child:hover {\nbackground-color: #f5f5f5;\nborder: 0px solid transparent;\nborder-radius: 4px;\npadding: 5px;\n}\na:hover {\ntext-decoration: none;\t\ncolor: #333;\n}\na {\ncolor: #333;\n}\n.tree {\ncursor: default;\noverflow: auto;\n}\nul {\nlist-style: none;\n}\nli {\nmargin-left: -22px;\n}\n.icon {\ncolor: #555;\n}\n.icon {\nmax-width: 14px;\nmax-height: 14px;\t\n}\n'
       }, component = {};
     component.exports = {
       data: {
@@ -937,56 +937,56 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
         root: {
           name: 'Sample data that should be overwritten',
           canSelect: true,
-          glyphicon: 'folder-open',
+          iconClass: 'folder-open',
           children: [
             {
               name: 'child1',
-              glyphicon: 'file',
+              iconClass: 'glyphicon glyphicon-file',
               canSelect: true,
               children: []
             },
             {
               name: 'child2',
-              glyphicon: 'file',
+              iconClass: 'glyphicon glyphicon-file',
               canSelect: true
             },
             {
               name: 'child3',
-              glyphicon: 'folder-closed',
+              iconClass: 'glyphicon glyphicon-folder-closed',
               children: [
                 {
                   name: 'subchild1',
-                  glyphicon: 'file',
+                  iconClass: 'glyphicon glyphicon-file',
                   canSelect: true
                 },
                 {
                   name: 'subchild2',
-                  glyphicon: 'file',
+                  iconClass: 'glyphicon glyphicon-file',
                   canSelect: true,
                   hide: true
                 },
                 {
                   name: 'subchild3',
-                  glyphicon: 'file',
+                  iconClass: 'glyphicon glyphicon-file',
                   canSelect: true
                 },
                 {
                   name: 'child3',
-                  glyphicon: 'folder-closed',
+                  iconClass: 'glyphicon glyphicon-folder-closed',
                   children: [
                     {
                       name: 'subchild1',
-                      glyphicon: 'file',
+                      iconClass: 'glyphicon glyphicon-file',
                       canSelect: true
                     },
                     {
                       name: 'subchild2',
-                      glyphicon: 'file',
+                      iconClass: 'glyphicon glyphicon-file',
                       canSelect: true
                     },
                     {
                       name: 'subchild3',
-                      glyphicon: 'file',
+                      iconClass: 'glyphicon glyphicon-file',
                       canSelect: true
                     }
                   ]
@@ -1113,7 +1113,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
             r.set('root', {
               url: r.get('rootDir'),
               name: r.get('rootDir'),
-              glyphicon: 'folder-open'
+              iconClass: 'glyphicon glyphicon-folder-open'
             });
             getFile(r.get('rootDir'), 'root');
           }
@@ -1138,13 +1138,13 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
                 files[i].hide = true;
               }
               files[i].canSelect = true;
-              files[i].glyphicon = 'file';
+              files[i].iconClass = 'glyphicon glyphicon-file';
             } else {
               if (r.get('folderOnly')) {
                 files[i].canSelect = true;
               }
               files[i].isFolder = true;
-              files[i].glyphicon = 'folder-close';
+              files[i].iconClass = 'glyphicon glyphicon-folder-close';
               files[i].children = [];
             }
           }
