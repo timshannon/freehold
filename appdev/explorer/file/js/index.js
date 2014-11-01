@@ -87,11 +87,9 @@ $(document).ready(function() {
 
         },
         "showFiles": function(event) {
-            rMain.set("sidebar.view", "files");
             setRoot(rMain.get("root.app"));
         },
         "showDS": function(event) {
-            rMain.set("sidebar.view", "DS");
             setRoot(rMain.get("root.app"), true);
         },
         "showStarred": function(event) {
@@ -136,10 +134,16 @@ $(document).ready(function() {
     function setRoot(app, datastore) {
         var root = datastore ? "/v1/datastore" : "/v1/file";
 
+        if (datastore) {
+            rMain.set("sidebar.view", "DS");
+        } else {
+            rMain.set("sidebar.view", "files");
+        }
+
         rMain.set("root", {
             app: app,
             url: fh.util.urlJoin(app, root),
-            name: root,
+            name: root.replace("/v1/", ""),
             canSelect: true,
             iconClass: "fa fa-folder-open",
         });
@@ -181,6 +185,7 @@ $(document).ready(function() {
             .done(function(result) {
                 var newKeypath = fromKeypath + ".children";
                 mergeFolder(result.data, newKeypath);
+				rMain.set(fromKeypath+".open", true);
                 if (newUrl.indexOf(to) !== -1) {
                     selectFolder(fromKeypath);
                     return;
@@ -297,6 +302,9 @@ $(document).ready(function() {
                             error(result.message);
                         } else {
                             dsSettings.put("starred", {})
+                                .done(function() {
+                                    rMain.set("starred", {});
+                                })
                                 .fail(function(result) {
                                     error(result.message);
                                 });
@@ -307,6 +315,9 @@ $(document).ready(function() {
                 // if not exists, create it
                 if (result.message == "Resource not found") {
                     fh.datastore.new(usrSettingsDS)
+                        .done(function() {
+                            rMain.set("starred", {});
+                        })
                         .fail(function(result) {
                             error(result.message);
                         });
