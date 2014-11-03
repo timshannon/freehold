@@ -58,39 +58,17 @@
 						{{/apps}}
 					</ul>
 				</div>
-
-				<div class="btn-group pull-right">
-					<button class="btn btn-{{#if sidebar.view === 'files'}}primary{{else}}default{{/if}} btn-hdr" title="Files" on-click="showFiles">
-						<span class="fa fa-file"></span></button>
-					<button class="btn btn-{{#if sidebar.view === 'DS'}}primary{{else}}default{{/if}} btn-hdr" title="Datastores" on-click="showDS">
-						<span class="fa fa-database"></span></button>
-					<button class="btn btn-{{#if sidebar.view === 'starred'}}primary{{else}}default{{/if}} btn-hdr" title="Favorites" on-click="showStarred">
-						<span class="glyphicon glyphicon-star"></span></button>
-				</div>
 			</div>	
 			<div class="panel-body">
-				{{#sidebar}}
-				{{#if view === "files" || view === "DS"}}
 				<div  id="tree">
-					<tree root="{{root}}" on-select="treeSelect" selectKeypath="{{selectKeypath}}">
+					<tree root="{{files}}" on-select="fileTreeSelect" selectKeypath="{{selectKeypath.replace('files', 'root')}}">
 					</tree>
+					<tree root="{{datastores}}" on-select="dsTreeSelect" selectKeypath="{{selectKeypath.replace('datastores', 'root')}}">
+					</tree>
+					<!--<tree root="{{stars}}" on-select="starSelect" selectKeypath="{{selectKeypath}}">-->
+					<!--</tree>-->
 				</div>
-				{{else}}
-				<div id="starred">
-					<div class="bookmarks">
-					{{#starred:i}}
-						<div class="bookmark">
-						<a href="#" on-click="bookmarkSelect" class="bookmark" title="{{i}}">{{.}}</a>
-							<a href="#" class="pull-right text-danger" on-click="removeBookmark" title="Remove Bookmark">
-								<span class="glyphicon glyphicon-remove"></span>
-							</a>
-						</div>
-					{{/starred}}
-					</div>
-				</div>
-				{{/if}}
-			{{/sidebar}}
-		</div> <!-- panel body -->
+			</div> <!-- panel body -->
 	</div> <!-- panel -->
 </div> <!-- sidebar -->
 
@@ -100,7 +78,9 @@
 				<li><a href="#" on-click="crumbSelect">{{file.name}}</a></li>
 			{{/breadcrumbs}}
 			{{#currentFolder}}
-			<li class="active">{{name}}</li>
+			<li class="active">
+				{{name}}
+			</li>
 			<a href="#" on-click="star" title="Bookmark Folder">
 				<span class="pull-right glyphicon glyphicon-star star {{#.starred}}starred{{/.starred}}"></span>
 			</a>	

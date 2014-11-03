@@ -858,6 +858,44 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
                       f: [
                         {
                           t: 4,
+                          x: {
+                            r: [
+                              'tree',
+                              '.'
+                            ],
+                            s: '_0.hasChildren(_1)'
+                          },
+                          f: [{
+                              t: 7,
+                              e: 'a',
+                              a: { href: '#' },
+                              v: { click: 'open' },
+                              f: [{
+                                  t: 7,
+                                  e: 'span',
+                                  a: {
+                                    'class': [
+                                      'glyphicon glyphicon-',
+                                      {
+                                        t: 4,
+                                        n: 50,
+                                        r: '.open',
+                                        f: ['minus']
+                                      },
+                                      {
+                                        t: 4,
+                                        n: 51,
+                                        f: ['plus'],
+                                        r: '.open'
+                                      }
+                                    ]
+                                  }
+                                }]
+                            }]
+                        },
+                        ' ',
+                        {
+                          t: 4,
                           r: 'iconClass',
                           f: [{
                               t: 7,
@@ -908,18 +946,67 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
                         {
                           t: 4,
                           n: 51,
-                          f: [{
-                              t: 2,
-                              r: 'name'
-                            }],
+                          f: [
+                            {
+                              t: 4,
+                              x: {
+                                r: [
+                                  'tree',
+                                  '.'
+                                ],
+                                s: '_0.hasChildren(_1)'
+                              },
+                              f: [{
+                                  t: 7,
+                                  e: 'a',
+                                  a: { href: '#' },
+                                  v: { click: 'open' },
+                                  f: [{
+                                      t: 2,
+                                      r: 'name'
+                                    }]
+                                }]
+                            },
+                            ' ',
+                            {
+                              t: 4,
+                              x: {
+                                r: [
+                                  'tree',
+                                  '.'
+                                ],
+                                s: '_0.hasChildren(_1)'
+                              },
+                              f: [{
+                                  t: 2,
+                                  r: '.name'
+                                }],
+                              n: 51
+                            }
+                          ],
                           r: 'canSelect'
                         }
                       ]
                     },
                     ' ',
                     {
-                      t: 8,
-                      r: 'children'
+                      t: 4,
+                      x: {
+                        r: [
+                          'tree',
+                          '.'
+                        ],
+                        s: '_0.hasChildren(_1)'
+                      },
+                      f: [{
+                          t: 4,
+                          n: 50,
+                          r: '.open',
+                          f: [{
+                              t: 8,
+                              r: 'children'
+                            }]
+                        }]
                     }
                   ]
                 }]
