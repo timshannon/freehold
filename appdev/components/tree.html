@@ -1,6 +1,12 @@
 <div class="tree">
 	{{#root}}
 	<div class="{{#if .selected}}selected bg-info{{else}}child{{/if}}">
+		{{#tree.hasChildren(this)}}
+			<a href="#" on-click="open">
+				<span class="glyphicon glyphicon-{{#if .open}}minus{{else}}plus{{/if}}"></span>
+			</a>
+		{{/this}}
+
 		{{#iconClass}}
 			<span class="icon {{iconClass}}"></span> 
 		{{/iconClass}}
@@ -10,10 +16,19 @@
 		{{#if canSelect}}
 			<a href="#"  on-click="select">{{name}}</a>
 		{{else}}
-			 {{name}}
+			 {{#tree.hasChildren(this)}}
+				<a href="#"  on-click="open">{{name}}</a>
+			{{/tree}}
+			{{^tree.hasChildren(this)}}
+				{{.name}}
+			{{/tree}}
 		{{/if}}
 	</div>  
-		{{>children}}
+		{{#tree.hasChildren(this)}} 
+			{{#if .open}}
+				{{>children}}
+			{{/if}}
+		{{/this}}
 	{{/root}}
 </div>
 

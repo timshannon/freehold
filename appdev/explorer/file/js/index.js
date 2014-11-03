@@ -12,11 +12,6 @@ $(document).ready(function() {
     var rMain = new Ractive({
         el: "#pageContainer",
         template: "#tMain",
-        data: {
-            sidebar: {
-                view: "files",
-            }
-        }
     });
 
     getSettings();
@@ -26,8 +21,11 @@ $(document).ready(function() {
 
     //events
     rMain.on({
-        "treeSelect": function(event) {
-            selectFolder(event.keypath);
+        "fileTreeSelect": function(event) {
+            selectFolder(keypathFromTree(event.keypath, false));
+        },
+        "dsTreeSelect": function(event) {
+            selectFolder(keypathFromTree(event.keypath, true));
         },
         "explorerSelect": function(event) {
             selectFolder(event.keypath.replace("currentFolder", rMain.get("currentKeypath")));
@@ -86,15 +84,6 @@ $(document).ready(function() {
                 });
 
         },
-        "showFiles": function(event) {
-            setRoot(rMain.get("root.app"));
-        },
-        "showDS": function(event) {
-            setRoot(rMain.get("root.app"), true);
-        },
-        "showStarred": function(event) {
-            rMain.set("sidebar.view", "starred");
-        },
         "selectApp": function(event) {
             setRoot(event.index.i, rMain.get("sidebar.view") === "DS");
         },
@@ -106,6 +95,7 @@ $(document).ready(function() {
     //functions
     function selectFolder(keypath) {
         var folder = rMain.get(keypath);
+
         rMain.set("currentFolder", folder);
         rMain.set("currentKeypath", keypath);
         rMain.set(keypath + ".open", true);
@@ -131,24 +121,32 @@ $(document).ready(function() {
             });
     }
 
-    function setRoot(app, datastore) {
-        var root = datastore ? "/v1/datastore" : "/v1/file";
-
-        if (datastore) {
-            rMain.set("sidebar.view", "DS");
-        } else {
-            rMain.set("sidebar.view", "files");
-        }
-
-        rMain.set("root", {
+    function setRoot(app) {
+        rMain.set("files", {
             app: app,
-            url: fh.util.urlJoin(app, root),
-            name: root.replace("/v1/", ""),
+            url: fh.util.urlJoin(app, "/v1/file/"),
+            name: "files",
             canSelect: true,
             iconClass: "fa fa-folder-open",
+            children: [],
+        });
+        rMain.set("datastores", {
+            app: app,
+            url: fh.util.urlJoin(app, "/v1/datastore/"),
+            name: "datastores",
+            canSelect: true,
+            iconClass: "fa fa-database",
+            children: [],
         });
 
-        selectFolder("root");
+        selectFolder("files");
+    }
+
+    function keypathFromTree(keypath, ds) {
+        if (ds) {
+            return keypath.replace("root", "datastores");
+        }
+        return keypath.replace("root", "files");
     }
 
     function openUrl(url) {
@@ -185,7 +183,7 @@ $(document).ready(function() {
             .done(function(result) {
                 var newKeypath = fromKeypath + ".children";
                 mergeFolder(result.data, newKeypath);
-				rMain.set(fromKeypath+".open", true);
+                rMain.set(fromKeypath + ".open", true);
                 if (newUrl.indexOf(to) !== -1) {
                     selectFolder(fromKeypath);
                     return;
@@ -252,11 +250,11 @@ $(document).ready(function() {
             file.explorerIcon = "folder";
             file.isFolder = true;
             file.canSelect = true;
-            if (file.open) {
-                file.iconClass = "fa fa-folder-open";
-            } else {
-                file.iconClass = "fa fa-folder";
-            }
+                if (file.open) {
+                    file.iconClass = "fa fa-folder-open";
+                } else {
+                    file.iconClass = "fa fa-folder";
+                }
             if (!file.hasOwnProperty("children")) {
                 file.children = [];
             }
