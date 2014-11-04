@@ -10,3 +10,10 @@
 #filterSpinner {
 	position: absolute;
 }
+
+td {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+

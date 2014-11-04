@@ -739,7 +739,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
                               'class': 'icon',
                               src: [{
                                   t: 2,
-                                  r: 'icon'
+                                  r: '.icon'
                                 }]
                             }
                           }]
@@ -896,7 +896,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
                         ' ',
                         {
                           t: 4,
-                          r: 'iconClass',
+                          r: '.iconClass',
                           f: [{
                               t: 7,
                               e: 'span',
@@ -905,7 +905,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
                                   'icon ',
                                   {
                                     t: 2,
-                                    r: 'iconClass'
+                                    r: '.iconClass'
                                   }
                                 ]
                               }
@@ -914,7 +914,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
                         ' ',
                         {
                           t: 4,
-                          r: 'icon',
+                          r: '.icon',
                           f: [{
                               t: 7,
                               e: 'img',
@@ -922,7 +922,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
                                 'class': 'icon',
                                 src: [{
                                     t: 2,
-                                    r: 'icon'
+                                    r: '.icon'
                                   }]
                               }
                             }]
@@ -931,7 +931,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
                         {
                           t: 4,
                           n: 50,
-                          r: 'canSelect',
+                          r: '.canSelect',
                           f: [{
                               t: 7,
                               e: 'a',
@@ -939,7 +939,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
                               v: { click: 'select' },
                               f: [{
                                   t: 2,
-                                  r: 'name'
+                                  r: '.name'
                                 }]
                             }]
                         },
@@ -963,7 +963,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
                                   v: { click: 'open' },
                                   f: [{
                                       t: 2,
-                                      r: 'name'
+                                      r: '.name'
                                     }]
                                 }]
                             },
@@ -984,7 +984,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
                               n: 51
                             }
                           ],
-                          r: 'canSelect'
+                          r: '.canSelect'
                         }
                       ]
                     },
