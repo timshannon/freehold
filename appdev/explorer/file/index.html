@@ -43,8 +43,8 @@
 			<div class="panel-heading sidebar-header">
 				<div class="btn-group">
 					<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-						{{#if root.app}}
-							{{root.app}}
+						{{#if app}}
+							{{app}}
 						{{else}} 
 							<span class="glyphicon glyphicon-hdd"></span>
 						{{/if}}
@@ -61,9 +61,9 @@
 			</div>	
 			<div class="panel-body">
 				<div  id="tree">
-					<tree root="{{files}}" on-select="fileTreeSelect" selectKeypath="{{selectKeypath.replace('files', 'root')}}">
+					<tree root="{{files}}" on-select="fileTreeSelect" on-open="fileOpen" selectKeypath="{{selectKeypath.replace('files', 'root')}}">
 					</tree>
-					<tree root="{{datastores}}" on-select="dsTreeSelect" selectKeypath="{{selectKeypath.replace('datastores', 'root')}}">
+					<tree root="{{datastores}}" on-select="dsTreeSelect" on-open="dsOpen" selectKeypath="{{selectKeypath.replace('datastores', 'root')}}">
 					</tree>
 					<!--<tree root="{{stars}}" on-select="starSelect" selectKeypath="{{selectKeypath}}">-->
 					<!--</tree>-->

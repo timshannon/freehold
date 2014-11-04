@@ -7,17 +7,17 @@
 			</a>
 		{{/this}}
 
-		{{#iconClass}}
-			<span class="icon {{iconClass}}"></span> 
-		{{/iconClass}}
-		{{#icon}}
-			<img class="icon" src="{{icon}}">
-		{{/icon}}
-		{{#if canSelect}}
-			<a href="#"  on-click="select">{{name}}</a>
+		{{#.iconClass}}
+			<span class="icon {{.iconClass}}"></span> 
+		{{/.iconClass}}
+		{{#.icon}}
+			<img class="icon" src="{{.icon}}">
+		{{/.icon}}
+		{{#if .canSelect}}
+			<a href="#"  on-click="select">{{.name}}</a>
 		{{else}}
 			 {{#tree.hasChildren(this)}}
-				<a href="#"  on-click="open">{{name}}</a>
+				<a href="#"  on-click="open">{{.name}}</a>
 			{{/tree}}
 			{{^tree.hasChildren(this)}}
 				{{.name}}
@@ -54,7 +54,7 @@
 			<span class="icon {{.iconClass}}"></span> 
 		{{/iconClass}}
 		{{#.icon}}
-			<img class="icon" src="{{icon}}">
+			<img class="icon" src="{{.icon}}">
 		{{/.icon}}
 		{{#if .canSelect}}
 			<a href="#"  on-click="select">{{.name}}</a>

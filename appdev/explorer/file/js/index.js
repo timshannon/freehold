@@ -1,6 +1,6 @@
 $(document).ready(function() {
     var timer;
-
+    var defaultIcons = buildDefaultIcons();
     var usrSettingsDS = "/v1/datastore/" + fh.auth.user + "/explorerSettings.ds";
     var dsSettings = new fh.Datastore(usrSettingsDS);
 
@@ -33,9 +33,11 @@ $(document).ready(function() {
         "crumbSelect": function(event) {
             selectFolder(event.context.keypath);
         },
-        "tree.open": function(event) {
-            rMain.set(event.keypath, setFileType(event.context));
-            updateFolder(event.context.url, event.keypath);
+        "dsOpen": function(event) {
+            updateFolder(event.context.url, keypathFromTree(event.keypath, true));
+        },
+        "fileOpen": function(event) {
+            updateFolder(event.context.url, keypathFromTree(event.keypath));
         },
         "star": function(event) {
             var starred = rMain.get("starred");
@@ -85,10 +87,10 @@ $(document).ready(function() {
 
         },
         "selectApp": function(event) {
-            setRoot(event.index.i, rMain.get("sidebar.view") === "DS");
+            setRoot(event.index.i);
         },
         "selectBase": function(event) {
-            setRoot("", rMain.get("sidebar.view") === "DS");
+            setRoot();
         }
     });
 
@@ -99,7 +101,9 @@ $(document).ready(function() {
         rMain.set("currentFolder", folder);
         rMain.set("currentKeypath", keypath);
         rMain.set(keypath + ".open", true);
-        folder.iconClass = "fa fa-folder-open";
+        if (keypath !== "datastores" && keypath !== "files" && keypath !== "stars") {
+            folder.iconClass = "fa fa-folder-open";
+        }
         updateFolder(folder.url, keypath);
         buildBreadcrumbs(keypath);
         rMain.set("selectKeypath", keypath);
@@ -115,15 +119,12 @@ $(document).ready(function() {
         fh.properties.get(url)
             .done(function(result) {
                 mergeFolder(result.data, keypath + ".children");
-            })
-            .fail(function(result) {
-                error(result.message);
             });
     }
 
     function setRoot(app) {
+        rMain.set("app", app);
         rMain.set("files", {
-            app: app,
             url: fh.util.urlJoin(app, "/v1/file/"),
             name: "files",
             canSelect: true,
@@ -131,7 +132,6 @@ $(document).ready(function() {
             children: [],
         });
         rMain.set("datastores", {
-            app: app,
             url: fh.util.urlJoin(app, "/v1/datastore/"),
             name: "datastores",
             canSelect: true,
@@ -159,17 +159,13 @@ $(document).ready(function() {
             rootPlace = 3;
         }
 
-        if (urlParts[rootPlace] === "datastore") {
-            setRoot(app, true);
-        } else {
-            setRoot(app, false);
-        }
+        setRoot(app);
 
         if (url.lastIndexOf("/") === url.length - 1) {
             url = url.slice(0, url.length - 1);
         }
 
-        updateFilesTo("root", url);
+        updateFilesTo(urlParts[rootPlace], url);
 
     }
 
@@ -203,7 +199,7 @@ $(document).ready(function() {
             })
             .fail(function(result) {
                 //TODO: Proper Invalid file error
-                error(result.message);
+                error("Bookmark may be invalid: " + result.message);
             });
     }
 
@@ -250,20 +246,26 @@ $(document).ready(function() {
             file.explorerIcon = "folder";
             file.isFolder = true;
             file.canSelect = true;
-                if (file.open) {
-                    file.iconClass = "fa fa-folder-open";
-                } else {
-                    file.iconClass = "fa fa-folder";
-                }
+            if (file.open) {
+                file.iconClass = "fa fa-folder-open";
+            } else {
+                file.iconClass = "fa fa-folder";
+            }
             if (!file.hasOwnProperty("children")) {
                 file.children = [];
             }
         } else {
-            file.explorerIcon = "file-o";
+            file.explorerIcon = icon(file.name);
             file.hide = true;
         }
 
         return file;
+    }
+
+    function icon(file) {
+        var ext = file.slice(file.lastIndexOf(".") + 1);
+
+        return rMain.get("settings.files." + ext + ".icons.") || defaultIcons[ext] || "file-o";
     }
 
     function buildBreadcrumbs(keypath) {
@@ -287,32 +289,38 @@ $(document).ready(function() {
         //Get User's setting DS if exists
         fh.properties.get(usrSettingsDS)
             .done(function() {
-                dsSettings.get("starred")
-                    .done(function(result) {
-                        var starred = result.data;
-                        rMain.set("starred", result.data);
-                        if (starred[rMain.get("currentFolder.url")]) {
-                            rMain.set("currentFolder.starred", true);
-                        }
-                    })
-                    .fail(function(result) {
-                        if (result.status == "error") {
-                            error(result.message);
-                        } else {
-                            dsSettings.put("starred", {})
-                                .done(function() {
-                                    rMain.set("starred", {});
-                                })
-                                .fail(function(result) {
-                                    error(result.message);
-                                });
-                        }
-                    });
+                getStarred();
+getFileSettings();
             })
             .fail(function(result) {
                 // if not exists, create it
                 if (result.message == "Resource not found") {
                     fh.datastore.new(usrSettingsDS)
+                        .done(function() {
+                            getStarred();
+getFileSettings();
+                        })
+                        .fail(function(result) {
+                            error(result.message);
+                        });
+                }
+            });
+    }
+
+    function getStarred() {
+        dsSettings.get("starred")
+            .done(function(result) {
+                var starred = result.data;
+                rMain.set("starred", result.data);
+                if (starred[rMain.get("currentFolder.url")]) {
+                    rMain.set("currentFolder.starred", true);
+                }
+            })
+            .fail(function(result) {
+                if (result.status == "error") {
+                    error(result.message);
+                } else {
+                    dsSettings.put("starred", {})
                         .done(function() {
                             rMain.set("starred", {});
                         })
@@ -321,6 +329,28 @@ $(document).ready(function() {
                         });
                 }
             });
+
+    }
+
+    function getFileSettings() {
+        dsSettings.get("files")
+            .done(function(result) {
+                rMain.set("settings.files", result.data);
+            })
+            .fail(function(result) {
+                if (result.status == "error") {
+                    error(result.message);
+                } else {
+                    dsSettings.put("files", {})
+                        .done(function() {
+                            rMain.set("files", {});
+                        })
+                        .fail(function(result) {
+                            error(result.message);
+                        });
+                }
+            });
+
     }
 
     function getApps() {
@@ -333,4 +363,44 @@ $(document).ready(function() {
             });
     }
 
+
+
+    function buildDefaultIcons() {
+        return {
+            "ds": "database",
+            "xls": "file-excel-o",
+            "ods": "file-excel-o",
+            "xlsx": "file-excel-o",
+            "pdf": "file-pdf-o",
+            "wav": "file-audio-o",
+            "ogg": "music",
+            "mp3": "music",
+            "flac": "music",
+            "odt": "file-word-o",
+            "doc": "file-word-o",
+            "docx": "file-word-o",
+            "zip": "file-archive-o",
+            "gz": "file-archive-o",
+            "7z": "file-archive-o",
+            "rar": "file-archive-o",
+            "png": "file-image-o",
+            "jpg": "file-image-o",
+            "jpeg": "file-image-o",
+            "gif": "file-image-o",
+            "bmp": "file-image-o",
+            "mov": "file-movie-o",
+            "mpg": "file-movie-o",
+            "mpeg": "file-movie-o",
+            "mkv": "file-movie-o",
+            "ogv": "file-movie-o",
+            "avi": "file-movie-o",
+            "txt": "file-text-o",
+            "xml": "file-code-o",
+            "html": "file-code-o",
+            "js": "file-code-o",
+            "css": "file-code-o",
+            "sh": "file-code-o",
+        };
+
+    }
 }); //end ready
