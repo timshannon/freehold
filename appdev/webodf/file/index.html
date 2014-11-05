@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>freehold - Web ODF</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	</head>
+<body>
+<div id="odf"></div>
+	
+
+<script src="/core/v1/file/js/jquery-2.1.1.min.js"></script>
+<script src="/core/v1/file/js/fh.js"></script>
+<script src="/webodf/v1/file/js/webodf.js"></script>
+<script language="Javascript">
+	function init() {
+		var file = fh.util.urlParm("file"); 
+		var odfelement = document.getElementById("odf"),
+				odfcanvas = new odf.OdfCanvas(odfelement);
+		if (file) {
+			odfcanvas.load(file);
+		}
+	}
+	window.setTimeout(init, 0);
+</script>
+<script
+</body>
+</html>

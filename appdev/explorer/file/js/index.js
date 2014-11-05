@@ -290,7 +290,7 @@ $(document).ready(function() {
         fh.properties.get(usrSettingsDS)
             .done(function() {
                 getStarred();
-getFileSettings();
+                getFileSettings();
             })
             .fail(function(result) {
                 // if not exists, create it
@@ -298,7 +298,7 @@ getFileSettings();
                     fh.datastore.new(usrSettingsDS)
                         .done(function() {
                             getStarred();
-getFileSettings();
+                            getFileSettings();
                         })
                         .fail(function(result) {
                             error(result.message);
@@ -400,6 +400,12 @@ getFileSettings();
             "js": "file-code-o",
             "css": "file-code-o",
             "sh": "file-code-o",
+            "epub": "book",
+            "mobi": "book",
+            "azw3": "book",
+            "azw": "book",
+            "kf8": "book",
+            "torrent": "share-alt",
         };
 
     }

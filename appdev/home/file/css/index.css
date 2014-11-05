@@ -55,3 +55,7 @@
 .progress:last-child {
 	margin-bottom: 0px;
 }
+
+#appList {
+	min-height: 600px;
+}
