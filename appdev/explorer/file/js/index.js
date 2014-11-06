@@ -28,6 +28,10 @@ $(document).ready(function() {
             selectFolder(keypathFromTree(event.keypath, true));
         },
         "explorerSelect": function(event) {
+            if (event.keypath === "stars") {
+                openUrl(event.context.url);
+                return;
+            }
             selectFolder(event.keypath.replace("currentFolder", rMain.get("currentKeypath")));
         },
         "crumbSelect": function(event) {
@@ -91,7 +95,11 @@ $(document).ready(function() {
         },
         "selectBase": function(event) {
             setRoot();
-        }
+        },
+        "starSelect": function(event) {
+            rMain.set("selectKeypath", "stars");
+            updateStarFolder();
+        },
     });
 
     //functions
@@ -137,6 +145,11 @@ $(document).ready(function() {
             canSelect: true,
             iconClass: "fa fa-database",
             children: [],
+        });
+        rMain.set("stars", {
+            name: "Starred",
+            canSelect: true,
+            iconClass: "glyphicon glyphicon-star",
         });
 
         selectFolder("files");
@@ -279,6 +292,28 @@ $(document).ready(function() {
         }
         crumbs.reverse();
         rMain.set("breadcrumbs", crumbs);
+    }
+
+    function updateStarFolder() {
+        var stars = rMain.get("starred");
+		
+        for (var i = 0; i < stars.length; i++) {
+            getFile(stars[i], "currentFolder.children." + i);
+        }
+
+        rMain.set("currentKeypath", "stars");
+    }
+
+    function getFile(url, keypath) {
+        fh.properties.get(url)
+            .done(function(result) {
+                rMain.set(keypath, result.data);
+            })
+            .fail(function(result) {
+                rMain.set(keypath, {
+                    name: "Error Loading File: " + result.message,
+                });
+            });
     }
 
     function error(errMsg) {
