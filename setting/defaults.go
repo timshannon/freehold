@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"bitbucket.org/tshannon/freehold/data"
-	"code.google.com/p/go.crypto/bcrypt"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var settingDefaults map[string]Setting
