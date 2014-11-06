@@ -13,7 +13,7 @@ import (
 	"bitbucket.org/tshannon/freehold/log"
 	"bitbucket.org/tshannon/freehold/setting"
 
-	"code.google.com/p/go.crypto/bcrypt"
+	"golang.org/x/crypto/bcrypt"
 )
 
 const (
