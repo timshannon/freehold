@@ -64,34 +64,9 @@
 	margin-right: 5px;
 }
 
-.star:hover {
-	font-size: 1.35em;
-}
-
 
 .starred {
 	color: gold;
 	font-size: 1.35em;
 }
 
-.bookmark {
-	padding: 3px;
-	color: #333;
-}
-
-.bookmark:hover {
-	background-color: #f5f5f5;
-	border: 0px solid transparent;
-	border-radius: 4px;
-	padding: 3px;
-	color: #333;
-}
-
-a.bookmark:hover {
-	text-decoration: none;
-}
-
-.btn-hdr {
-	padding: 2px 8px;
-	font-size: 18px;
-}
