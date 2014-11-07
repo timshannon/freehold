@@ -1,8 +1,8 @@
 $(document).ready(function() {
     var timer;
     var defaultIcons = buildDefaultIcons();
-    var usrSettingsDS = "/v1/datastore/" + fh.auth.user + "/explorerSettings.ds";
-    var dsSettings = new fh.Datastore(usrSettingsDS);
+    var settings = new Settings();
+    settings.load();
 
     var rNav = new Ractive({
         el: "#nb",
@@ -14,7 +14,6 @@ $(document).ready(function() {
         template: "#tMain",
     });
 
-    getSettings();
     getApps();
     setRoot();
 
@@ -28,10 +27,6 @@ $(document).ready(function() {
             selectFolder(keypathFromTree(event.keypath, true));
         },
         "explorerSelect": function(event) {
-            if (event.keypath === "stars") {
-                openUrl(event.context.url);
-                return;
-            }
             selectFolder(event.keypath.replace("currentFolder", rMain.get("currentKeypath")));
         },
         "crumbSelect": function(event) {
@@ -44,20 +39,15 @@ $(document).ready(function() {
             updateFolder(event.context.url, keypathFromTree(event.keypath));
         },
         "star": function(event) {
-            var starred = rMain.get("starred");
             var url = event.context.url;
-            if (starred[url]) {
-                delete starred[url];
+            if (settings.starred.isStar(url)) {
+                settings.starred.remove(url);
                 rMain.set("currentFolder.starred", false);
-            } else {
-                starred[url] = event.context.name;
-                rMain.set("currentFolder.starred", true);
+                return;
             }
-            rMain.set("starred", starred);
-            dsSettings.put("starred", starred)
-                .fail(function(result) {
-                    error(result.message);
-                });
+
+            settings.starred.add(url, event.context.name);
+            rMain.set("currentFolder.starred", true);
         },
         "bookmarkSelect": function(event) {
             openUrl(event.index.i);
@@ -79,26 +69,13 @@ $(document).ready(function() {
                 });
         },
         "removeBookmark": function(event) {
-            var starred = rMain.get("starred");
-            var url = event.index.i;
-            delete starred[url];
-            rMain.set("currentFolder.starred", false);
-            rMain.set("starred", starred);
-            dsSettings.put("starred", starred)
-                .fail(function(result) {
-                    error(result.message);
-                });
-
+            settings.starred.remove(event.index.i);
         },
         "selectApp": function(event) {
             setRoot(event.index.i);
         },
         "selectBase": function(event) {
             setRoot();
-        },
-        "starSelect": function(event) {
-            rMain.set("selectKeypath", "stars");
-            updateStarFolder();
         },
     });
 
@@ -112,13 +89,16 @@ $(document).ready(function() {
         if (keypath !== "datastores" && keypath !== "files" && keypath !== "stars") {
             folder.iconClass = "fa fa-folder-open";
         }
+        if (keypath === "stars") {
+            updateStarFolder();
+            return;
+        }
+
         updateFolder(folder.url, keypath);
         buildBreadcrumbs(keypath);
         rMain.set("selectKeypath", keypath);
 
-        var starred = rMain.get("starred") || {};
-
-        if (starred.hasOwnProperty(folder.url)) {
+        if (settings.starred.isStar(folder.url)) {
             rMain.set("currentFolder.starred", true);
         }
     }
@@ -267,6 +247,9 @@ $(document).ready(function() {
             if (!file.hasOwnProperty("children")) {
                 file.children = [];
             }
+            if (!file.hasOwnProperty("name") && file.hasOwnProperty("url")) {
+                file.name = file.url.slice(file.url.lastIndexOf("/") + 1);
+            }
         } else {
             file.explorerIcon = icon(file.name);
             file.hide = true;
@@ -295,18 +278,25 @@ $(document).ready(function() {
     }
 
     function updateStarFolder() {
-        var stars = rMain.get("starred");
-		
-        for (var i = 0; i < stars.length; i++) {
-            getFile(stars[i], "currentFolder.children." + i);
+        var files = Object.getOwnPropertyNames(rMain.get("starred"));
+        rMain.set("stars.children", []);
+
+
+        for (var i = 0; i < files.length; i++) {
+            getFile(files[i], "stars.children." + i);
         }
 
-        rMain.set("currentKeypath", "stars");
+        rMain.update("currentFolder");
     }
 
     function getFile(url, keypath) {
         fh.properties.get(url)
             .done(function(result) {
+                var file = result.data;
+                if (!file.hasOwnProperty("url")) {
+                    file.url = url;
+                }
+                file = setFileType(file);
                 rMain.set(keypath, result.data);
             })
             .fail(function(result) {
@@ -320,73 +310,6 @@ $(document).ready(function() {
         rNav.set("error", errMsg);
     }
 
-    function getSettings() {
-        //Get User's setting DS if exists
-        fh.properties.get(usrSettingsDS)
-            .done(function() {
-                getStarred();
-                getFileSettings();
-            })
-            .fail(function(result) {
-                // if not exists, create it
-                if (result.message == "Resource not found") {
-                    fh.datastore.new(usrSettingsDS)
-                        .done(function() {
-                            getStarred();
-                            getFileSettings();
-                        })
-                        .fail(function(result) {
-                            error(result.message);
-                        });
-                }
-            });
-    }
-
-    function getStarred() {
-        dsSettings.get("starred")
-            .done(function(result) {
-                var starred = result.data;
-                rMain.set("starred", result.data);
-                if (starred[rMain.get("currentFolder.url")]) {
-                    rMain.set("currentFolder.starred", true);
-                }
-            })
-            .fail(function(result) {
-                if (result.status == "error") {
-                    error(result.message);
-                } else {
-                    dsSettings.put("starred", {})
-                        .done(function() {
-                            rMain.set("starred", {});
-                        })
-                        .fail(function(result) {
-                            error(result.message);
-                        });
-                }
-            });
-
-    }
-
-    function getFileSettings() {
-        dsSettings.get("files")
-            .done(function(result) {
-                rMain.set("settings.files", result.data);
-            })
-            .fail(function(result) {
-                if (result.status == "error") {
-                    error(result.message);
-                } else {
-                    dsSettings.put("files", {})
-                        .done(function() {
-                            rMain.set("files", {});
-                        })
-                        .fail(function(result) {
-                            error(result.message);
-                        });
-                }
-            });
-
-    }
 
     function getApps() {
         fh.application.installed()
@@ -399,6 +322,83 @@ $(document).ready(function() {
     }
 
 
+    function Settings() {
+            var url = "/v1/datastore/" + fh.auth.user + "/explorerSettings.ds";
+            this.ds = new fh.Datastore(url);
+            this.starred = {
+				ds: this.ds,
+                stars: {},
+                load: function() {
+                    this.ds.get("starred")
+                        .done(function(result) {
+                            this.stars = result.data;
+                        }.bind(this))
+                        .fail(function(result) {
+                            if (result.status == "error") {
+                                error(result.message);
+                            }
+                        });
+                },
+                add: function(url, name) {
+                    this.stars[url] = name;
+                    this.update();
+                },
+                remove: function(url) {
+                    delete this.stars[url];
+                    this.update();
+                },
+                update: function() {
+                    this.ds.put("starred", this.stars)
+                        .fail(function(result) {
+                            error(result.message);
+                        });
+                },
+                isStar: function(url) {
+                    if (this.stars.hasOwnProperty(url)) {
+                        return true;
+                    }
+                    return false;
+                },
+            };
+            this.file = {
+				ds: this.ds,
+                files: {},
+                load: function() {
+                    this.ds.get("files")
+                        .done(function(result) {
+                            this.files = result.data;
+                        }.bind(this))
+                        .fail(function(result) {
+                            if (result.status == "error") {
+                                error(result.message);
+                            }
+                        });
+                }.bind(this)
+            };
+            this.load = function() {
+                fh.properties.get(url)
+                    .done(function() {
+                        this.starred.load();
+                        this.file.load();
+                    }.bind(this))
+                    .fail(function(result) {
+                        // if not exists, create it
+                        if (result.message == "Resource not found") {
+                            fh.datastore.new(usrSettingsDS)
+                                .done(function() {
+                                    this.starred.load();
+                                    this.file.load();
+                                }.bind(this))
+                                .fail(function(result) {
+                                    error(result.message);
+                                });
+                        }
+                    }.bind(this));
+            };
+
+
+
+        } //Settings
 
     function buildDefaultIcons() {
         return {

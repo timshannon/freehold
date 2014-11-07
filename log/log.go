@@ -198,7 +198,9 @@ func syslogError(err error) {
 type FHLogWriter struct{}
 
 func (w *FHLogWriter) Write(p []byte) (n int, err error) {
-	NewEntry("server error", string(p))
+	if setting.Bool("LogServerErrors") {
+		NewEntry("server error", string(p))
+	}
 	return len(p), nil
 }
 
