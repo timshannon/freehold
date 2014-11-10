@@ -453,7 +453,7 @@ Response (200):
 	]
 }
 ```
-Both *from* and *to* are inclusive of the specified key in their range.
+Both *from* and *to* are inclusive of the specified key in their range.  If you need more complex querying than the datastore interface provides, consider using an in-memory database such as [lokijs](http://lokijs.org).
 
 **PUT** - Simply insert your JSON object(s), the object's top level keys will become the keys for the datastore.  
 ```
