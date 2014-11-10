@@ -33,10 +33,16 @@ $(document).ready(function() {
             selectFolder(event.context.keypath);
         },
         "dsOpen": function(event) {
-            updateFolder(event.context.url, keypathFromTree(event.keypath, true));
+            var keypath = keypathFromTree(event.keypath, true);
+            rMain.set(keypath, setFileType(rMain.get(keypath)));
+            updateFolder(event.context.url, keypath);
         },
-        "fileOpen": function(event) {
-            updateFolder(event.context.url, keypathFromTree(event.keypath));
+        "tree.open": function(event) {
+            var keypath = keypathFromTree(event.keypath, event.component.data.dsTree);
+            updateFolder(event.context.url, keypath);
+            if (event.keypath !== "root") {
+                rMain.set(keypath, setFileType(rMain.get(keypath)));
+            }
         },
         "star": function(event) {
             var url = event.context.url;
@@ -72,10 +78,11 @@ $(document).ready(function() {
             settings.starred.remove(event.index.i);
         },
         "selectApp": function(event) {
-            setRoot(event.index.i);
-        },
-        "selectBase": function(event) {
-            setRoot();
+            if (event.index) {
+                setRoot(event.index.i);
+            } else {
+                setRoot();
+            }
         },
     });
 
@@ -85,10 +92,8 @@ $(document).ready(function() {
 
         rMain.set("currentFolder", folder);
         rMain.set("currentKeypath", keypath);
-        rMain.set(keypath + ".open", true);
-        if (keypath !== "datastores" && keypath !== "files" && keypath !== "stars") {
-            folder.iconClass = "fa fa-folder-open";
-        }
+        openParent(keypath);
+
         if (keypath === "stars") {
             updateStarFolder();
             return;
@@ -142,6 +147,19 @@ $(document).ready(function() {
         return keypath.replace("root", "files");
     }
 
+    function openParent(keypath) {
+        var last = keypath.lastIndexOf(".children");
+        if (last === -1) {
+            return;
+        }
+        keypath = keypath.slice(0, last);
+
+        if (!rMain.get(keypath + ".open")) {
+            rMain.set(keypath + ".open", true);
+            rMain.set(keypath + ".iconClass", "fa fa-folder-open");
+        }
+    }
+
     function openUrl(url) {
         var urlParts = url.split("/");
         var app;
@@ -172,7 +190,7 @@ $(document).ready(function() {
             .done(function(result) {
                 var newKeypath = fromKeypath + ".children";
                 mergeFolder(result.data, newKeypath);
-                rMain.set(fromKeypath + ".open", true);
+                openParent(fromkeypath);
                 if (newUrl.indexOf(to) !== -1) {
                     selectFolder(fromKeypath);
                     return;
@@ -326,7 +344,7 @@ $(document).ready(function() {
             var url = "/v1/datastore/" + fh.auth.user + "/explorerSettings.ds";
             this.ds = new fh.Datastore(url);
             this.starred = {
-				ds: this.ds,
+                ds: this.ds,
                 stars: {},
                 load: function() {
                     this.ds.get("starred")
@@ -361,7 +379,7 @@ $(document).ready(function() {
                 },
             };
             this.file = {
-				ds: this.ds,
+                ds: this.ds,
                 files: {},
                 load: function() {
                     this.ds.get("files")

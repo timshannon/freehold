@@ -51,7 +51,7 @@
 						<span class="caret"></span>
 					</button>
 					<ul class="dropdown-menu" role="menu">
-						<li><a href="#" on-click="selectBase"><span class="glyphicon glyphicon-hdd"></span></a></li>
+						<li><a href="#" on-click="selectApp"><span class="glyphicon glyphicon-hdd"></span></a></li>
 						<li class="divider"></li>
 						{{#apps:i}}
 							<li><a href="#" on-click="selectApp">{{name}}</a></li>
@@ -60,12 +60,12 @@
 				</div>
 			</div>	
 			<div class="panel-body">
-				<div  id="tree">
-					<tree root="{{files}}" on-select="fileTreeSelect" on-open="fileOpen" selectKeypath="{{selectKeypath.replace('files', 'root')}}">
+				<div id="tree">
+					<tree root="{{files}}" on-select="fileTreeSelect" selectKeypath="{{selectKeypath.replace('files', 'root')}}">
 					</tree>
-					<tree root="{{datastores}}" on-select="dsTreeSelect" on-open="dsOpen" 
-						selectKeypath="{{selectKeypath.replace('datastores', 'root')}}">
+					<tree root="{{datastores}}" on-select="dsTreeSelect" selectKeypath="{{selectKeypath.replace('datastores', 'root')}}" dsTree="true">
 					</tree>
+
 				</div>
 			</div> <!-- panel body -->
 	</div> <!-- panel -->
