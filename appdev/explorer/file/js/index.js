@@ -2,7 +2,6 @@ $(document).ready(function() {
     var timer;
     var defaultIcons = buildDefaultIcons();
     var settings = new Settings();
-    settings.load();
 
     var rNav = new Ractive({
         el: "#nb",
@@ -15,6 +14,8 @@ $(document).ready(function() {
     });
 
     getApps();
+
+    settings.load();
     setRoot();
 
 
@@ -27,6 +28,10 @@ $(document).ready(function() {
             selectFolder(keypathFromTree(event.keypath, true));
         },
         "explorerSelect": function(event) {
+            if (rMain.get("selectKeypath") === "stars") {
+                openUrl(event.context.url);
+                return;
+            }
             selectFolder(event.keypath.replace("currentFolder", rMain.get("currentKeypath")));
         },
         "crumbSelect": function(event) {
@@ -55,8 +60,8 @@ $(document).ready(function() {
             settings.starred.add(url, event.context.name);
             rMain.set("currentFolder.starred", true);
         },
-        "bookmarkSelect": function(event) {
-            openUrl(event.index.i);
+        "viewStarred": function(event) {
+            selectFolder("stars");
         },
         "newFolder": function(event) {
             rMain.set("newFolderName", null);
@@ -94,6 +99,7 @@ $(document).ready(function() {
         rMain.set("currentKeypath", keypath);
         openParent(keypath);
 
+        rMain.set("selectKeypath", keypath);
         if (keypath === "stars") {
             updateStarFolder();
             return;
@@ -101,7 +107,6 @@ $(document).ready(function() {
 
         updateFolder(folder.url, keypath);
         buildBreadcrumbs(keypath);
-        rMain.set("selectKeypath", keypath);
 
         if (settings.starred.isStar(folder.url)) {
             rMain.set("currentFolder.starred", true);
@@ -118,14 +123,15 @@ $(document).ready(function() {
     function setRoot(app) {
         rMain.set("app", app);
         rMain.set("files", {
-            url: fh.util.urlJoin(app, "/v1/file/"),
+            url: fh.util.urlJoin(app, "/v1/file"),
             name: "files",
             canSelect: true,
+            selected: true,
             iconClass: "fa fa-folder-open",
             children: [],
         });
         rMain.set("datastores", {
-            url: fh.util.urlJoin(app, "/v1/datastore/"),
+            url: fh.util.urlJoin(app, "/v1/datastore"),
             name: "datastores",
             canSelect: true,
             iconClass: "fa fa-database",
@@ -176,7 +182,7 @@ $(document).ready(function() {
             url = url.slice(0, url.length - 1);
         }
 
-        updateFilesTo(urlParts[rootPlace], url);
+        updateFilesTo(urlParts[rootPlace] === "file" ? "files" : "datastores", url);
 
     }
 
@@ -190,7 +196,7 @@ $(document).ready(function() {
             .done(function(result) {
                 var newKeypath = fromKeypath + ".children";
                 mergeFolder(result.data, newKeypath);
-                openParent(fromkeypath);
+                openParent(fromKeypath);
                 if (newUrl.indexOf(to) !== -1) {
                     selectFolder(fromKeypath);
                     return;
@@ -265,6 +271,15 @@ $(document).ready(function() {
             if (!file.hasOwnProperty("children")) {
                 file.children = [];
             }
+            if (file.url === "/v1/file") {
+                file.name = "files";
+                file.explorerIcon = "fa fa-folder-open";
+            }
+
+            if (file.url === "/v1/datastore") {
+                file.name = "datastores";
+                file.explorerIcon = "fa fa-database";
+            }
             if (!file.hasOwnProperty("name") && file.hasOwnProperty("url")) {
                 file.name = file.url.slice(file.url.lastIndexOf("/") + 1);
             }
@@ -296,15 +311,14 @@ $(document).ready(function() {
     }
 
     function updateStarFolder() {
-        var files = Object.getOwnPropertyNames(rMain.get("starred"));
-        rMain.set("stars.children", []);
-
+        var files = Object.getOwnPropertyNames(settings.starred.stars);
+        var folder = rMain.set("currentFolder", {
+            "name": "stars"
+        });
 
         for (var i = 0; i < files.length; i++) {
-            getFile(files[i], "stars.children." + i);
+            getFile(files[i], "currentFolder.children." + i);
         }
-
-        rMain.update("currentFolder");
     }
 
     function getFile(url, keypath) {
@@ -346,10 +360,14 @@ $(document).ready(function() {
             this.starred = {
                 ds: this.ds,
                 stars: {},
-                load: function() {
+                load: function(afterLoad) {
                     this.ds.get("starred")
                         .done(function(result) {
                             this.stars = result.data;
+                            //update current folder
+                            if (this.isStar(rMain.get("currentFolder.url"))) {
+                                rMain.set("currentFolder.starred", true);
+                            }
                         }.bind(this))
                         .fail(function(result) {
                             if (result.status == "error") {

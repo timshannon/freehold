@@ -60,10 +60,12 @@
 				</div>
 			</div>	
 			<div class="panel-body">
-				<div id="tree">
+				<div id="trees">
 					<tree root="{{files}}" on-select="fileTreeSelect" selectKeypath="{{selectKeypath.replace('files', 'root')}}">
 					</tree>
 					<tree root="{{datastores}}" on-select="dsTreeSelect" selectKeypath="{{selectKeypath.replace('datastores', 'root')}}" dsTree="true">
+					</tree>
+					<tree root="{{stars}}" on-select="viewStarred" selectKeypath="{{selectKeypath.replace('stars', 'root')}}">
 					</tree>
 
 				</div>
@@ -80,9 +82,11 @@
 			<li class="active">
 				{{name}}
 			</li>
+			{{#if currentKeypath !== "stars"}}
 			<a href="#" on-click="star" title="Bookmark Folder">
 				<span class="pull-right glyphicon glyphicon-star star {{#.starred}}starred{{/.starred}}"></span>
 			</a>	
+			{{/if}}
 			{{/currentFolder}}
 		</ol>
 		{{#currentFolder.children:i}}
