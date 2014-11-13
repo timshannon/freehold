@@ -36,59 +36,68 @@
 		<button type="button" class="btn btn-primary" on-click="newFolderSave">Save</button>
 	</div>
 </modal>
-<div class="row">
 
-	<div id="sidebar" class="col-sm-3">
-		<div class="panel panel-default">
-			<div class="panel-heading sidebar-header">
-				<div class="btn-group">
-					<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-						{{#if app}}
-							{{app}}
-						{{else}} 
-							<span class="glyphicon glyphicon-hdd"></span>
-						{{/if}}
-						<span class="caret"></span>
-					</button>
-					<ul class="dropdown-menu" role="menu">
-						<li><a href="#" on-click="selectApp"><span class="glyphicon glyphicon-hdd"></span></a></li>
-						<li class="divider"></li>
-						{{#apps:i}}
-							<li><a href="#" on-click="selectApp">{{name}}</a></li>
-						{{/apps}}
-					</ul>
-				</div>
-			</div>	
-			<div class="panel-body">
-				<div id="trees">
-					<tree root="{{files}}" on-select="fileTreeSelect" selectKeypath="{{selectKeypath.replace('files', 'root')}}">
-					</tree>
-					<tree root="{{datastores}}" on-select="dsTreeSelect" selectKeypath="{{selectKeypath.replace('datastores', 'root')}}" dsTree="true">
-					</tree>
-					<tree root="{{stars}}" on-select="viewStarred" selectKeypath="{{selectKeypath.replace('stars', 'root')}}">
-					</tree>
+<div id="pageNav" class="row">
+	<div id="rootNav" class="col-sm-3">
+		<div class="btn-group">
+			<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+				{{#if app}}
+					{{app}}
+				{{else}} 
+					<span class="glyphicon glyphicon-hdd"></span> Root
+				{{/if}}
+				<span class="caret"></span>
+			</button>
+			<ul class="dropdown-menu" role="menu">
+				<li><a href="#" on-click="selectApp"><span class="glyphicon glyphicon-hdd"></span> Root</a></li>
+				<li class="divider"></li>
+				{{#apps:i}}
+					<li><a href="#" on-click="selectApp">{{name}}</a></li>
+				{{/apps}}
+			</ul>
+		</div>
+		<button type="button" class="btn btn-sm btn-success pull-right" on-click ="newFolder">
+			<span class="glyphicon glyphicon-plus"></span> New Folder</button>
+	</div>
+	<div id="folderNav" class="col-sm-9">
 
-				</div>
-			</div> <!-- panel body -->
-	</div> <!-- panel -->
-</div> <!-- sidebar -->
-
-	<div id="fileList" class="col-sm-9">
+		{{#if selectKeypath !== "stars"}}
 		<ol class="breadcrumb">
 			{{#breadcrumbs:i}}
 				<li><a href="#" on-click="crumbSelect">{{file.name}}</a></li>
 			{{/breadcrumbs}}
 			{{#currentFolder}}
 			<li class="active">
-				{{name}}
+				<span class="dropdown">
+				<a id="folderDrop" href="#" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false">
+				{{name}} <span class="caret"></span>
+				</a>
+				<ul class="dropdown-menu" role="menu" aria-labelledby="folderDrop">
+					<li>
+						<a href="#" on-click="star"><span class="glyphicon glyphicon-star"></span> {{#if currentFolder.starred}}Add{{else}}Remove{{/if}} Star</a> 
+					</li>
+				</ul>
+				</span>
 			</li>
-			{{#if currentKeypath !== "stars"}}
-			<a href="#" on-click="star" title="Bookmark Folder">
-				<span class="pull-right glyphicon glyphicon-star star {{#.starred}}starred{{/.starred}}"></span>
-			</a>	
-			{{/if}}
 			{{/currentFolder}}
 		</ol>
+		{{/if}}
+
+	</div>
+</div> <!-- row -->
+<div class="row">
+	<div id="sidebar" class="col-sm-3">
+		<div id="trees">
+			<tree root="{{files}}" on-select="fileTreeSelect" selectKeypath="{{selectKeypath.replace('files', 'root')}}">
+			</tree>
+			<tree root="{{datastores}}" on-select="dsTreeSelect" selectKeypath="{{selectKeypath.replace('datastores', 'root')}}" dsTree="true">
+			</tree>
+			<tree root="{{stars}}" on-select="viewStarred" selectKeypath="{{selectKeypath.replace('stars', 'root')}}">
+			</tree>
+		</div>
+	</div> <!-- sidebar -->
+
+	<div id="explorer" class="col-sm-9">
 		{{#currentFolder.children:i}}
 			{{>fileTile}}
 		{{/currentFolder.children}}

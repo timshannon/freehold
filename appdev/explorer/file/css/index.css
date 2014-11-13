@@ -1,9 +1,53 @@
 #pageContainer {
 	width: 100%;
-	padding-right: 25px;
-	padding-left: 25px;
+	padding-right: 15px;
+	padding-left: 15px;
+	padding-bottom: 25px;
+	margin-top: -20px
 }
 
+#pageNav {
+	border-bottom: 1px solid #ccc;
+	padding-top: 15px;
+	padding-bottom: 15px;
+	background-color: #f8f8f8;
+}
+
+
+#sidebar {
+	border-right: 1px solid #ccc;
+	min-height: 80vh;
+}
+
+#trees {
+	margin-top: 10px;
+}
+
+.breadcrumb {
+	background-color: transparent;
+	font-size: 1.3em;
+	margin-bottom: 0px;
+	padding: 0px;
+}
+
+.breadcrumb>.active {
+	font-weight: bold;	
+	padding: 4px;
+}
+
+.breadcrumb>li>a {
+	color: #777;
+	padding: 4px;
+	text-decoration: none;	
+}
+
+
+
+.breadcrumb>li>a:hover {
+	text-decoration: none;	
+	background-color: #e7e7e7;
+	border-radius: 4px;
+}
 
 .file-tile {
 	position: relative;
