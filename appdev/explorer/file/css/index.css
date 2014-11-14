@@ -35,18 +35,25 @@
 	padding: 4px;
 }
 
-.breadcrumb>li>a {
+.breadcrumb>li>a, .breadcrumb-menu, .breadcrumb-menu>a {
 	color: #777;
 	padding: 4px;
 	text-decoration: none;	
 }
 
-
-
-.breadcrumb>li>a:hover {
+.breadcrumb>li>a:hover, .breadcrumb-menu:hover {
 	text-decoration: none;	
 	background-color: #e7e7e7;
-	border-radius: 4px;
+}
+
+.breadcrumb-menu.open {
+	background-color: #e7e7e7;
+}
+
+.breadcrumb-menu>.dropdown-menu {
+    margin-top: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0
 }
 
 .file-tile {
