@@ -222,12 +222,12 @@ $(document).ready(function() {
 
     function mergeFolder(newFiles, keypath) {
         var current = rMain.get(keypath);
-        var index = -1;
 
         //merge the current data with the new data so that
         // tree attributes like open and selected aren't lost
         for (var i = 0; i < newFiles.length; i++) {
             if (current) {
+                var index = -1;
                 for (var j = 0; j < current.length; j++) {
                     if (newFiles[i].url === current[j].url) {
                         index = j;

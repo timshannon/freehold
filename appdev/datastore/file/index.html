@@ -8,7 +8,7 @@
 	</head>
 <body>
 <main>
-	</main>
+</main>
 			
 <!--templates-->
 <script id="tMain" type="text/ractive">
@@ -94,7 +94,7 @@
 				{{#if i >= ((page-1)*iter.limit) && i < (page*iter.limit)}}
 				<tr>
 					<td>{{JSON.stringify(key)}}</td>
-					<td>
+					<td >
 						{{#if typeof value === "object"}}
 							<a href="#" title="view json data" on-click="viewValue"><span class="pull-right glyphicon glyphicon-new-window"></span></a>
 						{{/if}}
