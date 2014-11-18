@@ -1,3 +1,7 @@
+// Copyright 2014 Tim Shannon. All rights reserved.
+// Use of this source code is governed by the MIT license
+// that can be found in the LICENSE file.
+
 window.fh = (function() {
     'use strict';
     var _auth;
@@ -63,12 +67,6 @@ window.fh = (function() {
             });
             return _auth;
         }(),
-        uuid: function() {
-            function s4() {
-                return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-            }
-            return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
-        },
         file: {
             upload: function(fileurl, formData) {
                 //very simple file upload, feel free to write you own or use a plugin
@@ -374,6 +372,12 @@ window.fh = (function() {
             });
         },
         util: {
+            uuid: function() {
+                function s4() {
+                    return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+                }
+                return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+            },
             urlJoin: function() {
                 var j = [].slice.call(arguments, 0).join("/");
                 return j.replace(/[\/]+/g, '/')

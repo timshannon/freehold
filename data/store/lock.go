@@ -28,7 +28,7 @@
 // the Unit Tests, as only a DS owner can create or drop a DS.
 // However if you have multiple applications, all running as you
 // with separate tokens, that want to create or drop the same DS
-// They may run into an issue.  So currently I'm sticking with no lock file for now.
+// they may run into an issue.  So currently I'm sticking with no lock file for now.
 
 package store
 

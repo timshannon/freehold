@@ -1,3 +1,7 @@
+// Copyright 2014 Tim Shannon. All rights reserved.
+// Use of this source code is governed by the MIT license
+// that can be found in the LICENSE file.
+
 $(document).ready(function() {
     "use strict";
 
@@ -202,6 +206,7 @@ $(document).ready(function() {
             .done(function(result) {
                 result.data.user = fh.auth.user;
                 rMain.set("user", result.data);
+                document.title = fh.auth.user + " - freehold";
             })
             .fail(function(result) {
                 rMain.set("error", result.message);
