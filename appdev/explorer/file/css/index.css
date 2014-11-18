@@ -75,7 +75,7 @@
 	text-decoration: none;	
 }
 
-.file-icon {
+.grid-icon {
 	position: relative;
 	margin-left: auto;
 	margin-right: auto;
@@ -121,3 +121,9 @@
 	font-size: 1.35em;
 }
 
+.table a {
+	color: #333;
+}
+.table a:hover {
+	text-decoration: none;
+}

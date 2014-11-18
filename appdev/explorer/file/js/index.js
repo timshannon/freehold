@@ -1,7 +1,12 @@
+// Copyright 2014 Tim Shannon. All rights reserved.
+// Use of this source code is governed by the MIT license
+// that can be found in the LICENSE file.
+
 $(document).ready(function() {
     var timer;
     var defaultIcons = buildDefaultIcons();
     var settings = new Settings();
+    settings.stars = new Stars();
 
     var rNav = new Ractive({
         el: "#nb",
@@ -11,12 +16,16 @@ $(document).ready(function() {
     var rMain = new Ractive({
         el: "#pageContainer",
         template: "#tMain",
+        data: {
+            files: {},
+            datastores: {},
+            stars: {},
+        },
     });
 
     getApps();
 
-    settings.load();
-    setRoot();
+    settings.load(setRoot);
 
 
     //events
@@ -51,13 +60,13 @@ $(document).ready(function() {
         },
         "star": function(event) {
             var url = event.context.url;
-            if (settings.starred.isStar(url)) {
-                settings.starred.remove(url);
+            if (settings.stars.isStar(url)) {
+                settings.stars.remove(url);
                 rMain.set("currentFolder.starred", false);
                 return;
             }
 
-            settings.starred.add(url, event.context.name);
+            settings.stars.add(url, event.context.name);
             rMain.set("currentFolder.starred", true);
         },
         "viewStarred": function(event) {
@@ -79,8 +88,10 @@ $(document).ready(function() {
                     error(result.message);
                 });
         },
-        "removeBookmark": function(event) {
-            settings.starred.remove(event.index.i);
+        "removeStar": function(event) {
+            var stars = rMain.get("currentFolder.children");
+            settings.stars.remove(event.context.url);
+            stars.splice(event.index.i, 1);
         },
         "selectApp": function(event) {
             if (event.index) {
@@ -89,12 +100,30 @@ $(document).ready(function() {
                 setRoot();
             }
         },
+        "changeView": function(event) {
+            if (rMain.get("listView")) {
+                rMain.set("listView", false);
+                settings.put("listView", false);
+            } else {
+                rMain.set("listView", true);
+                settings.put("listView", true);
+            }
+        },
+        "renameFolder": function(event) {
+
+        },
+        "deleteFolder": function(event) {
+            fh.file.delete(event.context.url);
+            selectFolder(parentKeypath(rMain.get("currentKeypath")));
+            settings.stars.remove(event.context.url);
+        },
     });
 
     //functions
     function selectFolder(keypath) {
         var folder = rMain.get(keypath);
 
+        document.title = folder.name + " - Explorer - freehold";
         rMain.set("currentFolder", folder);
         rMain.set("currentKeypath", keypath);
         openParent(keypath);
@@ -108,7 +137,7 @@ $(document).ready(function() {
         updateFolder(folder.url, keypath);
         buildBreadcrumbs(keypath);
 
-        if (settings.starred.isStar(folder.url)) {
+        if (settings.stars.isStar(folder.url)) {
             rMain.set("currentFolder.starred", true);
         }
     }
@@ -142,7 +171,7 @@ $(document).ready(function() {
             canSelect: true,
             iconClass: "glyphicon glyphicon-star",
         });
-
+        rMain.set("listView", settings.get("listView", false));
         selectFolder("files");
     }
 
@@ -153,12 +182,17 @@ $(document).ready(function() {
         return keypath.replace("root", "files");
     }
 
-    function openParent(keypath) {
+    function parentKeypath(keypath) {
         var last = keypath.lastIndexOf(".children");
         if (last === -1) {
-            return;
+            return -1;
         }
-        keypath = keypath.slice(0, last);
+        return keypath.slice(0, last);
+
+    }
+
+    function openParent(keypath) {
+        keypath = parentKeypath(keypath);
 
         if (!rMain.get(keypath + ".open")) {
             rMain.set(keypath + ".open", true);
@@ -285,7 +319,9 @@ $(document).ready(function() {
             }
         } else {
             file.explorerIcon = icon(file.name);
-            file.hide = true;
+            file.hide = true; //hide from treeview
+            file.modifiedDate = new Date(file.modified).toLocaleString();
+            file.humanSize = filesize(file.size); //thanks Jason Mulligan (https://github.com/avoidwork/filesize.js)
         }
 
         return file;
@@ -311,7 +347,8 @@ $(document).ready(function() {
     }
 
     function updateStarFolder() {
-        var files = Object.getOwnPropertyNames(settings.starred.stars);
+        var stars = settings.get("starred", {});
+        var files = Object.getOwnPropertyNames(stars);
         var folder = rMain.set("currentFolder", {
             "name": "stars"
         });
@@ -354,76 +391,72 @@ $(document).ready(function() {
     }
 
 
+    function Stars() {
+        return {
+            add: function(url, name) {
+                var stars = settings.get("starred", {});
+                stars[url] = name;
+                settings.put("starred", stars);
+            },
+            remove: function(url) {
+                var stars = settings.get("starred", {});
+                delete stars[url];
+                settings.put("starred", stars);
+            },
+            isStar: function(url) {
+                var stars = settings.get("starred", {});
+                if (stars.hasOwnProperty(url)) {
+                    return true;
+                }
+                return false;
+            },
+        };
+    }
+
+    function FileTypeSettings() {
+        //TODO: icon / application settings for specific filetypes
+        return {};
+    }
+
     function Settings() {
             var url = "/v1/datastore/" + fh.auth.user + "/explorerSettings.ds";
             this.ds = new fh.Datastore(url);
-            this.starred = {
-                ds: this.ds,
-                stars: {},
-                load: function(afterLoad) {
-                    this.ds.get("starred")
-                        .done(function(result) {
-                            this.stars = result.data;
-                            //update current folder
-                            if (this.isStar(rMain.get("currentFolder.url"))) {
-                                rMain.set("currentFolder.starred", true);
-                            }
-                        }.bind(this))
-                        .fail(function(result) {
-                            if (result.status == "error") {
-                                error(result.message);
-                            }
-                        });
-                },
-                add: function(url, name) {
-                    this.stars[url] = name;
-                    this.update();
-                },
-                remove: function(url) {
-                    delete this.stars[url];
-                    this.update();
-                },
-                update: function() {
-                    this.ds.put("starred", this.stars)
-                        .fail(function(result) {
-                            error(result.message);
-                        });
-                },
-                isStar: function(url) {
-                    if (this.stars.hasOwnProperty(url)) {
-                        return true;
-                    }
-                    return false;
-                },
-            };
-            this.file = {
-                ds: this.ds,
-                files: {},
-                load: function() {
-                    this.ds.get("files")
-                        .done(function(result) {
-                            this.files = result.data;
-                        }.bind(this))
-                        .fail(function(result) {
-                            if (result.status == "error") {
-                                error(result.message);
-                            }
-                        });
-                }.bind(this)
-            };
-            this.load = function() {
+            this.settings = {};
+
+            function kvToObj(array) {
+                var obj = {};
+                for (var i = 0; i < array.length; i++) {
+                    obj[array[i].key] = array[i].value;
+                }
+                return obj;
+            }
+
+            //Load All Settings
+            this.load = function(postLoad) {
                 fh.properties.get(url)
                     .done(function() {
-                        this.starred.load();
-                        this.file.load();
+                        this.ds.iter({})
+                            .done(function(result) {
+                                this.settings = kvToObj(result.data);
+                                postLoad();
+                            }.bind(this))
+                            .fail(function(result) {
+                                error(result.message);
+                            });
                     }.bind(this))
                     .fail(function(result) {
                         // if not exists, create it
                         if (result.message == "Resource not found") {
-                            fh.datastore.new(usrSettingsDS)
+                            fh.datastore.new(url)
                                 .done(function() {
-                                    this.starred.load();
-                                    this.file.load();
+                                    this.ds.iter({})
+                                        .done(function(result) {
+                                            this.settings = kvToObj(result.data);
+                                            postLoad();
+                                        }.bind(this))
+                                        .fail(function(result) {
+                                            error(result.message);
+                                        });
                                 }.bind(this))
                                 .fail(function(result) {
                                     error(result.message);
@@ -431,8 +464,22 @@ $(document).ready(function() {
                         }
                     }.bind(this));
             };
-
-
+            this.get = function(setting, defaultValue) {
+                if (this.settings.hasOwnProperty(setting)) {
+                    return this.settings[setting];
+                } else {
+                    return defaultValue;
+                }
+            };
+            this.put = function(setting, value) {
+                this.ds.put(setting, value)
+                    .done(function() {
+                        this.settings[setting] = value;
+                    }.bind(this))
+                    .fail(function(result) {
+                        error(result.message);
+                    });
+            };
 
         } //Settings
 

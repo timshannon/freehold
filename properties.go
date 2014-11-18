@@ -311,3 +311,6 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 		Failures: failures,
 	})
 }
+
+//TODO: Folder self properties
+// if url has no trailing slash, and is a folder, then lookup folders properties, instead of folder's contents

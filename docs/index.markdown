@@ -87,9 +87,13 @@ levels.
 * Friend - Applies to everyone with a valid login to this freehold instance
 
 Default permissions are Private R/W only.  Permissions only apply to an individual object 
-(File or Datastore).  There currently is no concept of Folder permissions, or inheritance.
-New Files or Datastores can only be created by the current authenticated user. Permissions can only
-be granted by the file owner.  Whether or not a folder exists is only known to authenticated users. Files can only be deleted by their owners.
+(File or Datastore).  New Files or Datastores can only be created by the current authenticated user. Permissions can only
+be granted by the file owner. Files can only be deleted by their owners.
+
+Datastore folders are handled differently from File folders. With datastores, there currently is no concept of Folder permissions, or inheritance.
+ Whether or not a datastore folder exists is only known to authenticated users. 
+
+Files folders have permissions at the folder level which determine if a folder can be seen, or if new files can be created in it.
 
 If a user doesn't have permissions to read a file they will get a 404.
 
@@ -576,7 +580,6 @@ Response (200):
 		name: "spreadsheet1.ods",
 		url: "/v1/file/important-stuff/spreadsheet1.ods"
 		size: 1048579,
-		uploadDate: "2014-04-23T18:25:43.511Z"
 		modifiedDate: "2014-04-23T18:25:43.511Z"
 		permissions: {
 			owner: "tshannon",
@@ -631,6 +634,23 @@ Response (200):
 
 
 ```
+
+*Get Properties of a folder* Note the lack of a trailing slash.
+```
+GET /v1/properties/file/family-pictures
+
+Response (200):
+{
+	status: "success",
+	data: 
+		{	name: "family-pictures", 
+			url: "/v1/file/family-pictures/", 
+			permissions: {owner: "tshannon", public: "",	friend: "r",	private: "rw"},
+		}
+
+
+```
+
 
 **PUT** - Updating existing file info.  If the file is not found a 404 will be sent.
 
@@ -702,30 +722,6 @@ Response (200):
 }
 
 ```
-
-*Set Write Limit for a datastore*
-```
-PUT "/v1/properties/datastore/comments.ds"
-
-{
-	permissions: {
-		owner: "tshannon",
-		public: "rw",
-		friend: "rw"
-	},
-	writeLimit: 5
-}
-
-Response (200):
-{
-	status: "success",
-	data: {
-		url: "/v1/datastore/passwords.ds",
-	}
-}
-
-```
-
 
 
 * * *

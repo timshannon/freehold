@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>freehold - Explorer</title>
+    <title>Explorer - freehold</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 		<link href="/core/v1/file/css/freehold.css" rel="stylesheet" media="screen"> 
 		<link href="/core/v1/file/css/font-awesome.min.css" rel="stylesheet" media="screen"> 
@@ -20,6 +20,9 @@
 <script id="tMain" type="text/ractive">
 <modal id="properties" title="{{currentFile.name}}" >
 	TODO
+</modal>
+
+<modal id="settings" title="Explorer Settings" >
 </modal>
 
 <modal id="newFolder" title="New Folder" customFooter="true">
@@ -95,8 +98,11 @@
 	</div> <!-- folderNav -->
 	<div  class="col-sm-2">
 		<div class="pull-right">
-			<button type="button" class="btn btn-default" title="Grid View"><span class="fa fa-th"></span></button>
-			<!--<button type="button" class="btn btn-default" title="List View"><span class="fa fa-2 fa-list"></span></button>-->
+		{{#if !listView}}
+			<button type="button" class="btn btn-default" on-click="changeView" title="List View"><span class="fa fa-2 fa-list"></span></button>
+		{{else}}
+			<button type="button" class="btn btn-default" on-click="changeView" title="Grid View"><span class="fa fa-th"></span></button>
+		{{/if}}
 		<button type="button" class="btn btn-default" title="Settings"><span class="fa fa-2 fa-cogs"></span></button>
 		</div>
 	</div>
@@ -115,9 +121,57 @@
 	</div> <!-- sidebar -->
 
 	<div id="explorer" class="col-sm-9">
+	{{#if !listView}}
 		{{#currentFolder.children:i}}
 			{{>fileTile}}
 		{{/currentFolder.children}}
+	{{else}}
+	<!--gridview-->
+	<table class="table table-condensed table-striped table-hover">
+		<thead>
+			<tr>
+				<th>Name</th>
+				<th>Owner</th>
+				<th>Last Modified</th>
+				<th>Size</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			{{#currentFolder.children:i}}
+			<tr>
+					{{#if .isFolder}}
+					<td>
+						<a href="#" on-click="explorerSelect">
+							<span class="explorer-icon fa fa-{{explorerIcon}}"></span>  {{name}}
+						</a>
+				</td>
+					{{else}}
+				<td>
+						<a href="{{url}}">
+							<span class="explorer-icon fa fa-{{explorerIcon}}"></span>  {{name}}
+						</a>
+				</td>
+					{{/if}}
+				<td>{{permissions.owner}}</td>
+				<td>{{modifiedDate}}</td>
+				<td>{{humanSize}}</td>
+				<td>
+				{{#if selectKeypath !== "stars"}}
+					{{^.isFolder}}
+					<button type="button" class="btn btn-xs btn-default pull-right" title="Properties">
+						<span class="glyphicon glyphicon-cog"></span></button>
+					{{/.isFolder}}
+				{{else}}
+					<button type="button" class="btn btn-xs btn-danger pull-right" on-click="removeStar" title="Remove Star">
+						<span class="glyphicon glyphicon-remove"></span></button>
+				{{/if}}
+				</td>
+			</tr>
+			{{/currentFolder.children}}
+		</tbody>
+	</table>		
+	{{/if}}
 	</div>	
 </div>
 
@@ -126,12 +180,12 @@
 <span>
 {{#if .isFolder}}
 	<a href="#" on-click="explorerSelect" class="file-tile">
-		<span class="file-icon fa fa-5x fa-{{explorerIcon}}"></span>
+		<span class="grid-icon fa fa-5x fa-{{explorerIcon}}"></span>
 		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
 	</a>
 {{else}}
 	<a href="{{url}}" class="file-tile">
-		<span class="file-icon fa fa-5x fa-{{explorerIcon}}"></span>
+		<span class="grid-icon fa fa-5x fa-{{explorerIcon}}"></span>
 		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
 	</a>
 {{/if}}
@@ -147,5 +201,6 @@
 <script src="/core/v1/file/js/fh.js"></script>
 <script src="/core/v1/file/js/components.js"></script>
 <script src="/explorer/v1/file/js/index.js"></script>
+<script src="/explorer/v1/file/js/filesize.min.js"></script>
 </body>
 </html>

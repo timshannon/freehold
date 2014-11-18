@@ -203,9 +203,9 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 		if errHandled(err, w, auth) {
 			return
 		}
-		if errHandled(clearEmptyFolder(filepath.Dir(filename)), w, auth) {
-			return
-		}
+		//if errHandled(clearEmptyFolder(filepath.Dir(filename)), w, auth) {
+		//return
+		//}
 
 		respondJsend(w, &JSend{
 			Status: statusSuccess,
@@ -351,9 +351,9 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if errHandled(clearEmptyFolder(filepath.Dir(file.Name())), w, auth) {
-			return
-		}
+		//if errHandled(clearEmptyFolder(filepath.Dir(file.Name())), w, auth) {
+		//return
+		//}
 
 		respondJsend(w, &JSend{
 			Status: statusSuccess,
@@ -413,12 +413,14 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 					}))
 
 			}
-		} //TODO: Recursive delete or only one folder deep?
+		} else {
+			//TODO: Recursive delete or only one folder deep, and throw error?
+		}
 	}
 
-	if errHandled(clearEmptyFolder(file.Name()), w, auth) {
-		return
-	}
+	//if errHandled(clearEmptyFolder(file.Name()), w, auth) {
+	//return
+	//}
 	respondJsend(w, &JSend{
 		Status:   status,
 		Data:     fileList,
@@ -660,3 +662,5 @@ func moveFile(from, to string) error {
 	}
 	return os.Rename(from, to)
 }
+
+//TODO: Folder level permissions

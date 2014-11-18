@@ -23,4 +23,6 @@ Attribution and Credits
 * [Glyphicons](http://glyphicons.com) -  Jan Kovarik - (Creative Commons Attribution 3.0 Unported (CC BY 3.0)) - http://glyphicons.com/license
 * [Ractive.js](http://www.ractivejs.org) - Rich Harris and contributors - (MIT) https://github.com/ractivejs/ractive/blob/dev/LICENSE.md
 * [jQuery-UI](http://jqueryui.com) - Jquery UI Team - (MIT) https://github.com/jquery/jquery-ui/blob/master/LICENSE.txt
+* [Opticons](https://octicons.github.com) - Github - (MIT / SIL)
 * [Font Awesome](http://fortawesome.github.io/Font-Awesome/) - Dave Gandy - (SIL OFL 1.1 / MIT) http://fortawesome.github.io/Font-Awesome/license/
+* [filesize.js](http://filesizejs.com/) - Jason Mulligan - (BSD-3) https://github.com/avoidwork/filesize.js/blob/master/LICENSE
