@@ -251,11 +251,7 @@ Response (200):
 {
 	status: "success",
 	data: {
-		[
-			{url: "/v1/file/3001_lolcat_pictures/funney_kitteh.jpg"},
-			{url: "/v1/file/3001_lolcat_pictures/funney_kitteh0sevn.jpg"},
-			{url: "/v1/file/3001_lolcat_pictures/funney_kitteh01.jpg"}
-		]
+			url: "/v1/file/3001_lolcat_pictures/"},
 	}
 }
 ```

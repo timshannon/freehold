@@ -30,7 +30,9 @@ type Permission struct {
 	resource string `json:"-"`
 }
 
+//Get the permissions for a file by filename, NOT by URL
 func Get(filename string) (*Permission, error) {
+	filename = strings.TrimSuffix(filename, "/")
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return nil, err
@@ -39,7 +41,7 @@ func Get(filename string) (*Permission, error) {
 	prm := &Permission{}
 	err = ds.Get(filename, prm)
 	if err == data.ErrNotFound {
-		return orphanedFile(filename)
+		return orphanedResource(filename)
 	}
 	if err != nil {
 		return nil, err
@@ -50,7 +52,7 @@ func Get(filename string) (*Permission, error) {
 	return prm, nil
 }
 
-func orphanedFile(filename string) (*Permission, error) {
+func orphanedResource(filename string) (*Permission, error) {
 	o := setting.String("OrphanedPermissionOwner")
 	if o == "" {
 		return &Permission{}, nil
@@ -68,6 +70,7 @@ func orphanedFile(filename string) (*Permission, error) {
 }
 
 func Set(filename string, permissions *Permission) error {
+	filename = strings.TrimSuffix(filename, "/")
 	err := permissions.validate()
 	if err != nil {
 		return err
@@ -87,6 +90,7 @@ func Set(filename string, permissions *Permission) error {
 }
 
 func Delete(filename string) error {
+	filename = strings.TrimSuffix(filename, "/")
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return err
@@ -101,6 +105,8 @@ func Delete(filename string) error {
 }
 
 func Move(from, to string) error {
+	from = strings.TrimSuffix(from, "/")
+	to = strings.TrimSuffix(to, "/")
 	prm, err := Get(from)
 	if err != nil {
 		return err

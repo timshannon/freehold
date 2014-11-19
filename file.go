@@ -40,42 +40,54 @@ func fileGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func filePost(w http.ResponseWriter, r *http.Request) {
-	//TODO: handle having a user creating a new file that already exists
-	// but they don't have permissions to know that the file already exists
-	// show them an error without exposing the fact that a file already exists
-	// Maybe it's ok for Friends to know that a file exists even though they can't
-	// read it?
-
 	auth, err := authenticate(w, r)
 	if errHandled(err, w, auth) {
 		return
 	}
-
-	if !auth.canWrite(permission.FileNew()) {
-		errHandled(fail.New("You do not have permissions to a post a file.", nil), w, auth)
-		return
-	}
-
-	if r.ContentLength != 0 {
-		err = r.ParseMultipartForm(setting.Int64("MaxUploadMemory"))
-		if errHandled(err, w, auth) {
-			return
-		}
-	}
-
 	if !validFileUrl(r.URL.Path) {
 		errHandled(fail.New("Invalid path for file upload.", r.URL.Path), w, auth)
 		return
 	}
 
-	err = os.MkdirAll(urlPathToFile(r.URL.Path), 0777)
+	parent := ""
+	if r.ContentLength == 0 {
+		//new folder
+		parent = filepath.Dir(strings.TrimSuffix(r.URL.Path, "/"))
+	} else {
+		//file upload
+		parent = r.URL.Path
+	}
+
+	prm, err := permission.FileNew(urlPathToFile(parent))
 	if errHandled(err, w, auth) {
 		return
 	}
 
+	if !auth.canWrite(prm) {
+		errHandled(fail.New("You do not have permissions to write here.", nil), w, auth)
+		return
+	}
+
 	if r.ContentLength != 0 {
+		//file upload
+		err = r.ParseMultipartForm(setting.Int64("MaxUploadMemory"))
+		if errHandled(err, w, auth) {
+			return
+		}
 		mp := r.MultipartForm
 		uploadFile(w, r.URL.Path, auth.User, mp)
+		return
+
+	}
+
+	//New Folder
+	err = os.Mkdir(urlPathToFile(r.URL.Path), 0777)
+	if errHandled(err, w, auth) {
+		return
+	}
+
+	err = permission.Set(urlPathToFile(r.URL.Path), permission.FileNewDefault(auth.Username))
+	if errHandled(err, w, auth) {
 		return
 	}
 
@@ -166,6 +178,7 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
+		//Move
 		input := &FileInput{}
 		err = parseJson(r, input)
 		if errHandled(err, w, auth) {
@@ -175,9 +188,23 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 			errHandled(fail.New("Invalid file PUT call", r.URL.Path), w, auth)
 			return
 		}
-
 		filename := urlPathToFile(r.URL.Path)
 		destFile := urlPathToFile(input.Move)
+
+		prm, err := permission.Get(filename)
+		if errHandled(err, w, auth) {
+			return
+		}
+
+		if !auth.canWrite(permission.FileUpdate(prm)) {
+			errHandled(fail.New("You do not have permissions to update this file.", r.URL.Path), w, auth)
+		}
+
+		prm, err = permission.FileNew(filepath.Dir(strings.TrimSuffix(destFile, "/")))
+		if !auth.canWrite(prm) {
+			errHandled(fail.New("You do not have permissions to move this file to the destination.", input.Move), w, auth)
+		}
+
 		if !fileExists(filename) {
 			four04(w, r)
 			return
@@ -203,9 +230,6 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 		if errHandled(err, w, auth) {
 			return
 		}
-		//if errHandled(clearEmptyFolder(filepath.Dir(filename)), w, auth) {
-		//return
-		//}
 
 		respondJsend(w, &JSend{
 			Status: statusSuccess,
@@ -328,103 +352,35 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !info.IsDir() {
-		prm, err := permission.Get(filename)
-		if errHandled(err, w, auth) {
-			return
-		}
-
-		prm = permission.FileUpdate(prm)
-
-		if !auth.canWrite(prm) {
-			if !auth.canRead(prm) {
-				four04(w, r)
-				return
-			}
-
-			errHandled(fail.New("You do not have owner permissions on this resource.", resource), w, auth)
-			return
-		}
-		os.Remove(filename)
-		err = permission.Delete(filename)
-		if errHandled(err, w, auth) {
-			return
-		}
-
-		//if errHandled(clearEmptyFolder(filepath.Dir(file.Name())), w, auth) {
-		//return
-		//}
-
-		respondJsend(w, &JSend{
-			Status: statusSuccess,
-			Data: Properties{
-				Name: filepath.Base(filename),
-				Url:  resource,
-			},
-		})
-
-		return
-	}
-
-	files, err := file.Readdir(0)
+	prm, err := permission.Get(filename)
 	if errHandled(err, w, auth) {
 		return
 	}
 
-	fileList := make([]Properties, 0, len(files))
-	var failures []error
-	status := statusSuccess
-	dir := file.Name()
+	prm = permission.FileUpdate(prm)
 
-	for i := range files {
-		if !files[i].IsDir() {
-			if isHidden(files[i].Name()) {
-				continue
-			}
-			child := path.Join(dir, files[i].Name())
-			cRes := path.Join(resource, files[i].Name())
-
-			prm, err := permission.Get(child)
-			if errHandled(err, w, auth) {
-				return
-			}
-			prm = permission.FileUpdate(prm)
-
-			if auth.canWrite(prm) {
-				os.Remove(child)
-				err = permission.Delete(child)
-				if errHandled(err, w, auth) {
-					return
-				}
-				fileList = append(fileList, Properties{
-					Name: filepath.Base(files[i].Name()),
-					Url:  cRes,
-				})
-			} else {
-				if !auth.canRead(prm) {
-					continue
-				}
-
-				status = statusFail
-				failures = append(failures, fail.New("You do not have owner permissions on this resource.",
-					&Properties{
-						Name: filepath.Base(files[i].Name()),
-						Url:  cRes,
-					}))
-
-			}
-		} else {
-			//TODO: Recursive delete or only one folder deep, and throw error?
+	if !auth.canWrite(prm) {
+		if !auth.canRead(prm) {
+			four04(w, r)
+			return
 		}
+
+		errHandled(fail.New("You do not have owner permissions on this resource.", resource), w, auth)
+		return
 	}
 
-	//if errHandled(clearEmptyFolder(file.Name()), w, auth) {
-	//return
-	//}
+	os.Remove(filename)
+	err = permission.Delete(filename)
+	if errHandled(err, w, auth) {
+		return
+	}
+
 	respondJsend(w, &JSend{
-		Status:   status,
-		Data:     fileList,
-		Failures: failures,
+		Status: statusSuccess,
+		Data: Properties{
+			Name: filepath.Base(filename),
+			Url:  resource,
+		},
 	})
 
 }
@@ -453,22 +409,24 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 		return
 	}
 
-	if !info.IsDir() {
-		var prm *permission.Permission
-		if isDocPath(resource) {
-			prm = permission.Doc()
-		} else {
-			prm, err = permission.Get(filename)
-			if errHandled(err, w, auth) {
-				return
-			}
-		}
-
-		if !auth.canRead(prm) {
-			four04Page(w, r)
+	var prm *permission.Permission
+	if isDocPath(resource) {
+		prm = permission.Doc()
+	} else if _, p := splitRootAndPath(resource); p == "file" {
+		prm = permission.FileRoot()
+	} else {
+		prm, err = permission.Get(filename)
+		if errHandled(err, w, auth) {
 			return
 		}
+	}
 
+	if !auth.canRead(prm) {
+		four04Page(w, r)
+		return
+	}
+
+	if !info.IsDir() {
 		serveFile(w, r, file, auth)
 		return
 	}
@@ -478,8 +436,6 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 		return
 	}
 
-	canReadDir := false
-
 	for i := range files {
 		var prm *permission.Permission
 		if files[i].IsDir() || isHidden(files[i].Name()) {
@@ -487,7 +443,6 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 		}
 		if isDocPath(resource) {
 			prm = permission.Doc()
-
 		} else {
 			prm, err = permission.Get(path.Join(filename, files[i].Name()))
 			if errHandled(err, w, auth) {
@@ -496,9 +451,6 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 		}
 
 		if auth.canRead(prm) {
-			//If a user can read one file in a dir, then they can know of the existence
-			// of the dir
-			canReadDir = true
 			if strings.TrimRight(files[i].Name(), path.Ext(files[i].Name())) == "index" {
 				indexFile, err := os.Open(path.Join(filename, files[i].Name()))
 				defer indexFile.Close()
@@ -508,24 +460,16 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 				}
 				serveFile(w, r, indexFile, auth)
 				return
-
 			}
 			continue
 		} else {
-			four04Page(w, r)
-			return
+			continue
 		}
 	}
 
-	if canReadDir {
-		//No index file found, redirect to properties
-		http.Redirect(w, r, strings.Replace(r.URL.Path, "/v1/file/", "/v1/properties/file/", 1), http.StatusFound)
-		return
-	}
-
-	// Is a dir lookup, but user doesn't have access to any files in the dir.  Give them a 404
-	// instead of a redirect
-	four04Page(w, r)
+	//No index file found, redirect to properties
+	http.Redirect(w, r, strings.Replace(r.URL.Path, "/v1/file/", "/v1/properties/file/", 1), http.StatusFound)
+	return
 }
 
 func serveFile(w http.ResponseWriter, r *http.Request, file *os.File, auth *Auth) {
@@ -662,5 +606,3 @@ func moveFile(from, to string) error {
 	}
 	return os.Rename(from, to)
 }
-
-//TODO: Folder level permissions
