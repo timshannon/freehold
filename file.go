@@ -191,7 +191,7 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 		filename := urlPathToFile(r.URL.Path)
 		destFile := urlPathToFile(input.Move)
 
-		prm, err := permission.Get(filename)
+		prm, err := permission.FileDelete(filepath.Dir(strings.TrimSuffix(filename, "/")), filename)
 		if errHandled(err, w, auth) {
 			return
 		}
@@ -216,10 +216,6 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 
 		}
 
-		if isDir(filename) {
-			errHandled(fail.New("Invalid path for file move.", r.URL.Path), w, auth)
-			return
-		}
 		if fileExists(destFile) {
 			errHandled(fail.New("Destination file already exists", input), w, auth)
 			return
@@ -352,12 +348,10 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	prm, err := permission.Get(filename)
+	prm, err := permission.FileDelete(filepath.Dir(strings.TrimSuffix(filename, "/")), filename)
 	if errHandled(err, w, auth) {
 		return
 	}
-
-	prm = permission.FileUpdate(prm)
 
 	if !auth.canWrite(prm) {
 		if !auth.canRead(prm) {
@@ -369,7 +363,15 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	os.Remove(filename)
+	//TODO: Should I recurse folder structure and now allow the delete to finish if
+	// they don't have permissions on children?  Or does owning the folder give the rights
+	// to remove everything in it regardless of children's owner?  I'm in favor of the latter
+	// as it's simplier, however is it expected behavior?
+	err = os.RemoveAll(filename)
+	if errHandled(err, w, auth) {
+		return
+	}
+
 	err = permission.Delete(filename)
 	if errHandled(err, w, auth) {
 		return
@@ -412,7 +414,7 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 	var prm *permission.Permission
 	if isDocPath(resource) {
 		prm = permission.Doc()
-	} else if _, p := splitRootAndPath(resource); p == "file" {
+	} else if isFileRoot(resource) {
 		prm = permission.FileRoot()
 	} else {
 		prm, err = permission.Get(filename)

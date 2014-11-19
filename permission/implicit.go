@@ -37,9 +37,27 @@ func AppNewDefault(owner string) *Permission {
 	}
 }
 
-// Any authenticated user can post a new file
+// Any authenticated user can post a new file if they
+// have write access to the parent folder
 func FileNew(parentFolder string) (*Permission, error) {
 	return Get(parentFolder)
+}
+
+func FileDelete(parentFolder, filename string) (*Permission, error) {
+	prm, err := Get(parentFolder)
+	if err != nil {
+		return nil, err
+	}
+	return FileUpdate(prm), nil
+}
+
+//Only file owners can update a file
+func FileUpdate(base *Permission) *Permission {
+	prm := *base
+	prm.Private = Read + Write
+	removeWrite(&prm.Friend)
+	removeWrite(&prm.Public)
+	return &prm
 }
 
 // Default permissions on the root of the files directory
@@ -47,15 +65,6 @@ func FileRoot() *Permission {
 	return &Permission{
 		Friend: Read + Write,
 	}
-}
-
-//Only file owners can delete a file
-func FileUpdate(base *Permission) *Permission {
-	prm := *base
-	prm.Private = Read + Write
-	removeWrite(&prm.Friend)
-	removeWrite(&prm.Public)
-	return &prm
 }
 
 //Default file permissions for new files
