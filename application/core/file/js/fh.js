@@ -385,6 +385,23 @@ window.fh = (function() {
                     .replace(/\/\#/g, '#')
                     .replace(/\:\//g, '://');
             },
+            splitRootAndPath: function(pattern) {
+                if (!pattern || typeof pattern !== "string") {
+                    return null;
+                }
+                if (pattern[0] === "/") {
+                    pattern = pattern.slice(1);
+                }
+                var split = pattern.split("/");
+                var root = split[0];
+                var path;
+                if (split.length < 2) {
+                    path = "/";
+                } else {
+                    path = "/" + split.slice(1).join("/");
+                }
+                return [root, path];
+            },
             urlParm: function(sParam) {
                 var sPageURL = window.location.search.substring(1);
                 var sURLVariables = sPageURL.split('&');
@@ -406,24 +423,21 @@ window.fh = (function() {
             return "";
         }
 
-        var split = fileurl.split("/");
+        var split = fh.util.splitRootAndPath(fileurl);
 
-        if (split[0] === "") {
-            split = split.slice(1);
+        var root = split[0];
+        var path = split[1];
+
+        if (versions.indexOf(root) === -1) {
+            //app path
+            var app = root;
+            split = fh.util.splitRootAndPath(path);
+            root = split[0];
+            path = split[1];
+            return fh.util.urlJoin("/", app, root, "properties", path);
         }
-
-        var slc1, slc2;
-
-        if (versions.indexOf(split[0]) != -1) {
-            slc1 = split.slice(0, 1);
-            slc2 = split.slice(1);
-        } else {
-            slc1 = split.slice(0, 2);
-            slc2 = split.slice(2);
-        }
-
-        var prop = slc1.concat("properties", slc2);
-        return "/" + prop.join("/");
+        //non-app path
+        return fh.util.urlJoin("/", root, "properties", path);
     }
 
 }()); //end

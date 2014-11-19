@@ -672,7 +672,7 @@ Response (200):
 By default new files are private rw only. By not specifying private permissions the file retains its
 existing permissions for that group.
 
-*Set permissions for all files in a directory*
+*Set permissions for all files in a directory* note the trailing slash.
 ```
 PUT "/v1/properties/file/blog/published/"
 

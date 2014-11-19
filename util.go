@@ -25,7 +25,6 @@ func init() {
 }
 
 const (
-	version      = "v1"
 	docsDir      = "./docs/"
 	fileDir      = "./file/"
 	datastoreDir = "./datastore/"
@@ -56,6 +55,25 @@ func splitRootAndPath(pattern string) (root, path string) {
 func isDocPath(resource string) bool {
 	root, _ := splitRootAndPath(resource)
 	return root == "docs"
+}
+
+func isFilePath(resource string) bool {
+	root, path := splitRootAndPath(resource)
+	if isVersion(root) {
+		root, _ = splitRootAndPath(path)
+		return root == "file"
+	}
+
+	return isFilePath(path)
+}
+
+func isFileRoot(resource string) bool {
+	root, path := splitRootAndPath(resource)
+	if isVersion(root) {
+		return strings.TrimSuffix(path, "/") == "file"
+	}
+
+	return isFileRoot(path)
 }
 
 // urlPathToFile takes a url path and returns the path to the file

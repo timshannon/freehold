@@ -13,16 +13,19 @@ QUnit.module("files", {
             }), "testfile.xml");
 
         //upload file
-        fh.file.upload("/testing/v1/file/testdata/", form)
-            .always(function(result) {
-                assert.deepEqual(result, {
-                    status: "success",
-                    data: [{
-                        name: "testfile.xml",
-                        url: "/testing/v1/file/testdata/testfile.xml"
-                    }]
-                });
-                QUnit.start();
+        fh.file.newFolder("/testing/v1/file/testdata/")
+            .always(function() {
+                fh.file.upload("/testing/v1/file/testdata/", form)
+                    .always(function(result) {
+                        assert.deepEqual(result, {
+                            status: "success",
+                            data: [{
+                                name: "testfile.xml",
+                                url: "/testing/v1/file/testdata/testfile.xml"
+                            }]
+                        });
+                        QUnit.start();
+                    });
             });
 
     },
@@ -33,10 +36,10 @@ QUnit.module("files", {
             .always(function(result) {
                 assert.deepEqual(result, {
                     status: "success",
-                    data:[ {
-                        name: "testfile.xml",
-                        url: "/testing/v1/file/testdata/testfile.xml"
-                    }]
+                    data: {
+                        name: "testdata",
+                        url: "/testing/v1/file/testdata/"
+                    }
                 });
                 QUnit.start();
             });
@@ -464,7 +467,7 @@ QUnit.asyncTest("Max Key", function(assert) {
     var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
 
     for (var i = 0; i < 100; i++) {
-        $.when(ds.put(i, fh.uuid()))
+        $.when(ds.put(i, fh.util.uuid()))
             .then();
     }
 
@@ -483,7 +486,7 @@ QUnit.asyncTest("Min Key", function(assert) {
     var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
 
     for (var i = 0; i < 100; i++) {
-        $.when(ds.put(i, fh.uuid()))
+        $.when(ds.put(i, fh.util.uuid()))
             .then();
     }
 
@@ -519,7 +522,7 @@ QUnit.asyncTest("Iterate through data", function(assert) {
 
     var data = {};
     for (var i = 0; i <= 100; i++) {
-        data[i] = fh.uuid();
+        data[i] = fh.util.uuid();
     }
 
     ds.putObj(data)
@@ -554,9 +557,9 @@ QUnit.asyncTest("Regex test", function(assert) {
     var data = {};
     for (var i = 0; i <= 100; i++) {
         if (i < 10) {
-            data["regextest" + i] = fh.uuid();
+            data["regextest" + i] = fh.util.uuid();
         } else {
-            data[i] = fh.uuid();
+            data[i] = fh.util.uuid();
         }
     }
 
@@ -589,9 +592,9 @@ QUnit.asyncTest("Count + Regex", function(assert) {
     var data = {};
     for (var i = 0; i <= 100; i++) {
         if (i < 10) {
-            data["regextest" + i] = fh.uuid();
+            data["regextest" + i] = fh.util.uuid();
         } else {
-            data[i] = fh.uuid();
+            data[i] = fh.util.uuid();
         }
     }
 
@@ -633,7 +636,7 @@ QUnit.module("Datastore Iter", {
                 var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
 
                 for (var i = 0; i < 100; i++) {
-                    $.when(ds.put(i, fh.uuid()))
+                    $.when(ds.put(i, fh.util.uuid()))
                         .then();
                 }
 

@@ -75,7 +75,7 @@ $(document).ready(function() {
             $("#fileBrowse").modal();
         },
         "selectFile": function(event) {
-            window.location = "/datastore/?file=" + rMain.get("selected");
+            window.location = "/datastore?file=" + rMain.get("selected");
         },
         "viewValue": function(event) {
             $("#viewValue").modal();
