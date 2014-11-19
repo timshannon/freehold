@@ -89,7 +89,7 @@ $(document).ready(function() {
                 .done(function() {
                     refreshApps();
                 })
-                .fail(function() {
+                .fail(function(result) {
                     rManage.set("error", result.message);
                 });
         },

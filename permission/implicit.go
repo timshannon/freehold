@@ -38,7 +38,12 @@ func AppNewDefault(owner string) *Permission {
 }
 
 // Any authenticated user can post a new file
-func FileNew() *Permission {
+func FileNew(parentFolder string) (*Permission, error) {
+	return Get(parentFolder)
+}
+
+// Default permissions on the root of the files directory
+func FileRoot() *Permission {
 	return &Permission{
 		Friend: Read + Write,
 	}
