@@ -75,19 +75,22 @@
 				{{name}} <span class="caret"></span>
 				</a>
 				<ul class="dropdown-menu" role="menu" aria-labelledby="folderDrop">
+					{{#if selectKeypath.indexOf("files") > -1}}
 					<li>
 						<a href="#" on-click="newFolder"><span class="glyphicon glyphicon-plus"></span> New Folder</a> 
 					</li>
 					<li class="divider"></li>
+					{{/if}}
 					<li>
 						<a href="#" on-click="star">
 							<span class="glyphicon glyphicon-star"></span> {{#if currentFolder.starred}}Remove{{else}}Add{{/if}} Star
 						</a> 
 					</li>
-					{{#if selectKeypath !== "files" && selectKeypath !== "datastores"}}
+					{{#if selectKeypath.indexOf("files") > -1 && selectKeypath !== "files"}}
 						<li><a href="#" on-click="renameFolder">Rename</a></li>
-						<li class="divider"></li>
 						<li><a href="#" on-click="deleteFolder"><span class="glyphicon glyphicon-trash"></span> Delete</a></li>
+						<li class="divider"></li>
+						<li><a href="#" on-click="properties"><span class="glyphicon glyphicon-cog"></span> Folder Properties</a></li>
 					{{/if}}
 				</ul>
 				</span>

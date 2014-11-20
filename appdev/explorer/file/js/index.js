@@ -152,7 +152,7 @@ $(document).ready(function() {
     function setRoot(app) {
         rMain.set("app", app);
         rMain.set("files", {
-            url: fh.util.urlJoin(app, "/v1/file"),
+            url: fh.util.urlJoin(app, "/v1/file/"),
             name: "files",
             canSelect: true,
             selected: true,
@@ -160,7 +160,7 @@ $(document).ready(function() {
             children: [],
         });
         rMain.set("datastores", {
-            url: fh.util.urlJoin(app, "/v1/datastore"),
+            url: fh.util.urlJoin(app, "/v1/datastore/"),
             name: "datastores",
             canSelect: true,
             iconClass: "fa fa-database",
@@ -212,9 +212,9 @@ $(document).ready(function() {
 
         setRoot(app);
 
-        if (url.lastIndexOf("/") === url.length - 1) {
-            url = url.slice(0, url.length - 1);
-        }
+        /*if (url.lastIndexOf("/") === url.length - 1) {*/
+        /*url = url.slice(0, url.length - 1);*/
+        /*}*/
 
         updateFilesTo(urlParts[rootPlace] === "file" ? "files" : "datastores", url);
 
@@ -236,12 +236,9 @@ $(document).ready(function() {
                     return;
                 }
 
-                var kparts = newUrl.split("/");
-                var uparts = to.split("/");
 
-                kparts.push(uparts[kparts.length]);
+                var nextUrl = fh.util.urlJoin(newUrl, to.slice(newUrl.length).split("/")[0], "/");
 
-                var nextUrl = kparts.join("/");
                 for (var i = 0; i < result.data.length; i++) {
                     if (nextUrl == result.data[i].url) {
                         updateFilesTo(newKeypath + "." + i, to);
@@ -305,25 +302,16 @@ $(document).ready(function() {
             if (!file.hasOwnProperty("children")) {
                 file.children = [];
             }
-            if (file.url === "/v1/file") {
-                file.name = "files";
-                file.explorerIcon = "fa fa-folder-open";
-            }
 
-            if (file.url === "/v1/datastore") {
-                file.name = "datastores";
-                file.explorerIcon = "fa fa-database";
-            }
-            if (!file.hasOwnProperty("name") && file.hasOwnProperty("url")) {
-                file.name = file.url.slice(file.url.lastIndexOf("/") + 1);
-            }
         } else {
             file.explorerIcon = icon(file.name);
             file.hide = true; //hide from treeview
-            file.modifiedDate = new Date(file.modified).toLocaleString();
             file.humanSize = filesize(file.size); //thanks Jason Mulligan (https://github.com/avoidwork/filesize.js)
         }
 
+        if (file.modified) {
+            file.modifiedDate = new Date(file.modified).toLocaleString();
+        }
         return file;
     }
 
@@ -354,16 +342,45 @@ $(document).ready(function() {
         });
 
         for (var i = 0; i < files.length; i++) {
-            getFile(files[i], "currentFolder.children." + i);
+            var keypath = "currentFolder.children." + i;
+            if (files[i] === "/v1/file/") {
+                rMain.set(keypath, {
+                    name: "files",
+                    explorerIcon: "fa fa-folder-open",
+                    url: files[i],
+                    isFolder: true,
+                });
+                continue;
+            }
+
+            if (files[i] === "/v1/datastore/") {
+                rMain.set(keypath, {
+                    name: "datastores",
+                    explorerIcon: "fa fa-database",
+                    url: files[i],
+                    isFolder: true,
+                });
+                continue;
+            }
+
+            getFile(files[i], keypath);
         }
     }
 
     function getFile(url, keypath) {
+        if (url.lastIndexOf("/") === url.length - 1) {
+            url = url.slice(0, url.length - 1);
+        }
+
         fh.properties.get(url)
             .done(function(result) {
                 var file = result.data;
+
                 if (!file.hasOwnProperty("url")) {
                     file.url = url;
+                }
+                if (!file.hasOwnProperty("name")) {
+                    file.name = url.split("/").pop();
                 }
                 file = setFileType(file);
                 rMain.set(keypath, result.data);
@@ -371,6 +388,7 @@ $(document).ready(function() {
             .fail(function(result) {
                 rMain.set(keypath, {
                     name: "Error Loading File: " + result.message,
+                    explorerIcon: "exclamation-triangle",
                 });
             });
     }
