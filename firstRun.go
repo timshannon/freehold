@@ -93,6 +93,12 @@ func recurseSetPermissionOnFolder(filePath string, prm *permission.Permission) e
 		return err
 	}
 
+	//set folder permissions
+	err = permission.Set(filePath, prm)
+	if err != nil {
+		return err
+	}
+
 	for i := range files {
 		child := path.Join(filePath, files[i].Name())
 		if files[i].IsDir() {
