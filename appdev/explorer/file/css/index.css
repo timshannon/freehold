@@ -6,7 +6,7 @@
 	margin-top: -20px
 }
 
-#pageNav {
+.pageNav {
 	border-bottom: 1px solid #ccc;
 	padding-top: 15px;
 	padding-bottom: 15px;
@@ -14,12 +14,12 @@
 }
 
 
-#sidebar {
+.sidebar {
 	border-right: 1px solid #ccc;
 	min-height: 80vh;
 }
 
-#trees {
+.trees {
 	margin-top: 10px;
 }
 
@@ -126,4 +126,32 @@
 }
 .table a:hover {
 	text-decoration: none;
+}
+
+.overlay {
+	position: fixed;
+	z-index: 10000;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	opacity: 0.7;
+	background-color: #777;
+}
+
+.loading {
+	position: fixed;
+	z-index: 10005;
+	top: 100px;
+	left: 50%;
+	margin-left: -20%;
+	width: 40%;	
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	padding: 15px;
+	background-color: #e7e7e7;
+}
+
+.loading>.progress {
+	margin-bottom: 0px;
 }
