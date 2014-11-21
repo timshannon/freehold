@@ -82,6 +82,9 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 
 	//New Folder
 	err = os.Mkdir(urlPathToFile(r.URL.Path), 0777)
+	if os.IsExist(err) {
+		err = fail.New("Folder already exists!", r.URL.Path)
+	}
 	if errHandled(err, w, auth) {
 		return
 	}

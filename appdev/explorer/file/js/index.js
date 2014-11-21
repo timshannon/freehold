@@ -25,8 +25,13 @@ $(document).ready(function() {
 
     getApps();
 
-    settings.load(setRoot);
-
+    settings.load(function() {
+        setRoot();
+        rMain.set("sorting", settings.get("sorting", {
+            by: "name",
+            asc: true
+        }));
+    });
 
     //events
     rMain.on({
@@ -41,7 +46,7 @@ $(document).ready(function() {
                 openUrl(event.context.url);
                 return;
             }
-            selectFolder(event.keypath.replace("currentFolder", rMain.get("currentKeypath")));
+            selectFolder(event.context.treepath);
         },
         "crumbSelect": function(event) {
             selectFolder(event.context.keypath);
@@ -72,20 +77,29 @@ $(document).ready(function() {
         "viewStarred": function(event) {
             selectFolder("stars");
         },
+        "refresh": function(event) {
+            openUrl(rMain.get("currentFolder.url"));
+        },
         "newFolder": function(event) {
             rMain.set("newFolderName", null);
+            rMain.set("newFolderError", null);
             $("#newFolder").modal();
         },
         "newFolderSave": function(event) {
-            $("#newFolder").modal("hide");
+            if (!event.context.newFolderName) {
+                rMain.set("newFolderError", "You must specify a folder name.");
+                return;
+            }
             event.original.preventDefault();
             var newUrl = fh.util.urlJoin(event.context.currentFolder.url, event.context.newFolderName);
+
             fh.file.newFolder(newUrl)
                 .done(function() {
                     updateFolder(event.context.currentFolder.url, event.context.currentKeypath);
+                    $("#newFolder").modal("hide");
                 })
                 .fail(function(result) {
-                    error(result.message);
+                    rMain.set("newFolderError", result.message);
                 });
         },
         "removeStar": function(event) {
@@ -110,23 +124,29 @@ $(document).ready(function() {
             }
         },
         "renameFolder": function(event) {
-
+            //TODO
         },
         "deleteFolder": function(event) {
             fh.file.delete(event.context.url);
             selectFolder(parentKeypath(rMain.get("currentKeypath")));
             settings.stars.remove(event.context.url);
         },
+        "sortBy": function(event, by) {
+            if (rMain.get("sorting.by") === by) {
+                rMain.toggle("sorting.asc");
+            } else {
+                rMain.set("sorting.by", by);
+            }
+
+            sortCurrent();
+            settings.put("sorting", rMain.get("sorting"));
+        }
     });
 
     //functions
     function selectFolder(keypath) {
         var folder = rMain.get(keypath);
-
         document.title = folder.name + " - Explorer - freehold";
-        rMain.set("currentFolder", folder);
-        rMain.set("currentKeypath", keypath);
-        openParent(keypath);
 
         rMain.set("selectKeypath", keypath);
         if (keypath === "stars") {
@@ -134,18 +154,37 @@ $(document).ready(function() {
             return;
         }
 
-        updateFolder(folder.url, keypath);
-        buildBreadcrumbs(keypath);
+        updateFolder(folder.url, keypath, function() {
 
-        if (settings.stars.isStar(folder.url)) {
-            rMain.set("currentFolder.starred", true);
-        }
+            folder = rMain.get(keypath);
+            rMain.set("currentKeypath", keypath);
+            openParent(keypath);
+            buildBreadcrumbs(keypath);
+
+            folder.files = [];
+
+            for (var i = 0; i < folder.children.length; i++) {
+                folder.files.push(folder.children[i]);
+                folder.files[i].treepath = keypath + ".children." + i;
+            }
+
+            sortCurrent();
+
+            rMain.set("currentFolder", folder);
+            if (settings.stars.isStar(folder.url)) {
+                rMain.set("currentFolder.starred", true);
+            }
+        });
+
     }
 
-    function updateFolder(url, keypath) {
+    function updateFolder(url, keypath, postUpdate) {
         fh.properties.get(url)
             .done(function(result) {
                 mergeFolder(result.data, keypath + ".children");
+                if (postUpdate) {
+                    postUpdate();
+                }
             });
     }
 
@@ -211,13 +250,9 @@ $(document).ready(function() {
         }
 
         setRoot(app);
-
-        /*if (url.lastIndexOf("/") === url.length - 1) {*/
-        /*url = url.slice(0, url.length - 1);*/
-        /*}*/
+        rMain.set("loading", true);
 
         updateFilesTo(urlParts[rootPlace] === "file" ? "files" : "datastores", url);
-
     }
 
 
@@ -233,6 +268,7 @@ $(document).ready(function() {
                 openParent(fromKeypath);
                 if (newUrl.indexOf(to) !== -1) {
                     selectFolder(fromKeypath);
+                    rMain.set("loading", false);
                     return;
                 }
 
@@ -273,7 +309,10 @@ $(document).ready(function() {
         }
 
         rMain.set(keypath, newFiles);
-        rMain.update("currentFolder"); //update currentFolder so view reflects new data
+        sort(rMain.get(keypath), {
+            by: "name",
+            asc: true
+        });
     }
 
     function mergeAttributes(current, newval) {
@@ -334,6 +373,50 @@ $(document).ready(function() {
         rMain.set("breadcrumbs", crumbs);
     }
 
+    function sortCurrent() {
+        var sorting = rMain.get("sorting");
+        var files = rMain.get("currentFolder.files");
+        sort(files, sorting);
+    }
+
+    function sort(files, sorting) {
+        if (!files) {
+            return;
+        }
+
+        files.sort(function(a, b) {
+            if (!sorting.asc) {
+                var tmp = a;
+                a = b;
+                b = tmp;
+            }
+            if (settings.get("folderSort", true)) {
+                if (a.isFolder && !b.isFolder) {
+                    return -1;
+                }
+
+                if (b.isFolder && !a.isFolder) {
+                    return 1;
+                }
+            }
+
+            if (sorting.by === "size") {
+                return a.size - b.size;
+            }
+            if (sorting.by === "modified") {
+                return Date.parse(a.modified) - Date.parse(b.modified);
+            }
+            if (a[sorting.by] > b[sorting.by]) {
+                return 1;
+            }
+            if (a[sorting.by] < b[sorting.by]) {
+                return -1;
+            }
+            return 0;
+        });
+
+    }
+
     function updateStarFolder() {
         var stars = settings.get("starred", {});
         var files = Object.getOwnPropertyNames(stars);
@@ -342,7 +425,7 @@ $(document).ready(function() {
         });
 
         for (var i = 0; i < files.length; i++) {
-            var keypath = "currentFolder.children." + i;
+            var keypath = "currentFolder.files." + i;
             if (files[i] === "/v1/file/") {
                 rMain.set(keypath, {
                     name: "files",
@@ -365,6 +448,7 @@ $(document).ready(function() {
 
             getFile(files[i], keypath);
         }
+		//TODO: Fix sorting 
     }
 
     function getFile(url, keypath) {
