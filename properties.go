@@ -5,6 +5,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"path"
@@ -58,6 +59,7 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 		four04(w, r)
 		return
 	}
+	fmt.Println("exists ", filename)
 
 	if errHandled(err, w, auth) {
 		return
