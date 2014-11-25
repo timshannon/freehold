@@ -154,6 +154,7 @@ func Install(file, owner string) (*App, error) {
 		}
 		//set permissions
 		err = permission.Set(filename, permission.AppNewDefault(owner))
+		//TODO: handle error (wtf tim), and set folder level permissions
 	}
 
 	ds, err := data.OpenCoreDS(DS)
