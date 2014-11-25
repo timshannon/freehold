@@ -130,12 +130,19 @@ func Install(file, owner string) (*App, error) {
 	}
 	defer r.Close()
 
-	os.MkdirAll(installDir, 0777)
+	err = os.Mkdir(installDir, 0777)
+	if err != nil {
+		return nil, err
+	}
 	for _, f := range r.File {
 		filename := path.Join(installDir, f.Name)
 
 		if f.FileInfo().IsDir() {
-			err := os.MkdirAll(filename, 0777)
+			err := os.Mkdir(filename, 0777)
+			if err != nil {
+				return nil, err
+			}
+			err = permission.Set(filename, permission.AppNewDefault(owner))
 			if err != nil {
 				return nil, err
 			}
@@ -154,7 +161,9 @@ func Install(file, owner string) (*App, error) {
 		}
 		//set permissions
 		err = permission.Set(filename, permission.AppNewDefault(owner))
-		//TODO: handle error (wtf tim), and set folder level permissions
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	ds, err := data.OpenCoreDS(DS)

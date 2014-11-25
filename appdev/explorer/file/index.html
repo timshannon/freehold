@@ -22,7 +22,16 @@
 	TODO
 </modal>
 
-<modal id="settings" title="Explorer Settings" >
+<modal id="settings" title="Explorer Settings"x >
+	<form role="form">
+		<div class="checkbox">
+			<label><input type="checkbox" checked="{{newWindow}}"> Open files in new window.</label>
+		</div>
+		<div class="checkbox">
+			<label><input type="checkbox" checked="{{folderSort}}"> Sort by folder first.</label>
+		</div>
+
+	</form>
 </modal>
 
 <modal id="newFolder" title="New Folder" customFooter="true">
@@ -116,8 +125,7 @@
 			</button>
 			<ul class="dropdown-menu dropdown-menu-right" role="menu">
 				<li>
-					<a href="#" on-click="sortBy:name">Name 
-					{{#if sorting.by === "name"}}
+					<a href="#" on-click="sortBy:name">Name {{#if sorting.by === "name"}}
 					<span class="pull-right glyphicon glyphicon-{{#if sorting.asc}}chevron-up{{else}}chevron-down{{/if}}"></span>
 					{{/if}}
 					</a>
@@ -145,7 +153,7 @@
 				</li>
 			</ul>
 		</div>
-		<button type="button" class="btn btn-default" title="Settings"><span class="fa fa-2 fa-cogs"></span></button>
+		<button type="button" class="btn btn-default" on-click="openSettings" title="Settings"><span class="fa fa-2 fa-cogs"></span></button>
 		</div>
 	</div>
 
@@ -225,7 +233,7 @@
 				</td>
 					{{else}}
 				<td>
-						<a href="{{url}}">
+						<a href="{{url}}" target="{{#newWindow}}_blank{{/newWindow}}" {{#.download}}download=""{{/download}}>
 							<span class="explorer-icon fa fa-{{explorerIcon}}"></span>  {{name}}
 						</a>
 				</td>
@@ -261,7 +269,7 @@
 		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
 	</a>
 {{else}}
-	<a href="{{url}}" class="file-tile">
+	<a href="{{url}}" target="{{#newWindow}}_blank{{/newWindow}}" {{#.download}}download=""{{/download}} class="file-tile">
 		<span class="grid-icon fa fa-5x fa-{{explorerIcon}}"></span>
 		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
 	</a>

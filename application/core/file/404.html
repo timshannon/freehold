@@ -4,28 +4,43 @@
     <title>404 - Not found</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
-    <!-- Bootstrap -->
-		<link href="/core/v1/file/css/bootstrap.min.css" rel="stylesheet" media="screen">
-      </head>
+		<link href="/core/v1/file/css/freehold.css" rel="stylesheet" media="screen"> 
+	</head>
 <body>
-<nav class="navbar navbar-default" role="navigation">
-	<div class="navbar-header">
-		<a class="navbar-brand" href="/">freehold</a>
-	</div>
-</nav>
+<div id="nb">
+</div>
 
 <div class="container">
-<div class="panel panel-danger">
-	<div class="panel-heading">
-		<h3 class="panel-title">404</h3>
+	<div class="panel panel-danger">
+		<div class="panel-heading">
+			<h3 class="panel-title">404</h3>
+		</div>
+		<div class="panel-body">
+			TODO: Come up with clever 404.	
+		</div>
 	</div>
-	<div class="panel-body">
-		TODO: Come up with clever 404.	
-	</div>
-</div>
 </div>
 <script src="/core/v1/file/js/jquery-2.1.1.min.js"></script>
 <script src="/core/v1/file/js/bootstrap.min.js"></script>
+<script src="/core/v1/file/js/ractive.min.js"></script>
+<script src="/core/v1/file/js/fh.js"></script>
+<script src="/core/v1/file/js/components.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+    var rNav = new Ractive({
+        el: "#nb",
+        template: "<navbar></navbar>",
+				data: {
+					help: {
+						title: "404",
+						text: "If you are logged out, or have lost your session, try logging back in " +
+							"to gain access to this page.",	
+					}
+			}
+    });
+});
+</script>
+
 </body>
 </html>
 
