@@ -11,49 +11,4 @@ $(document).ready(function() {
     });
 
 
-    //Events
-    rMain.on({
-        loginModal: function(event) {
-            rMain.set({
-                "loginErr": false,
-                "username": "",
-                "password": "",
-                "rememberMe": false
-            });
-
-            $("#loginModal").modal();
-            $("#loginModal").on("shown.bs.modal", function() {
-                $("#username").focus();
-            });
-
-        },
-        login: function(event) {
-            rMain.set("waiting", true);
-            rMain.set("loginErr", null);
-            event.original.preventDefault();
-            var data;
-
-            if (event.context.rememberMe) {
-                var today = new Date(Date.now());
-                today.setDate(today.getDate() + 15);
-                data = today;
-            }
-            if (event.context.username === "") {
-                rMain.set("loginerr", "username is required");
-                rMain.set("waiting", false);
-                return;
-            }
-
-            fh.session.login(event.context.username, event.context.password, data)
-                .done(function(result) {
-                    location.reload();
-                })
-                .fail(function(result) {
-                    rMain.set("loginErr", result.message);
-                    rMain.set("waiting", false);
-                });
-        },
-    });
-
-
 });

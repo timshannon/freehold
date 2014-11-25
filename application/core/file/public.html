@@ -5,7 +5,6 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 		<link href="/core/v1/file/css/freehold.css" rel="stylesheet" media="screen">
-		<link href="/core/v1/file/css/public.css" rel="stylesheet" media="screen">
 
 	<!--TODO:<link rel="shortcut icon" href="/core/v1/file/images/favicon.ico">-->
 </head>
@@ -35,36 +34,7 @@ Freehold is a free and open source project released under the MIT license.  Lice
 <!--templates-->
 <script id="tMain" type="text/ractive">
 <navbar  error="{{error}}">
-		<button type="button" id="loginButton" on-click="loginModal" class="btn btn-default navbar-btn navbar-right">Log in</button>
 </navbar>
-
-<modal id="loginModal" title="Log in">
-	<form>
-	{{#loginErr}}
-	<span id="err" class="label label-danger">{{loginErr}}</span>
-	{{/loginErr}}
-		<div class="form-group">
-			<label class="sr-only" for="username">Username</label>	
-			<input class="form-control" id="username" name="username" placeholder="Enter username" value="{{username}}">
-		</div>
-		<div class="form-group">
-			<label class="sr-only" for="password">Password</label>
-			<input type="password" class="form-control" id="password" name="password" placeholder="Password" value="{{password}}">
-		</div>
-		<div class="checkbox">
-			<label>
-				<input type="checkbox" id="rememberMe" name="rememberMe" checked="{{rememberMe}}"> Remember me
-			</label>
-		</div>
-		<button on-click="login" class="btn btn-primary{{#waiting}} disabled{{/waiting}}">Log In</button>
-		{{#waiting}}
-		<span id="spinnerContainer">
-			<span id="loginSpinner" class="spinner"></span>
-		</span>
-		{{/waiting}}
-	</form>
-</modal>
-
 </script>
 <!--end templates-->
 

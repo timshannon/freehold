@@ -96,7 +96,11 @@ func (d *Datastore) Put(data Data) []error {
 	errors := make([]error, 0, len(data))
 
 	if key, ok := data["key"]; ok {
-		v := data["value"]
+		v, ok := data["value"]
+		if !ok {
+			errors = append(errors, fail.New("No value put in datastore", data))
+			return errors
+		}
 
 		err := d.store.Put([]byte(*key), []byte(*v))
 		if err != nil {

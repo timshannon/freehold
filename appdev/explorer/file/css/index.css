@@ -155,3 +155,8 @@
 .loading>.progress {
 	margin-bottom: 0px;
 }
+
+/*fix for firefox - wrap was causing icons to drop to next line*/
+.dropdown-menu-right > li > a {
+	white-space: normal;
+}

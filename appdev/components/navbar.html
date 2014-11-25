@@ -1,3 +1,5 @@
+<link rel="ractive" href="modal.html" name="modal">
+<div>
 <nav class="navbar navbar-default navbar-static-top" role="navigation"> 
 	<div class="navbar-header"> 
 		<a class="navbar-brand" href="/" title="home">{{brand}}</a> 
@@ -21,9 +23,38 @@
 				<button type="button" id="logoutButton" on-click="logout" class="btn btn-default navbar-btn">Log Out</button> 
 			</div> 
 		{{/authenticated}} 
+		{{^authenticated}} 
+			<button type="button" id="loginButton" on-click="loginModal" class="btn btn-default navbar-btn navbar-right">Log in</button>
+		{{/authenticated}} 
 		{{yield}} 
 	</div> 
 </nav> 
+<modal id="loginModal" title="Log in">
+	<form>
+	{{#loginErr}}
+	<span id="err" class="label label-danger">{{loginErr}}</span>
+	{{/loginErr}}
+		<div class="form-group">
+			<label class="sr-only" for="username">Username</label>	
+			<input class="form-control" id="username" name="username" placeholder="Enter username" value="{{username}}">
+		</div>
+		<div class="form-group">
+			<label class="sr-only" for="password">Password</label>
+			<input type="password" class="form-control" id="password" name="password" placeholder="Password" value="{{password}}">
+		</div>
+		<div class="checkbox">
+			<label>
+				<input type="checkbox" id="rememberMe" name="rememberMe" checked="{{rememberMe}}"> Remember me
+			</label>
+		</div>
+		<button on-click="login" class="btn btn-primary{{#.waiting}} disabled{{/waiting}}">Log In</button>
+		{{#.waiting}}
+		<span class="spinnerContainer">
+			<span class="loginSpinner spinner"></span>
+		</span>
+		{{/waiting}}
+	</form>
+</modal>
 {{#error}} 
 	<div class="overlay"></div> 
 	<div class="navbar-alert alert alert-danger container" role="alert"> 
@@ -33,6 +64,7 @@
 		<span class="close glyphicon glyphicon-refresh"></span><span class="sr-only">Refresh</span></a> 
 	</div> 
 {{/error}}
+</div>
 
         
 <style>
@@ -47,6 +79,15 @@
 	background: #aaaaaa;
 }
 
+.loginSpinner {
+	position: absolute;
+	top: -6px;
+	left: 10px;
+}
+
+.spinnerContainer {
+	position: relative;
+}
 
 .navbar-alert {
 	position: absolute;
@@ -91,14 +132,13 @@ component.exports = {
 		
 		this.on({
 				logout: function(event) {
-						var r = this;
 						fh.session.logout()
 								.done(function() {
 										window.location = "/";
 								})
 								.fail(function(result) {
-										r.set("error", result.message);
-								});
+										this.set("error", result.message);
+								}.bind(this));
 				},
 				openUser: function(event) {
 						window.location = "/home/v1/file/user/";
@@ -106,6 +146,46 @@ component.exports = {
 				refresh: function() {
 						window.location.reload();
 				},
+				loginModal: function(event) {
+            this.set({
+                "loginErr": false,
+                "username": "",
+                "password": "",
+                "rememberMe": false
+            });
+
+            $("#loginModal").modal();
+            $("#loginModal").on("shown.bs.modal", function() {
+                $("#username").focus();
+            });
+
+        },
+        login: function(event) {
+            this.set("waiting", true);
+            this.set("loginErr", null);
+            event.original.preventDefault();
+            var data;
+
+            if (event.context.rememberMe) {
+                var today = new Date(Date.now());
+                today.setDate(today.getDate() + 15);
+                data = today;
+            }
+            if (event.context.username === "") {
+                this.set("loginerr", "username is required");
+                this.set("waiting", false);
+                return;
+            }
+
+            fh.session.login(event.context.username, event.context.password, data)
+                .done(function(result) {
+                    location.reload();
+                })
+                .fail(function(result) {
+                    this.set("loginErr", result.message);
+                    this.set("waiting", false);
+                }.bind(this));
+        },
 		});
 	}
 };

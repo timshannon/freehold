@@ -289,6 +289,11 @@ func datastorePut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if input == nil {
+		errHandled(fail.New("Empty datastore input, nothing to PUT", input), w, auth)
+		return
+	}
+
 	ds, err := data.Open(filename)
 	if errHandled(err, w, auth) {
 		return

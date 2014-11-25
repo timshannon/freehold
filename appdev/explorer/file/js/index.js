@@ -7,6 +7,7 @@ $(document).ready(function() {
     var defaultIcons = buildDefaultIcons();
     var settings = new Settings();
     settings.stars = new Stars();
+    settings.fileType = new FileTypeSettings();
 
     var rNav = new Ractive({
         el: "#nb",
@@ -26,11 +27,13 @@ $(document).ready(function() {
     getApps();
 
     settings.load(function() {
-        setRoot();
         rMain.set("sorting", settings.get("sorting", {
             by: "name",
             asc: true
         }));
+        rMain.set("newWindow", settings.get("newWindow", true));
+        rMain.set("folderSort", settings.get("folderSort", true));
+        setRoot();
     });
 
     //events
@@ -84,6 +87,10 @@ $(document).ready(function() {
             rMain.set("newFolderName", null);
             rMain.set("newFolderError", null);
             $("#newFolder").modal();
+
+            $("#newFolder").on("shown.bs.modal", function() {
+                $("#folderName").focus();
+            });
         },
         "newFolderSave": function(event) {
             if (!event.context.newFolderName) {
@@ -95,7 +102,7 @@ $(document).ready(function() {
 
             fh.file.newFolder(newUrl)
                 .done(function() {
-                    updateFolder(event.context.currentFolder.url, event.context.currentKeypath);
+                    selectFolder(event.context.currentKeypath);
                     $("#newFolder").modal("hide");
                 })
                 .fail(function(result) {
@@ -103,7 +110,7 @@ $(document).ready(function() {
                 });
         },
         "removeStar": function(event) {
-            var stars = rMain.get("currentFolder.children");
+            var stars = rMain.get("currentFolder.files");
             settings.stars.remove(event.context.url);
             stars.splice(event.index.i, 1);
         },
@@ -140,7 +147,26 @@ $(document).ready(function() {
 
             sortCurrent();
             settings.put("sorting", rMain.get("sorting"));
+        },
+        "openSettings": function(event) {
+            $("#settings").modal();
         }
+    });
+
+    rMain.observe({
+        "newWindow": function(newValue, oldValue, keypath) {
+            if (newValue !== undefined) {
+                settings.put("newWindow", newValue);
+                selectFolder(rMain.get("currentKeypath"));
+            }
+        },
+        "folderSort": function(newValue, oldValue, keypath) {
+            if (newValue !== undefined) {
+                settings.put("folderSort", newValue);
+                sortCurrent();
+            }
+        }
+
     });
 
     //functions
@@ -168,9 +194,9 @@ $(document).ready(function() {
                 folder.files[i].treepath = keypath + ".children." + i;
             }
 
+            rMain.set("currentFolder", folder);
             sortCurrent();
 
-            rMain.set("currentFolder", folder);
             if (settings.stars.isStar(folder.url)) {
                 rMain.set("currentFolder.starred", true);
             }
@@ -343,7 +369,10 @@ $(document).ready(function() {
             }
 
         } else {
-            file.explorerIcon = icon(file.name);
+            var ext = file.name.slice(file.name.lastIndexOf(".") + 1);
+
+            file.explorerIcon = settings.fileType.icon(ext) || defaultIcons[ext] || "file-o";
+            file.download = settings.fileType.download(ext);
             file.hide = true; //hide from treeview
             file.humanSize = filesize(file.size); //thanks Jason Mulligan (https://github.com/avoidwork/filesize.js)
         }
@@ -352,12 +381,6 @@ $(document).ready(function() {
             file.modifiedDate = new Date(file.modified).toLocaleString();
         }
         return file;
-    }
-
-    function icon(file) {
-        var ext = file.slice(file.lastIndexOf(".") + 1);
-
-        return rMain.get("settings.files." + ext + ".icons.") || defaultIcons[ext] || "file-o";
     }
 
     function buildBreadcrumbs(keypath) {
@@ -385,11 +408,26 @@ $(document).ready(function() {
         }
 
         files.sort(function(a, b) {
-            if (!sorting.asc) {
-                var tmp = a;
-                a = b;
-                b = tmp;
+            var sa, sb;
+
+            if (sorting.by === "owner") {
+                if (a.permissions) {
+                    sa = a.permissions.owner;
+                }
+                if (b.permissions) {
+                    sb = b.permissions.owner;
+                }
+            } else {
+                sa = a[sorting.by];
+                sb = b[sorting.by];
             }
+
+            if (!sorting.asc) {
+                var tmp = sa;
+                sa = sb;
+                sb = tmp;
+            }
+
             if (settings.get("folderSort", true)) {
                 if (a.isFolder && !b.isFolder) {
                     return -1;
@@ -400,16 +438,30 @@ $(document).ready(function() {
                 }
             }
 
-            if (sorting.by === "size") {
-                return a.size - b.size;
-            }
             if (sorting.by === "modified") {
-                return Date.parse(a.modified) - Date.parse(b.modified);
+                if (sa) {
+                    sa = Date.parse(sa);
+                }
+                if (sb) {
+                    sb = Date.parse(sb);
+                }
             }
-            if (a[sorting.by] > b[sorting.by]) {
+
+
+            if (sa !== undefined && sb !== undefined) {
+                if (sa > sb) {
+                    return 1;
+                }
+                if (sa < sb) {
+                    return -1;
+                }
+                return 0;
+            }
+            if (sa !== undefined) {
                 return 1;
             }
-            if (a[sorting.by] < b[sorting.by]) {
+
+            if (sb !== undefined) {
                 return -1;
             }
             return 0;
@@ -419,44 +471,53 @@ $(document).ready(function() {
 
     function updateStarFolder() {
         var stars = settings.get("starred", {});
-        var files = Object.getOwnPropertyNames(stars);
+        var list = Object.getOwnPropertyNames(stars);
         var folder = rMain.set("currentFolder", {
-            "name": "stars"
+            "name": "stars",
+            "files": [],
         });
 
-        for (var i = 0; i < files.length; i++) {
-            var keypath = "currentFolder.files." + i;
-            if (files[i] === "/v1/file/") {
-                rMain.set(keypath, {
+        var files = rMain.get("currentFolder.files");
+
+        var fileAdd = function(file) {
+            files.push(file);
+            sortCurrent();
+        };
+
+        for (var i = 0; i < list.length; i++) {
+            if (list[i] === "/v1/file/") {
+                fileAdd({
                     name: "files",
                     explorerIcon: "fa fa-folder-open",
-                    url: files[i],
+                    url: list[i],
                     isFolder: true,
                 });
                 continue;
             }
 
-            if (files[i] === "/v1/datastore/") {
-                rMain.set(keypath, {
+            if (list[i] === "/v1/datastore/") {
+                fileAdd({
                     name: "datastores",
                     explorerIcon: "fa fa-database",
-                    url: files[i],
+                    url: list[i],
                     isFolder: true,
                 });
                 continue;
             }
 
-            getFile(files[i], keypath);
+            getFile(list[i], fileAdd);
         }
-		//TODO: Fix sorting 
     }
 
-    function getFile(url, keypath) {
+    function getFile(url, postGet) {
+        var fileurl;
         if (url.lastIndexOf("/") === url.length - 1) {
-            url = url.slice(0, url.length - 1);
+            fileurl = url.slice(0, url.length - 1);
+        } else {
+            fileurl = url;
         }
 
-        fh.properties.get(url)
+        fh.properties.get(fileurl)
             .done(function(result) {
                 var file = result.data;
 
@@ -464,15 +525,16 @@ $(document).ready(function() {
                     file.url = url;
                 }
                 if (!file.hasOwnProperty("name")) {
-                    file.name = url.split("/").pop();
+                    file.name = fileurl.split("/").pop();
                 }
                 file = setFileType(file);
-                rMain.set(keypath, result.data);
+                postGet(file);
             })
             .fail(function(result) {
-                rMain.set(keypath, {
-                    name: "Error Loading File: " + result.message,
+                postGet({
+                    name: "Error Loading File " + fileurl.split("/").pop() + ": " + result.message,
                     explorerIcon: "exclamation-triangle",
+                    url: url,
                 });
             });
     }
@@ -517,7 +579,31 @@ $(document).ready(function() {
 
     function FileTypeSettings() {
         //TODO: icon / application settings for specific filetypes
-        return {};
+        return {
+            icon: function(filetype) {
+                var file = settings.get("files", {})[filetype];
+                if (file) {
+                    return file.icon;
+                }
+                return;
+            },
+            app: function(filetype) {
+                var file = settings.get("files", {})[filetype];
+                if (file) {
+                    return file.app;
+                }
+                return;
+            },
+            download: function(filetype) {
+                var file = settings.get("files", {})[filetype];
+                if (file) {
+                    return file.download;
+                }
+                return false;
+
+            }
+        };
+
     }
 
     function Settings() {
@@ -574,6 +660,7 @@ $(document).ready(function() {
                 }
             };
             this.put = function(setting, value) {
+                this.settings[setting] = value; //make sure setting takes effect immediately
                 this.ds.put(setting, value)
                     .done(function() {
                         this.settings[setting] = value;

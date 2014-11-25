@@ -5,7 +5,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 	"path"
@@ -59,7 +58,6 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 		four04(w, r)
 		return
 	}
-	fmt.Println("exists ", filename)
 
 	if errHandled(err, w, auth) {
 		return
@@ -89,10 +87,13 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 		}
 
 		var size int64
+		var url string
 		if !info.IsDir() {
 			size = info.Size()
+			url = resource
 		} else {
 			size = 0
+			url = resource + "/" // add trailing slash for convience when traversing the filetree
 		}
 
 		respondJsend(w, &JSend{
@@ -100,7 +101,7 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 			Data: &Properties{
 				Name:        filepath.Base(file.Name()),
 				Permissions: prm,
-				Url:         resource,
+				Url:         url,
 				Size:        size,
 				Modified:    info.ModTime().Format(time.RFC3339),
 			},
