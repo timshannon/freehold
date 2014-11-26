@@ -162,6 +162,27 @@ $(document).ready(function() {
                 settings.stars.add(newUrl);
             }
         },
+        "renameFile": function(event) {
+            if (!event.context.name) {
+                rMain.set("currentFile.renameError", "You must specify a name.");
+                return;
+            }
+	//FIXME
+            var newUrl = fh.util.urlJoin("FIXME", event.context.name);
+            var oldUrl = event.context.url;
+
+            fh.file.move(oldUrl, newUrl)
+                .done(function() {
+                    rMain.set("currentFile.rename", false);
+                })
+                .fail(function(result) {
+                    rMain.set("currentFile.renameError", result.message);
+                });
+            if (settings.stars.isStar(oldUrl)) {
+                settings.stars.remove(oldUrl);
+                settings.stars.add(newUrl);
+            }
+        },
         "deleteFolder": function(event) {
             fh.file.delete(event.context.url);
             selectFolder(parentKeypath(rMain.get("currentKeypath")));
@@ -179,6 +200,13 @@ $(document).ready(function() {
         },
         "openSettings": function(event) {
             $("#settings").modal();
+        },
+        "properties": function(event, url) {
+            $("#properties").modal();
+
+            getFile(url, function(file) {
+                rMain.set("currentFile", setFileType(file));
+            });
         },
     });
 

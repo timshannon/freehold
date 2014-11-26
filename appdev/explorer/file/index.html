@@ -19,8 +19,64 @@
 
 <script id="tMain" type="text/ractive">
 <!--properties-->
-<modal id="properties" title="{{currentFile.name}}" >
-	TODO
+<modal id="properties" title="Properties for: {{currentFile.name}}" >
+{{#currentFile}}
+	<ul class="nav nav-tabs" role="tablist">
+		<li class="active"><a href="#details" role="tab" data-toggle="tab">Details</a></li>
+		<li><a href="#permissions" role="tab" data-toggle="tab">Permissions</a></li>
+		<li><a href="#behavior" role="tab" data-toggle="tab">Behavior</a></li>
+	</ul>
+
+	<!-- Tab panes -->
+	<div class="tab-content">
+		<div class="tab-pane active" id="details">
+			<form class="form-horizontal property-form" role="form" on-submit="newFolderSave">
+				<span class="property-icon fa fa-5x fa-{{explorerIcon}}"></span>
+				<div class="form-group {{#renameError}}has-error has-feedback{{/}}" title="{{renameError}}">
+					<label for="currentFileName" class="col-sm-4 control-label">Name</label>
+					<div class="col-sm-8">
+						{{#if rename}}
+						<div class="input-group">
+							<input type="text" class="form-control" id="currentFileName" placeholder="Enter a new name" value="{{name}}">
+							<span class="input-group-btn">
+							<button class="btn btn-default" type="button" on-click="renameFile">Save</button>
+							</span>
+						</div><!-- /input-group -->
+						{{else}}
+						<a href="#" on-click="toggle('currentFile.rename')" class="btn-property-rename form-control-static" title="Rename File">{{name}}</a>
+						{{/if}}
+					</div>
+					{{#renameError}}
+						<span class="form-control-feedback glyphicon glyphicon-remove"></span>
+					{{/renameError}}
+				</div>
+				<div class="form-group">
+					<label for="currentFileUrl" class="col-sm-4 control-label">Url</label>
+					<div class="col-sm-8">
+						<p class="form-control-static">{{url}}</p>
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="currentFileSize" class="col-sm-4 control-label">Size</label>
+					<div class="col-sm-8">
+						<p class="form-control-static">{{humanSize}}</p>
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="currentFileModified" class="col-sm-4 control-label">Last Modified</label>
+					<div class="col-sm-8">
+						<p class="form-control-static">{{modifiedDate}}</p>
+					</div>
+				</div>
+
+			</form>
+		</div>
+		<div class="tab-pane" id="permissions">
+		</div>
+		<div class="tab-pane" id="behavior">
+		</div>
+	</div>
+{{/currentFile}}
 </modal>
 
 <!--settings-->
@@ -126,7 +182,7 @@
 						<li><a href="#" on-click="renameFolder">Rename</a></li>
 						<li><a href="#" on-click="deleteFolder"><span class="glyphicon glyphicon-trash"></span> Delete</a></li>
 						<li class="divider"></li>
-						<li><a href="#" on-click="properties"><span class="glyphicon glyphicon-cog"></span> Folder Properties</a></li>
+						<li><a href="#" on-click="properties:{{currentFolder.url}}"><span class="glyphicon glyphicon-cog"></span> Folder Properties</a></li>
 					{{/if}}
 				</ul>
 				</span>
@@ -184,9 +240,9 @@
 <div class="row">
 	<div class="sidebar  col-sm-3{{#if hideSidebar}} hidden-sidebar{{/if}}">
 		{{#if hideSidebar}}
-			<a href="#" class="sidebar-hide" on-click="toggle('hideSidebar')" title="Show Sidebar"><span class="glyphicon glyphicon-chevron-right"></span></a>
+			<a href="#" class="sidebar-hide-btn" on-click="toggle('hideSidebar')" title="Show Sidebar"><span class="glyphicon glyphicon-chevron-right"></span></a>
 		{{else}}
-			<a href="#" class="sidebar-hide" on-click="toggle('hideSidebar')" title="Hide Sidebar"><span class="glyphicon glyphicon-chevron-left"></span></a>
+			<a href="#" class="sidebar-hide-btn" on-click="toggle('hideSidebar')" title="Hide Sidebar"><span class="glyphicon glyphicon-chevron-left"></span></a>
 			<div class="trees">
 				<tree root="{{files}}" on-select="fileTreeSelect" selectKeypath="{{selectKeypath.replace('files', 'root')}}">
 				</tree>
@@ -272,7 +328,7 @@
 				<td>
 				{{#if selectKeypath !== "stars"}}
 					{{^.isFolder}}
-					<button type="button" class="btn btn-xs btn-default pull-right" title="Properties">
+					<button type="button" class="btn btn-default btn-xs pull-right" on-click="properties:{{.url}}" title="Properties">
 						<span class="glyphicon glyphicon-cog"></span></button>
 					{{/.isFolder}}
 				{{else}}
@@ -298,6 +354,7 @@
 	</a>
 {{else}}
 	<a href="{{url}}" target="{{#newWindow}}_blank{{/newWindow}}" {{#.download}}download=""{{/download}} class="file-tile">
+		<a href="#" class="btn btn-properties" on-click="properties:{{.url}}" title="Properties"><span class="glyphicon glyphicon-cog"></span></a>
 		<span class="grid-icon fa fa-5x fa-{{explorerIcon}}"></span>
 		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
 	</a>
