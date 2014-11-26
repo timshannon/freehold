@@ -85,6 +85,9 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 	if os.IsExist(err) {
 		err = fail.New("Folder already exists!", r.URL.Path)
 	}
+	if os.IsNotExist(err) {
+		err = fail.New("Invalid Folder path specified!", r.URL.Path)
+	}
 	if errHandled(err, w, auth) {
 		return
 	}
@@ -225,11 +228,15 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 		}
 
 		err = moveFile(filename, destFile)
-
+		if os.IsExist(err) {
+			err = fail.New("Folder already exists!", r.URL.Path)
+		}
+		if os.IsNotExist(err) {
+			err = fail.New("Invalid Folder path specified!", r.URL.Path)
+		}
 		if errHandled(err, w, auth) {
 			return
 		}
-
 		respondJsend(w, &JSend{
 			Status: statusSuccess,
 			Data: Properties{
