@@ -18,10 +18,12 @@
 </script>
 
 <script id="tMain" type="text/ractive">
+<!--properties-->
 <modal id="properties" title="{{currentFile.name}}" >
 	TODO
 </modal>
 
+<!--settings-->
 <modal id="settings" title="Explorer Settings"x >
 	<form role="form">
 		<div class="checkbox">
@@ -34,6 +36,7 @@
 	</form>
 </modal>
 
+<!--new folder-->
 <modal id="newFolder" title="New Folder" customFooter="true">
 	<form class="form-horizontal" role="form" on-submit="newFolderSave">
 		<div class="form-group {{#newFolderError}}has-error has-feedback{{/}}" title="{{newFolderError}}">
@@ -50,6 +53,26 @@
 	<div class="modal-footer">
 		<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
 		<button type="button" class="btn btn-primary" on-click="newFolderSave">Save</button>
+	</div>
+</modal>
+
+<!--rename folder-->
+<modal id="renameFolder" title="Rename Folder {{currentFolder.name}}" customFooter="true">
+	<form class="form-horizontal" role="form" on-submit="renameFolderSave">
+		<div class="form-group {{#renameFolderError}}has-error has-feedback{{/}}" title="{{renameFolderError}}">
+			<label for="folderRename" class="col-sm-3 control-label">New Name</label>
+			<div class="col-sm-9">
+				<input type="text" class="form-control" id="folderRename" placeholder="Enter the new folder name" value="{{folderRename}}">
+			</div>
+			{{#renameFolderError}}
+				<span class="form-control-feedback glyphicon glyphicon-remove"></span>
+			{{/renameFolderError}}
+		</div>
+
+	</form>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+		<button type="button" class="btn btn-primary" on-click="renameFolderSave">Save</button>
 	</div>
 </modal>
 
@@ -159,18 +182,23 @@
 
 </div> <!-- row -->
 <div class="row">
-	<div class="sidebar col-sm-3">
-		<div class="trees">
-			<tree root="{{files}}" on-select="fileTreeSelect" selectKeypath="{{selectKeypath.replace('files', 'root')}}">
-			</tree>
-			<tree root="{{datastores}}" on-select="dsTreeSelect" selectKeypath="{{selectKeypath.replace('datastores', 'root')}}" dsTree="true">
-			</tree>
-			<tree root="{{stars}}" on-select="viewStarred" selectKeypath="{{selectKeypath.replace('stars', 'root')}}">
-			</tree>
-		</div>
+	<div class="sidebar  col-sm-3{{#if hideSidebar}} hidden-sidebar{{/if}}">
+		{{#if hideSidebar}}
+			<a href="#" class="sidebar-hide" on-click="toggle('hideSidebar')" title="Show Sidebar"><span class="glyphicon glyphicon-chevron-right"></span></a>
+		{{else}}
+			<a href="#" class="sidebar-hide" on-click="toggle('hideSidebar')" title="Hide Sidebar"><span class="glyphicon glyphicon-chevron-left"></span></a>
+			<div class="trees">
+				<tree root="{{files}}" on-select="fileTreeSelect" selectKeypath="{{selectKeypath.replace('files', 'root')}}">
+				</tree>
+				<tree root="{{datastores}}" on-select="dsTreeSelect" selectKeypath="{{selectKeypath.replace('datastores', 'root')}}" dsTree="true">
+				</tree>
+				<tree root="{{stars}}" on-select="viewStarred" selectKeypath="{{selectKeypath.replace('stars', 'root')}}">
+				</tree>
+			</div>
+		{{/if}}
 	</div> <!-- sidebar -->
 
-	<div id="explorer" class="col-sm-9">
+	<div id="explorer" class="{{#if hideSidebar}}col-sm-12{{else}}col-sm-9{{/if}}">
 	{{#loading}}
 			<div class="overlay"></div>
 			<div class="loading">

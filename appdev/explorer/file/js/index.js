@@ -33,6 +33,7 @@ $(document).ready(function() {
         }));
         rMain.set("newWindow", settings.get("newWindow", true));
         rMain.set("folderSort", settings.get("folderSort", true));
+        rMain.set("hideSidebar", settings.get("hideSidebar", false));
         setRoot();
     });
 
@@ -74,7 +75,7 @@ $(document).ready(function() {
                 return;
             }
 
-            settings.stars.add(url, event.context.name);
+            settings.stars.add(url);
             rMain.set("currentFolder.starred", true);
         },
         "viewStarred": function(event) {
@@ -131,7 +132,35 @@ $(document).ready(function() {
             }
         },
         "renameFolder": function(event) {
-            //TODO
+            rMain.set("folderRename", null);
+            rMain.set("renameFolderError", null);
+            $("#renameFolder").modal();
+
+            $("#renameFolder").on("shown.bs.modal", function() {
+                $("#folderRename").focus();
+            });
+        },
+        "renameFolderSave": function(event) {
+            if (!event.context.folderRename) {
+                rMain.set("renameFolderError", "You must specify a folder name.");
+                return;
+            }
+            event.original.preventDefault();
+            var newUrl = fh.util.urlJoin(rMain.get(parentKeypath(event.context.currentKeypath) + ".url"), event.context.folderRename);
+            var oldUrl = event.context.currentFolder.url;
+
+            fh.file.move(oldUrl, newUrl)
+                .done(function() {
+                    $("#renameFolder").modal("hide");
+                    openUrl(newUrl);
+                })
+                .fail(function(result) {
+                    rMain.set("renameFolderError", result.message);
+                });
+            if (settings.stars.isStar(oldUrl)) {
+                settings.stars.remove(oldUrl);
+                settings.stars.add(newUrl);
+            }
         },
         "deleteFolder": function(event) {
             fh.file.delete(event.context.url);
@@ -150,7 +179,7 @@ $(document).ready(function() {
         },
         "openSettings": function(event) {
             $("#settings").modal();
-        }
+        },
     });
 
     rMain.observe({
@@ -165,8 +194,12 @@ $(document).ready(function() {
                 settings.put("folderSort", newValue);
                 sortCurrent();
             }
-        }
-
+        },
+        "hideSidebar": function(newValue, oldValue, keypath) {
+            if (newValue !== undefined) {
+                settings.put("hideSidebar", newValue);
+            }
+        },
     });
 
     //functions
@@ -308,8 +341,7 @@ $(document).ready(function() {
                 }
             })
             .fail(function(result) {
-                //TODO: Proper Invalid file error
-                error("Bookmark may be invalid: " + result.message);
+                error("Invalid URL: " + result.message);
             });
     }
 
@@ -557,9 +589,9 @@ $(document).ready(function() {
 
     function Stars() {
         return {
-            add: function(url, name) {
+            add: function(url) {
                 var stars = settings.get("starred", {});
-                stars[url] = name;
+                stars[url] = {};
                 settings.put("starred", stars);
             },
             remove: function(url) {
@@ -578,7 +610,6 @@ $(document).ready(function() {
     }
 
     function FileTypeSettings() {
-        //TODO: icon / application settings for specific filetypes
         return {
             icon: function(filetype) {
                 var file = settings.get("files", {})[filetype];

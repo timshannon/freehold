@@ -160,3 +160,21 @@
 .dropdown-menu-right > li > a {
 	white-space: normal;
 }
+
+
+.hidden-sidebar {
+	position: absolute;
+	width: 15px;
+	padding: 0px;
+}
+
+.sidebar-hide {
+	position: absolute;
+	top: 50%;
+	right: 0px;
+	color: #333;
+	z-index: 100;
+}
+
+
+
