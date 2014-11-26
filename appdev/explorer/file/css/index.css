@@ -110,11 +110,32 @@
 	white-space: normal;
 }
 
+.btn-properties {
+	position: absolute;
+	z-index: 100;
+	right: 0px;
+	padding: 5px;
+	color: #333;
+	width: 30px;
+	height: 30px;
+
+	border: 1px solid transparent;
+	border-radius: 4px;
+
+}
+
+.btn-properties:hover {
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	color: #333;
+	background-color: #e6e6e6;
+	border-color: #adadad;
+}
+
 .star {
 	font-size: 1.3em;
 	margin-right: 5px;
 }
-
 
 .starred {
 	color: gold;
@@ -166,15 +187,52 @@
 	position: absolute;
 	width: 15px;
 	padding: 0px;
-}
+	}
 
-.sidebar-hide {
+.sidebar-hide-btn {
 	position: absolute;
-	top: 50%;
 	right: 0px;
 	color: #333;
+	height: 100%;
 	z-index: 100;
 }
 
+.sidebar-hide-btn:hover {
+	background-color: #f5f5f5;	
+}
+
+.sidebar-hide-btn>span {
+	top: 50%;
+}
 
 
+.property-form {
+	margin-top: 15px;
+}
+.property-form>.form-group {
+	margin-bottom: 0px;
+}
+
+.property-icon {
+	position: absolute;
+	left: 30px;
+}
+
+
+.btn-property-rename {
+	color: #333;
+	display: inline-block;
+	border: 1px solid #adadad;
+	border-radius: 4px;
+	padding: 6px 12px;
+}
+
+.btn-property-rename:hover {
+	text-decoration: none;
+	color: #333;
+
+	border: 1px solid #adadad;
+	border-radius: 4px;
+	background-color: #e6e6e6;
+
+}
