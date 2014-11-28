@@ -37,6 +37,7 @@ func makeFirstAdmin(username, password string) error {
 	if err != nil {
 		return err
 	}
+
 	err = os.MkdirAll(datastoreDir, 0777)
 	if err != nil {
 		return err
@@ -47,6 +48,11 @@ func makeFirstAdmin(username, password string) error {
 		Admin:    true,
 	}
 	err = user.New(username, admin)
+	if err != nil {
+		return err
+	}
+
+	err = permission.Set(fileDir, permission.FileRoot(username))
 	if err != nil {
 		return err
 	}

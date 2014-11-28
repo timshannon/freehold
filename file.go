@@ -424,8 +424,6 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 	var prm *permission.Permission
 	if isDocPath(resource) {
 		prm = permission.Doc()
-	} else if isFileRoot(resource) {
-		prm = permission.FileRoot()
 	} else {
 		prm, err = permission.Get(filename)
 		if errHandled(err, w, auth) {

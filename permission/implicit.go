@@ -61,9 +61,11 @@ func FileUpdate(base *Permission) *Permission {
 }
 
 // Default permissions on the root of the files directory
-func FileRoot() *Permission {
+func FileRoot(owner string) *Permission {
 	return &Permission{
-		Friend: Read + Write,
+		Owner:   owner,
+		Private: Read + Write,
+		Friend:  Read + Write,
 	}
 }
 
