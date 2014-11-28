@@ -71,6 +71,7 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 	isFile := isFilePath(resource)
 
 	if !info.IsDir() || (!strings.HasSuffix(r.URL.Path, "/") && isFile) {
+
 		prm, err := permission.Get(filename)
 		if errHandled(err, w, auth) {
 			return
@@ -111,7 +112,8 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 
 	if isFile {
 		//Get Folder permissions to see if the user can view the file list
-		prm, err := permission.Get(filepath.Dir(filename))
+		prm, err := permission.Get(filename)
+
 		if errHandled(err, w, auth) {
 			return
 		}

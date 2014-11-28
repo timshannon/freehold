@@ -5,6 +5,7 @@
 package permission
 
 import (
+	"path"
 	"strings"
 
 	"bitbucket.org/tshannon/freehold/data"
@@ -32,17 +33,17 @@ type Permission struct {
 
 //Get the permissions for a file by filename, NOT by URL
 func Get(filename string) (*Permission, error) {
-	filename = strings.TrimSuffix(filename, "/")
+	filename = path.Clean(filename)
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return nil, err
 	}
-
 	prm := &Permission{}
 	err = ds.Get(filename, prm)
 	if err == data.ErrNotFound {
 		return orphanedResource(filename)
 	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -57,12 +58,8 @@ func orphanedResource(filename string) (*Permission, error) {
 	if o == "" {
 		return &Permission{}, nil
 	}
-	_, err := user.Get(o)
-	if err != nil {
-		return nil, err
-	}
 	prm := FileNewDefault(o)
-	err = Set(filename, prm)
+	err := Set(filename, prm)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +67,7 @@ func orphanedResource(filename string) (*Permission, error) {
 }
 
 func Set(filename string, permissions *Permission) error {
-	filename = strings.TrimSuffix(filename, "/")
+	filename = path.Clean(filename)
 	err := permissions.validate()
 	if err != nil {
 		return err
