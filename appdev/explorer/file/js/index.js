@@ -167,21 +167,33 @@ $(document).ready(function() {
                 rMain.set("currentFile.renameError", "You must specify a name.");
                 return;
             }
-	//FIXME
-            var newUrl = fh.util.urlJoin("FIXME", event.context.name);
+            var newUrl = event.context.url.split("/");
+            newUrl.pop();
+            newUrl = fh.util.urlJoin(newUrl.join("/"), event.context.name);
             var oldUrl = event.context.url;
+
+            if (newUrl == oldUrl) {
+                rMain.set("currentFile.rename", false);
+                return;
+            }
 
             fh.file.move(oldUrl, newUrl)
                 .done(function() {
                     rMain.set("currentFile.rename", false);
+                    if (settings.stars.isStar(oldUrl)) {
+                        settings.stars.remove(oldUrl);
+                        settings.stars.add(newUrl);
+                    }
+                    getFile(newUrl, function(file) {
+                        rMain.set("currentFile", setFileType(file));
+                    });
+                    selectFolder(rMain.get("currentKeypath"));
+
                 })
                 .fail(function(result) {
                     rMain.set("currentFile.renameError", result.message);
                 });
-            if (settings.stars.isStar(oldUrl)) {
-                settings.stars.remove(oldUrl);
-                settings.stars.add(newUrl);
-            }
+
         },
         "deleteFolder": function(event) {
             fh.file.delete(event.context.url);
@@ -208,6 +220,14 @@ $(document).ready(function() {
                 rMain.set("currentFile", setFileType(file));
             });
         },
+        "deleteFile": function(event) {
+            fh.file.delete(event.context.url);
+            selectFolder(rMain.get("currentKeypath"));
+            settings.stars.remove(event.context.url);
+
+            $("#properties").modal("hide");
+        },
+
     });
 
     rMain.observe({
