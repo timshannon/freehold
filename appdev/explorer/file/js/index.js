@@ -46,7 +46,7 @@ $(document).ready(function() {
             selectFolder(keypathFromTree(event.keypath, true));
         },
         "explorerSelect": function(event) {
-            if (rMain.get("selectKeypath") === "stars") {
+            if (rMain.get("currentKeypath") === "stars") {
                 openUrl(event.context.url);
                 return;
             }
@@ -71,12 +71,12 @@ $(document).ready(function() {
             var url = event.context.url;
             if (settings.stars.isStar(url)) {
                 settings.stars.remove(url);
-                rMain.set("currentFolder.starred", false);
-                return;
+                rMain.set(event.keypath + ".starred", false);
+            } else {
+                settings.stars.add(url);
+                rMain.set(event.keypath + ".starred", true);
             }
 
-            settings.stars.add(url);
-            rMain.set("currentFolder.starred", true);
         },
         "viewStarred": function(event) {
             selectFolder("stars");
@@ -217,12 +217,17 @@ $(document).ready(function() {
             $("#properties").modal();
 
             getFile(url, function(file) {
+                file.starred = settings.stars.isStar(url);
                 rMain.set("currentFile", setFileType(file));
             });
         },
-        "deleteFile": function(event) {
+        "deleteFromProperties": function(event) {
             fh.file.delete(event.context.url);
-            selectFolder(rMain.get("currentKeypath"));
+            var keypath = rMain.get("currentKeypath");
+            if (event.context.isFolder) {
+                keypath = parentKeypath(keypath);
+            }
+            selectFolder(keypath);
             settings.stars.remove(event.context.url);
 
             $("#properties").modal("hide");
@@ -255,7 +260,7 @@ $(document).ready(function() {
         var folder = rMain.get(keypath);
         document.title = folder.name + " - Explorer - freehold";
 
-        rMain.set("selectKeypath", keypath);
+        rMain.set("currentKeypath", keypath);
         if (keypath === "stars") {
             updateStarFolder();
             return;
@@ -264,7 +269,6 @@ $(document).ready(function() {
         updateFolder(folder.url, keypath, function() {
 
             folder = rMain.get(keypath);
-            rMain.set("currentKeypath", keypath);
             openParent(keypath);
             buildBreadcrumbs(keypath);
 
@@ -278,9 +282,7 @@ $(document).ready(function() {
             rMain.set("currentFolder", folder);
             sortCurrent();
 
-            if (settings.stars.isStar(folder.url)) {
-                rMain.set("currentFolder.starred", true);
-            }
+            rMain.set("currentFolder.starred", settings.stars.isStar(folder.url));
         });
 
     }

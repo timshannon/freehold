@@ -110,21 +110,20 @@
 	white-space: normal;
 }
 
-.btn-properties {
+.btn-file-grid {
 	position: absolute;
 	z-index: 100;
 	right: 0px;
 	padding: 5px;
-	color: #333;
 	width: 30px;
 	height: 30px;
 
 	border: 1px solid transparent;
 	border-radius: 4px;
-
+	color: #333;
 }
 
-.btn-properties:hover {
+.btn-file-grid:hover {
 	border: 1px solid #ccc;
 	border-radius: 4px;
 	color: #333;
@@ -134,7 +133,7 @@
 
 .star {
 	font-size: 1.3em;
-	margin-right: 5px;
+	margin-top: 10px;
 }
 
 .starred {
