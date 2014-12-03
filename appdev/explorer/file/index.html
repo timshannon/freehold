@@ -21,7 +21,8 @@
 <!--properties-->
 <modal id="properties" title="Properties for: {{currentFile.name}}" customFooter="true">
 {{#currentFile}}
-	<a href="#" class="pull-right" on-click="starFile"><span class="glyphicon glyphicon-star star"></span></a>
+	<a href="#" class="pull-right" on-click="star" title="{{#if .starred}}Remove{{else}}Add{{/if}} Star">
+		<span class="glyphicon glyphicon-star star{{#starred}} starred{{/starred}}"></span></a>
 	<ul class="nav nav-tabs" role="tablist">
 		<li class="active"><a href="#details" role="tab" data-toggle="tab">Details</a></li>
 		<li><a href="#permissions" role="tab" data-toggle="tab">Permissions</a></li>
@@ -75,7 +76,7 @@
 		</div>
 	</div>
 <div class="modal-footer">
-	<button type="button" class="btn btn-danger pull-left" on-click="deleteFile"><span class="glyphicon glyphicon-remove"></span> Delete</button>
+	<button type="button" class="btn btn-danger pull-left" on-click="deleteFromProperties"><span class="glyphicon glyphicon-remove"></span> Delete</button>
 	<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 </div>
 
@@ -158,7 +159,7 @@
 			<span class="glyphicon glyphicon-refresh"></span></button>
 	</div>
 	<div id="folderNav" class="col-sm-7">
-		{{#if selectKeypath !== "stars"}}
+		{{#if currentKeypath !== "stars"}}
 		<ol class="breadcrumb">
 			{{#breadcrumbs:i}}
 				<li><a href="#" on-click="crumbSelect">{{file.name}}</a></li>
@@ -170,7 +171,7 @@
 				{{name}} <span class="caret"></span>
 				</a>
 				<ul class="dropdown-menu" role="menu" aria-labelledby="folderDrop">
-					{{#if selectKeypath.indexOf("files") > -1}}
+					{{#if currentKeypath.indexOf("files") > -1}}
 					<li>
 						<a href="#" on-click="newFolder"><span class="glyphicon glyphicon-plus"></span> New Folder</a> 
 					</li>
@@ -181,7 +182,7 @@
 							<span class="glyphicon glyphicon-star"></span> {{#if currentFolder.starred}}Remove{{else}}Add{{/if}} Star
 						</a> 
 					</li>
-					{{#if selectKeypath.indexOf("files") > -1 && selectKeypath !== "files"}}
+					{{#if currentKeypath.indexOf("files") > -1 && currentKeypath !== "files"}}
 						<li><a href="#" on-click="renameFolder">Rename</a></li>
 						<li><a href="#" on-click="deleteFolder"><span class="glyphicon glyphicon-trash"></span> Delete</a></li>
 						<li class="divider"></li>
@@ -247,11 +248,11 @@
 		{{else}}
 			<a href="#" class="sidebar-hide-btn" on-click="toggle('hideSidebar')" title="Hide Sidebar"><span class="glyphicon glyphicon-chevron-left"></span></a>
 			<div class="trees">
-				<tree root="{{files}}" on-select="fileTreeSelect" selectKeypath="{{selectKeypath.replace('files', 'root')}}">
+				<tree root="{{files}}" on-select="fileTreeSelect" selectKeypath="{{currentKeypath.replace('files', 'root')}}">
 				</tree>
-				<tree root="{{datastores}}" on-select="dsTreeSelect" selectKeypath="{{selectKeypath.replace('datastores', 'root')}}" dsTree="true">
+				<tree root="{{datastores}}" on-select="dsTreeSelect" selectKeypath="{{currentKeypath.replace('datastores', 'root')}}" dsTree="true">
 				</tree>
-				<tree root="{{stars}}" on-select="viewStarred" selectKeypath="{{selectKeypath.replace('stars', 'root')}}">
+				<tree root="{{stars}}" on-select="viewStarred" selectKeypath="{{currentKeypath.replace('stars', 'root')}}">
 				</tree>
 			</div>
 		{{/if}}
@@ -329,7 +330,7 @@
 				<td>{{modifiedDate}}</td>
 				<td>{{humanSize}}</td>
 				<td>
-				{{#if selectKeypath !== "stars"}}
+				{{#if currentKeypath !== "stars"}}
 					{{^.isFolder}}
 					<button type="button" class="btn btn-default btn-xs pull-right" on-click="properties:{{.url}}" title="Properties">
 						<span class="glyphicon glyphicon-cog"></span></button>
@@ -352,12 +353,20 @@
 <span>
 {{#if .isFolder}}
 	<a href="#" on-click="explorerSelect" class="file-tile">
+	{{#if currentKeypath === "stars"}}
+		<a href="#" class="btn btn-file-grid" on-click="removeStar" title="Remove Star"><span class="glyphicon glyphicon-remove"></span></a>
+	{{/if}}
+
 		<span class="grid-icon fa fa-5x fa-{{explorerIcon}}"></span>
 		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
 	</a>
 {{else}}
 	<a href="{{url}}" target="{{#newWindow}}_blank{{/newWindow}}" {{#.download}}download=""{{/download}} class="file-tile">
-		<a href="#" class="btn btn-properties" on-click="properties:{{.url}}" title="Properties"><span class="glyphicon glyphicon-cog"></span></a>
+		{{#if currentKeypath !== "stars"}}
+			<a href="#" class="btn btn-file-grid" on-click="properties:{{.url}}" title="Properties"><span class="glyphicon glyphicon-cog"></span></a>
+		{{else}}
+			<a href="#" class="btn btn-file-grid" on-click="removeStar" title="Remove Star"><span class="glyphicon glyphicon-remove"></span></a>
+		{{/if}}
 		<span class="grid-icon fa fa-5x fa-{{explorerIcon}}"></span>
 		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
 	</a>
