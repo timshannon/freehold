@@ -23,10 +23,11 @@
 {{#currentFile}}
 	<a href="#" class="pull-right" on-click="star" title="{{#if .starred}}Remove{{else}}Add{{/if}} Star">
 		<span class="glyphicon glyphicon-star star{{#starred}} starred{{/starred}}"></span></a>
-	<ul class="nav nav-tabs" role="tablist">
+	<ul id="propTabs" class="nav nav-tabs" role="tablist">
 		<li class="active"><a href="#details" role="tab" data-toggle="tab">Details</a></li>
 		<li><a href="#permissions" role="tab" data-toggle="tab">Permissions</a></li>
 		<li><a href="#behavior" role="tab" data-toggle="tab">Behavior</a></li>
+		<li><a href="#token" role="tab" data-toggle="tab">Security Token</a></li>
 	</ul>
 
 	<!-- Tab panes -->
@@ -45,7 +46,8 @@
 							</span>
 						</div><!-- /input-group -->
 						{{else}}
-						<a href="#" on-click="toggle('currentFile.rename')" class="btn-property-rename form-control-static" title="Rename File">{{name}}</a>
+						<a href="#" on-click="toggle('currentFile.rename')" class="btn-property-rename form-control-static" title="Rename File">
+							{{name}}</a>
 						{{/if}}
 					</div>
 				</div>
@@ -71,9 +73,15 @@
 			</form>
 		</div>
 		<div class="tab-pane" id="permissions">
+			<div class="property-form">
+			<permissions readOnly="{{readOnly}}" permissions="{{permissions}}"></permissions>
+			</div>
 		</div>
 		<div class="tab-pane" id="behavior">
 		</div>
+		<div class="tab-pane" id="token">
+		</div>
+
 	</div>
 <div class="modal-footer">
 	<button type="button" class="btn btn-danger pull-left" on-click="deleteFromProperties"><span class="glyphicon glyphicon-remove"></span> Delete</button>
@@ -195,14 +203,13 @@
 		</ol>
 		{{/if}}
 	</div> <!-- folderNav -->
-	<div  class="col-sm-2">
-		<div class="pull-right">
+		<div class="folder-nav-btns">
+		<div class="btn-group">
 		{{#if !listView}}
 			<button type="button" class="btn btn-default" on-click="changeView" title="List View"><span class="fa fa-2 fa-list"></span></button>
 		{{else}}
 			<button type="button" class="btn btn-default" on-click="changeView" title="Grid View"><span class="fa fa-th"></span></button>
 		{{/if}}
-		<div class="btn-group">
 			<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false" title="Sorting">
 				<span class="glyphicon glyphicon-sort"></span> <span class="caret"></span>
 			</button>
@@ -238,7 +245,6 @@
 		</div>
 		<button type="button" class="btn btn-default" on-click="openSettings" title="Settings"><span class="fa fa-2 fa-cogs"></span></button>
 		</div>
-	</div>
 
 </div> <!-- row -->
 <div class="row">

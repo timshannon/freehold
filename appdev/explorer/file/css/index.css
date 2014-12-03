@@ -235,3 +235,8 @@
 	background-color: #e6e6e6;
 
 }
+
+.folder-nav-btns {
+	position: absolute;
+	right: 15px;
+} 
