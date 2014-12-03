@@ -194,6 +194,8 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 			errHandled(fail.New("Invalid file PUT call", r.URL.Path), w, auth)
 			return
 		}
+
+		//TODO: Fix permissions
 		filename := urlPathToFile(r.URL.Path)
 		destFile := urlPathToFile(input.Move)
 

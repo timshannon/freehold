@@ -1,40 +1,64 @@
-<div class="panel panel-default"> 
-	<div class="row">
-		<div class="col-sm-3">
+{{#error}}
+<div class="alert alert-danger" role="alert">{{error}}</div>
+{{/error}}
+{{#permissions}}
+<form class="form-horizontal" role="form">
+	{{#showOwner}}
+	<div class="form-group">
+		<div class="col-md-offset-1 col-sm-2">
+			<label class="control-label">Owner:</label>
+		</div>
+		<div class="col-sm-6">
+			<select class="form-control" name="Owner" value="{{owner}}" {{#readOnly}}disabled{{/readonly}}>
+				{{#users:i}}
+				<option value="{{i}}">{{name}}</option>
+				{{/users}}
+			</select>
+		</div>
+	</div>
+	{{/showOwner}}
+	<div class="form-group">
+		<div class="col-md-offset-2 col-sm-2">
 			<label class="control-label">Private:</label>
 		</div>
-		<div class="col-sm-9">
+		<div class="col-sm-7">
 		<div class="btn-group">
-			<button type="button" class="btn btn-sm {{private=='r' || private =='rw' ? 'active btn-primary' : 'btn-default'}}">R</button>
-			<button type="button" class="btn btn-sm {{private=='w' || private =='rw' ? 'active btn-primary' : 'btn-default'}}">W</button>
+			<button type="button" class="btn btn-sm {{private=='r' || private =='rw' ? 'active btn-primary' : 'btn-default'}}"
+				on-click="toggleRead:'private'" {{#readOnly}}disabled{{/readonly}}>Read</button>
+			<button type="button" class="btn btn-sm {{private=='w' || private =='rw' ? 'active btn-primary' : 'btn-default'}}"
+				on-click="toggleWrite:'private'" {{#readOnly}}disabled{{/readonly}}>Write</button>
 		</div>
 		</div>
 	</div>
-	<div class="row">
-		<div class="col-sm-3">
+	<div class="form-group">
+		<div class="col-md-offset-2 col-sm-2">
 			<label class="control-label">Friend:</label>
 		</div>
-		<div class="col-sm-9">
+		<div class="col-sm-7">
 		<div class="btn-group">
-			<button type="button" class="btn btn-sm {{friend=='r' || friend =='rw' ? 'active btn-primary' : 'btn-default'}}">R</button>
-			<button type="button" class="btn btn-sm {{friend=='w' || friend =='rw' ? 'active btn-primary' : 'btn-default'}}">W</button>
+			<button type="button" class="btn btn-sm {{friend=='r' || friend =='rw' ? 'active btn-primary' : 'btn-default'}}"
+				on-click="toggleRead:'friend'" {{#readOnly}}disabled{{/readonly}}>Read</button>
+			<button type="button" class="btn btn-sm {{friend=='w' || friend =='rw' ? 'active btn-primary' : 'btn-default'}}"
+				on-click="toggleWrite:'friend'" {{#readOnly}}disabled{{/readonly}}>Write</button>
 		</div>
 		</div>
 	</div>
-	<div class="row">
-		<div class="col-sm-3">
+	<div class="form-group">
+		<div class="col-md-offset-2 col-sm-2">
 			<label class="control-label">Public:</label>
 		</div>
-		<div class="col-sm-9">
+		<div class="col-sm-7">
 		<div class="btn-group">
-			<button type="button" class="btn btn-sm {{public=='r' || public =='rw' ? 'active btn-primary' : 'btn-default'}}">R</button>
-			<button type="button" class="btn btn-sm {{public=='w' || public =='rw' ? 'active btn-primary' : 'btn-default'}}">W</button>
+			<button type="button" class="btn btn-sm {{public=='r' || public =='rw' ? 'active btn-primary' : 'btn-default'}}"
+				on-click="toggleRead:'public'" {{#readOnly}}disabled{{/readonly}}>Read</button>
+			<button type="button" class="btn btn-sm {{public=='w' || public =='rw' ? 'active btn-primary' : 'btn-default'}}"
+				on-click="toggleWrite:'public'" {{#readOnly}}disabled{{/readonly}}>Write</button>
 		</div>
 		</div>
 	</div>
+</form>
 
-
-</div>
+{{/permissions}}
 
 <style>
 
@@ -43,11 +67,65 @@
 <script>
 	component.exports = {
 		data: {
-			public: "",
-			private: "",
-			friend: "",
+			permissions: {
+				owner: "",
+				public: "",
+				private: "",
+				friend: "",
+			},
+			showOwner: true,
+			readOnly: false,
 		},
 
+		init: function() {
+			var r = this;
+			this._super();
+
+			fh.user.all()
+				.done(function(result) {
+						r.set("users", result.data);
+				})
+				.fail(function(result) {
+						r.set("error", result.message);
+				});
+
+			
+			this.on({
+				"toggleRead": function(event, level) {
+					var keypath = "permissions."+level;
+					var prm = r.get(keypath);
+					if (!prm) {
+						r.set(keypath, "r");
+						return;
+					}
+					var index = prm.indexOf("r");
+					if(index !== -1) {
+						r.set(keypath, prm.slice(index+1));
+						return;
+					}
+					r.set(keypath, "r"+prm);
+				},
+				"toggleWrite": function(event, level) {
+					var keypath = "permissions."+level;
+					var prm = r.get(keypath);
+					if (!prm) {
+						r.set(keypath, "w");
+						return;
+					}
+					var index = prm.indexOf("w");
+					if(index === 0 ) {
+						r.set(keypath, "");
+						return;
+					}
+					if(index === -1 ) {
+						r.set(keypath, prm+"w");
+						return;
+					}
+					r.set(keypath, "r");
+				},
+			});
+
+		},
 
 	};
 </script>

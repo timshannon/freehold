@@ -25,6 +25,7 @@ $(document).ready(function() {
     });
 
     getApps();
+    getUsers();
 
     settings.load(function() {
         rMain.set("sorting", settings.get("sorting", {
@@ -187,7 +188,11 @@ $(document).ready(function() {
                     getFile(newUrl, function(file) {
                         rMain.set("currentFile", setFileType(file));
                     });
-                    selectFolder(rMain.get("currentKeypath"));
+                    if (event.context.isFolder) {
+                        openUrl(newUrl);
+                    } else {
+                        selectFolder(rMain.get("currentKeypath"));
+                    }
 
                 })
                 .fail(function(result) {
@@ -215,9 +220,13 @@ $(document).ready(function() {
         },
         "properties": function(event, url) {
             $("#properties").modal();
+            $('#propTabs a:first').tab('show');
+            rMain.set("currentFile", null);
 
             getFile(url, function(file) {
                 file.starred = settings.stars.isStar(url);
+                file.url = trimSlash(url);
+                file.readOnly = fh.auth.user !== file.permissions.owner;
                 rMain.set("currentFile", setFileType(file));
             });
         },
@@ -232,7 +241,6 @@ $(document).ready(function() {
 
             $("#properties").modal("hide");
         },
-
     });
 
     rMain.observe({
@@ -251,6 +259,16 @@ $(document).ready(function() {
         "hideSidebar": function(newValue, oldValue, keypath) {
             if (newValue !== undefined) {
                 settings.put("hideSidebar", newValue);
+            }
+        },
+        "currentFile.permissions": function(newValue, oldValue, keypath) {
+            if (newValue && oldValue) {
+                fh.properties.set(rMain.get("currentFile.url"), {
+                        permissions: newValue
+                    })
+                    .fail(function(result) {
+                        error(result.message);
+                    });
             }
         },
     });
@@ -591,13 +609,15 @@ $(document).ready(function() {
         }
     }
 
-    function getFile(url, postGet) {
-        var fileurl;
+    function trimSlash(url) {
         if (url.lastIndexOf("/") === url.length - 1) {
-            fileurl = url.slice(0, url.length - 1);
-        } else {
-            fileurl = url;
+            return url.slice(0, url.length - 1);
         }
+        return url;
+    }
+
+    function getFile(url, postGet) {
+        var fileurl = trimSlash(url);
 
         fh.properties.get(fileurl)
             .done(function(result) {
@@ -636,6 +656,15 @@ $(document).ready(function() {
             });
     }
 
+    function getUsers() {
+        fh.user.all()
+            .done(function(result) {
+                rMain.set("users", result.data);
+            })
+            .fail(function(result) {
+                error(result.message);
+            });
+    }
 
     function Stars() {
         return {
