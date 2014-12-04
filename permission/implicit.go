@@ -4,6 +4,11 @@
 
 package permission
 
+import (
+	"path/filepath"
+	"strings"
+)
+
 //Docs are open to public
 func Doc() *Permission {
 	return &Permission{
@@ -37,18 +42,10 @@ func AppNewDefault(owner string) *Permission {
 	}
 }
 
-// Any authenticated user can post a new file if they
-// have write access to the parent folder
-func FileNew(parentFolder string) (*Permission, error) {
-	return Get(parentFolder)
-}
-
-func FileDelete(parentFolder, filename string) (*Permission, error) {
-	prm, err := Get(parentFolder)
-	if err != nil {
-		return nil, err
-	}
-	return FileUpdate(prm), nil
+//FileParent gets the permissions of the file's parent folder
+func FileParent(filename string) (*Permission, error) {
+	parent := filepath.Dir(strings.TrimSuffix(filename, "/"))
+	return Get(parent)
 }
 
 //Only file owners can update a file

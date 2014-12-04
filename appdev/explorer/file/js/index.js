@@ -133,12 +133,13 @@ $(document).ready(function() {
             }
         },
         "renameFolder": function(event) {
-            rMain.set("folderRename", null);
+            rMain.set("folderRename", event.context.name);
             rMain.set("renameFolderError", null);
             $("#renameFolder").modal();
 
             $("#renameFolder").on("shown.bs.modal", function() {
                 $("#folderRename").focus();
+
             });
         },
         "renameFolderSave": function(event) {
