@@ -49,27 +49,23 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	parent := ""
-	if r.ContentLength == 0 {
-		//new folder
-		parent = filepath.Dir(strings.TrimSuffix(r.URL.Path, "/"))
-	} else {
-		//file upload
-		parent = r.URL.Path
-	}
-
-	prm, err := permission.FileNew(urlPathToFile(parent))
-	if errHandled(err, w, auth) {
-		return
-	}
-
-	if !auth.canWrite(prm) {
-		errHandled(fail.New("You do not have permissions to write here.", nil), w, auth)
-		return
-	}
+	foldername := urlPathToFile(r.URL.Path)
 
 	if r.ContentLength != 0 {
 		//file upload
+		prm, err := permission.Get(urlPathToFile(foldername))
+		if errHandled(err, w, auth) {
+			return
+		}
+		if !auth.canWrite(prm) {
+			if !auth.canRead(prm) {
+				four04(w, r)
+				return
+			}
+			errHandled(fail.New("You do not have permissions to write here.", nil), w, auth)
+			return
+		}
+
 		err = r.ParseMultipartForm(setting.Int64("MaxUploadMemory"))
 		if errHandled(err, w, auth) {
 			return
@@ -80,8 +76,21 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 
 	}
 
+	prm, err := permission.FileParent(foldername)
+	if errHandled(err, w, auth) {
+		return
+	}
+	if !auth.canWrite(prm) {
+		if !auth.canRead(prm) {
+			four04(w, r)
+			return
+		}
+		errHandled(fail.New("You do not have permissions to write here.", nil), w, auth)
+		return
+	}
+
 	//New Folder
-	err = os.Mkdir(urlPathToFile(r.URL.Path), 0777)
+	err = os.Mkdir(foldername, 0777)
 	if os.IsExist(err) {
 		err = fail.New("Folder already exists!", r.URL.Path)
 	}
@@ -92,7 +101,7 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = permission.Set(urlPathToFile(r.URL.Path), permission.FileNewDefault(auth.Username))
+	err = permission.Set(foldername, permission.FileNewDefault(auth.Username))
 	if errHandled(err, w, auth) {
 		return
 	}
@@ -195,25 +204,50 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		//TODO: Fix permissions
-		filename := urlPathToFile(r.URL.Path)
+		sourceFile := urlPathToFile(r.URL.Path)
 		destFile := urlPathToFile(input.Move)
 
-		prm, err := permission.FileDelete(filepath.Dir(strings.TrimSuffix(filename, "/")), filename)
+		//Source parent permissions
+		prm, err := permission.FileParent(sourceFile)
 		if errHandled(err, w, auth) {
 			return
 		}
 
-		if !auth.canWrite(permission.FileUpdate(prm)) {
-			errHandled(fail.New("You do not have permissions to update this file.", r.URL.Path), w, auth)
-		}
-
-		prm, err = permission.FileNew(filepath.Dir(strings.TrimSuffix(destFile, "/")))
 		if !auth.canWrite(prm) {
-			errHandled(fail.New("You do not have permissions to move this file to the destination.", input.Move), w, auth)
+			if !auth.canRead(prm) {
+				four04(w, r)
+				return
+			}
+			errHandled(fail.New("You do not have permissions to update this file.", r.URL.Path), w, auth)
+			return
 		}
 
-		if !fileExists(filename) {
+		// Source File Permissions
+		prm, err = permission.Get(sourceFile)
+		if errHandled(err, w, auth) {
+			return
+		}
+		if !auth.canWrite(permission.FileUpdate(prm)) {
+			if !auth.canRead(prm) {
+				four04(w, r)
+				return
+			}
+			errHandled(fail.New("You do not have permissions to update this file.", r.URL.Path), w, auth)
+			return
+		}
+
+		//Dest Parent Permissions
+		prm, err = permission.FileParent(destFile)
+		if !auth.canWrite(prm) {
+			if !auth.canRead(prm) {
+				four04(w, r)
+				return
+			}
+			errHandled(fail.New("You do not have permissions to move this file to the destination.", input.Move), w, auth)
+			return
+		}
+
+		if !fileExists(sourceFile) {
 			four04(w, r)
 			return
 
@@ -229,7 +263,7 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err = moveFile(filename, destFile)
+		err = moveFile(sourceFile, destFile)
 		if os.IsExist(err) {
 			err = fail.New("Folder already exists!", r.URL.Path)
 		}
@@ -360,7 +394,8 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	prm, err := permission.FileDelete(filepath.Dir(strings.TrimSuffix(filename, "/")), filename)
+	//parent folder permissions
+	prm, err := permission.FileParent(filename)
 	if errHandled(err, w, auth) {
 		return
 	}
@@ -371,7 +406,24 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		errHandled(fail.New("You do not have owner permissions on this resource.", resource), w, auth)
+		errHandled(fail.New("You do not have permissions to delete this resource.", resource), w, auth)
+		return
+	}
+
+	//File Permissions
+	prm, err = permission.Get(filename)
+	if errHandled(err, w, auth) {
+		return
+	}
+
+	prm = permission.FileUpdate(prm)
+	if !auth.canWrite(prm) {
+		if !auth.canRead(prm) {
+			four04(w, r)
+			return
+		}
+
+		errHandled(fail.New("You do not have permissions to delete this resource.", resource), w, auth)
 		return
 	}
 
