@@ -57,13 +57,14 @@ func FileUpdate(base *Permission) *Permission {
 	return &prm
 }
 
-// Default permissions on the root of the files directory
-func FileRoot(owner string) *Permission {
-	return &Permission{
-		Owner:   owner,
+// SetFileRoot Sets permissions on the root of the files directory
+// no owner, so permissions can't be altered once set
+func SetFileRoot(foldername string) error {
+	return set(foldername, &Permission{
+		Owner:   "",
 		Private: Read + Write,
 		Friend:  Read + Write,
-	}
+	})
 }
 
 //Default file permissions for new files

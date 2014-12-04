@@ -62,7 +62,7 @@ component.exports = {
 			}
 
 			for (var i = 0; i < files.length;i++) {
-				if (files[i].hasOwnProperty("size")) {
+				if (!files[i].isDir) {
 					if (r.get("folderOnly") || (!regEx.exec(files[i].name))) {
 						files[i].hide = true;
 					}

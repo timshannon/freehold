@@ -27,7 +27,7 @@
 		<li class="active"><a href="#details" role="tab" data-toggle="tab">Details</a></li>
 		<li><a href="#permissions" role="tab" data-toggle="tab">Permissions</a></li>
 		<li><a href="#behavior" role="tab" data-toggle="tab">Behavior</a></li>
-		<li><a href="#token" role="tab" data-toggle="tab">Security Token</a></li>
+		<li><a href="#token" role="tab" data-toggle="tab">Token</a></li>
 	</ul>
 
 	<!-- Tab panes -->
@@ -74,7 +74,7 @@
 		</div>
 		<div class="tab-pane" id="permissions">
 			<div class="property-form">
-			<permissions readOnly="{{readOnly}}" permissions="{{permissions}}"></permissions>
+			<permissions readOnly="{{user !== permissions.owner}}" permissions="{{permissions}}"></permissions>
 			</div>
 		</div>
 		<div class="tab-pane" id="behavior">
@@ -84,7 +84,9 @@
 
 	</div>
 <div class="modal-footer">
-	<button type="button" class="btn btn-danger pull-left" on-click="deleteFromProperties"><span class="glyphicon glyphicon-remove"></span> Delete</button>
+	{{#if user === permissions.owner}}
+		<button type="button" class="btn btn-danger pull-left" on-click="deleteFromProperties"><span class="glyphicon glyphicon-remove"></span> Delete</button>
+	{{/if}}
 	<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 </div>
 
@@ -191,8 +193,10 @@
 						</a> 
 					</li>
 					{{#if currentKeypath.indexOf("files") > -1 && currentKeypath !== "files"}}
+						{{#if user === currentFolder.permissions.owner}}
 						<li><a href="#" on-click="renameFolder">Rename</a></li>
 						<li><a href="#" on-click="deleteFolder"><span class="glyphicon glyphicon-trash"></span> Delete</a></li>
+						{{/if}}
 						<li class="divider"></li>
 						<li><a href="#" on-click="properties:{{currentFolder.url}}"><span class="glyphicon glyphicon-cog"></span> Folder Properties</a></li>
 					{{/if}}

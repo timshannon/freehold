@@ -300,6 +300,7 @@ func userSessions(user string) ([]*Session, error) {
 		if username(s.key) != user {
 			break
 		}
+		fmt.Println(s)
 		if s.IsExpired() {
 			err = ds.Delete(iter.Key())
 			if err != nil {

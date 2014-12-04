@@ -18,7 +18,7 @@
 	<div class="container-fluid"> 
 		{{#authenticated}} 
 			<div class="btn-group navbar-right"> 
-				<button type="button" id="userButton" on-click="openUser" class="btn btn-default navbar-btn" title="User Info"> 
+				<button type="button" id="userButton" on-click="openUser" class="btn btn-default navbar-btn" title="User Info for {{auth.user}}"> 
 				<span class="glyphicon glyphicon-user"></span></button> 
 				<button type="button" id="logoutButton" on-click="logout" class="btn btn-default navbar-btn">Log Out</button> 
 			</div> 
@@ -111,6 +111,7 @@ component.exports = {
 			errorLead: "An error occurred and you may need to refresh this page: ",
 			error: false,
 			app: false,
+			auth: fh.auth,
 	},
 	decorators: {
 		help: function (node) {

@@ -22,6 +22,7 @@ type Properties struct {
 	Permissions *permission.Permission `json:"permissions,omitempty"`
 	Size        int64                  `json:"size,omitempty"`
 	Modified    string                 `json:"modified,omitempty"`
+	IsDir       bool                   `json:"isDir,omitempty"`
 }
 
 func resPathFromProperty(propertyPath string) string {
@@ -68,49 +69,22 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isFile := isFilePath(resource)
+	isDatastore := !isFilePath(resource)
 
-	if !info.IsDir() || (!strings.HasSuffix(r.URL.Path, "/") && isFile) {
-
-		prm, err := permission.Get(filename)
+	if !info.IsDir() || (!strings.HasSuffix(r.URL.Path, "/") && !isDatastore) {
+		prop, err := properties(filename, resource, info, auth)
 		if errHandled(err, w, auth) {
 			return
-		}
-		propPrm := permission.Properties(prm)
-
-		if !auth.canRead(prm) {
-			four04(w, r)
-			return
-		}
-
-		if !auth.canRead(propPrm) {
-			prm = nil
-		}
-
-		var size int64
-		var url string
-		if !info.IsDir() {
-			size = info.Size()
-			url = resource
-		} else {
-			size = 0
-			url = resource + "/" // add trailing slash for convience when traversing the filetree
 		}
 
 		respondJsend(w, &JSend{
 			Status: statusSuccess,
-			Data: &Properties{
-				Name:        filepath.Base(file.Name()),
-				Permissions: prm,
-				Url:         url,
-				Size:        size,
-				Modified:    info.ModTime().Format(time.RFC3339),
-			},
+			Data:   prop,
 		})
 		return
 	}
 
-	if isFile {
+	if !isDatastore {
 		//Get Folder permissions to see if the user can view the file list
 		prm, err := permission.Get(filename)
 
@@ -143,17 +117,20 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 		childName := path.Join(filename, files[i].Name())
 
 		//datastores don't have folder level permissions
-		if (!files[i].IsDir()) || (files[i].IsDir() && isFile) {
+		if (!files[i].IsDir()) || (files[i].IsDir() && !isDatastore) {
 			prm, err := permission.Get(childName)
 			if errHandled(err, w, auth) {
 				return
 			}
 			if !auth.canRead(prm) {
-				continue
+				size = 0
+				modTime = ""
 			}
 			propPrm := permission.Properties(prm)
 			if auth.canRead(propPrm) {
 				filePrm = prm
+			} else {
+				filePrm = nil
 			}
 		}
 
@@ -169,6 +146,7 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 			Url:         url,
 			Size:        size,
 			Modified:    modTime,
+			IsDir:       files[i].IsDir(),
 		})
 	}
 
@@ -177,6 +155,41 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 		Data:   fileList,
 	})
 
+}
+
+func properties(filename, resource string, info os.FileInfo, auth *Auth) (*Properties, error) {
+	prm, err := permission.Get(filename)
+	if err != nil {
+		return nil, err
+	}
+	propPrm := permission.Properties(prm)
+
+	if !auth.canRead(prm) {
+		return nil, four04Fail(resource)
+	}
+
+	if !auth.canRead(propPrm) {
+		prm = nil
+	}
+
+	var size int64
+	var url string
+	if !info.IsDir() {
+		size = info.Size()
+		url = resource
+	} else {
+		size = 0
+		url = resource + "/" // add trailing slash for convience when traversing the filetree
+	}
+
+	return &Properties{
+		Name:        filepath.Base(filename),
+		Permissions: prm,
+		Url:         url,
+		Size:        size,
+		Modified:    info.ModTime().Format(time.RFC3339),
+		IsDir:       info.IsDir(),
+	}, nil
 }
 
 type PropertyInput struct {
@@ -292,11 +305,16 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//check if parent folder can be read
-	prm, err := permission.Get(filepath.Dir(strings.TrimSuffix(filename, "/")))
-	if !auth.canRead(prm) {
-		four04(w, r)
-		return
+	//check if folder can be read
+	if isFile {
+		prm, err := permission.Get(filename)
+		if errHandled(err, w, auth) {
+			return
+		}
+		if !auth.canRead(prm) {
+			four04(w, r)
+			return
+		}
 	}
 
 	files, err := file.Readdir(0)

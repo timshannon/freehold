@@ -21,6 +21,7 @@ $(document).ready(function() {
             files: {},
             datastores: {},
             stars: {},
+            user: fh.auth.user,
         },
     });
 
@@ -188,6 +189,9 @@ $(document).ready(function() {
                     }
                     getFile(newUrl, function(file) {
                         rMain.set("currentFile", setFileType(file));
+                    }, function(result) {
+                        rMain.set("currentFile.renameError", result.message);
+                        return;
                     });
                     if (event.context.isFolder) {
                         openUrl(newUrl);
@@ -227,7 +231,8 @@ $(document).ready(function() {
             getFile(url, function(file) {
                 file.starred = settings.stars.isStar(url);
                 file.url = trimSlash(url);
-                file.readOnly = fh.auth.user !== file.permissions.owner;
+                rMain.set("currentFile", setFileType(file));
+            }, function(result) {
                 rMain.set("currentFile", setFileType(file));
             });
         },
@@ -248,7 +253,10 @@ $(document).ready(function() {
         "newWindow": function(newValue, oldValue, keypath) {
             if (newValue !== undefined) {
                 settings.put("newWindow", newValue);
-                selectFolder(rMain.get("currentKeypath"));
+                var currentKeypath = rMain.get("currentKeypath");
+                if (currentKeypath) {
+                    selectFolder(currentKeypath);
+                }
             }
         },
         "folderSort": function(newValue, oldValue, keypath) {
@@ -456,7 +464,7 @@ $(document).ready(function() {
 
 
     function setFileType(file) {
-        if (!file.hasOwnProperty("size")) {
+        if (file.isDir) {
             file.explorerIcon = "folder";
             file.isFolder = true;
             file.canSelect = true;
@@ -617,11 +625,11 @@ $(document).ready(function() {
         return url;
     }
 
-    function getFile(url, postGet) {
+    function getFile(url, postGet, failGet) {
         var fileurl = trimSlash(url);
 
         fh.properties.get(fileurl)
-            .done(function(result) {
+            .then(function(result) {
                 var file = result.data;
 
                 if (!file.hasOwnProperty("url")) {
@@ -631,14 +639,18 @@ $(document).ready(function() {
                     file.name = fileurl.split("/").pop();
                 }
                 file = setFileType(file);
-                postGet(file);
+                if (postGet) {
+                    postGet(file);
+                }
             })
             .fail(function(result) {
-                postGet({
-                    name: "Error Loading File " + fileurl.split("/").pop() + ": " + result.message,
-                    explorerIcon: "exclamation-triangle",
-                    url: url,
-                });
+                if (failGet) {
+                    result.data = {
+                        name: fileurl.split("/").pop(),
+                        url: url,
+                    };
+                    failGet(result);
+                }
             });
     }
 

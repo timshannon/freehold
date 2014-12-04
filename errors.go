@@ -93,6 +93,10 @@ func four04(w http.ResponseWriter, r *http.Request) {
 	w.Write(result)
 }
 
+func four04Fail(url string) error {
+	return fail.New("Resource not found", url)
+}
+
 // four04Page returns a 404 status with custom page that can be set to any
 // file in the system.  This is displayed when a user tries to access a file
 // that doesn't exist, or they don't have the right to know it exists
