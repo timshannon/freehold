@@ -245,7 +245,13 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
                                     type: 'button',
                                     id: 'userButton',
                                     'class': 'btn btn-default navbar-btn',
-                                    title: 'User Info'
+                                    title: [
+                                      'User Info for ',
+                                      {
+                                        t: 2,
+                                        r: 'auth.user'
+                                      }
+                                    ]
                                   },
                                   v: { click: 'openUser' },
                                   f: [{
@@ -519,7 +525,8 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
         authenticated: fh.auth.type != 'none',
         errorLead: 'An error occurred and you may need to refresh this page: ',
         error: false,
-        app: false
+        app: false,
+        auth: fh.auth
       },
       decorators: {
         help: function (node) {
@@ -1631,7 +1638,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
             regEx = new RegExp('', 'i');
           }
           for (var i = 0; i < files.length; i++) {
-            if (files[i].hasOwnProperty('size')) {
+            if (!files[i].isDir) {
               if (r.get('folderOnly') || !regEx.exec(files[i].name)) {
                 files[i].hide = true;
               }

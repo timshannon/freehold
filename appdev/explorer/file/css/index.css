@@ -226,7 +226,7 @@
 	padding: 6px 12px;
 }
 
-.btn-property-rename:hover {
+.btn-property-rename:hover, .btn-property-rename:focus {
 	text-decoration: none;
 	color: #333;
 

@@ -52,7 +52,7 @@ func makeFirstAdmin(username, password string) error {
 		return err
 	}
 
-	err = permission.Set(fileDir, permission.FileRoot(username))
+	err = permission.SetFileRoot(fileDir)
 	if err != nil {
 		return err
 	}

@@ -67,11 +67,16 @@ func orphanedResource(filename string) (*Permission, error) {
 }
 
 func Set(filename string, permissions *Permission) error {
-	filename = path.Clean(filename)
 	err := permissions.validate()
 	if err != nil {
 		return err
 	}
+	return set(filename, permissions)
+}
+
+//allows for skipping permissions validation
+func set(filename string, permissions *Permission) error {
+	filename = path.Clean(filename)
 
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {

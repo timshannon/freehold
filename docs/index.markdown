@@ -122,10 +122,10 @@ GET at a directory redirects to the /v1/properties/file/ listing of the director
 If a GET is called against a file of extension type *.markdown* the markdown will automatically be
 rendered as html (thanks to https://github.com/russross/blackfriday) such as with this file.
 
-**POST** - Add a new file.  Any non existent folders in the path will be automatically created.  Can be used to create an empty folder if now form-data is passed in.
+**POST** - Add a new file.  Can be used to create an empty folder if now form-data is passed in.
 multipart/formdata are accepted.
 
-This example will create a new directory and put profile.jpg in it
+This example will upload profile.jpg in it
 ```
 POST "/v1/file/new-directory/"
 ------WebKitFormBoundary
@@ -209,7 +209,7 @@ Response (201):
 }
 ```
 
-**PUT** - Move or rename a previously uploaded file.  You must be the owner.
+**PUT** - Move or rename a previously uploaded file.  You must have folder write access on source and dest.
 ```
 PUT "/v1/file/wrong-dir/oldname.txt"
 {
@@ -228,7 +228,7 @@ Response (201):
 
 
 
-**DELETE** - Can only be done by file owners.
+**DELETE** - You must have write access to the parent folder.
 
 *Delete a single file*
 ```
@@ -279,7 +279,7 @@ but the rate limiting should prevent spammy users.
 
 Public read access can read keys but not download the entire datastore file.
 
-Currently the datastore is backed by https://github.com/cznic/kv, but other storage backends could be used as well.
+Currently the datastore is backed by https://github.com/cznic/kv, but other storage backends could potentially be used as well.
 
 **POST**
 
@@ -641,6 +641,7 @@ Response (200):
 	data: 
 		{	name: "family-pictures", 
 			url: "/v1/file/family-pictures/", 
+			isDir: true,
 			permissions: {owner: "tshannon", public: "",	friend: "r",	private: "rw"},
 		}
 

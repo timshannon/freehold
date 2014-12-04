@@ -222,20 +222,6 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Source File Permissions
-		prm, err = permission.Get(sourceFile)
-		if errHandled(err, w, auth) {
-			return
-		}
-		if !auth.canWrite(permission.FileUpdate(prm)) {
-			if !auth.canRead(prm) {
-				four04(w, r)
-				return
-			}
-			errHandled(fail.New("You do not have permissions to update this file.", r.URL.Path), w, auth)
-			return
-		}
-
 		//Dest Parent Permissions
 		prm, err = permission.FileParent(destFile)
 		if !auth.canWrite(prm) {
@@ -410,27 +396,6 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//File Permissions
-	prm, err = permission.Get(filename)
-	if errHandled(err, w, auth) {
-		return
-	}
-
-	prm = permission.FileUpdate(prm)
-	if !auth.canWrite(prm) {
-		if !auth.canRead(prm) {
-			four04(w, r)
-			return
-		}
-
-		errHandled(fail.New("You do not have permissions to delete this resource.", resource), w, auth)
-		return
-	}
-
-	//TODO: Should I recurse folder structure and now allow the delete to finish if
-	// they don't have permissions on children?  Or does owning the folder give the rights
-	// to remove everything in it regardless of children's owner?  I'm in favor of the latter
-	// as it's simplier, however is it expected behavior?
 	err = os.RemoveAll(filename)
 	if errHandled(err, w, auth) {
 		return
@@ -448,7 +413,6 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 			Url:  resource,
 		},
 	})
-
 }
 
 func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth *Auth) {
