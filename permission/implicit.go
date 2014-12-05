@@ -4,11 +4,6 @@
 
 package permission
 
-import (
-	"path/filepath"
-	"strings"
-)
-
 //Docs are open to public
 func Doc() *Permission {
 	return &Permission{
@@ -42,12 +37,6 @@ func AppNewDefault(owner string) *Permission {
 	}
 }
 
-//FileParent gets the permissions of the file's parent folder
-func FileParent(filename string) (*Permission, error) {
-	parent := filepath.Dir(strings.TrimSuffix(filename, "/"))
-	return Get(parent)
-}
-
 //Only file owners can update a file
 func FileUpdate(base *Permission) *Permission {
 	prm := *base
@@ -57,14 +46,15 @@ func FileUpdate(base *Permission) *Permission {
 	return &prm
 }
 
-// SetFileRoot Sets permissions on the root of the files directory
-// no owner, so permissions can't be altered once set
-func SetFileRoot(foldername string) error {
-	return set(foldername, &Permission{
+// FileRoot returns the permissions for the root file
+// directory.  Only admins can create / delete folders at the root
+func FileRoot() *Permission {
+	return &Permission{
 		Owner:   "",
-		Private: Read + Write,
-		Friend:  Read + Write,
-	})
+		Private: Read,
+		Friend:  Read,
+		admin:   Read + Write,
+	}
 }
 
 //Default file permissions for new files

@@ -99,6 +99,7 @@ func (o *openedFiles) open(name string) (*DS, error) {
 
 	o.Lock()
 	defer o.Unlock()
+
 	db, err := kv.Open(name, options())
 	if err != nil {
 		return nil, err

@@ -13,6 +13,7 @@ import (
 	"io"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"bitbucket.org/tshannon/freehold/data"
 	"bitbucket.org/tshannon/freehold/fail"
@@ -153,7 +154,12 @@ func All(u *user.User) ([]*Token, error) {
 		return nil, err
 	}
 
-	iter, err := ds.Iter(from, nil)
+	to, err := json.Marshal(u.Username() + string(utf8.MaxRune))
+	if err != nil {
+		return nil, err
+	}
+
+	iter, err := ds.Iter(from, to)
 	if err != nil {
 		return nil, err
 	}
@@ -174,7 +180,7 @@ func All(u *user.User) ([]*Token, error) {
 			return nil, err
 		}
 		if username(k) != u.Username() {
-			break
+			continue
 		}
 
 		err = json.Unmarshal(iter.Value(), t)

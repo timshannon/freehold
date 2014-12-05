@@ -85,6 +85,9 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 			four04(w, r)
 			return
 		}
+		if errHandled(err, w, auth) {
+			return
+		}
 
 		count, err := ds.Count(input.Iter)
 		if errHandled(err, w, auth) {
@@ -101,6 +104,9 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 		ds, err := data.Open(filename)
 		if os.IsNotExist(err) {
 			four04(w, r)
+			return
+		}
+		if errHandled(err, w, auth) {
 			return
 		}
 

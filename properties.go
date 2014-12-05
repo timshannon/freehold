@@ -86,10 +86,14 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 
 	if !isDatastore {
 		//Get Folder permissions to see if the user can view the file list
-		prm, err := permission.Get(filename)
-
-		if errHandled(err, w, auth) {
-			return
+		var prm *permission.Permission
+		if isFileRoot(resource) {
+			prm = permission.FileRoot()
+		} else {
+			prm, err = permission.Get(filename)
+			if errHandled(err, w, auth) {
+				return
+			}
 		}
 
 		if !auth.canRead(prm) {

@@ -64,10 +64,10 @@ func Compare(x, y []byte) int {
 	return naturalCompare(x, y)
 }
 
-// naturalCompare is will try to sort numbers like you expect even
+// naturalCompare will try to sort numbers like you expect even
 // though their source is utf-8 json, as opposed to the default byte compare.
 // if a number is compared with a non number, then default byte compare is used
-// Currently performance doesn't seem impacted
+// Currently performance seems to be adequate, need to test with larger datasets
 func naturalCompare(x, y []byte) int {
 	var keyX interface{}
 	var keyY interface{}

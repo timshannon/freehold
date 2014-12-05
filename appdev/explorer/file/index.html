@@ -21,6 +21,11 @@
 <!--properties-->
 <modal id="properties" title="Properties for: {{currentFile.name}}" customFooter="true">
 {{#currentFile}}
+{{#if currentFile.error}}
+<div class="alert alert-danger">
+	{{error}}	
+</div>
+{{/if}}
 	<a href="#" class="pull-right" on-click="star" title="{{#if .starred}}Remove{{else}}Add{{/if}} Star">
 		<span class="glyphicon glyphicon-star star{{#starred}} starred{{/starred}}"></span></a>
 	<ul id="propTabs" class="nav nav-tabs" role="tablist">
@@ -84,12 +89,9 @@
 
 	</div>
 <div class="modal-footer">
-	{{#if user === permissions.owner}}
-		<button type="button" class="btn btn-danger pull-left" on-click="deleteFromProperties"><span class="glyphicon glyphicon-remove"></span> Delete</button>
-	{{/if}}
+	<button type="button" class="btn btn-danger pull-left" on-click="deleteFromProperties"><span class="glyphicon glyphicon-remove"></span> Delete</button>
 	<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 </div>
-
 {{/currentFile}}
 </modal>
 
