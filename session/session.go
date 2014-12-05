@@ -15,6 +15,7 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"bitbucket.org/tshannon/freehold/data"
 	"bitbucket.org/tshannon/freehold/fail"
@@ -275,7 +276,12 @@ func userSessions(user string) ([]*Session, error) {
 		return nil, err
 	}
 
-	iter, err := ds.Iter(from, nil)
+	to, err := json.Marshal(user + string(utf8.MaxRune))
+	if err != nil {
+		return nil, err
+	}
+
+	iter, err := ds.Iter(from, to)
 	if err != nil {
 		return nil, err
 	}
@@ -288,19 +294,20 @@ func userSessions(user string) ([]*Session, error) {
 			return nil, iter.Err()
 		}
 
-		err = json.Unmarshal(iter.Value(), s)
-		if err != nil {
-			return nil, err
-		}
 		err = json.Unmarshal(iter.Key(), &s.key)
 		if err != nil {
 			return nil, err
 		}
 
 		if username(s.key) != user {
-			break
+			continue
 		}
-		fmt.Println(s)
+
+		err = json.Unmarshal(iter.Value(), s)
+		if err != nil {
+			return nil, err
+		}
+
 		if s.IsExpired() {
 			err = ds.Delete(iter.Key())
 			if err != nil {

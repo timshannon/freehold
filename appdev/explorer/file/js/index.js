@@ -193,7 +193,7 @@ $(document).ready(function() {
                         rMain.set("currentFile.renameError", result.message);
                         return;
                     });
-                    if (event.context.isFolder) {
+                    if (event.context.isDir) {
                         openUrl(newUrl);
                     } else {
                         selectFolder(rMain.get("currentKeypath"));
@@ -233,19 +233,25 @@ $(document).ready(function() {
                 file.url = trimSlash(url);
                 rMain.set("currentFile", setFileType(file));
             }, function(result) {
-                rMain.set("currentFile", setFileType(file));
+                rMain.set("currentFile", result.data);
             });
         },
         "deleteFromProperties": function(event) {
-            fh.file.delete(event.context.url);
-            var keypath = rMain.get("currentKeypath");
-            if (event.context.isFolder) {
-                keypath = parentKeypath(keypath);
-            }
-            selectFolder(keypath);
-            settings.stars.remove(event.context.url);
+            fh.file.delete(event.context.url)
+                .done(function() {
 
-            $("#properties").modal("hide");
+                    var keypath = rMain.get("currentKeypath");
+                    if (event.context.isDir) {
+                        keypath = parentKeypath(keypath);
+                    }
+                    selectFolder(keypath);
+                    settings.stars.remove(event.context.url);
+
+                    $("#properties").modal("hide");
+                })
+                .fail(function(result) {
+					rMain.set("currentFile.error", result.message);
+                });
         },
     });
 
@@ -466,7 +472,6 @@ $(document).ready(function() {
     function setFileType(file) {
         if (file.isDir) {
             file.explorerIcon = "folder";
-            file.isFolder = true;
             file.canSelect = true;
             if (file.open) {
                 file.iconClass = "fa fa-folder-open";
@@ -483,7 +488,9 @@ $(document).ready(function() {
             file.explorerIcon = settings.fileType.icon(ext) || defaultIcons[ext] || "file-o";
             file.download = settings.fileType.download(ext);
             file.hide = true; //hide from treeview
-            file.humanSize = filesize(file.size); //thanks Jason Mulligan (https://github.com/avoidwork/filesize.js)
+            if (file.size) {
+                file.humanSize = filesize(file.size); //thanks Jason Mulligan (https://github.com/avoidwork/filesize.js)
+            }
         }
 
         if (file.modified) {
@@ -538,11 +545,11 @@ $(document).ready(function() {
             }
 
             if (settings.get("folderSort", true)) {
-                if (a.isFolder && !b.isFolder) {
+                if (a.isDir && !b.isDir) {
                     return -1;
                 }
 
-                if (b.isFolder && !a.isFolder) {
+                if (b.isDir && !a.isDir) {
                     return 1;
                 }
             }
@@ -599,7 +606,7 @@ $(document).ready(function() {
                     name: "files",
                     explorerIcon: "fa fa-folder-open",
                     url: list[i],
-                    isFolder: true,
+                    isDir: true,
                 });
                 continue;
             }
@@ -609,7 +616,7 @@ $(document).ready(function() {
                     name: "datastores",
                     explorerIcon: "fa fa-database",
                     url: list[i],
-                    isFolder: true,
+                    isDir: true,
                 });
                 continue;
             }
@@ -648,6 +655,8 @@ $(document).ready(function() {
                     result.data = {
                         name: fileurl.split("/").pop(),
                         url: url,
+                        isDir: false,
+                        size: 0,
                     };
                     failGet(result);
                 }

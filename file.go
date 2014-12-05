@@ -53,9 +53,14 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 
 	if r.ContentLength != 0 {
 		//file upload
-		prm, err := permission.Get(urlPathToFile(foldername))
-		if errHandled(err, w, auth) {
-			return
+		var prm *permission.Permission
+		if isFileRoot(r.URL.Path) {
+			prm = permission.FileRoot()
+		} else {
+			prm, err = permission.Get(urlPathToFile(foldername))
+			if errHandled(err, w, auth) {
+				return
+			}
 		}
 		if !auth.canWrite(prm) {
 			if !auth.canRead(prm) {
@@ -76,9 +81,15 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	prm, err := permission.FileParent(foldername)
-	if errHandled(err, w, auth) {
-		return
+	//New Folder
+	var prm *permission.Permission
+	if isFileRoot(parent(r.URL.Path)) {
+		prm = permission.FileRoot()
+	} else {
+		prm, err = permission.Get(parent(foldername))
+		if errHandled(err, w, auth) {
+			return
+		}
 	}
 	if !auth.canWrite(prm) {
 		if !auth.canRead(prm) {
@@ -89,7 +100,6 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//New Folder
 	err = os.Mkdir(foldername, 0777)
 	if os.IsExist(err) {
 		err = fail.New("Folder already exists!", r.URL.Path)
@@ -208,9 +218,15 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 		destFile := urlPathToFile(input.Move)
 
 		//Source parent permissions
-		prm, err := permission.FileParent(sourceFile)
-		if errHandled(err, w, auth) {
-			return
+		var prm *permission.Permission
+
+		if isFileRoot(parent(r.URL.Path)) {
+			prm = permission.FileRoot()
+		} else {
+			prm, err = permission.Get(parent(sourceFile))
+			if errHandled(err, w, auth) {
+				return
+			}
 		}
 
 		if !auth.canWrite(prm) {
@@ -223,7 +239,14 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 		}
 
 		//Dest Parent Permissions
-		prm, err = permission.FileParent(destFile)
+		if isFileRoot(parent(input.Move)) {
+			prm = permission.FileRoot()
+		} else {
+			prm, err = permission.Get(parent(destFile))
+			if errHandled(err, w, auth) {
+				return
+			}
+		}
 		if !auth.canWrite(prm) {
 			if !auth.canRead(prm) {
 				four04(w, r)
@@ -381,9 +404,14 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//parent folder permissions
-	prm, err := permission.FileParent(filename)
-	if errHandled(err, w, auth) {
-		return
+	var prm *permission.Permission
+	if isFileRoot(parent(resource)) {
+		prm = permission.FileRoot()
+	} else {
+		prm, err = permission.Get(parent(filename))
+		if errHandled(err, w, auth) {
+			return
+		}
 	}
 
 	if !auth.canWrite(prm) {
@@ -442,6 +470,8 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 	var prm *permission.Permission
 	if isDocPath(resource) {
 		prm = permission.Doc()
+	} else if isFileRoot(resource) {
+		prm = permission.FileRoot()
 	} else {
 		prm, err = permission.Get(filename)
 		if errHandled(err, w, auth) {
@@ -516,10 +546,11 @@ func serveFile(w http.ResponseWriter, r *http.Request, file *os.File, auth *Auth
 	}
 
 	//TODO: Setting for modified date instead of etag?
+	//  less consistant, but more performant
 
-	//ETag is an MD5 sum of the contents of the file.  If the file changes
-	// clients should know to grab the new version because the md5 won't match.
-	w.Header().Add("ETag", md5Sum(rs))
+	//ETag is an checksum has of the contents of the file.  If the file changes
+	// clients should know to grab the new version because the sum won't match.
+	w.Header().Add("ETag", checksum(rs))
 	http.ServeContent(w, r, file.Name(), time.Time{}, rs)
 	return
 }

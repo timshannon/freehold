@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"bitbucket.org/tshannon/freehold/app"
@@ -50,6 +51,20 @@ func splitRootAndPath(pattern string) (root, path string) {
 		path = "/" + split[1]
 	}
 	return root, path
+}
+
+func isFileRoot(resource string) bool {
+	root, path := splitRootAndPath(resource)
+	if isVersion(root) {
+		_, path = splitRootAndPath(path)
+		return path == "/"
+	}
+
+	return isFileRoot(path)
+}
+
+func parent(filename string) string {
+	return filepath.Dir(strings.TrimSuffix(filename, "/"))
 }
 
 func isDocPath(resource string) bool {
@@ -128,10 +143,10 @@ func halt(msg string) {
 	os.Exit(1)
 }
 
-func md5Sum(rs io.Reader) string {
+func checksum(rs io.Reader) string {
 	buff, err := ioutil.ReadAll(rs)
 	if err != nil {
-		halt("Error calculating MD5 sum: " + err.Error())
+		halt("Error calculating checksum: " + err.Error())
 	}
 	return fmt.Sprintf("%x", md5.Sum(buff))
 }
