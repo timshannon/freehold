@@ -27,7 +27,7 @@ const (
 	DS = "core/token.ds"
 )
 
-var FailTokenLevel = errors.New("Token grants more permissions than requester has.")
+var FailTokenLevel = errors.New("Token grants invalid permissions.")
 
 type Token struct {
 	Token      string `json:"token,omitempty"`
@@ -263,33 +263,41 @@ func (t *Token) User() *user.User {
 	return nil
 }
 
-// SetPermission creates the permissions to check against
+// Permission creates the permissions to check against
 // based on the token.
 // token access is unauthenticated in that
 // the token doesn't have a *user.User if a permission and / or a resource is supplied
 // so SetPermissions sets the appropriate public permissions based on token
-func (t *Token) SetPermission(base *permission.Permission) {
+func (t *Token) GetPermission(res permission.Resource) (*permission.Permission, error) {
 	if t.User() != nil {
 		//No change
-		return
+		return res.Permission()
 	}
 
 	if t.Resource != "" {
-		if t.Resource != base.Resource() {
-			base.Public = ""
-			return
+		if t.Resource != res.Url() {
+			return &permission.Permission{}, nil
 		}
 	}
 
+	prm, err := res.Permission()
+	if err != nil {
+		return nil, err
+	}
 	if t.Permission != "" {
-		err := t.checkPermissionsLevel(base)
+
+		err = t.checkPermissionsLevel(prm)
 		if err != nil {
-			base.Public = ""
-			return
+			return nil, err
 		}
-		base.Public = t.Permission
-		return
+		prm.Public = t.Permission
+	} else {
+		if t.User().Username() == prm.Owner {
+			prm.Public = prm.Private
+		} else {
+			prm.Public = prm.Friend
+		}
 	}
 
-	//No change
+	return prm, nil
 }

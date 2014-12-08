@@ -17,6 +17,8 @@ import (
 	"bitbucket.org/tshannon/freehold/setting"
 )
 
+var Err404 = errors.New("Resource not found")
+
 func errHandled(err error, w http.ResponseWriter, auth *Auth) bool {
 	if err == nil {
 		return false
@@ -34,7 +36,10 @@ func errHandled(err error, w http.ResponseWriter, auth *Auth) bool {
 
 	case *fail.Fail:
 		status = statusFail
-		log.Fail(err.(*fail.Fail), auth.Username)
+		if !fail.IsEqual(err, Err404) {
+			//404's are logged separately
+			log.Fail(err.(*fail.Fail), auth.Username)
+		}
 	case *http.ProtocolError, *json.SyntaxError, *json.UnmarshalTypeError:
 		//Hardcoded external errors which can bubble up to the end users
 		// without exposing internal server information, make them failures
@@ -94,7 +99,10 @@ func four04(w http.ResponseWriter, r *http.Request) {
 }
 
 func four04Fail(url string) error {
-	return fail.New("Resource not found", url)
+	if setting.Bool("Log404") {
+		log.NewEntry(log.Four04Type, "Resource not found: "+url)
+	}
+	return fail.NewFromErr(Err404, url)
 }
 
 // four04Page returns a 404 status with custom page that can be set to any

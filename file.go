@@ -124,7 +124,7 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func uploadFile(w http.ResponseWriter, resourcePath string, owner *user.User, mp *multipart.Form) {
+func uploadFile(w http.ResponseWriter, parent *fileResource, owner *user.User, mp *multipart.Form) {
 	var fileList []Properties
 	var failures []error
 	status := statusSuccess
@@ -142,38 +142,37 @@ func uploadFile(w http.ResponseWriter, resourcePath string, owner *user.User, mp
 				continue
 
 			}
-			resource := path.Join(resourcePath, files[i].Filename)
-			filename := urlPathToFile(resource)
+			resource := newFileRes(path.Join(parent.Url(), files[i].Filename))
 
 			//write file
 			file, err := files[i].Open()
 
 			if err != nil {
 				log.Error(err)
-				failures = append(failures, fail.New("Error opening file for writing.", resource))
+				failures = append(failures, fail.New("Error opening file for writing.", resource.Url()))
 				status = statusFail
 
 				continue
 			}
 
-			err = writeFile(file, filename, false)
+			err = writeFile(file, resource.filepath, false)
 			if err != nil {
-				failures = append(failures, fail.NewFromErr(err, resource))
+				failures = append(failures, fail.NewFromErr(err, resource.Url()))
 				status = statusFail
 
 				continue
 			}
-			err = permission.Set(filename, permission.FileNewDefault(owner.Username()))
+			err = permission.Set(resource.filepath, permission.FileNewDefault(owner.Username()))
 			if err != nil {
-				failures = append(failures, fail.NewFromErr(err, resource))
+				failures = append(failures, fail.NewFromErr(err, resource.Url()))
 				status = statusFail
 
 				continue
 			}
 
 			fileList = append(fileList, Properties{
-				Name: filepath.Base(filename),
-				Url:  resource,
+				Name: resource.name(),
+				Url:  resource.Url(),
 			})
 		}
 	}

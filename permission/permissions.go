@@ -5,7 +5,7 @@
 package permission
 
 import (
-	"path"
+	"errors"
 	"strings"
 
 	"bitbucket.org/tshannon/freehold/data"
@@ -21,69 +21,73 @@ const (
 	Write = "w"
 )
 
+type Resource interface {
+	ID() string
+	Url() string
+	Permission() (*Permission, error)
+}
+
 type Permission struct {
 	Owner   string `json:"owner,omitempty"`
 	Public  string `json:"public,omitempty"`
 	Friend  string `json:"friend,omitempty"`
 	Private string `json:"private,omitempty"`
 
-	admin    string `json:"-"`
-	resource string `json:"-"`
+	admin string `json:"-"`
 }
 
-//Get the permissions for a file by filename, NOT by URL
-func Get(filename string) (*Permission, error) {
-	filename = path.Clean(filename)
+//Get the permissions by ID what the ID is will depend on the resource
+func Get(id string) (*Permission, error) {
+	if id == "" {
+		return nil, errors.New("Invalid resource id")
+	}
+
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return nil, err
 	}
 	prm := &Permission{}
-	err = ds.Get(filename, prm)
+	err = ds.Get(id, prm)
 	if err == data.ErrNotFound {
-		return orphanedResource(filename)
+		return orphanedResource(id)
 	}
 
 	if err != nil {
 		return nil, err
 	}
 
-	prm.resource = filename
-
 	return prm, nil
 }
 
-func orphanedResource(filename string) (*Permission, error) {
+func orphanedResource(id string) (*Permission, error) {
 	o := setting.String("OrphanedPermissionOwner")
 	if o == "" {
 		return &Permission{}, nil
 	}
 	prm := FileNewDefault(o)
-	err := Set(filename, prm)
+	err := Set(id, prm)
 	if err != nil {
 		return nil, err
 	}
 	return prm, nil
 }
 
-func Set(filename string, permissions *Permission) error {
+func Set(id string, permissions *Permission) error {
 	err := permissions.validate()
 	if err != nil {
 		return err
 	}
-	return set(filename, permissions)
+	return set(id, permissions)
 }
 
 //allows for skipping permissions validation
-func set(filename string, permissions *Permission) error {
-	filename = path.Clean(filename)
-
+func set(id string, permissions *Permission) error {
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return err
 	}
 
-	err = ds.Put(filename, permissions)
+	err = ds.Put(id, permissions)
 	if err != nil {
 		return err
 	}
@@ -91,14 +95,13 @@ func set(filename string, permissions *Permission) error {
 	return nil
 }
 
-func Delete(filename string) error {
-	filename = strings.TrimSuffix(filename, "/")
+func Delete(id string) error {
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return err
 	}
 
-	err = ds.Delete(filename)
+	err = ds.Delete(id)
 	if err != nil {
 		return err
 	}
@@ -107,8 +110,6 @@ func Delete(filename string) error {
 }
 
 func Move(from, to string) error {
-	from = strings.TrimSuffix(from, "/")
-	to = strings.TrimSuffix(to, "/")
 	prm, err := Get(from)
 	if err != nil {
 		return err
@@ -189,10 +190,6 @@ func (p *Permission) isOwner(u *user.User) bool {
 	}
 
 	return p.Owner == u.Username()
-}
-
-func (p *Permission) Resource() string {
-	return p.resource
 }
 
 func removeWrite(permission *string) {
