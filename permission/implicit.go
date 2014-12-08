@@ -128,6 +128,12 @@ func DatastoreNew() *Permission {
 	}
 }
 
+func DatastoreDir() *Permission {
+	return &Permission{
+		Friend: Read + Write,
+	}
+}
+
 func DatastoreDrop(base *Permission) *Permission {
 	prm := *base
 	prm.Private = Read + Write

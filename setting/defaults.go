@@ -157,6 +157,15 @@ func init() {
 				"be set (Private RW). This can be used to back-load files into freehold.",
 			Value: "",
 		},
+		"AutoCreateUserFolders": Setting{
+			Description: "Whether or not to automatically create folders for new users with permissions for them.  Think unix " +
+				"Home folders.",
+			Value: true, //TODO
+		},
+		"RemoveUserFolderOnUserDelete": Setting{
+			Description: "Whether or not to automatically delete a user's User Folder when the user is deleted.",
+			Value:       false, //TODO
+		},
 	}
 }
 

@@ -35,28 +35,19 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filename := urlPathToFile(r.URL.Path)
-	if !fileExists(filename) || isHidden(filename) {
-		four04(w, r)
+	res := newFileRes(r.URL.Path)
+
+	if errHandled(auth.canRead(res), w, auth) {
 		return
 	}
 
-	prm, err := permission.Get(filename)
-	if errHandled(err, w, auth) {
-		return
-	}
-
-	if !auth.canRead(prm) {
-		four04(w, r)
-		return
-	}
 	input := &DatastoreInput{}
 	parseJson(r, input)
 
 	switch {
 	case input.Key != nil:
 		//return key's value
-		ds, err := data.Open(filename)
+		ds, err := data.Open(res.filepath)
 		if os.IsNotExist(err) {
 			four04(w, r)
 			return
@@ -80,7 +71,7 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 		})
 	case input.Count != nil:
 		//return count
-		ds, err := data.Open(filename)
+		ds, err := data.Open(res.filepath)
 		if os.IsNotExist(err) {
 			four04(w, r)
 			return
@@ -101,7 +92,7 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 
 	case input.Iter != nil:
 		//return iter result
-		ds, err := data.Open(filename)
+		ds, err := data.Open(res.filepath)
 		if os.IsNotExist(err) {
 			four04(w, r)
 			return
@@ -120,7 +111,7 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 			Data:   val,
 		})
 	case input.Max != nil:
-		ds, err := data.Open(filename)
+		ds, err := data.Open(res.filepath)
 		if os.IsNotExist(err) {
 			four04(w, r)
 			return
@@ -153,7 +144,7 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 			},
 		})
 	case input.Min != nil:
-		ds, err := data.Open(filename)
+		ds, err := data.Open(res.filepath)
 		if os.IsNotExist(err) {
 			four04(w, r)
 			return
@@ -189,12 +180,16 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 	default:
 		//return entire file
 
-		if !auth.canRead(permission.DatastoreDownload(prm)) {
+		prm, err := res.Permission()
+		if errHandled(err, w, auth) {
+			return
+		}
+		if !permission.DatastoreDownload(prm).CanRead(auth.User) {
 			four04(w, r)
 			return
 		}
-		data.Close(filename)
-		dsFile, err := os.Open(filename)
+		data.Close(res.filepath)
+		dsFile, err := os.Open(res.filepath)
 		if errHandled(err, w, auth) {
 			return
 		}
@@ -209,12 +204,7 @@ func datastorePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	prm := permission.DatastoreNew()
-
-	if !auth.canWrite(prm) {
-		errHandled(fail.New("You do not have permissions to a post a datastore.", nil), w, auth)
-		return
-	}
+	res := newFileRes(r.URL.Path)
 
 	if !validDSPath(r.URL.Path) {
 		errHandled(fail.New("Invalid path for a datastore.", r.URL.Path), w, auth)
@@ -222,34 +212,46 @@ func datastorePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
+		if !res.isDir() {
+			errHandled(fail.New("Path is not a directory. A datastore cannot be uploaded here.", res.Url()), w, auth)
+			return
+		}
+
+		if errHandled(auth.canWrite(res), w, auth) {
+			return
+		}
+
 		err = r.ParseMultipartForm(setting.Int64("MaxUploadMemory"))
 		if errHandled(err, w, auth) {
 			return
 		}
 
 		mp := r.MultipartForm
-		err = os.MkdirAll(urlPathToFile(r.URL.Path), 0777)
+		err = os.MkdirAll(res.filepath, 0777)
 		if errHandled(err, w, auth) {
 			return
 		}
 		//Is a datastore upload, use file upload
-		uploadFile(w, r.URL.Path, auth.User, mp)
+		uploadFile(w, res, auth.User, mp)
+		return
+	}
+
+	if errHandled(auth.canWrite(res), w, auth) {
 		return
 	}
 
 	//not an upload, create the datastore instead
-	err = os.MkdirAll(urlPathToFile(path.Dir(r.URL.Path)), 0777)
+	err = os.MkdirAll(res.parent().filepath, 0777)
 	if errHandled(err, w, auth) {
 		return
 	}
 
-	filename := urlPathToFile(r.URL.Path)
-	err = data.Create(filename)
+	err = data.Create(res.filepath)
 	if errHandled(err, w, auth) {
 		return
 	}
 
-	err = permission.Set(filename, permission.DatastoreNewDefault(auth.User.Username()))
+	err = permission.Set(res.ID(), permission.DatastoreNewDefault(auth.User.Username()))
 	if errHandled(err, w, auth) {
 		return
 	}
@@ -257,8 +259,8 @@ func datastorePost(w http.ResponseWriter, r *http.Request) {
 	respondJsend(w, &JSend{
 		Status: statusSuccess,
 		Data: Properties{
-			Name: path.Base(filename),
-			Url:  r.URL.Path,
+			Name: res.name(),
+			Url:  res.Url(),
 		},
 	})
 }

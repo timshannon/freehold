@@ -137,20 +137,42 @@ func authenticate(w http.ResponseWriter, r *http.Request) (*Auth, error) {
 	return a, nil
 }
 
-func (a *Auth) canRead(prm *permission.Permission) bool {
-	if a.AuthType != authTypeToken {
-		return prm.CanRead(a.User)
+func (a *Auth) canRead(res permission.Resource) error {
+	var prm *permission.Permission
+	var err error
+
+	if a.AuthType == authTypeToken {
+		prm, err = a.Token.GetPermission(res)
+	} else {
+		prm, err = res.Permission()
 	}
-	a.Token.SetPermission(prm)
-	return prm.CanRead(a.User)
+	if err != nil {
+		return err
+	}
+	if !prm.CanRead(a.User) {
+		return four04Fail(res.Url())
+	}
+
+	return nil
 }
 
-func (a *Auth) canWrite(prm *permission.Permission) bool {
-	if a.AuthType != authTypeToken {
-		return prm.CanWrite(a.User)
+func (a *Auth) canWrite(res permission.Resource) error {
+	var prm *permission.Permission
+	var err error
+
+	if a.AuthType == authTypeToken {
+		prm, err = a.Token.GetPermission(res)
+	} else {
+		prm, err = res.Permission()
 	}
-	a.Token.SetPermission(prm)
-	return prm.CanWrite(a.User)
+	if err != nil {
+		return err
+	}
+	if !prm.CanWrite(a.User) {
+		return fail.New("You do not have permission to write to this resource.", res.Url())
+	}
+
+	return nil
 }
 
 func (a *Auth) attemptWrite(r *http.Request) error {

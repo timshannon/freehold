@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"path/filepath"
 	"strings"
 
 	"bitbucket.org/tshannon/freehold/app"
@@ -31,6 +30,35 @@ const (
 	datastoreDir = "datastore/"
 	appDir       = app.AppDir
 )
+
+func halt(msg string) {
+	store.Halt()
+	fmt.Fprintln(os.Stderr, msg)
+	os.Exit(1)
+}
+
+// urlPathToFile takes a url path and returns the path to the file
+// on the os filesystem
+// url path format will usually be
+// /<version>/<type of resource>/<path to resource>/
+func urlPathToFile(urlPath string) string {
+	if urlPath == "/" || urlPath == "" {
+		return "/"
+	}
+	root, respath := splitRootAndPath(urlPath)
+
+	//strip off version and check if valid
+	if !isVersion(root) {
+		//not a version prefix
+		if strings.ToLower(root) == "docs" {
+			return path.Join(docsDir, respath)
+		}
+
+		//Is app path and root is app-id
+		return path.Join(appDir, root, urlPathToFile(respath))
+	}
+	return v1FilePath(respath)
+}
 
 // splitRootAndPath splits the first item in a path from the rest
 // /v1/file/test.txt:
@@ -63,10 +91,6 @@ func isFileRoot(resource string) bool {
 	return isFileRoot(path)
 }
 
-func parent(filename string) string {
-	return filepath.Dir(strings.TrimSuffix(filename, "/"))
-}
-
 func isDocPath(resource string) bool {
 	root, _ := splitRootAndPath(resource)
 	return root == "docs"
@@ -80,29 +104,6 @@ func isFilePath(resource string) bool {
 	}
 
 	return isFilePath(path)
-}
-
-// urlPathToFile takes a url path and returns the path to the file
-// on the os filesystem
-// url path format will usually be
-// /<version>/<type of resource>/<path to resource>/
-func urlPathToFile(urlPath string) string {
-	if urlPath == "/" || urlPath == "" {
-		return "/"
-	}
-	root, respath := splitRootAndPath(urlPath)
-
-	//strip off version and check if valid
-	if !isVersion(root) {
-		//not a version prefix
-		if strings.ToLower(root) == "docs" {
-			return path.Join(docsDir, respath)
-		}
-
-		//Is app path and root is app-id
-		return path.Join(appDir, root, urlPathToFile(respath))
-	}
-	return v1FilePath(respath)
 }
 
 func v1FilePath(resourcePath string) string {
@@ -137,10 +138,23 @@ func isRestricted(path string) bool {
 	return false
 }
 
-func halt(msg string) {
-	store.Halt()
-	fmt.Fprintln(os.Stderr, msg)
-	os.Exit(1)
+func isHidden(filename string) bool {
+
+}
+
+func isDir(filename string) bool {
+}
+
+func resPathFromProperty(propertyPath string) string {
+	root, resource := splitRootAndPath(propertyPath)
+	if isVersion(root) {
+		//strip out properties from path
+		_, resource = splitRootAndPath(resource)
+		return path.Join("/", root, resource)
+	}
+	//must be app path
+	resource = resPathFromProperty(resource)
+	return path.Join("/", root, resource)
 }
 
 func checksum(rs io.Reader) string {
@@ -154,17 +168,6 @@ func checksum(rs io.Reader) string {
 func fileExists(filename string) bool {
 	if _, err := os.Stat(filename); err == nil {
 		return true
-	}
-	return false
-}
-
-func isHidden(filename string) bool {
-	return strings.HasPrefix(path.Base(filename), ".")
-}
-
-func isDir(filename string) bool {
-	if stat, err := os.Stat(filename); err == nil {
-		return stat.IsDir()
 	}
 	return false
 }

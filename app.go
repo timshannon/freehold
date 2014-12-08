@@ -12,7 +12,6 @@ import (
 	"bitbucket.org/tshannon/freehold/app"
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/log"
-	"bitbucket.org/tshannon/freehold/permission"
 )
 
 type ApplicationInput struct {
@@ -26,8 +25,7 @@ func appGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !auth.canRead(permission.Application()) {
-		four04(w, r)
+	if errHandled(auth.canRead(app.Resource(r.URL.Path, false)), w, auth) {
 		return
 	}
 
@@ -72,8 +70,7 @@ func appPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !auth.canWrite(permission.Application()) {
-		errHandled(fail.New("You do not have permissions to install an application.", nil), w, auth)
+	if errHandled(auth.canWrite(app.Resource(r.URL.Path, false)), w, auth) {
 		return
 	}
 
@@ -106,8 +103,7 @@ func appPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !auth.canWrite(permission.Application()) {
-		errHandled(fail.New("You do not have permissions to update an application.", nil), w, auth)
+	if errHandled(auth.canWrite(app.Resource(r.URL.Path, false)), w, auth) {
 		return
 	}
 
@@ -136,8 +132,7 @@ func appDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !auth.canWrite(permission.Application()) {
-		errHandled(fail.New("You do not have permissions to uninstall an application.", nil), w, auth)
+	if errHandled(auth.canWrite(app.Resource(r.URL.Path, false)), w, auth) {
 		return
 	}
 
@@ -207,8 +202,7 @@ func appAvailableGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !auth.canRead(permission.AppAvailable()) {
-		errHandled(fail.New("You do not have permissions to view available applications.", nil), w, auth)
+	if errHandled(auth.canRead(app.Resource(r.URL.Path, true)), w, auth) {
 		return
 	}
 
@@ -238,8 +232,7 @@ func appAvailablePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !auth.canWrite(permission.AppAvailable()) {
-		errHandled(fail.New("You do not have permissions to post a new available application.", nil), w, auth)
+	if errHandled(auth.canWrite(app.Resource(r.URL.Path, true)), w, auth) {
 		return
 	}
 

@@ -25,18 +25,6 @@ type Properties struct {
 	IsDir       bool                   `json:"isDir,omitempty"`
 }
 
-func resPathFromProperty(propertyPath string) string {
-	root, resource := splitRootAndPath(propertyPath)
-	if isVersion(root) {
-		//strip out properties from path
-		_, resource = splitRootAndPath(resource)
-		return path.Join("/", root, resource)
-	}
-	//must be app path
-	resource = resPathFromProperty(resource)
-	return path.Join("/", root, resource)
-}
-
 //TODO: Encryption, AES?
 
 func propertiesGet(w http.ResponseWriter, r *http.Request) {

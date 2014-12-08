@@ -413,3 +413,27 @@ func isRestricted(appid string) bool {
 	}
 	return false
 }
+
+type AppResource struct {
+	url       string
+	available bool
+}
+
+func (ar *AppResource) Url() string {
+	return ar.url
+}
+
+func (ar *AppResource) ID() string {
+	return ""
+}
+
+func (ar *AppResource) Permission() (*permission.Permission, error) {
+	if ar.available {
+		return permission.AppAvailable(), nil
+	}
+	return permission.Application(), nil
+}
+
+func Resource(appUrl string, available bool) permission.Resource {
+	return &AppResource{appUrl, available}
+}
