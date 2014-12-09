@@ -21,9 +21,7 @@ func logGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	prm := permission.Log()
-
-	if !auth.canRead(prm) {
+	if !permission.Log().CanRead(auth.User) {
 		four04(w, r)
 		return
 	}

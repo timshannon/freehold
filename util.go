@@ -11,53 +11,15 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"path"
 	"strings"
 
-	"bitbucket.org/tshannon/freehold/app"
 	"bitbucket.org/tshannon/freehold/data/store"
-)
-
-var versions = map[string]struct{}{"v1": struct{}{}}
-
-func init() {
-	app.IsRestrictedFunc = isRestricted
-}
-
-const (
-	docsDir      = "docs/"
-	fileDir      = "file/"
-	datastoreDir = "datastore/"
-	appDir       = app.AppDir
 )
 
 func halt(msg string) {
 	store.Halt()
 	fmt.Fprintln(os.Stderr, msg)
 	os.Exit(1)
-}
-
-// urlPathToFile takes a url path and returns the path to the file
-// on the os filesystem
-// url path format will usually be
-// /<version>/<type of resource>/<path to resource>/
-func urlPathToFile(urlPath string) string {
-	if urlPath == "/" || urlPath == "" {
-		return "/"
-	}
-	root, respath := splitRootAndPath(urlPath)
-
-	//strip off version and check if valid
-	if !isVersion(root) {
-		//not a version prefix
-		if strings.ToLower(root) == "docs" {
-			return path.Join(docsDir, respath)
-		}
-
-		//Is app path and root is app-id
-		return path.Join(appDir, root, urlPathToFile(respath))
-	}
-	return v1FilePath(respath)
 }
 
 // splitRootAndPath splits the first item in a path from the rest
@@ -81,82 +43,6 @@ func splitRootAndPath(pattern string) (root, path string) {
 	return root, path
 }
 
-func isFileRoot(resource string) bool {
-	root, path := splitRootAndPath(resource)
-	if isVersion(root) {
-		_, path = splitRootAndPath(path)
-		return path == "/"
-	}
-
-	return isFileRoot(path)
-}
-
-func isDocPath(resource string) bool {
-	root, _ := splitRootAndPath(resource)
-	return root == "docs"
-}
-
-func isFilePath(resource string) bool {
-	root, path := splitRootAndPath(resource)
-	if isVersion(root) {
-		root, _ = splitRootAndPath(path)
-		return root == "file"
-	}
-
-	return isFilePath(path)
-}
-
-func v1FilePath(resourcePath string) string {
-	root, respath := splitRootAndPath(resourcePath)
-	switch strings.ToLower(root) {
-	case "file":
-		return path.Join(fileDir, respath)
-	case "datastore":
-		return path.Join(datastoreDir, respath)
-	case "properties":
-		return v1FilePath(respath)
-	default:
-		//invalid path
-		return ""
-	}
-}
-
-func isVersion(version string) bool {
-	//TODO: Check for all possible versions?
-	// make sure apps can be registered on possible future version endpoints?
-	_, ok := versions[version]
-	return ok
-}
-
-func isRestricted(path string) bool {
-	if isDocPath(path) {
-		return true
-	}
-	if isVersion(path) {
-		return true
-	}
-	return false
-}
-
-func isHidden(filename string) bool {
-
-}
-
-func isDir(filename string) bool {
-}
-
-func resPathFromProperty(propertyPath string) string {
-	root, resource := splitRootAndPath(propertyPath)
-	if isVersion(root) {
-		//strip out properties from path
-		_, resource = splitRootAndPath(resource)
-		return path.Join("/", root, resource)
-	}
-	//must be app path
-	resource = resPathFromProperty(resource)
-	return path.Join("/", root, resource)
-}
-
 func checksum(rs io.Reader) string {
 	buff, err := ioutil.ReadAll(rs)
 	if err != nil {
@@ -168,6 +54,13 @@ func checksum(rs io.Reader) string {
 func fileExists(filename string) bool {
 	if _, err := os.Stat(filename); err == nil {
 		return true
+	}
+	return false
+}
+
+func isDir(filename string) bool {
+	if stat, err := os.Stat(filename); err == nil {
+		return stat.IsDir()
 	}
 	return false
 }

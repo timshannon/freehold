@@ -14,6 +14,7 @@ import (
 	"bitbucket.org/tshannon/freehold/log"
 	"bitbucket.org/tshannon/freehold/permission"
 	"bitbucket.org/tshannon/freehold/ratelimit"
+	"bitbucket.org/tshannon/freehold/resource"
 	"bitbucket.org/tshannon/freehold/session"
 	"bitbucket.org/tshannon/freehold/setting"
 	"bitbucket.org/tshannon/freehold/token"
@@ -137,7 +138,7 @@ func authenticate(w http.ResponseWriter, r *http.Request) (*Auth, error) {
 	return a, nil
 }
 
-func (a *Auth) canRead(res permission.Resource) error {
+func (a *Auth) tryRead(res permission.Permitter) error {
 	var prm *permission.Permission
 	var err error
 
@@ -149,14 +150,21 @@ func (a *Auth) canRead(res permission.Resource) error {
 	if err != nil {
 		return err
 	}
+
 	if !prm.CanRead(a.User) {
-		return four04Fail(res.Url())
+		switch res.(type) {
+
+		case *resource.File:
+			return four04Fail(res.(*resource.File).Url())
+		default:
+			return four04Fail("")
+		}
 	}
 
 	return nil
 }
 
-func (a *Auth) canWrite(res permission.Resource) error {
+func (a *Auth) tryWrite(res permission.Permitter) error {
 	var prm *permission.Permission
 	var err error
 
@@ -169,7 +177,19 @@ func (a *Auth) canWrite(res permission.Resource) error {
 		return err
 	}
 	if !prm.CanWrite(a.User) {
-		return fail.New("You do not have permission to write to this resource.", res.Url())
+		switch res.(type) {
+		case *resource.File:
+			if prm.CanRead(a.User) {
+				return fail.New("You do not have permission to write to this resource.", res.(*resource.File).Url())
+			}
+			return four04Fail(res.(*resource.File).Url())
+
+		default:
+			if prm.CanRead(a.User) {
+				return fail.New("You do not have permission to write to this resource.", nil)
+			}
+			return four04Fail("")
+		}
 	}
 
 	return nil

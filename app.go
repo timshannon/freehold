@@ -12,6 +12,7 @@ import (
 	"bitbucket.org/tshannon/freehold/app"
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/log"
+	"bitbucket.org/tshannon/freehold/resource"
 )
 
 type ApplicationInput struct {
@@ -25,7 +26,7 @@ func appGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if errHandled(auth.canRead(app.Resource(r.URL.Path, false)), w, auth) {
+	if errHandled(auth.tryRead(app.Resource(r.URL.Path, false)), w, auth) {
 		return
 	}
 
@@ -70,7 +71,7 @@ func appPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if errHandled(auth.canWrite(app.Resource(r.URL.Path, false)), w, auth) {
+	if errHandled(auth.tryWrite(app.Resource(r.URL.Path, false)), w, auth) {
 		return
 	}
 
@@ -103,7 +104,7 @@ func appPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if errHandled(auth.canWrite(app.Resource(r.URL.Path, false)), w, auth) {
+	if errHandled(auth.tryWrite(app.Resource(r.URL.Path, false)), w, auth) {
 		return
 	}
 
@@ -132,7 +133,7 @@ func appDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if errHandled(auth.canWrite(app.Resource(r.URL.Path, false)), w, auth) {
+	if errHandled(auth.tryWrite(app.Resource(r.URL.Path, false)), w, auth) {
 		return
 	}
 
@@ -193,7 +194,7 @@ func serveApp(w http.ResponseWriter, r *http.Request, appid string, auth *Auth) 
 		root = path.Join("/", a.Id, root)
 	}
 
-	serveResource(w, r, root, auth)
+	serveResource(w, r, resource.NewFile(root), auth)
 }
 
 func appAvailableGet(w http.ResponseWriter, r *http.Request) {
@@ -202,7 +203,7 @@ func appAvailableGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if errHandled(auth.canRead(app.Resource(r.URL.Path, true)), w, auth) {
+	if errHandled(auth.tryRead(app.Resource(r.URL.Path, true)), w, auth) {
 		return
 	}
 
@@ -232,7 +233,7 @@ func appAvailablePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if errHandled(auth.canWrite(app.Resource(r.URL.Path, true)), w, auth) {
+	if errHandled(auth.tryWrite(app.Resource(r.URL.Path, true)), w, auth) {
 		return
 	}
 
