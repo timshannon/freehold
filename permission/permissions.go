@@ -37,8 +37,8 @@ type Permission struct {
 }
 
 //Get the permissions by ID what the ID is will depend on the resource
-func Get(id string) (*Permission, error) {
-	if id == "" {
+func Get(res Resource) (*Permission, error) {
+	if res.ID() == "" {
 		return nil, errors.New("Invalid resource id")
 	}
 
@@ -47,9 +47,9 @@ func Get(id string) (*Permission, error) {
 		return nil, err
 	}
 	prm := &Permission{}
-	err = ds.Get(id, prm)
+	err = ds.Get(res.ID(), prm)
 	if err == data.ErrNotFound {
-		return orphanedResource(id)
+		return orphanedResource(res)
 	}
 
 	if err != nil {
@@ -59,25 +59,29 @@ func Get(id string) (*Permission, error) {
 	return prm, nil
 }
 
-func orphanedResource(id string) (*Permission, error) {
+func orphanedResource(res Resource) (*Permission, error) {
 	o := setting.String("OrphanedPermissionOwner")
 	if o == "" {
 		return &Permission{}, nil
 	}
 	prm := FileNewDefault(o)
-	err := Set(id, prm)
+	err := Set(res, prm)
 	if err != nil {
 		return nil, err
 	}
 	return prm, nil
 }
 
-func Set(id string, permissions *Permission) error {
+func Set(res Resource, permissions *Permission) error {
+	if res.ID() == "" {
+		return errors.New("Invalid resource id")
+	}
+
 	err := permissions.validate()
 	if err != nil {
 		return err
 	}
-	return set(id, permissions)
+	return set(res.ID(), permissions)
 }
 
 //allows for skipping permissions validation
@@ -95,13 +99,16 @@ func set(id string, permissions *Permission) error {
 	return nil
 }
 
-func Delete(id string) error {
+func Delete(res Resource) error {
+	if res.ID() == "" {
+		return errors.New("Invalid resource id")
+	}
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return err
 	}
 
-	err = ds.Delete(id)
+	err = ds.Delete(res.ID())
 	if err != nil {
 		return err
 	}
@@ -109,7 +116,7 @@ func Delete(id string) error {
 	return nil
 }
 
-func Move(from, to string) error {
+func Move(from, to Resource) error {
 	prm, err := Get(from)
 	if err != nil {
 		return err
