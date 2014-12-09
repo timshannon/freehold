@@ -20,13 +20,12 @@ import (
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/log"
 	"bitbucket.org/tshannon/freehold/permission"
+	"bitbucket.org/tshannon/freehold/resource"
 	"bitbucket.org/tshannon/freehold/setting"
 )
 
 const (
-	DS              = "core/app.ds"
-	AvailableAppDir = AppDir + "available/"
-	AppDir          = "./application/"
+	DS = "core/app.ds"
 )
 
 var (
@@ -109,7 +108,7 @@ func Install(file, owner string) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	if isRestricted(app.Id) {
+	if resource.IsRestrictedPath(app.Id) {
 		return nil, fail.New("Application ID is invalid.  The application cannot be installed.", app)
 	}
 
@@ -123,8 +122,8 @@ func Install(file, owner string) (*App, error) {
 		return nil, err
 	}
 
-	installDir := path.Join(AppDir, app.Id)
-	r, err := appFileReader(path.Join(AvailableAppDir, file))
+	installDir := path.Join(resource.AppDir, app.Id)
+	r, err := appFileReader(path.Join(resource.AvailableAppDir, file))
 	if err != nil {
 		return nil, err
 	}
@@ -135,14 +134,14 @@ func Install(file, owner string) (*App, error) {
 		return nil, err
 	}
 	for _, f := range r.File {
-		filename := path.Join(installDir, f.Name)
+		res := &AppResource{path.Join(installDir, f.Name)}
 
 		if f.FileInfo().IsDir() {
-			err := os.Mkdir(filename, 0777)
+			err := os.Mkdir(res.Filepath, 0777)
 			if err != nil {
 				return nil, err
 			}
-			err = permission.Set(filename, permission.AppNewDefault(owner))
+			err = permission.Set(res, permission.AppNewDefault(owner))
 			if err != nil {
 				return nil, err
 			}
@@ -155,12 +154,12 @@ func Install(file, owner string) (*App, error) {
 		}
 
 		defer fr.Close()
-		err = writeFile(fr, filename)
+		err = writeFile(fr, res.Filepath)
 		if err != nil {
 			return nil, err
 		}
 		//set permissions
-		err = permission.Set(filename, permission.AppNewDefault(owner))
+		err = permission.Set(res, permission.AppNewDefault(owner))
 		if err != nil {
 			return nil, err
 		}
@@ -211,7 +210,7 @@ func Uninstall(appid string) error {
 		return err
 	}
 
-	err = os.RemoveAll(path.Join(AppDir, appid))
+	err = os.RemoveAll(path.Join(resource.AppDir, appid))
 	if err != nil {
 		return err
 	}
@@ -220,7 +219,7 @@ func Uninstall(appid string) error {
 }
 
 func Available() (map[string]*App, []error, error) {
-	return getAppsFromDir(AvailableAppDir)
+	return getAppsFromDir(resource.AvailableAppDir)
 }
 
 func getAppsFromDir(dir string) (apps map[string]*App, failures []error, err error) {
@@ -266,7 +265,7 @@ func getAppsFromDir(dir string) (apps map[string]*App, failures []error, err err
 }
 
 func appInfoFromZip(file string) (*App, error) {
-	zippath := path.Join(AvailableAppDir, file)
+	zippath := path.Join(resource.AvailableAppDir, file)
 	r, err := appFileReader(zippath)
 	if err != nil {
 		return nil, err
@@ -359,13 +358,13 @@ func PostAvailable(url string) (string, error) {
 	}
 
 	filename := path.Base(url)
-	err = writeFile(r.Body, path.Join(AvailableAppDir, filename))
+	err = writeFile(r.Body, path.Join(resource.AvailableAppDir, filename))
 	if err != nil {
 		return "", err
 	}
 
 	if filepath.Ext(filename) != ".zip" {
-		err = os.Remove(path.Join(AvailableAppDir, filename))
+		err = os.Remove(path.Join(resource.AvailableAppDir, filename))
 		if err != nil {
 			return "", err
 		}
@@ -402,38 +401,34 @@ func writeFile(reader io.Reader, filename string) error {
 	return nil
 }
 
-var IsRestrictedFunc func(root string) bool
-
-func isRestricted(appid string) bool {
-	if appid == "available" {
-		return true
-	}
-	if IsRestrictedFunc != nil {
-		return IsRestrictedFunc(appid)
-	}
-	return false
+type AppResource struct {
+	Filepath string
 }
 
-type AppResource struct {
+func (a *AppResource) ID() string {
+	return a.Filepath
+}
+
+func (a *AppResource) Permission() (*permission.Permission, error) {
+	return nil, errors.New("This should not be used for retrieving file permissions.")
+}
+
+type AppPermissions struct {
 	url       string
 	available bool
 }
 
-func (ar *AppResource) Url() string {
-	return ar.url
-}
-
-func (ar *AppResource) ID() string {
+func (ar *AppPermissions) ID() string {
 	return ""
 }
 
-func (ar *AppResource) Permission() (*permission.Permission, error) {
+func (ar *AppPermissions) Permission() (*permission.Permission, error) {
 	if ar.available {
 		return permission.AppAvailable(), nil
 	}
 	return permission.Application(), nil
 }
 
-func Resource(appUrl string, available bool) permission.Resource {
-	return &AppResource{appUrl, available}
+func Resource(appUrl string, available bool) permission.Permitter {
+	return &AppPermissions{appUrl, available}
 }

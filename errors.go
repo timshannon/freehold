@@ -14,6 +14,7 @@ import (
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/log"
 	"bitbucket.org/tshannon/freehold/permission"
+	"bitbucket.org/tshannon/freehold/resource"
 	"bitbucket.org/tshannon/freehold/setting"
 )
 
@@ -113,7 +114,8 @@ func four04Page(w http.ResponseWriter, r *http.Request) {
 		log.NewEntry(log.Four04Type, "Resource not found: "+r.URL.String())
 	}
 
-	prm, err := permission.Get(urlPathToFile(setting.String("404File")))
+	res := resource.NewFile(setting.String("404File"))
+	prm, err := permission.Get(res)
 	if err != nil {
 		log.Error(err)
 		http.NotFound(w, r)
@@ -126,7 +128,7 @@ func four04Page(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file, err := os.Open(urlPathToFile(setting.String("404File")))
+	file, err := os.Open(res.Filepath())
 	defer file.Close()
 	if err != nil {
 		log.Error(err)

@@ -12,16 +12,15 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"path/filepath"
 	"strings"
 	"time"
 
 	"bytes"
 
-	"bitbucket.org/tshannon/freehold/app"
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/log"
 	"bitbucket.org/tshannon/freehold/permission"
+	"bitbucket.org/tshannon/freehold/resource"
 	"bitbucket.org/tshannon/freehold/setting"
 	"bitbucket.org/tshannon/freehold/user"
 
@@ -36,7 +35,7 @@ func fileGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	serveResource(w, r, r.URL.Path, auth)
+	serveResource(w, r, resource.NewFile(r.URL.Path), auth)
 }
 
 func filePost(w http.ResponseWriter, r *http.Request) {
@@ -44,30 +43,17 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 	if errHandled(err, w, auth) {
 		return
 	}
-	if !validFileUrl(r.URL.Path) {
-		errHandled(fail.New("Invalid path for file upload.", r.URL.Path), w, auth)
-		return
-	}
 
-	foldername := urlPathToFile(r.URL.Path)
+	res := resource.NewFile(r.URL.Path)
 
 	if r.ContentLength != 0 {
 		//file upload
-		var prm *permission.Permission
-		if isFileRoot(r.URL.Path) {
-			prm = permission.FileRoot()
-		} else {
-			prm, err = permission.Get(urlPathToFile(foldername))
-			if errHandled(err, w, auth) {
-				return
-			}
+		if !res.IsDir() {
+			errHandled(fail.New("Invalid location for upload!", res.Url()), w, auth)
+			return
 		}
-		if !auth.canWrite(prm) {
-			if !auth.canRead(prm) {
-				four04(w, r)
-				return
-			}
-			errHandled(fail.New("You do not have permissions to write here.", nil), w, auth)
+
+		if errHandled(auth.tryWrite(res), w, auth) {
 			return
 		}
 
@@ -76,42 +62,27 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		mp := r.MultipartForm
-		uploadFile(w, r.URL.Path, auth.User, mp)
+		uploadFile(w, res, auth.User, mp)
 		return
-
 	}
 
 	//New Folder
-	var prm *permission.Permission
-	if isFileRoot(parent(r.URL.Path)) {
-		prm = permission.FileRoot()
-	} else {
-		prm, err = permission.Get(parent(foldername))
-		if errHandled(err, w, auth) {
-			return
-		}
-	}
-	if !auth.canWrite(prm) {
-		if !auth.canRead(prm) {
-			four04(w, r)
-			return
-		}
-		errHandled(fail.New("You do not have permissions to write here.", nil), w, auth)
+
+	if errHandled(auth.tryWrite(res.Parent()), w, auth) {
 		return
 	}
 
-	err = os.Mkdir(foldername, 0777)
+	err = os.Mkdir(res.Filepath(), 0777)
 	if os.IsExist(err) {
-		err = fail.New("Folder already exists!", r.URL.Path)
-	}
-	if os.IsNotExist(err) {
-		err = fail.New("Invalid Folder path specified!", r.URL.Path)
+		err = fail.New("Folder already exists!", res.Url())
+	} else if os.IsNotExist(err) {
+		err = fail.New("Invalid Folder path specified!", res.Url())
 	}
 	if errHandled(err, w, auth) {
 		return
 	}
 
-	err = permission.Set(foldername, permission.FileNewDefault(auth.Username))
+	err = permission.Set(res, permission.FileNewDefault(auth.Username))
 	if errHandled(err, w, auth) {
 		return
 	}
@@ -119,12 +90,12 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	respondJsend(w, &JSend{
 		Status: statusSuccess,
-		Data:   r.URL.Path,
+		Data:   res.Url(),
 	})
 
 }
 
-func uploadFile(w http.ResponseWriter, parent *fileResource, owner *user.User, mp *multipart.Form) {
+func uploadFile(w http.ResponseWriter, parent *resource.File, owner *user.User, mp *multipart.Form) {
 	var fileList []Properties
 	var failures []error
 	status := statusSuccess
@@ -138,41 +109,41 @@ func uploadFile(w http.ResponseWriter, parent *fileResource, owner *user.User, m
 
 				continue
 			}
-			if isHidden(files[i].Filename) {
-				continue
 
+			res := resource.NewFile(path.Join(parent.Url(), files[i].Filename))
+			if res.IsHidden() {
+				continue
 			}
-			resource := newFileRes(path.Join(parent.Url(), files[i].Filename))
 
 			//write file
 			file, err := files[i].Open()
 
 			if err != nil {
 				log.Error(err)
-				failures = append(failures, fail.New("Error opening file for writing.", resource.Url()))
+				failures = append(failures, fail.New("Error opening file for writing.", res.Url()))
 				status = statusFail
 
 				continue
 			}
 
-			err = writeFile(file, resource.filepath, false)
+			err = writeFile(file, res.Filepath(), false)
 			if err != nil {
-				failures = append(failures, fail.NewFromErr(err, resource.Url()))
+				failures = append(failures, fail.NewFromErr(err, res.Url()))
 				status = statusFail
 
 				continue
 			}
-			err = permission.Set(resource.filepath, permission.FileNewDefault(owner.Username()))
+			err = permission.Set(res, permission.FileNewDefault(owner.Username()))
 			if err != nil {
-				failures = append(failures, fail.NewFromErr(err, resource.Url()))
+				failures = append(failures, fail.NewFromErr(err, res.Url()))
 				status = statusFail
 
 				continue
 			}
 
 			fileList = append(fileList, Properties{
-				Name: resource.name(),
-				Url:  resource.Url(),
+				Name: res.Name(),
+				Url:  res.Url(),
 			})
 		}
 	}
@@ -196,10 +167,6 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 	if errHandled(err, w, auth) {
 		return
 	}
-	if !validFileUrl(r.URL.Path) {
-		errHandled(fail.New("Invalid path for file update.", r.URL.Path), w, auth)
-		return
-	}
 
 	if !strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
 		//Move
@@ -213,70 +180,34 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		sourceFile := urlPathToFile(r.URL.Path)
-		destFile := urlPathToFile(input.Move)
+		sourceFile := resource.NewFile(r.URL.Path)
+		destFile := resource.NewFile(input.Move)
 
 		//Source parent permissions
-		var prm *permission.Permission
-
-		if isFileRoot(parent(r.URL.Path)) {
-			prm = permission.FileRoot()
-		} else {
-			prm, err = permission.Get(parent(sourceFile))
-			if errHandled(err, w, auth) {
-				return
-			}
-		}
-
-		if !auth.canWrite(prm) {
-			if !auth.canRead(prm) {
-				four04(w, r)
-				return
-			}
-			errHandled(fail.New("You do not have permissions to update this file.", r.URL.Path), w, auth)
+		if errHandled(auth.tryWrite(sourceFile.Parent()), w, auth) {
 			return
 		}
 
 		//Dest Parent Permissions
-		if isFileRoot(parent(input.Move)) {
-			prm = permission.FileRoot()
-		} else {
-			prm, err = permission.Get(parent(destFile))
-			if errHandled(err, w, auth) {
-				return
-			}
-		}
-		if !auth.canWrite(prm) {
-			if !auth.canRead(prm) {
-				four04(w, r)
-				return
-			}
-			errHandled(fail.New("You do not have permissions to move this file to the destination.", input.Move), w, auth)
+		if errHandled(auth.tryWrite(destFile.Parent()), w, auth) {
 			return
 		}
 
-		if !fileExists(sourceFile) {
+		if !sourceFile.Exists() {
 			four04(w, r)
 			return
-
-		}
-		if !validFileUrl(input.Move) {
-			errHandled(fail.New("Invalid destination for file move.", r.URL.Path), w, auth)
-			return
-
 		}
 
-		if fileExists(destFile) {
+		if destFile.Exists() {
 			errHandled(fail.New("Destination file already exists", input), w, auth)
 			return
 		}
 
 		err = moveFile(sourceFile, destFile)
 		if os.IsExist(err) {
-			err = fail.New("Folder already exists!", r.URL.Path)
-		}
-		if os.IsNotExist(err) {
-			err = fail.New("Invalid Folder path specified!", r.URL.Path)
+			err = fail.New("Folder already exists!", destFile.Url())
+		} else if os.IsNotExist(err) {
+			err = fail.New("Invalid Folder path specified!", sourceFile.Url())
 		}
 		if errHandled(err, w, auth) {
 			return
@@ -284,13 +215,15 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 		respondJsend(w, &JSend{
 			Status: statusSuccess,
 			Data: Properties{
-				Name: filepath.Base(destFile),
-				Url:  input.Move,
+				Name: destFile.Name(),
+				Url:  destFile.Url(),
 			},
 		})
 		return
 
 	}
+
+	parent := resource.NewFile(r.URL.Path)
 
 	err = r.ParseMultipartForm(setting.Int64("MaxUploadMemory"))
 	if errHandled(err, w, auth) {
@@ -311,25 +244,21 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 
 				continue
 			}
-			if isHidden(files[i].Filename) {
-				continue
 
-			}
-			resource := path.Join(r.URL.Path, files[i].Filename)
-			filename := urlPathToFile(resource)
+			res := resource.NewFile(path.Join(parent.Url(), files[i].Filename))
 
-			prm, err := permission.Get(filename)
+			prm, err := res.Permission()
 			if err != nil {
 				log.Error(err)
-				failures = append(failures, fail.New("Error opening file for writing.", resource))
+				failures = append(failures, fail.New("Error opening file for writing.", res.Url()))
 				status = statusFail
 
 				continue
 			}
 
 			prm = permission.FileUpdate(prm)
-			if !auth.canWrite(prm) {
-				err = fail.New("You do not have permissions to update this file.", resource)
+			if !prm.CanWrite(auth.User) {
+				err = fail.New("You do not have permissions to update this file.", res.Url())
 				log.Error(err)
 				failures = append(failures, err)
 				status = statusFail
@@ -342,23 +271,23 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 
 			if err != nil {
 				log.Error(err)
-				failures = append(failures, fail.New("Error opening file for writing.", resource))
+				failures = append(failures, fail.New("Error opening file for writing.", res.Url()))
 				status = statusFail
 
 				continue
 			}
 
-			err = writeFile(file, filename, true)
+			err = writeFile(file, res.Filepath(), true)
 			if err != nil {
-				failures = append(failures, fail.NewFromErr(err, resource))
+				failures = append(failures, fail.NewFromErr(err, res.Url()))
 				status = statusFail
 
 				continue
 			}
 
 			fileList = append(fileList, Properties{
-				Name: filepath.Base(filename),
-				Url:  resource,
+				Name: res.Name(),
+				Url:  res.Url(),
 			})
 		}
 	}
@@ -377,58 +306,19 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resource := r.URL.Path
-	filename := urlPathToFile(resource)
-
-	file, err := os.Open(filename)
-	defer file.Close()
-
-	if os.IsNotExist(err) {
-		four04(w, r)
-		return
-	}
-
-	if errHandled(err, w, auth) {
-		return
-	}
-
-	info, err := file.Stat()
-	if errHandled(err, w, auth) {
-		return
-	}
-
-	if isHidden(info.Name()) {
-		four04Page(w, r)
-		return
-	}
+	res := resource.NewFile(r.URL.Path)
 
 	//parent folder permissions
-	var prm *permission.Permission
-	if isFileRoot(parent(resource)) {
-		prm = permission.FileRoot()
-	} else {
-		prm, err = permission.Get(parent(filename))
-		if errHandled(err, w, auth) {
-			return
-		}
-	}
-
-	if !auth.canWrite(prm) {
-		if !auth.canRead(prm) {
-			four04(w, r)
-			return
-		}
-
-		errHandled(fail.New("You do not have permissions to delete this resource.", resource), w, auth)
+	if errHandled(auth.tryWrite(res.Parent()), w, auth) {
 		return
 	}
 
-	err = os.RemoveAll(filename)
+	err = os.RemoveAll(res.Filepath())
 	if errHandled(err, w, auth) {
 		return
 	}
 
-	err = permission.Delete(filename)
+	err = permission.Delete(res)
 	if errHandled(err, w, auth) {
 		return
 	}
@@ -436,15 +326,14 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 	respondJsend(w, &JSend{
 		Status: statusSuccess,
 		Data: Properties{
-			Name: filepath.Base(filename),
-			Url:  resource,
+			Name: res.Name(),
+			Url:  res.Url(),
 		},
 	})
 }
 
-func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth *Auth) {
-	filename := urlPathToFile(resource)
-	file, err := os.Open(filename)
+func serveResource(w http.ResponseWriter, r *http.Request, res *resource.File, auth *Auth) {
+	file, err := os.Open(res.Filepath())
 	defer file.Close()
 
 	if os.IsNotExist(err) {
@@ -456,34 +345,16 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 		return
 	}
 
-	info, err := file.Stat()
+	err = auth.tryRead(res)
+	if fail.IsEqual(err, Err404) {
+		four04Page(w, r)
+		return
+	}
 	if errHandled(err, w, auth) {
 		return
 	}
 
-	if isHidden(info.Name()) {
-		four04Page(w, r)
-		return
-	}
-
-	var prm *permission.Permission
-	if isDocPath(resource) {
-		prm = permission.Doc()
-	} else if isFileRoot(resource) {
-		prm = permission.FileRoot()
-	} else {
-		prm, err = permission.Get(filename)
-		if errHandled(err, w, auth) {
-			return
-		}
-	}
-
-	if !auth.canRead(prm) {
-		four04Page(w, r)
-		return
-	}
-
-	if !info.IsDir() {
+	if !res.IsDir() {
 		serveFile(w, r, file, auth)
 		return
 	}
@@ -494,38 +365,34 @@ func serveResource(w http.ResponseWriter, r *http.Request, resource string, auth
 	}
 
 	for i := range files {
-		var prm *permission.Permission
-		if files[i].IsDir() || isHidden(files[i].Name()) {
+		child := resource.NewFile(path.Join(res.Url(), files[i].Name()))
+		if child.IsDir() || child.IsHidden() {
 			continue
 		}
-		if isDocPath(resource) {
-			prm = permission.Doc()
-		} else {
-			prm, err = permission.Get(path.Join(filename, files[i].Name()))
+
+		err = auth.tryRead(child)
+		if fail.IsEqual(err, Err404) {
+			continue
+		}
+
+		if errHandled(err, w, auth) {
+			return
+		}
+		if strings.TrimRight(files[i].Name(), path.Ext(files[i].Name())) == "index" {
+			indexFile, err := os.Open(path.Join(res.Filepath(), child.Name()))
+			defer indexFile.Close()
+
 			if errHandled(err, w, auth) {
 				return
 			}
+			serveFile(w, r, indexFile, auth)
+			return
 		}
-
-		if auth.canRead(prm) {
-			if strings.TrimRight(files[i].Name(), path.Ext(files[i].Name())) == "index" {
-				indexFile, err := os.Open(path.Join(filename, files[i].Name()))
-				defer indexFile.Close()
-
-				if errHandled(err, w, auth) {
-					return
-				}
-				serveFile(w, r, indexFile, auth)
-				return
-			}
-			continue
-		} else {
-			continue
-		}
+		continue
 	}
 
 	//No index file found, redirect to properties
-	http.Redirect(w, r, strings.Replace(r.URL.Path, "/v1/file/", "/v1/properties/file/", 1), http.StatusFound)
+	http.Redirect(w, r, strings.Replace(res.Url(), "/v1/file/", "/v1/properties/file/", 1), http.StatusFound)
 	return
 }
 
@@ -564,7 +431,7 @@ func isMarkDown(filename string) bool {
 }
 
 func docsGet(w http.ResponseWriter, r *http.Request) {
-	serveResource(w, r, r.URL.Path, &Auth{})
+	serveResource(w, r, resource.NewFile(r.URL.Path), &Auth{})
 }
 
 func writeMarkdown(file *os.File) ([]byte, error) {
@@ -633,34 +500,11 @@ func writeFile(reader io.Reader, filename string, overwrite bool) error {
 	return nil
 }
 
-func validFileUrl(url string) bool {
-	if isDocPath(url) {
-		return false
-	}
-
-	root, pth := splitRootAndPath(url)
-	if !isVersion(root) {
-		a, err := app.Get(root)
-		if err != nil || a == nil {
-			return false
-		}
-		root, pth = splitRootAndPath(pth)
-		if !isVersion(root) {
-			return false
-		}
-	}
-	root, pth = splitRootAndPath(pth)
-	if root != "file" {
-		return false
-	}
-	return true
-}
-
-func moveFile(from, to string) error {
+func moveFile(from, to *resource.File) error {
 	//move permissions
 	err := permission.Move(from, to)
 	if err != nil {
 		return err
 	}
-	return os.Rename(from, to)
+	return os.Rename(from.Filepath(), to.Filepath())
 }

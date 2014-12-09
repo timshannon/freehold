@@ -19,6 +19,7 @@ import (
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/log"
 	"bitbucket.org/tshannon/freehold/permission"
+	"bitbucket.org/tshannon/freehold/resource"
 	"bitbucket.org/tshannon/freehold/setting"
 	"bitbucket.org/tshannon/freehold/user"
 )
@@ -38,10 +39,12 @@ type Token struct {
 	Created    string `json:"created,omitempty"`
 
 	requester *user.User `json:"_"`
+	resource  *resource.File
 }
 
 func New(t *Token, requester *user.User) (*Token, error) {
 	t.requester = requester
+	t.resource = resource.NewFile(t.Resource)
 
 	err := t.verify()
 	if err != nil {
@@ -90,7 +93,7 @@ func (t *Token) verify() error {
 		return fail.New("Token Expiration date is set too far into the future.  See TokenMaxDaysTillExpire setting.", t)
 	}
 
-	prm, err := permission.Get(t.Resource)
+	prm, err := permission.Get(t.resource)
 	if err != nil {
 		return err
 	}
@@ -133,6 +136,9 @@ func Get(u *user.User, token string) (*Token, error) {
 	}
 
 	t.requester = u
+	if t.Resource != "" {
+		t.resource = resource.NewFile(t.Resource)
+	}
 
 	if t.IsExpired() && setting.Bool("RemoveExpiredTokens") {
 		err = ds.Delete(k)
@@ -268,14 +274,14 @@ func (t *Token) User() *user.User {
 // token access is unauthenticated in that
 // the token doesn't have a *user.User if a permission and / or a resource is supplied
 // so SetPermissions sets the appropriate public permissions based on token
-func (t *Token) GetPermission(res permission.Resource) (*permission.Permission, error) {
+func (t *Token) GetPermission(res permission.Permitter) (*permission.Permission, error) {
 	if t.User() != nil {
 		//No change
 		return res.Permission()
 	}
 
 	if t.Resource != "" {
-		if t.Resource != res.Url() {
+		if t.resource.ID() != res.ID() {
 			return &permission.Permission{}, nil
 		}
 	}

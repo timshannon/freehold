@@ -11,6 +11,7 @@ import (
 	"bitbucket.org/tshannon/freehold/app"
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/permission"
+	"bitbucket.org/tshannon/freehold/resource"
 	"bitbucket.org/tshannon/freehold/user"
 )
 
@@ -25,20 +26,20 @@ func makeFirstAdmin(username, password string) error {
 	}
 
 	//setup folders
-	err := os.MkdirAll(appDir, 0777)
+	err := os.MkdirAll(resource.AppDir, 0777)
 	if err != nil {
 		return err
 	}
-	err = os.MkdirAll(app.AvailableAppDir, 0777)
+	err = os.MkdirAll(resource.AvailableAppDir, 0777)
 	if err != nil {
 		return err
 	}
-	err = os.MkdirAll(fileDir, 0777)
+	err = os.MkdirAll(resource.FileDir, 0777)
 	if err != nil {
 		return err
 	}
 
-	err = os.MkdirAll(datastoreDir, 0777)
+	err = os.MkdirAll(resource.DatastoreDir, 0777)
 	if err != nil {
 		return err
 	}
@@ -95,7 +96,7 @@ func recurseSetPermissionOnFolder(filePath string, prm *permission.Permission) e
 	}
 
 	//set folder permissions
-	err = permission.Set(filePath, prm)
+	err = permission.Set(&app.AppResource{filePath}, prm)
 	if err != nil {
 		return err
 	}
@@ -110,7 +111,7 @@ func recurseSetPermissionOnFolder(filePath string, prm *permission.Permission) e
 			continue
 		}
 
-		err = permission.Set(child, prm)
+		err = permission.Set(&app.AppResource{child}, prm)
 		if err != nil {
 			return err
 		}

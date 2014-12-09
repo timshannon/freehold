@@ -21,9 +21,8 @@ const (
 	Write = "w"
 )
 
-type Resource interface {
+type Permitter interface {
 	ID() string
-	Url() string
 	Permission() (*Permission, error)
 }
 
@@ -37,8 +36,8 @@ type Permission struct {
 }
 
 //Get the permissions by ID what the ID is will depend on the resource
-func Get(res Resource) (*Permission, error) {
-	if res.ID() == "" {
+func Get(ptr Permitter) (*Permission, error) {
+	if ptr.ID() == "" {
 		return nil, errors.New("Invalid resource id")
 	}
 
@@ -47,9 +46,9 @@ func Get(res Resource) (*Permission, error) {
 		return nil, err
 	}
 	prm := &Permission{}
-	err = ds.Get(res.ID(), prm)
+	err = ds.Get(ptr.ID(), prm)
 	if err == data.ErrNotFound {
-		return orphanedResource(res)
+		return orphanedResource(ptr)
 	}
 
 	if err != nil {
@@ -59,21 +58,21 @@ func Get(res Resource) (*Permission, error) {
 	return prm, nil
 }
 
-func orphanedResource(res Resource) (*Permission, error) {
+func orphanedResource(ptr Permitter) (*Permission, error) {
 	o := setting.String("OrphanedPermissionOwner")
 	if o == "" {
 		return &Permission{}, nil
 	}
 	prm := FileNewDefault(o)
-	err := Set(res, prm)
+	err := Set(ptr, prm)
 	if err != nil {
 		return nil, err
 	}
 	return prm, nil
 }
 
-func Set(res Resource, permissions *Permission) error {
-	if res.ID() == "" {
+func Set(ptr Permitter, permissions *Permission) error {
+	if ptr.ID() == "" {
 		return errors.New("Invalid resource id")
 	}
 
@@ -81,7 +80,7 @@ func Set(res Resource, permissions *Permission) error {
 	if err != nil {
 		return err
 	}
-	return set(res.ID(), permissions)
+	return set(ptr.ID(), permissions)
 }
 
 //allows for skipping permissions validation
@@ -99,8 +98,8 @@ func set(id string, permissions *Permission) error {
 	return nil
 }
 
-func Delete(res Resource) error {
-	if res.ID() == "" {
+func Delete(ptr Permitter) error {
+	if ptr.ID() == "" {
 		return errors.New("Invalid resource id")
 	}
 	ds, err := data.OpenCoreDS(DS)
@@ -108,7 +107,7 @@ func Delete(res Resource) error {
 		return err
 	}
 
-	err = ds.Delete(res.ID())
+	err = ds.Delete(ptr.ID())
 	if err != nil {
 		return err
 	}
@@ -116,7 +115,7 @@ func Delete(res Resource) error {
 	return nil
 }
 
-func Move(from, to Resource) error {
+func Move(from, to Permitter) error {
 	prm, err := Get(from)
 	if err != nil {
 		return err
