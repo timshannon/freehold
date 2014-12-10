@@ -79,7 +79,7 @@
 		</div>
 		<div class="tab-pane" id="permissions">
 			<div class="property-form">
-			<permissions readOnly="{{user !== permissions.owner}}" permissions="{{permissions}}"></permissions>
+			<permissions readOnly="{{user !== permissions.owner}}" permissions="{{permissions}}" showOwner="{{permissions.owner != null}}"></permissions>
 			</div>
 		</div>
 		<div class="tab-pane" id="behavior">
@@ -194,7 +194,7 @@
 							<span class="glyphicon glyphicon-star"></span> {{#if currentFolder.starred}}Remove{{else}}Add{{/if}} Star
 						</a> 
 					</li>
-					{{#if currentKeypath.indexOf("files") > -1 && currentKeypath !== "files"}}
+					{{#if currentKeypath.indexOf("files") > -1}}
 						{{#if user === currentFolder.permissions.owner}}
 						<li><a href="#" on-click="renameFolder">Rename</a></li>
 						<li><a href="#" on-click="deleteFolder"><span class="glyphicon glyphicon-trash"></span> Delete</a></li>
@@ -325,7 +325,7 @@
 		<tbody>
 			{{#currentFolder.files:i}}
 			<tr>
-					{{#if .isFolder}}
+					{{#if .isDir}}
 					<td>
 						<a href="#" on-click="explorerSelect">
 							<span class="explorer-icon fa fa-{{explorerIcon}}"></span>  {{name}}
@@ -343,10 +343,10 @@
 				<td>{{humanSize}}</td>
 				<td>
 				{{#if currentKeypath !== "stars"}}
-					{{^.isFolder}}
+					{{^.isDir}}
 					<button type="button" class="btn btn-default btn-xs pull-right" on-click="properties:{{.url}}" title="Properties">
 						<span class="glyphicon glyphicon-cog"></span></button>
-					{{/.isFolder}}
+					{{/.isDir}}
 				{{else}}
 					<button type="button" class="btn btn-xs btn-danger pull-right" on-click="removeStar" title="Remove Star">
 						<span class="glyphicon glyphicon-remove"></span></button>
@@ -363,7 +363,7 @@
 
 <!-- {{>fileTile}} -->
 <span>
-{{#if .isFolder}}
+{{#if .isDir}}
 	<a href="#" on-click="explorerSelect" class="file-tile">
 	{{#if currentKeypath === "stars"}}
 		<a href="#" class="btn btn-file-grid" on-click="removeStar" title="Remove Star"><span class="glyphicon glyphicon-remove"></span></a>

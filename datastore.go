@@ -230,13 +230,13 @@ func datastorePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if errHandled(auth.tryWrite(res), w, auth) {
-		return
-	}
-
 	//not an upload, create the datastore instead
 	err = os.MkdirAll(res.Parent().Filepath(), 0777)
 	if errHandled(err, w, auth) {
+		return
+	}
+
+	if errHandled(auth.tryWrite(res.Parent()), w, auth) {
 		return
 	}
 

@@ -33,7 +33,12 @@ func NewFile(url string) *File {
 
 	info, err := os.Stat(r.filepath)
 	if err != nil {
-		r.exists = false
+		if os.IsNotExist(err) {
+			r.exists = false
+		} else {
+			//shouldn't happen unless there's something wrong with the OS
+			panic(err)
+		}
 	} else {
 		r.info = info
 	}
@@ -112,6 +117,12 @@ func (r *File) ID() string {
 		// and shouldn't be set
 		return permission.INVALID_ID
 	}
+
+	if !r.IsDatastore() && isRootPath(r.Url()) {
+		//make sure permissions don't get set on root
+		return permission.INVALID_ID
+	}
+
 	return r.filepath
 }
 
@@ -148,13 +159,16 @@ func (r *File) Permission() (*permission.Permission, error) {
 		return r.permission, nil
 	}
 
-	if !isFilePath(r.url) && r.IsDir() {
-		r.permission = permission.DatastoreDir()
-		return r.permission, nil
-	}
-	if isFileRoot(r.url) {
-		r.permission = permission.FileRoot()
-		return r.permission, nil
+	if r.IsDir() {
+		if r.IsDatastore() {
+			r.permission = permission.DatastoreDir()
+			return r.permission, nil
+		}
+
+		if isRootPath(r.url) {
+			r.permission = permission.FileRoot()
+			return r.permission, nil
+		}
 	}
 
 	prm, err := permission.Get(r)

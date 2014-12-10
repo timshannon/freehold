@@ -165,6 +165,7 @@ $(document).ready(function() {
             rUsers.set("errors", null);
 
             rUsers.set("current.homeApp", defaultHome);
+            rUsers.set("current.userFolder", true);
             $("#userModal").modal();
         },
         "changeUser": function(event) {
@@ -195,6 +196,9 @@ $(document).ready(function() {
                 fh.user.new(current)
                     .done(function() {
                         $("#userModal").modal("toggle");
+                        if (current.userFolder) {
+                            createUserFolder(current.user);
+                        }
                         loadUsers();
                     })
                     .fail(function(result) {
@@ -438,7 +442,7 @@ $(document).ready(function() {
     }
 
     function filterSettings() {
-var regEx;
+        var regEx;
         try {
             regEx = new RegExp(rSettings.get("settingsFilter"), "i");
         } catch (e) {
@@ -520,6 +524,29 @@ var regEx;
 
         rUsers.set("errors.password2", null);
         return true;
+
+    }
+
+    function createUserFolder(user) {
+        var newUrl = fh.util.urlJoin("/v1/file/", user);
+
+        fh.file.newFolder(newUrl)
+            .done(function(result) {
+                fh.properties.set(newUrl, {
+                        permissions: {
+                            owner: user,
+                            private: "rw",
+                            friend: "",
+                            public: "",
+                        }
+                    })
+                    .fail(function(result) {
+                        setError(result.message);
+                    });
+            })
+            .fail(function(result) {
+                setError(result.message);
+            });
 
     }
 

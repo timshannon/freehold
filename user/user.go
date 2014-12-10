@@ -111,6 +111,7 @@ func New(username string, u *User) error {
 	if u.HomeApp == "" {
 		u.HomeApp = setting.String("DefaultHomeApp")
 	}
+
 	err = u.setPassword(u.Password)
 	if err != nil {
 		return err

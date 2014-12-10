@@ -30,13 +30,13 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res := resource.NewFile(r.URL.Path)
+	res := resource.NewFileFromProperty(r.URL.Path)
 
 	if errHandled(auth.tryRead(res), w, auth) {
 		return
 	}
 
-	if !res.IsDir() || (!strings.HasSuffix(r.URL.Path, "/") && !res.IsDatastore()) {
+	if !res.IsDir() || !strings.HasSuffix(r.URL.Path, "/") {
 		prm, err := res.Permission()
 		if errHandled(err, w, auth) {
 			return
@@ -158,13 +158,13 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res := resource.NewFile(r.URL.Path)
+	res := resource.NewFileFromProperty(r.URL.Path)
 
 	if errHandled(auth.tryWrite(res), w, auth) {
 		return
 	}
 
-	if !res.IsDir() || (!strings.HasSuffix(r.URL.Path, "/") && !res.IsDatastore()) {
+	if !res.IsDir() || !strings.HasSuffix(r.URL.Path, "/") {
 		prm, err := res.Permission()
 		if errHandled(err, w, auth) {
 			return
