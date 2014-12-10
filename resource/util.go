@@ -63,14 +63,14 @@ func splitRootAndPath(pattern string) (root, path string) {
 	return root, path
 }
 
-func isFileRoot(resource string) bool {
+func isRootPath(resource string) bool {
 	root, path := splitRootAndPath(resource)
 	if isVersion(root) {
 		_, path = splitRootAndPath(path)
 		return path == "/"
 	}
 
-	return isFileRoot(path)
+	return isRootPath(path)
 }
 
 func isDocPath(resource string) bool {

@@ -156,14 +156,14 @@
 	</div>
 
 	<div class="form-group">
-	<div class="col-sm-offset-3 col-sm-9">
+	<div class="col-sm-offset-3 col-sm-3">
 	{{#if mode=="add"}}
-	      <div class="checkbox">
-        <label>
-          <input type="checkbox" checked="{{current.admin}}"> Admin?
-        </label>
-      </div>
-    	{{else}}
+		<div class="checkbox">
+			<label>
+				<input type="checkbox" checked="{{current.admin}}"> Admin?
+			</label>
+		</div>
+	{{else}}
 		{{#if !current.admin}}
 		<button type="button" class="btn btn-success" on-click="makeAdmin">Make Admin</button>
 		{{else}}
@@ -173,8 +173,18 @@
 		{{/if}}
 	{{/if}}
 	</div>
+	<div class="col-sm-6">
+		{{#if mode=="add"}}
+			<div class="checkbox">
+				<label>
+					<input type="checkbox" checked="{{current.userFolder}}"> Create User Folder?
+				</label>
+				<p class="help-block">User Folders are user owned folders for their private files.</p>
+			</div>
+		{{/if}}
 	</div>
 
+	</div>
 	</form>
 	
 	<div class="modal-footer">

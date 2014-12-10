@@ -250,7 +250,7 @@ $(document).ready(function() {
                     $("#properties").modal("hide");
                 })
                 .fail(function(result) {
-					rMain.set("currentFile.error", result.message);
+                    rMain.set("currentFile.error", result.message);
                 });
         },
     });
@@ -278,6 +278,17 @@ $(document).ready(function() {
         },
         "currentFile.permissions": function(newValue, oldValue, keypath) {
             if (newValue && oldValue) {
+                if (newValue.owner === oldValue.owner &&
+                    newValue.private === oldValue.private &&
+                    newValue.public === oldValue.public &&
+                    newValue.friend === oldValue.friend) {
+                    //no change
+                    return;
+                }
+
+                console.log("new: ", newValue);
+                console.log("old: ", oldValue);
+
                 fh.properties.set(rMain.get("currentFile.url"), {
                         permissions: newValue
                     })
@@ -331,6 +342,7 @@ $(document).ready(function() {
     }
 
     function setRoot(app) {
+		//TODO: Auto select user folder if one exists
         rMain.set("app", app);
         rMain.set("files", {
             url: fh.util.urlJoin(app, "/v1/file/"),
@@ -681,6 +693,7 @@ $(document).ready(function() {
     function getUsers() {
         fh.user.all()
             .done(function(result) {
+                //add empty row for empty user
                 rMain.set("users", result.data);
             })
             .fail(function(result) {
