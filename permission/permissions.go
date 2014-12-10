@@ -19,6 +19,8 @@ const (
 
 	Read  = "r"
 	Write = "w"
+
+	INVALID_ID = ""
 )
 
 type Permitter interface {
@@ -37,7 +39,7 @@ type Permission struct {
 
 //Get the permissions by ID what the ID is will depend on the resource
 func Get(ptr Permitter) (*Permission, error) {
-	if ptr.ID() == "" {
+	if ptr.ID() == INVALID_ID {
 		return nil, errors.New("Invalid resource id")
 	}
 
@@ -72,7 +74,7 @@ func orphanedResource(ptr Permitter) (*Permission, error) {
 }
 
 func Set(ptr Permitter, permissions *Permission) error {
-	if ptr.ID() == "" {
+	if ptr.ID() == INVALID_ID {
 		return errors.New("Invalid resource id")
 	}
 
@@ -99,7 +101,7 @@ func set(id string, permissions *Permission) error {
 }
 
 func Delete(ptr Permitter) error {
-	if ptr.ID() == "" {
+	if ptr.ID() == INVALID_ID {
 		return errors.New("Invalid resource id")
 	}
 	ds, err := data.OpenCoreDS(DS)

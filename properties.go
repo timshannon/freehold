@@ -6,11 +6,7 @@ package main
 
 import (
 	"net/http"
-	"os"
-	"path"
-	"path/filepath"
 	"strings"
-	"time"
 
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/permission"
@@ -40,37 +36,32 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file, err := os.Open(res.Filepath())
-	defer file.Close()
-
-	if os.IsNotExist(err) {
-		four04(w, r)
-		return
-	}
-
-	if errHandled(err, w, auth) {
-		return
-	}
-
-	info, err := file.Stat()
-	if errHandled(err, w, auth) {
-		return
-	}
-
-	if !res.IsDir() || (!strings.HasSuffix(res.Url(), "/") && !res.IsDatastore()) {
-		prop, err := properties(res, info, auth)
+	if !res.IsDir() || (!strings.HasSuffix(r.URL.Path, "/") && !res.IsDatastore()) {
+		prm, err := res.Permission()
 		if errHandled(err, w, auth) {
 			return
+		}
+		propPrm := permission.Properties(prm)
+
+		if !propPrm.CanRead(auth.User) {
+			prm = nil
 		}
 
 		respondJsend(w, &JSend{
 			Status: statusSuccess,
-			Data:   prop,
+			Data: &Properties{
+				Name:        res.Name(),
+				Permissions: prm,
+				Url:         res.Url(),
+				Size:        res.Size(),
+				Modified:    res.Modified(),
+				IsDir:       res.IsDir(),
+			},
 		})
 		return
 	}
 
-	files, err := file.Readdir(0)
+	files, err := res.Children()
 	if errHandled(err, w, auth) {
 		return
 	}
@@ -78,36 +69,27 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 	fileList := make([]Properties, 0, len(files))
 
 	for i := range files {
-		child := resource.NewFile(path.Join(res.Url(), files[i].Name()))
+		child := files[i]
 		if child.IsHidden() {
 			continue
 		}
+		var size int64
+		var modTime string
 		var filePrm *permission.Permission
 
-		size := files[i].Size()
-		modTime := files[i].ModTime().Format(time.RFC3339)
-
-		//datastores don't have folder level permissions
-		if (!files[i].IsDir()) || (files[i].IsDir() && !res.IsDatastore()) {
-			prm, err := child.Permission()
-			if errHandled(err, w, auth) {
-				return
-			}
-			if !prm.CanRead(auth.User) {
-				size = 0
-				modTime = ""
-			}
-
-			if permission.Properties(prm).CanRead(auth.User) {
-				filePrm = prm
-			} else {
-				filePrm = nil
-			}
+		prm, err := child.Permission()
+		if errHandled(err, w, auth) {
+			return
+		}
+		if prm.CanRead(auth.User) {
+			size = child.Size()
+			modTime = child.Modified()
 		}
 
-		if files[i].IsDir() {
-			//Folder sizes aren't consistent across platforms
-			size = 0
+		if permission.Properties(prm).CanRead(auth.User) {
+			filePrm = prm
+		} else {
+			filePrm = nil
 		}
 
 		fileList = append(fileList, Properties{
@@ -116,7 +98,7 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 			Url:         child.Url(),
 			Size:        size,
 			Modified:    modTime,
-			IsDir:       files[i].IsDir(),
+			IsDir:       child.IsDir(),
 		})
 	}
 
@@ -125,38 +107,6 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 		Data:   fileList,
 	})
 
-}
-
-func properties(res *resource.File, info os.FileInfo, auth *Auth) (*Properties, error) {
-	prm, err := res.Permission()
-	if err != nil {
-		return nil, err
-	}
-	propPrm := permission.Properties(prm)
-
-	if !prm.CanRead(auth.User) {
-		return nil, four04Fail(res.Url())
-	}
-
-	if !propPrm.CanRead(auth.User) {
-		prm = nil
-	}
-
-	var size int64
-	if !info.IsDir() {
-		size = info.Size()
-	} else {
-		size = 0
-	}
-
-	return &Properties{
-		Name:        res.Name(),
-		Permissions: prm,
-		Url:         res.Url(),
-		Size:        size,
-		Modified:    info.ModTime().Format(time.RFC3339),
-		IsDir:       info.IsDir(),
-	}, nil
 }
 
 type PropertyInput struct {
@@ -208,33 +158,14 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resource := resPathFromProperty(r.URL.Path)
-	filename := urlPathToFile(resource)
-	if isHidden(filename) {
-		four04(w, r)
+	res := resource.NewFile(r.URL.Path)
+
+	if errHandled(auth.tryWrite(res), w, auth) {
 		return
 	}
 
-	file, err := os.Open(filename)
-	defer file.Close()
-
-	if os.IsNotExist(err) {
-		four04(w, r)
-		return
-	}
-
-	if errHandled(err, w, auth) {
-		return
-	}
-
-	info, err := file.Stat()
-	if errHandled(err, w, auth) {
-		return
-	}
-	isFile := isFilePath(resource)
-
-	if !info.IsDir() || (!strings.HasSuffix(r.URL.Path, "/") && isFile) {
-		prm, err := permission.Get(filename)
+	if !res.IsDir() || (!strings.HasSuffix(r.URL.Path, "/") && !res.IsDatastore()) {
+		prm, err := res.Permission()
 		if errHandled(err, w, auth) {
 			return
 		}
@@ -242,21 +173,21 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 		newprm := input.Permissions.makePermission(prm)
 		propPrm := permission.Properties(prm)
 
-		if !auth.canWrite(propPrm) {
-			if !auth.canRead(propPrm) {
+		if !propPrm.CanWrite(auth.User) {
+			if !propPrm.CanRead(auth.User) {
 				four04(w, r)
 				return
 			}
 
-			errHandled(fail.New("You do not have owner permissions on this resource.",
+			errHandled(fail.NewFromErr(ErrNoWritePermission,
 				&Properties{
-					Name: filepath.Base(file.Name()),
-					Url:  resource,
+					Name: res.Name(),
+					Url:  res.Url(),
 				}), w, auth)
 
 			return
 		}
-		err = permission.Set(filename, newprm)
+		err = permission.Set(res, newprm)
 
 		if errHandled(err, w, auth) {
 			return
@@ -265,26 +196,14 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 		respondJsend(w, &JSend{
 			Status: statusSuccess,
 			Data: &Properties{
-				Name: filepath.Base(file.Name()),
-				Url:  resource,
+				Name: res.Name(),
+				Url:  res.Url(),
 			},
 		})
 		return
 	}
 
-	//check if folder can be read
-	if isFile {
-		prm, err := permission.Get(filename)
-		if errHandled(err, w, auth) {
-			return
-		}
-		if !auth.canRead(prm) {
-			four04(w, r)
-			return
-		}
-	}
-
-	files, err := file.Readdir(0)
+	files, err := res.Children()
 	if errHandled(err, w, auth) {
 		return
 	}
@@ -294,38 +213,35 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 	status := statusSuccess
 
 	for i := range files {
-		if files[i].IsDir() && !isFile {
+		child := files[i]
+		if (child.IsDatastore() && child.IsDir()) || child.IsHidden() {
 			continue
 		}
-		if isHidden(files[i].Name()) {
-			continue
-		}
-		child := path.Join(filename, files[i].Name())
-		cRes := path.Join(resource, files[i].Name())
 
-		prm, err := permission.Get(child)
+		prm, err := child.Permission()
 		if errHandled(err, w, auth) {
 			return
 		}
+
 		newprm := input.Permissions.makePermission(prm)
 
 		propPrm := permission.Properties(prm)
-		if auth.canWrite(propPrm) {
+		if propPrm.CanWrite(auth.User) {
 			err = permission.Set(child, newprm)
 			if errHandled(err, w, auth) {
 				return
 			}
 
 		} else {
-			if !auth.canRead(propPrm) {
+			if !propPrm.CanRead(auth.User) {
 				continue
 			}
 
 			status = statusFail
-			failures = append(failures, fail.New("You do not have owner permissions on this resource.",
+			failures = append(failures, fail.NewFromErr(ErrNoWritePermission,
 				&Properties{
-					Name: filepath.Base(files[i].Name()),
-					Url:  cRes,
+					Name: child.Name(),
+					Url:  child.Url(),
 				}))
 		}
 	}

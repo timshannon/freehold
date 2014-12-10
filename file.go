@@ -333,19 +333,7 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 }
 
 func serveResource(w http.ResponseWriter, r *http.Request, res *resource.File, auth *Auth) {
-	file, err := os.Open(res.Filepath())
-	defer file.Close()
-
-	if os.IsNotExist(err) {
-		four04Page(w, r)
-		return
-	}
-
-	if errHandled(err, w, auth) {
-		return
-	}
-
-	err = auth.tryRead(res)
+	err := auth.tryRead(res)
 	if fail.IsEqual(err, Err404) {
 		four04Page(w, r)
 		return
@@ -355,17 +343,17 @@ func serveResource(w http.ResponseWriter, r *http.Request, res *resource.File, a
 	}
 
 	if !res.IsDir() {
-		serveFile(w, r, file, auth)
+		serveFile(w, r, res, auth)
 		return
 	}
 
-	files, err := file.Readdir(0)
+	files, err := res.Children()
 	if errHandled(err, w, auth) {
 		return
 	}
 
 	for i := range files {
-		child := resource.NewFile(path.Join(res.Url(), files[i].Name()))
+		child := files[i]
 		if child.IsDir() || child.IsHidden() {
 			continue
 		}
@@ -378,14 +366,8 @@ func serveResource(w http.ResponseWriter, r *http.Request, res *resource.File, a
 		if errHandled(err, w, auth) {
 			return
 		}
-		if strings.TrimRight(files[i].Name(), path.Ext(files[i].Name())) == "index" {
-			indexFile, err := os.Open(path.Join(res.Filepath(), child.Name()))
-			defer indexFile.Close()
-
-			if errHandled(err, w, auth) {
-				return
-			}
-			serveFile(w, r, indexFile, auth)
+		if strings.TrimRight(child.Name(), path.Ext(child.Name())) == "index" {
+			serveFile(w, r, child, auth)
 			return
 		}
 		continue
@@ -396,7 +378,12 @@ func serveResource(w http.ResponseWriter, r *http.Request, res *resource.File, a
 	return
 }
 
-func serveFile(w http.ResponseWriter, r *http.Request, file *os.File, auth *Auth) {
+func serveFile(w http.ResponseWriter, r *http.Request, res *resource.File, auth *Auth) {
+	file, err := os.Open(res.Filepath())
+	if errHandled(err, w, auth) {
+		return
+	}
+
 	var rs io.ReadSeeker
 
 	if isMarkDown(file.Name()) {

@@ -33,6 +33,8 @@ const (
 	authRateLimitType    = "authentication"
 )
 
+var ErrNoWritePermission = errors.New("You do not have permission to write to this resource.")
+
 type Auth struct {
 	AuthType string `json:"type"`
 	Username string `json:"user,omitempty"`
@@ -180,13 +182,13 @@ func (a *Auth) tryWrite(res permission.Permitter) error {
 		switch res.(type) {
 		case *resource.File:
 			if prm.CanRead(a.User) {
-				return fail.New("You do not have permission to write to this resource.", res.(*resource.File).Url())
+				return fail.NewFromErr(ErrNoWritePermission, res.(*resource.File).Url())
 			}
 			return four04Fail(res.(*resource.File).Url())
 
 		default:
 			if prm.CanRead(a.User) {
-				return fail.New("You do not have permission to write to this resource.", nil)
+				return fail.NewFromErr(ErrNoWritePermission, nil)
 			}
 			return four04Fail("")
 		}

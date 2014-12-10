@@ -9,6 +9,7 @@ import (
 	"text/template"
 
 	"bitbucket.org/tshannon/freehold/app"
+	"bitbucket.org/tshannon/freehold/resource"
 	"bitbucket.org/tshannon/freehold/setting"
 )
 
@@ -44,7 +45,7 @@ func rootGet(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	serveResource(w, r, setting.String("PublicRootFile"), auth)
+	serveResource(w, r, resource.NewFile(setting.String("PublicRootFile")), auth)
 }
 
 //Only used on first login for creating the first admin

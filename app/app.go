@@ -412,23 +412,3 @@ func (a *AppResource) ID() string {
 func (a *AppResource) Permission() (*permission.Permission, error) {
 	return nil, errors.New("This should not be used for retrieving file permissions.")
 }
-
-type AppPermissions struct {
-	url       string
-	available bool
-}
-
-func (ar *AppPermissions) ID() string {
-	return ""
-}
-
-func (ar *AppPermissions) Permission() (*permission.Permission, error) {
-	if ar.available {
-		return permission.AppAvailable(), nil
-	}
-	return permission.Application(), nil
-}
-
-func Resource(appUrl string, available bool) permission.Permitter {
-	return &AppPermissions{appUrl, available}
-}

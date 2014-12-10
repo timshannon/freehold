@@ -27,7 +27,7 @@ func tokenGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	prm := permission.Token(auth.User.Username())
-	if !auth.canRead(prm) {
+	if !prm.CanRead(auth.User) {
 		four04(w, r)
 		return
 	}
@@ -73,6 +73,16 @@ func tokenPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	prm := permission.Token(auth.User.Username())
+	if !prm.CanWrite(auth.User) {
+		if !prm.CanRead(auth.User) {
+			four04(w, r)
+			return
+		}
+		errHandled(fail.New("You do not have permissions to generate a new token.", nil), w, auth)
+		return
+	}
+
 	input := &TokenInput{}
 	err = parseJson(r, input)
 	if errHandled(err, w, auth) {
@@ -81,13 +91,6 @@ func tokenPost(w http.ResponseWriter, r *http.Request) {
 
 	if input.Name == nil {
 		errHandled(fail.New("You must specify a name for the new token.", input), w, auth)
-		return
-	}
-
-	prm := permission.Token(auth.User.Username())
-
-	if !auth.canWrite(prm) {
-		errHandled(fail.New("You do not have permissions to generate a new token.", input), w, auth)
 		return
 	}
 
@@ -114,8 +117,12 @@ func tokenDelete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	prm := permission.Token(auth.User.Username())
-	if !auth.canWrite(prm) {
-		four04(w, r)
+	if !prm.CanWrite(auth.User) {
+		if !prm.CanRead(auth.User) {
+			four04(w, r)
+			return
+		}
+		errHandled(fail.New("You do not have permissions to delete a token", nil), w, auth)
 		return
 	}
 

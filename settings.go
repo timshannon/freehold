@@ -25,7 +25,7 @@ func settingsGet(w http.ResponseWriter, r *http.Request) {
 
 	prm := permission.Settings()
 
-	if !auth.canRead(prm) {
+	if !prm.CanRead(auth.User) {
 		four04(w, r)
 		return
 	}
@@ -74,6 +74,16 @@ func settingsPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	prm := permission.Settings()
+	if !prm.CanWrite(auth.User) {
+		if !prm.CanRead(auth.User) {
+			four04(w, r)
+			return
+		}
+		errHandled(fail.New("You do not have permissions to update settings.  Admin rights are required.", nil), w, auth)
+		return
+	}
+
 	err = parseJson(r, input)
 	if errHandled(err, w, auth) {
 		return
@@ -81,13 +91,6 @@ func settingsPut(w http.ResponseWriter, r *http.Request) {
 
 	if input.Setting == nil || input.Value == nil {
 		errHandled(fail.New("No setting or value passed in.", nil), w, auth)
-		return
-	}
-
-	prm := permission.Settings()
-
-	if !auth.canWrite(prm) {
-		errHandled(fail.New("You do not have permissions to update settings.  Admin rights are required.", nil), w, auth)
 		return
 	}
 
@@ -100,12 +103,24 @@ func settingsPut(w http.ResponseWriter, r *http.Request) {
 }
 
 func settingsDelete(w http.ResponseWriter, r *http.Request) {
-	input := &SettingInput{}
-
 	auth, err := authenticate(w, r)
 	if errHandled(err, w, auth) {
 		return
 	}
+
+	prm := permission.Settings()
+
+	if !prm.CanWrite(auth.User) {
+		if !prm.CanRead(auth.User) {
+			four04(w, r)
+			return
+		}
+		errHandled(fail.New("You do not have permissions to update settings.  Admin rights are required.", nil), w, auth)
+		return
+	}
+
+	input := &SettingInput{}
+
 	err = parseJson(r, input)
 	if errHandled(err, w, auth) {
 		return
@@ -113,13 +128,6 @@ func settingsDelete(w http.ResponseWriter, r *http.Request) {
 
 	if input.Setting == nil {
 		errHandled(fail.New("No setting passed in.", nil), w, auth)
-		return
-	}
-
-	prm := permission.Settings()
-
-	if !auth.canWrite(prm) {
-		errHandled(fail.New("You do not have permissions to update settings.  Admin rights are required.", nil), w, auth)
 		return
 	}
 
