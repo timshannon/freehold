@@ -18,7 +18,7 @@ func sessionGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	prm := permission.Session()
-	if !auth.canRead(prm) {
+	if !prm.CanRead(auth.User) {
 		four04(w, r)
 		return
 	}
@@ -41,13 +41,13 @@ func sessionPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	prm := permission.Session()
-	if !auth.canWrite(prm) {
-		if !auth.canRead(prm) {
+	if !prm.CanWrite(auth.User) {
+		if !prm.CanRead(auth.User) {
 			four04(w, r)
 			return
 		}
 		//should never happen
-		errHandled(fail.New("You do not have proper permissions to post a new session.", nil), w, auth)
+		errHandled(fail.NewFromErr(ErrNoWritePermission, nil), w, auth)
 		return
 	}
 
@@ -78,13 +78,13 @@ func sessionDelete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	prm := permission.Session()
-	if !auth.canWrite(prm) {
-		if !auth.canRead(prm) {
+	if !prm.CanWrite(auth.User) {
+		if !prm.CanRead(auth.User) {
 			four04(w, r)
 			return
 		}
 		//should never happen
-		errHandled(fail.New("You do not have proper permissions to delete a session.", nil), w, auth)
+		errHandled(fail.NewFromErr(ErrNoWritePermission, nil), w, auth)
 		return
 	}
 

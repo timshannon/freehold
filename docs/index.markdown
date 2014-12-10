@@ -1593,6 +1593,16 @@ TODO: built in calendar functionality, exports to ical would be nice.
 TODO: Scheduled rest requests, scheduled based on calendar functionality
 
 
+* * *
+
+<a name="notification"></a> Notification
+==============================================
+/v1/notification/
+---------------------
+TODO: User Notifications.  Core notifications get added for communication, tasks finishing, calendar events, etc.  Any app can make their own notifications as well.
+
+
+
 <a name="backup"></a> Backup
 =============
 TODO: Backup entire freehold instance into one zip file, or just backup core datastores.
