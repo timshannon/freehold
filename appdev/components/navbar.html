@@ -18,7 +18,7 @@
 	<div class="container-fluid"> 
 		{{#authenticated}} 
 			<div class="btn-group navbar-right"> 
-				<button type="button" id="userButton" on-click="openUser" class="btn btn-default navbar-btn" title="User Info for {{user.name}}"> 
+				<button type="button" id="userButton" on-click="openUser" class="btn btn-default btn-primary navbar-btn" title="User Info for {{user.name}}"> 
 				<span class="glyphicon glyphicon-user"></span> {{user.name.split(" ")[0]}}</button> 
 				<button type="button" id="logoutButton" on-click="logout" class="btn btn-default navbar-btn">Log Out</button> 
 			</div> 
@@ -131,17 +131,19 @@ component.exports = {
 	},
 	init: function() {
 		var r = this;
-		fh.user.get(fh.auth.user)
-			.done(function(result) {
-				if (!result.data.name) {
-					result.data.name = fh.auth.user;
-				}
-				result.data.name = result.data.name.trim();
-				r.set("user", result.data);
-			})
+		if (r.get("authenticated")) {
+			fh.user.get(fh.auth.user)
+				.done(function(result) {
+					if (!result.data.name) {
+						result.data.name = fh.auth.user;
+					}
+					result.data.name = result.data.name.trim();
+					r.set("user", result.data);
+				})
 			.fail(function(result) {
 				r.set("error", result.message);
 			});
+		}
 
 		this.on({
 				logout: function(event) {

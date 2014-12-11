@@ -244,7 +244,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
                                   a: {
                                     type: 'button',
                                     id: 'userButton',
-                                    'class': 'btn btn-default navbar-btn',
+                                    'class': 'btn btn-default btn-primary navbar-btn',
                                     title: [
                                       'User Info for ',
                                       {
@@ -556,15 +556,17 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
       },
       init: function () {
         var r = this;
-        fh.user.get(fh.auth.user).done(function (result) {
-          if (!result.data.name) {
-            result.data.name = fh.auth.user;
-          }
-          result.data.name = result.data.name.trim();
-          r.set('user', result.data);
-        }).fail(function (result) {
-          r.set('error', result.message);
-        });
+        if (r.get('authenticated')) {
+          fh.user.get(fh.auth.user).done(function (result) {
+            if (!result.data.name) {
+              result.data.name = fh.auth.user;
+            }
+            result.data.name = result.data.name.trim();
+            r.set('user', result.data);
+          }).fail(function (result) {
+            r.set('error', result.message);
+          });
+        }
         this.on({
           logout: function (event) {
             fh.session.logout().done(function () {
