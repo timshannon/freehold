@@ -250,7 +250,7 @@ $(document).ready(function() {
                     $("#properties").modal("hide");
                 })
                 .fail(function(result) {
-                    rMain.set("currentFile.error", result.message);
+                    rMain.set("currentFile.propError", result.message);
                 });
         },
     });
@@ -342,7 +342,7 @@ $(document).ready(function() {
     }
 
     function setRoot(app) {
-		//TODO: Auto select user folder if one exists
+        //TODO: Auto select user folder if one exists
         rMain.set("app", app);
         rMain.set("files", {
             url: fh.util.urlJoin(app, "/v1/file/"),

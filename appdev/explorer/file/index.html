@@ -21,9 +21,9 @@
 <!--properties-->
 <modal id="properties" title="Properties for: {{currentFile.name}}" customFooter="true">
 {{#currentFile}}
-{{#if currentFile.error}}
+{{#if currentFile.propError}}
 <div class="alert alert-danger">
-	{{error}}	
+	{{propError}}	
 </div>
 {{/if}}
 	<a href="#" class="pull-right" on-click="star" title="{{#if .starred}}Remove{{else}}Add{{/if}} Star">

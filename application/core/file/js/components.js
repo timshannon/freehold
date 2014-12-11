@@ -249,16 +249,26 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
                                       'User Info for ',
                                       {
                                         t: 2,
-                                        r: 'auth.user'
+                                        r: 'user.name'
                                       }
                                     ]
                                   },
                                   v: { click: 'openUser' },
-                                  f: [{
+                                  f: [
+                                    {
                                       t: 7,
                                       e: 'span',
                                       a: { 'class': 'glyphicon glyphicon-user' }
-                                    }]
+                                    },
+                                    ' ',
+                                    {
+                                      t: 2,
+                                      x: {
+                                        r: ['user.name'],
+                                        s: '_0.split(" ")[0]'
+                                      }
+                                    }
+                                  ]
                                 },
                                 ' ',
                                 {
@@ -526,7 +536,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
         errorLead: 'An error occurred and you may need to refresh this page: ',
         error: false,
         app: false,
-        auth: fh.auth
+        user: {}
       },
       decorators: {
         help: function (node) {
@@ -545,6 +555,16 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
         }
       },
       init: function () {
+        var r = this;
+        fh.user.get(fh.auth.user).done(function (result) {
+          if (!result.data.name) {
+            result.data.name = fh.auth.user;
+          }
+          result.data.name = result.data.name.trim();
+          r.set('user', result.data);
+        }).fail(function (result) {
+          r.set('error', result.message);
+        });
         this.on({
           logout: function (event) {
             fh.session.logout().done(function () {
