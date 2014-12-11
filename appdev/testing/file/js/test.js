@@ -3,8 +3,8 @@
 // that can be found in the LICENSE file.
 
 QUnit.module("files", {
-    setup: function(assert) {
-        QUnit.stop();
+    beforeEach: function(assert) {
+        var done = assert.async();
         //upload testing file
         var form = new FormData();
         form.append("testfile.xml",
@@ -24,13 +24,13 @@ QUnit.module("files", {
                                 url: "/testing/v1/file/testdata/testfile.xml"
                             }]
                         });
-                        QUnit.start();
+                        done();
                     });
             });
 
     },
-    teardown: function(assert) {
-        QUnit.stop();
+    afterEach: function(assert) {
+        var done = assert.async();
         //delete folder
         fh.file.delete("/testing/v1/file/testdata/")
             .always(function(result) {
@@ -41,13 +41,15 @@ QUnit.module("files", {
                         url: "/testing/v1/file/testdata/"
                     }
                 });
-                QUnit.start();
+                done();
             });
     }
 });
 
-QUnit.asyncTest("Update File", function(assert) {
-    expect(3);
+QUnit.test("Update File", function(assert) {
+    assert.expect(3);
+
+    var done = assert.async();
     var form = new FormData();
     form.append("testfile.xml",
         new Blob(['<test id="1">New data<inner id="2"></inner></test>'], {
@@ -64,12 +66,13 @@ QUnit.asyncTest("Update File", function(assert) {
                     url: "/testing/v1/file/testdata/testfile.xml"
                 }]
             });
-            QUnit.start();
+            done();
         });
 });
 
-QUnit.asyncTest("Move File", function(assert) {
-    expect(5);
+QUnit.test("Move File", function(assert) {
+    assert.expect(5);
+    var done = assert.async();
 
     fh.file.move("/testing/v1/file/testdata/testfile.xml", "/testing/v1/file/testdata/renamed.xml")
         .always(function(result) {
@@ -100,15 +103,16 @@ QUnit.asyncTest("Move File", function(assert) {
                                     url: "/testing/v1/file/testdata/testfile.xml"
                                 }
                             });
-                            QUnit.start();
+                            done();
                         });
                 });
         });
 });
 
 
-QUnit.asyncTest("Set Permissions", function(assert) {
-    expect(3);
+QUnit.test("Set Permissions", function(assert) {
+    assert.expect(3);
+    var done = assert.async();
 
     var newPrm = {
         permissions: {
@@ -131,12 +135,13 @@ QUnit.asyncTest("Set Permissions", function(assert) {
                 },
                 "status": "success"
             });
-            QUnit.start();
+            done();
         });
 });
 
-QUnit.asyncTest("Get Properties", function(assert) {
-    expect(3);
+QUnit.test("Get Properties", function(assert) {
+    assert.expect(3);
+    var done = assert.async();
 
     fh.properties.get("/testing/v1/file/testdata/testfile.xml")
         .always(function(result) {
@@ -148,39 +153,41 @@ QUnit.asyncTest("Get Properties", function(assert) {
                 (result.data.size == 42) &&
                 (result.data.url = "/testing/v1/file/testdata/testfile.xml")
             );
-            QUnit.start();
+            done();
         });
-
 });
 
 
 QUnit.module("settings");
-QUnit.asyncTest("Get Setting", function(assert) {
-    expect(1);
+QUnit.test("Get Setting", function(assert) {
+    assert.expect(1);
+    var done = assert.async();
 
     fh.settings.get("LogErrors")
         .always(function(result) {
             //returned successfully and didn't return a map of settings
             assert.ok((result.status == "success") &&
                 (result.data.description === "Whether or not errors will be logged in the core/log datastore."));
-            QUnit.start();
+            done();
         });
 });
 
-QUnit.asyncTest("All Settings", function(assert) {
-    expect(1);
+QUnit.test("All Settings", function(assert) {
+    assert.expect(1);
+    var done = assert.async();
 
     fh.settings.all()
         .always(function(result) {
             assert.ok((result.status == "success") &&
                 (result.data.LogErrors.description === "Whether or not errors will be logged in the core/log datastore."));
-            QUnit.start();
+            done();
         });
 });
 
 
-QUnit.asyncTest("Set Setting", function(assert) {
-    expect(1);
+QUnit.test("Set Setting", function(assert) {
+    assert.expect(1);
+    var done = assert.async();
 
     fh.settings.get("LogErrors")
         .always(function(result) {
@@ -192,15 +199,16 @@ QUnit.asyncTest("Set Setting", function(assert) {
                             assert.deepEqual(result.data.value, false);
                             fh.settings.set("LogErrors", val)
                                 .always(function(result) {
-                                    QUnit.start();
+                                    done();
                                 });
                         });
                 });
         });
 });
 
-QUnit.asyncTest("Default Setting", function(assert) {
-    expect(1);
+QUnit.test("Default Setting", function(assert) {
+    assert.expect(1);
+    var done = assert.async();
 
     fh.settings.get("LogErrors")
         .always(function(result) {
@@ -213,7 +221,7 @@ QUnit.asyncTest("Default Setting", function(assert) {
 
                             fh.settings.set("LogErrors", val)
                                 .always(function(result) {
-                                    QUnit.start();
+                                    done();
                                 });
                         });
                 });
@@ -222,8 +230,8 @@ QUnit.asyncTest("Default Setting", function(assert) {
 
 
 QUnit.module("Users", {
-    setup: function(assert) {
-        QUnit.stop();
+    beforeEach: function(assert) {
+        var done = assert.async();
         //Create test user
         fh.user.new({
                 user: "quinitTestUser",
@@ -235,23 +243,24 @@ QUnit.module("Users", {
                     (result.status == "success") &&
                     (result.data.name == "QUnit Test User")
                 );
-                QUnit.start();
+                done();
             });
     },
-    teardown: function(assert) {
-        QUnit.stop();
+    afterEach: function(assert) {
+        var done = assert.async();
         //delete test user
         fh.user.delete("quinitTestUser")
             .always(function(result) {
                 assert.ok((result.status == "success"));
-                QUnit.start();
+                done();
             });
     }
 });
 
 
-QUnit.asyncTest("Get User", function(assert) {
-    expect(3);
+QUnit.test("Get User", function(assert) {
+    assert.expect(3);
+    var done = assert.async();
 
     fh.user.get("quinitTestUser")
         .always(function(result) {
@@ -259,12 +268,13 @@ QUnit.asyncTest("Get User", function(assert) {
                 (result.status == "success") &&
                 (result.data.name == "QUnit Test User")
             );
-            QUnit.start();
+            done();
         });
 });
 
-QUnit.asyncTest("Get All Users", function(assert) {
-    expect(3);
+QUnit.test("Get All Users", function(assert) {
+    assert.expect(3);
+    var done = assert.async();
 
     fh.user.all()
         .always(function(result) {
@@ -272,12 +282,13 @@ QUnit.asyncTest("Get All Users", function(assert) {
                 (result.status == "success") &&
                 (result.data.quinitTestUser.name == "QUnit Test User")
             );
-            QUnit.start();
+            done();
         });
 });
 
-QUnit.asyncTest("Update User", function(assert) {
-    expect(3);
+QUnit.test("Update User", function(assert) {
+    assert.expect(3);
+    var done = assert.async();
 
     $.ajax({
             type: "PUT",
@@ -297,15 +308,16 @@ QUnit.asyncTest("Update User", function(assert) {
                         (result.status == "success") &&
                         (result.data.name == "Bob QUnit Test User")
                     );
-                    QUnit.start();
+                    done();
                 });
         });
 });
 
 
 QUnit.module("Application");
-QUnit.asyncTest("Get Application", function(assert) {
-    expect(1);
+QUnit.test("Get Application", function(assert) {
+    assert.expect(1);
+    var done = assert.async();
 
     fh.application.get("testing")
         .always(function(result) {
@@ -313,12 +325,13 @@ QUnit.asyncTest("Get Application", function(assert) {
                 (result.status == "success") &&
                 (result.data.name == "Testing")
             );
-            QUnit.start();
+            done();
         });
 });
 
-QUnit.asyncTest("Get Installed Applications", function(assert) {
-    expect(1);
+QUnit.test("Get Installed Applications", function(assert) {
+    assert.expect(1);
+    var done = assert.async();
 
     fh.application.installed()
         .always(function(result) {
@@ -326,27 +339,29 @@ QUnit.asyncTest("Get Installed Applications", function(assert) {
                 (result.status == "success") &&
                 (result.data.testing.name == "Testing")
             );
-            QUnit.start();
+            done();
         });
 });
 
-QUnit.asyncTest("Get Available Applications", function(assert) {
-    expect(1);
+QUnit.test("Get Available Applications", function(assert) {
+    assert.expect(1);
 
+    var done = assert.async();
     fh.application.available()
         .always(function(result) {
             assert.ok(
                 (result.status == "success") &&
                 (result.data.testing.name == "Testing")
             );
-            QUnit.start();
+            done();
         });
 });
 
 
 QUnit.module("Session");
-QUnit.asyncTest("Get Session", function(assert) {
-    expect(1);
+QUnit.test("Get Session", function(assert) {
+    assert.expect(1);
+    var done = assert.async();
 
     fh.session.get()
         .always(function(result) {
@@ -354,14 +369,15 @@ QUnit.asyncTest("Get Session", function(assert) {
                 (result.status == "success") &&
                 (result.data.length >= 1)
             );
-            QUnit.start();
+            done();
         });
 });
 
 
 QUnit.module("Token");
-QUnit.asyncTest("New, Get and Delete Token", function(assert) {
-    expect(3);
+QUnit.test("New, Get and Delete Token", function(assert) {
+    assert.expect(3);
+    var done = assert.async();
 
     fh.token.new({
             name: "test token"
@@ -384,7 +400,7 @@ QUnit.asyncTest("New, Get and Delete Token", function(assert) {
                             assert.ok(
                                 (deleteResult.status == "success")
                             );
-                            QUnit.start();
+                            done();
                         });
                 });
         });
@@ -394,8 +410,8 @@ QUnit.asyncTest("New, Get and Delete Token", function(assert) {
 // create test.ds.  Rewrite so it only gets created once
 //  or move all tests into one large test
 QUnit.module("Datastore", {
-    setup: function(assert) {
-        QUnit.stop();
+    beforeEach: function(assert) {
+        var done = assert.async();
         fh.datastore.new("/testing/v1/datastore/testdata/test.ds")
             .always(function(result) {
                 assert.deepEqual(result, {
@@ -405,12 +421,12 @@ QUnit.module("Datastore", {
                         url: "/testing/v1/datastore/testdata/test.ds"
                     }
                 });
-                QUnit.start();
+                done();
             });
 
     },
-    teardown: function(assert) {
-        QUnit.stop();
+    afterEach: function(assert) {
+        var done = assert.async();
         //delete file
         var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
 
@@ -423,13 +439,14 @@ QUnit.module("Datastore", {
                         url: "/testing/v1/datastore/testdata/test.ds"
                     }
                 });
-                QUnit.start();
+                done();
             });
     }
 });
-QUnit.asyncTest("Get, Put and Delete Data in datastore", function(assert) {
-    expect(6);
+QUnit.test("Get, Put and Delete Data in datastore", function(assert) {
+    assert.expect(6);
 
+    var done = assert.async();
     var testVal = "testvalue";
 
     var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
@@ -454,7 +471,7 @@ QUnit.asyncTest("Get, Put and Delete Data in datastore", function(assert) {
                                     assert.ok(
                                         (result.status == "fail") //should not be found
                                     );
-                                    QUnit.start();
+                                    done();
                                 });
                         });
                 });
@@ -462,8 +479,9 @@ QUnit.asyncTest("Get, Put and Delete Data in datastore", function(assert) {
         });
 });
 
-QUnit.asyncTest("Max Key", function(assert) {
-    expect(3);
+QUnit.test("Max Key", function(assert) {
+    assert.expect(3);
+    var done = assert.async();
     var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
 
     for (var i = 0; i < 100; i++) {
@@ -476,13 +494,14 @@ QUnit.asyncTest("Max Key", function(assert) {
             (result.status == "success") &&
             (result.data.key == 99)
         );
-        QUnit.start();
+        done();
     });
 
 });
 
-QUnit.asyncTest("Min Key", function(assert) {
-    expect(3);
+QUnit.test("Min Key", function(assert) {
+    assert.expect(3);
+    var done = assert.async();
     var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
 
     for (var i = 0; i < 100; i++) {
@@ -495,13 +514,14 @@ QUnit.asyncTest("Min Key", function(assert) {
             (result.status == "success") &&
             (result.data.key === 0)
         );
-        QUnit.start();
+        done();
     });
 
 });
 
-QUnit.asyncTest("Datastore Properties", function(assert) {
-    expect(3);
+QUnit.test("Datastore Properties", function(assert) {
+    assert.expect(3);
+    var done = assert.async();
 
     fh.properties.get("/testing/v1/datastore/testdata/test.ds")
         .always(function(result) {
@@ -511,13 +531,14 @@ QUnit.asyncTest("Datastore Properties", function(assert) {
                 (result.data.permissions.private == "rw") &&
                 (result.data.url == "/testing/v1/datastore/testdata/test.ds")
             );
-            QUnit.start();
+            done();
         });
 });
 
 
-QUnit.asyncTest("Iterate through data", function(assert) {
-    expect(4);
+QUnit.test("Iterate through data", function(assert) {
+    assert.expect(4);
+    var done = assert.async();
     var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
 
     var data = {};
@@ -541,16 +562,18 @@ QUnit.asyncTest("Iterate through data", function(assert) {
                         (result.status == "success") &&
                         (result.data.length == 5)
                     );
+
+                    done();
                 });
 
-            QUnit.start();
         });
 
 });
 
 
-QUnit.asyncTest("Regex test", function(assert) {
-    expect(4);
+QUnit.test("Regex test", function(assert) {
+    assert.expect(4);
+    var done = assert.async();
 
     var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
 
@@ -576,7 +599,7 @@ QUnit.asyncTest("Regex test", function(assert) {
                         (result.status == "success") &&
                         (result.data.length == 10)
                     );
-                    QUnit.start();
+                    done();
                 });
         });
 
@@ -584,8 +607,9 @@ QUnit.asyncTest("Regex test", function(assert) {
 
 });
 
-QUnit.asyncTest("Count + Regex", function(assert) {
-    expect(4);
+QUnit.test("Count + Regex", function(assert) {
+    assert.expect(4);
+    var done = assert.async();
 
     var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
 
@@ -611,19 +635,16 @@ QUnit.asyncTest("Count + Regex", function(assert) {
                         (result.status == "success") &&
                         (result.data == 10)
                     );
-                    QUnit.start();
+                    done();
                 });
         });
-
-
-
 });
 
 
 
 QUnit.module("Datastore Iter", {
-    setup: function(assert) {
-        QUnit.stop();
+    beforeEach: function(assert) {
+        var done = assert.async();
         fh.datastore.new("/testing/v1/datastore/testdata/test.ds")
             .always(function(result) {
                 assert.deepEqual(result, {
@@ -640,12 +661,12 @@ QUnit.module("Datastore Iter", {
                         .then();
                 }
 
-                QUnit.start();
+                done();
             });
 
     },
-    teardown: function(assert) {
-        QUnit.stop();
+    afterEach: function(assert) {
+        var done = assert.async();
         //delete file
         var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
 
@@ -658,13 +679,14 @@ QUnit.module("Datastore Iter", {
                         url: "/testing/v1/datastore/testdata/test.ds"
                     }
                 });
-                QUnit.start();
+                done();
             });
     }
 });
 
-QUnit.asyncTest("Test From and To", function(assert) {
-    expect(3);
+QUnit.test("Test From and To", function(assert) {
+    assert.expect(3);
+    var done = assert.async();
 
     var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
 
@@ -679,13 +701,14 @@ QUnit.asyncTest("Test From and To", function(assert) {
                 (result.data[0].key == 5) &&
                 (result.data[5].key == 10)
             );
-            QUnit.start();
+            done();
         });
 
 });
 
-QUnit.asyncTest("Test Reverse From and To", function(assert) {
-    expect(3);
+QUnit.test("Test Reverse From and To", function(assert) {
+    assert.expect(3);
+    var done = assert.async();
 
     var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
 
@@ -700,13 +723,14 @@ QUnit.asyncTest("Test Reverse From and To", function(assert) {
                 (result.data[0].key == 10) &&
                 (result.data[5].key == 5)
             );
-            QUnit.start();
+            done();
         });
 
 });
 
-QUnit.asyncTest("Test Reverse From and To with forced asc order", function(assert) {
-    expect(3);
+QUnit.test("Test Reverse From and To with forced asc order", function(assert) {
+    assert.expect(3);
+    var done = assert.async();
 
     var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
 
@@ -723,30 +747,32 @@ QUnit.asyncTest("Test Reverse From and To with forced asc order", function(asser
                 (result.data[0].key == 5) &&
                 (result.data[5].key == 10)
             );
-            QUnit.start();
+            done();
         });
 });
 
-QUnit.asyncTest("Test Full Range", function(assert) {
-    expect(3);
+QUnit.test("Test Full Range", function(assert) {
+    assert.expect(5);
+    var done = assert.async();
 
     var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
 
     ds.iter({})
         .always(function(result) {
+            assert.equal(result.status, "success",  result.message);
+            assert.equal(result.data.length, 100);
             assert.ok(
-                (result.status == "success") &&
-                (result.data.length == 100) &&
                 (result.data[0].key === 0) &&
                 (result.data[5].key == 5) &&
                 (result.data[99].key == 99)
             );
-            QUnit.start();
+            done();
         });
 });
 
-QUnit.asyncTest("Test Reverse Full Range", function(assert) {
-    expect(3);
+QUnit.test("Test Reverse Full Range", function(assert) {
+    assert.expect(3);
+    var done = assert.async();
 
     var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
 
@@ -760,14 +786,15 @@ QUnit.asyncTest("Test Reverse Full Range", function(assert) {
                 (result.data[0].key === 99) &&
                 (result.data[99].key === 0)
             );
-            QUnit.start();
+            done();
         });
 });
 
 
 
-QUnit.asyncTest("Iterate through reverse order non-string keys with limit", function(assert) {
-    expect(3);
+QUnit.test("Iterate through reverse order non-string keys with limit", function(assert) {
+    assert.expect(3);
+    var done = assert.async();
 
     var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
 
@@ -785,7 +812,7 @@ QUnit.asyncTest("Iterate through reverse order non-string keys with limit", func
                 (result.data[0].key == 40) &&
                 (result.data[4].key == 36)
             );
-            QUnit.start();
+            done();
         });
 
 });
@@ -793,8 +820,9 @@ QUnit.asyncTest("Iterate through reverse order non-string keys with limit", func
 
 QUnit.module("Logs", {}); // There needs to be at least on log entry 
 
-QUnit.asyncTest("Log", function(assert) {
-    expect(1);
+QUnit.test("Log", function(assert) {
+    assert.expect(1);
+    var done = assert.async();
 
     fh.logs({
             limit: 1
@@ -804,13 +832,14 @@ QUnit.asyncTest("Log", function(assert) {
                 (result.status == "success") &&
                 (result.data.length == 1)
             );
-            QUnit.start();
+            done();
         });
 
 });
 
-QUnit.asyncTest("Log Type", function(assert) {
-    expect(1);
+QUnit.test("Log Type", function(assert) {
+    assert.expect(1);
+    var done = assert.async();
 
     fh.logs({
             type: "authentication"
@@ -828,7 +857,7 @@ QUnit.asyncTest("Log Type", function(assert) {
                 (result.status == "success") &&
                 (!notAuth)
             );
-            QUnit.start();
+            done();
         });
 
 });
