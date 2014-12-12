@@ -37,15 +37,6 @@ func AppNewDefault(owner string) *Permission {
 	}
 }
 
-//Only file owners can update a file
-func FileUpdate(base *Permission) *Permission {
-	prm := *base
-	prm.Private = Read + Write
-	removeWrite(&prm.Friend)
-	removeWrite(&prm.Public)
-	return &prm
-}
-
 // FileRoot returns the permissions for the root file
 // directory.  Only admins can create / delete folders at the root
 func FileRoot() *Permission {

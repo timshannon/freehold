@@ -247,19 +247,9 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 
 			res := resource.NewFile(path.Join(parent.Url(), files[i].Filename))
 
-			prm, err := res.Permission()
+			err := auth.tryWrite(res)
+
 			if err != nil {
-				log.Error(err)
-				failures = append(failures, fail.New("Error opening file for writing.", res.Url()))
-				status = statusFail
-
-				continue
-			}
-
-			prm = permission.FileUpdate(prm)
-			if !prm.CanWrite(auth.User) {
-				err = fail.New("You do not have permissions to update this file.", res.Url())
-				log.Error(err)
 				failures = append(failures, err)
 				status = statusFail
 

@@ -1,4 +1,34 @@
-QUnit.module("Permissions", {
+//Matches on only the object keys that exist in expected
+QUnit.assert.matchExisting = function(value, expected, message) {
+    this.push(matchExisting(value, expected), value, expected, message);
+};
+
+function matchExisting(value, expected) {
+    var matchedProp = false;
+
+    if (typeof expected !== "object") {
+        return value === expected;
+    }
+
+    for (var a in value) {
+        if (!expected.hasOwnProperty(a)) {
+            continue;
+        }
+        matchedProp = true;
+        if (!matchExisting(value[a], expected[a])) {
+            return false;
+        }
+    }
+
+    //must have at least one matching property
+    if (matchedProp) {
+        return true;
+    }
+    return false;
+}
+
+
+QUnit.module("Implicit Permissions", {
     beforeEach: function(assert) {
         this.userA = {
             user: "quinitTestUserAdmin",
@@ -35,12 +65,7 @@ QUnit.module("Permissions", {
         var done1 = assert.async();
         var done2 = assert.async();
 
-        //Reset logins
-        $.ajaxPrefilter(function(options) {
-            options.beforeSend = function(xhr) {
-                xhr.setRequestHeader("X-CSRFToken", fh.auth.CSRFToken);
-            };
-        });
+        logout();
 
         //delete test users
         fh.user.delete(this.userA.user)
@@ -57,14 +82,28 @@ QUnit.module("Permissions", {
 });
 
 function login(user) {
-    $.ajaxPrefilter(function(options) {
+    $.ajaxPrefilter(function(options, originalOptions) {
         options.beforeSend = function(xhr) {
             xhr.setRequestHeader("Authorization", "Basic " + btoa(user.user + ":" + user.password));
         };
     });
 }
 
-QUnit.test("Root Permissions", function(assert) {
+function logout() {
+    $.ajaxPrefilter(function(options) {
+        if (options.type.toUpperCase() !== "GET") {
+            options.beforeSend = function(xhr) {
+                xhr.setRequestHeader("X-CSRFToken", fh.auth.CSRFToken);
+            };
+        }
+    });
+
+}
+
+QUnit.test("Root Folder Permissions", function(assert) {
+    //Admins should be able to write to the root file dir
+    // regular users should not
+
     assert.expect(6);
 
     var doneA = assert.async();
@@ -72,8 +111,6 @@ QUnit.test("Root Permissions", function(assert) {
 
     var a = this.userA;
     var b = this.userB;
-    //Admins should be able to write to the root file dir
-    // regular users should not
 
     login(a);
 
@@ -84,7 +121,6 @@ QUnit.test("Root Permissions", function(assert) {
             login(a);
             fh.file.delete("/v1/file/qunitTestingFolderA")
                 .always(function(result) {
-                    console.log(result);
                     doneA();
                 });
         })
@@ -116,3 +152,652 @@ QUnit.test("Root Permissions", function(assert) {
 
         });
 });
+
+
+QUnit.test("Core Permissions - Application", function(assert) {
+    //Non-admins shouldn't be able write application info, but should be able to 
+    // see installed applications
+
+    assert.expect(11);
+
+    var done1 = assert.async();
+    var done2 = assert.async();
+    var done3 = assert.async();
+    var done4 = assert.async();
+    var done5 = assert.async();
+    var done6 = assert.async();
+    var done7 = assert.async();
+
+    var user = this.userB;
+
+    login(user);
+
+
+
+    fh.application.postAvailable("invalidfilename.zip")
+        .always(function(result) {
+            assert.deepEqual(result, {
+                status: "fail",
+                message: "Resource not found",
+                data: "/v1/application/available/",
+            });
+            done1();
+        });
+
+    fh.application.available()
+        .always(function(result) {
+            assert.deepEqual(result, {
+                status: "fail",
+                message: "Resource not found",
+                data: "/v1/application/available/",
+            });
+            done2();
+        });
+
+    fh.application.install("invalidfilename.zip")
+        .always(function(result) {
+            assert.deepEqual(result, {
+                status: "fail",
+                message: "You do not have permission to write to this resource.",
+                data: "/v1/application/",
+            });
+            done3();
+        });
+
+    fh.application.upgrade("invalidfilename.zip")
+        .always(function(result) {
+            assert.deepEqual(result, {
+                status: "fail",
+                message: "You do not have permission to write to this resource.",
+                data: "/v1/application/",
+            });
+            done4();
+        });
+
+    fh.application.uninstall("invalidfilename.zip")
+        .always(function(result) {
+            assert.deepEqual(result, {
+                status: "fail",
+                message: "You do not have permission to write to this resource.",
+                data: "/v1/application/",
+            });
+            done5();
+        });
+
+    fh.application.get("testing")
+        .always(function(result) {
+            assert.equal(result.status, "success");
+            done6();
+        });
+
+    fh.application.installed()
+        .always(function(result) {
+            assert.equal(result.status, "success");
+            done7();
+        });
+});
+
+
+QUnit.test("Core Permissions - Settings", function(assert) {
+    //Non-admins shouldn't be able to update settings, but can read them
+
+    assert.expect(8);
+
+    var done1 = assert.async();
+    var done2 = assert.async();
+    var done3 = assert.async();
+    var done4 = assert.async();
+
+    var user = this.userB;
+
+    login(user);
+
+    fh.settings.all()
+        .always(function(result) {
+            assert.equal(result.status, "success");
+            done1();
+        });
+
+    fh.settings.get("LogErrors")
+        .always(function(result) {
+            assert.equal(result.status, "success");
+            var val = result.data;
+            done2();
+
+            fh.settings.set("LogErrors", val)
+                .always(function(result) {
+                    assert.deepEqual(result, {
+                        status: "fail",
+                        message: "You do not have permissions to update settings.  Admin rights are required.",
+                    });
+                    done3();
+                });
+            fh.settings.default("LogErrors")
+                .fail(function(result) {
+                    assert.deepEqual(result, {
+                        status: "fail",
+                        message: "You do not have permissions to update settings.  Admin rights are required.",
+                    });
+                    done4();
+                })
+                .done(function(result) {
+                    logout();
+                    fh.settings.set("LogErrors", val)
+                        .always(function(result) {
+                            done4();
+                        });
+
+                });
+        });
+});
+
+
+QUnit.test("Core Permissions - User", function(assert) {
+    //Non-admins shouldn't be able to add new users, or make users admins
+
+    assert.expect(15);
+
+    var done1 = assert.async();
+    var done2 = assert.async();
+    var done3 = assert.async();
+    var done4 = assert.async();
+    var done5 = assert.async();
+    var done6 = assert.async();
+    var done7 = assert.async();
+    var done8 = assert.async();
+    var done9 = assert.async();
+    var done10 = assert.async();
+    var done11 = assert.async();
+
+
+    login(this.userB);
+
+    fh.user.all()
+        .always(function(result) {
+            assert.equal(result.status, "success");
+            done1();
+        });
+
+    fh.user.get(this.userB.user)
+        .always(function(result) {
+            assert.equal(result.status, "success");
+            done2();
+        });
+
+    fh.user.new({
+            name: "invaliduser"
+        })
+        .always(function(result) {
+            assert.deepEqual(result, {
+                status: "fail",
+                message: "You do not have permissions to post a new user",
+            });
+            done3();
+        });
+
+    //update other user
+    fh.user.update(this.userA)
+        .always(function(result) {
+            assert.deepEqual(result, {
+                status: "fail",
+                message: "You do not have permissions to update this user.",
+                data: this.userA,
+            });
+            done4();
+        }.bind(this));
+
+    //update self
+    fh.user.update(this.userB)
+        .always(function(result) {
+            assert.equal(result.status, "success");
+            done5();
+        });
+
+    fh.user.makeAdmin(this.userB.user)
+        .always(function(result) {
+            assert.deepEqual(result, {
+                status: "fail",
+                message: "Invalid permissions.  Admin is required to make a new admin user.",
+                data: {
+                    "admin": true,
+                    "user": this.userB.user,
+                },
+            });
+            done6();
+        }.bind(this));
+
+    //removeAdmin: 
+
+    fh.user.delete(this.userA.user)
+        .always(function(result) {
+            assert.deepEqual(result, {
+                status: "fail",
+                message: "You do not have permissions to delete this user.",
+                data: {
+                    user: this.userA.user,
+                },
+            });
+            done8();
+        }.bind(this));
+
+
+    //login as admin
+    login(this.userA);
+
+    fh.user.makeAdmin(this.userB.user)
+        .always(function(result) {
+            assert.equal(result.status, "success");
+            done10();
+        });
+
+
+    //admin - remove admin of other user
+    var data = {
+        user: this.userB.user,
+        admin: false
+    };
+    fh.user.update(data)
+        .always(function(result) {
+            assert.deepEqual(result, {
+                status: "fail",
+                message: "You do not have permissions to remove admin rights.",
+                data: data,
+            });
+            done11();
+        });
+
+
+    login(this.userB);
+    fh.user.removeAdmin()
+        .always(function(result) {
+            assert.equal(result.status, "success");
+            done7();
+        }.bind(this));
+
+
+    //non-admin delete self
+    fh.user.delete(this.userB.user)
+        .always(function(result) {
+            assert.equal(result.status, "success");
+            done9();
+        }.bind(this));
+
+});
+
+QUnit.test("Core Permissions - Log", function(assert) {
+    //Non-admins shouldn't be able to view the log
+
+    assert.expect(6);
+
+    var done = assert.async();
+
+
+    login(this.userB);
+
+    fh.logs()
+        .always(function(result) {
+            assert.equal(result.status, "fail");
+            assert.equal(result.message, "Resource not found");
+            done();
+        });
+});
+
+
+
+QUnit.module("File Permissions", {
+    beforeEach: function(assert) {
+        this.userA = {
+            user: "quinitTestUserA",
+            password: "qunitTestPassword",
+            name: "QUnit Test User A",
+        };
+
+        var done1 = assert.async();
+        var done2 = assert.async();
+        var done3 = assert.async();
+
+        //Create test user A
+        fh.user.new(this.userA)
+            .always(function(result) {
+                assert.equal(result.status, "success", result.message);
+                done1();
+                //Create testing folder
+                this.folder = "/v1/file/qunitTestingFolder";
+                fh.file.newFolder(this.folder)
+                    .always(function(result) {
+                        assert.equal(result.status, "success", result.message);
+                        fh.properties.set(this.folder, {
+                                permissions: {
+                                    owner: this.userA.user,
+                                }
+                            })
+                            .always(function(result) {
+                                assert.equal(result.status, "success", result.message);
+                                done3();
+                            }.bind(this));
+                    }.bind(this));
+
+
+            }.bind(this));
+
+        this.userB = {
+            user: "quinitTestUserB",
+            password: "qunitTestPassword",
+            name: "QUnit Test User B"
+        };
+
+        //Create test user B
+        fh.user.new(this.userB)
+            .always(function(result) {
+                assert.equal(result.status, "success", result.message);
+                done2();
+            });
+
+
+    },
+    afterEach: function(assert) {
+        var done1 = assert.async();
+        var done2 = assert.async();
+
+        logout();
+
+        fh.file.delete(this.folder);
+
+        //delete test users
+        fh.user.delete(this.userA.user)
+            .always(function(result) {
+                assert.equal(result.status, "success", result.message);
+                done1();
+            });
+        fh.user.delete(this.userB.user)
+            .always(function(result) {
+                assert.equal(result.status, "success", result.message);
+                done2();
+            });
+    }
+});
+
+function readFolder(assert, folder, expected) {
+    var done = assert.async();
+
+    fh.properties.get(folder)
+        .always(function(result) {
+            assert.matchExisting(result, expected, "read folder");
+            done();
+        });
+
+    return 1;
+}
+
+function newFolder(assert, newfolder, status) {
+    var done = assert.async();
+
+    $.when(fh.file.newFolder(newfolder)).then()
+        .always(function(result) {
+            assert.equal(result.status, status, "New folder: " + result.message);
+            done();
+        });
+
+    return 1;
+}
+
+function moveFolder(assert, from, to, status) {
+    var done = assert.async();
+
+    fh.file.move(from, to)
+        .always(function(result) {
+            assert.equal(result.status, status, "Move Folder: " + result.message);
+            if (result.status === "success") {
+                //moveback
+                fh.file.move(to, from)
+                    .always(function() {
+                        done();
+                    });
+            } else {
+                done();
+            }
+        });
+
+    return 1;
+}
+
+function deleteFolder(assert, folder, status) {
+    var done = assert.async();
+
+    fh.file.delete(folder)
+        .always(function(result) {
+            assert.equal(result.status, status, "Delete Folder: " + result.message);
+            if (result.status === "success") {
+                //re-add
+                fh.file.newFolder(folder)
+                    .always(function(result) {
+                        done();
+                    });
+            } else {
+                done();
+            }
+        });
+
+    return 1;
+}
+
+QUnit.test("Move Folder Permissions", function(assert) {
+    var expect = 6;
+
+    var rename = this.folder + "_rename";
+
+    login(this.userA);
+    expect += moveFolder(assert, this.folder, rename, "fail");
+
+    logout();
+    expect += moveFolder(assert, this.folder, rename, "success");
+
+    assert.expect(expect);
+});
+
+QUnit.test("Delete Folder Permissions", function(assert) {
+    var expect = 6;
+
+
+    login(this.userA);
+    expect += deleteFolder(assert, this.folder, "fail");
+
+    logout();
+    expect += deleteFolder(assert, this.folder, "success");
+
+    assert.expect(expect);
+});
+
+QUnit.test("Private Folder Level Permissions", function(assert) {
+    var expect = 6;
+
+    //Folder Read
+    login(this.userA);
+    expect += readFolder(assert, this.folder, {
+        status: "success",
+        data: {
+            permissions: {
+                owner: this.userA.user,
+                private: "rw",
+            }
+        }
+    });
+
+    login(this.userB);
+    expect += readFolder(assert, this.folder, {
+        status: "fail"
+    });
+
+
+    var createFolder = fh.util.urlJoin(this.folder, "userfolder");
+    //Folder Write
+    //	new
+    login(this.userB);
+    expect += newFolder(assert, createFolder, "fail");
+
+    login(this.userA);
+    expect += newFolder(assert, createFolder, "success");
+
+    //Folder Read Contents
+    //A created a folder, can B read it in the contents?
+    login(this.userB);
+    expect += readFolder(assert, this.folder + "/", {
+        status: "fail"
+    });
+
+    login(this.userA);
+    expect += readFolder(assert, this.folder + "/", {
+        status: "success",
+        data: [{
+            url: createFolder + "/"
+        }, ]
+    });
+
+
+    assert.expect(expect);
+});
+
+QUnit.test("Friend Read Folder Level Permissions", function(assert) {
+    var expect = 6;
+
+    //Folder Read
+    login(this.userA);
+
+    $.when(fh.properties.set(this.folder, {
+        permissions: {
+            owner: this.userA.user,
+            friend: "r",
+            private: "rw",
+        }
+    })).then();
+
+    login(this.userA);
+    expect += readFolder(assert, this.folder, {
+        status: "success",
+        data: {
+            permissions: {
+                owner: this.userA.user,
+                private: "rw",
+                friend: "r",
+            }
+        }
+    });
+
+    login(this.userB);
+    expect += readFolder(assert, this.folder, {
+        status: "success",
+        data: {
+            permissions: {
+                owner: this.userA.user,
+                private: "rw",
+                friend: "r",
+            }
+        }
+    });
+
+
+    var createFolder = fh.util.urlJoin(this.folder, "userfolder");
+    //Folder Write
+    //	new
+    login(this.userB);
+    expect += newFolder(assert, createFolder, "fail");
+
+    login(this.userA);
+    expect += newFolder(assert, createFolder, "success");
+
+    //Folder Read Contents
+    //A created a folder, can B read it in the contents?
+    login(this.userB);
+    expect += readFolder(assert, this.folder + "/", {
+        status: "success",
+        data: [{
+            url: createFolder + "/"
+        }, ]
+    });
+
+    login(this.userA);
+    expect += readFolder(assert, this.folder + "/", {
+        status: "success",
+        data: [{
+            url: createFolder + "/"
+        }, ]
+    });
+
+
+    assert.expect(expect);
+});
+
+QUnit.test("Friend Write Folder Level Permissions", function(assert) {
+    var expect = 6;
+
+    //Folder Read
+    login(this.userA);
+
+    $.when(fh.properties.set(this.folder, {
+        permissions: {
+            owner: this.userA.user,
+            friend: "rw",
+            private: "rw",
+        }
+    })).then();
+
+    login(this.userA);
+    expect += readFolder(assert, this.folder, {
+        status: "success",
+        data: {
+            permissions: {
+                owner: this.userA.user,
+                private: "rw",
+                friend: "rw",
+            }
+        }
+    });
+
+    login(this.userB);
+    expect += readFolder(assert, this.folder, {
+        status: "success",
+        data: {
+            permissions: {
+                owner: this.userA.user,
+                private: "rw",
+                friend: "rw",
+            }
+        }
+    });
+
+
+    var createFolder = fh.util.urlJoin(this.folder, "userfolder");
+    //Folder Write
+    //	new
+    login(this.userB);
+    expect += newFolder(assert, createFolder + "b", "success");
+
+    login(this.userA);
+    expect += newFolder(assert, createFolder + "a", "success");
+
+    //Folder Read Contents
+    //A created a folder, can B read it in the contents?
+    login(this.userB);
+    expect += readFolder(assert, this.folder + "/", {
+        status: "success",
+        data: [{
+            url: createFolder + "b/"
+        }, ]
+    });
+
+    login(this.userA);
+    expect += readFolder(assert, this.folder + "/", {
+        status: "success",
+        data: [{
+            url: createFolder + "a/"
+        }, ]
+    });
+
+
+    assert.expect(expect);
+});
+
+//TODO: tame these damn async tests
+
+//File Read
+//File write
