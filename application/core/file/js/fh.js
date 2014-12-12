@@ -201,7 +201,7 @@ window.fh = (function() {
                     data: JSON.stringify(userObject)
                 });
             },
-            update: function(userObject) { //Current user
+            update: function(userObject) { 
                 return stdAjax("PUT", "/v1/auth/user/", {
                     data: JSON.stringify(userObject)
                 });
