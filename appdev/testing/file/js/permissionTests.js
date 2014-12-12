@@ -9,6 +9,7 @@ QUnit.module("Permissions", {
 
         var done1 = assert.async();
         var done2 = assert.async();
+
         //Create test user A
         fh.user.new(this.userA)
             .always(function(result) {
@@ -63,29 +64,34 @@ function login(user) {
     });
 }
 
-
 QUnit.test("Root Permissions", function(assert) {
     assert.expect(6);
 
     var doneA = assert.async();
     var doneB = assert.async();
 
-
+    var a = this.userA;
+    var b = this.userB;
     //Admins should be able to write to the root file dir
     // regular users should not
-    login(this.userA);
+
+    login(a);
 
     fh.file.newFolder("/v1/file/qunitTestingFolderA")
         .done(function(result) {
             assert.equal(result.status, "success", "User A Folder Created at root");
 
+            login(a);
             fh.file.delete("/v1/file/qunitTestingFolderA")
                 .always(function(result) {
+                    console.log(result);
                     doneA();
                 });
         })
         .fail(function(result) {
             assert.ok(false, result.message);
+
+            login(a);
             fh.file.delete("/v1/file/qunitTestingFolderA")
                 .always(function(result) {
                     doneA();
@@ -93,7 +99,7 @@ QUnit.test("Root Permissions", function(assert) {
         });
 
 
-    login(this.userB);
+    login(b);
 
     fh.file.newFolder("/v1/file/qunitTestingFolderB")
         .fail(function(result) {
@@ -102,12 +108,11 @@ QUnit.test("Root Permissions", function(assert) {
         })
         .done(function(result) {
             assert.ok(false, "User should not be able to create a folder at root");
+            login(b);
             fh.file.delete("/v1/file/qunitTestingFolderB")
                 .always(function(result) {
                     doneB();
                 });
 
         });
-
-
 });
