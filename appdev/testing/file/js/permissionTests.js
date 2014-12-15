@@ -28,6 +28,74 @@ function matchExisting(value, expected) {
 }
 
 
+function readFolder(assert, folder, expected) {
+    var done = assert.async();
+
+    fh.properties.get(folder)
+        .always(function(result) {
+            assert.matchExisting(result, expected, "read folder");
+            done();
+        });
+
+    return 1;
+}
+
+function newFolder(assert, newfolder, status) {
+    var done = assert.async();
+
+    fh.file.newFolder(newfolder)
+        .always(function(result) {
+            assert.equal(result.status, status, "New folder: " + result.message);
+            done();
+        });
+
+    return 1;
+}
+
+function moveFolder(assert, from, to, status) {
+    var done = assert.async();
+
+    fh.file.move(from, to)
+        .always(function(result) {
+            assert.equal(result.status, status, "Move Folder: " + result.message);
+            if (result.status === "success") {
+                //moveback
+                fh.file.move(to, from)
+                    .always(function() {
+                        done();
+                    });
+            } else {
+                done();
+            }
+        });
+
+    return 1;
+}
+
+function deleteFolder(assert, folder, status) {
+    var done = assert.async();
+
+    fh.file.delete(folder)
+        .always(function(result) {
+            assert.equal(result.status, status, "Delete Folder: " + result.message);
+            if (result.status === "success") {
+                //re-add
+                fh.file.newFolder(folder)
+                    .always(function(result) {
+                        done();
+                    });
+            } else {
+                done();
+            }
+        });
+
+    return 1;
+}
+
+/*************************
+ * Tests Start
+ *************************/
+
 QUnit.module("Implicit Permissions", {
     beforeEach: function(assert) {
         this.userA = {
@@ -100,7 +168,7 @@ function logout() {
 
 }
 
-QUnit.test("Root Folder Permissions", function(assert) {
+QUnit.test("Root Folder Create Permissions", function(assert) {
     //Admins should be able to write to the root file dir
     // regular users should not
 
@@ -152,6 +220,48 @@ QUnit.test("Root Folder Permissions", function(assert) {
 
         });
 });
+
+QUnit.test("Root Move Folder Permissions", function(assert) {
+    var expect = 6;
+
+    var folder = "/v1/file/qunitTestingFolderRename";
+    var rename = folder + "_rename";
+    var done = assert.async();
+
+    fh.file.newFolder(folder)
+        .always(function(result) {
+            login(this.userB);
+            moveFolder(assert, folder, rename, "fail");
+
+            login(this.userA);
+            moveFolder(assert, folder, rename, "success");
+            done();
+
+        }.bind(this));
+
+    assert.expect(expect);
+});
+
+QUnit.test("Root Delete Folder Permissions", function(assert) {
+    var expect = 6;
+
+    var folder = "/v1/file/qunitTestingFolderDelete";
+    var done = assert.async();
+
+    fh.file.newFolder(folder)
+        .always(function(result) {
+            login(this.userB);
+            deleteFolder(assert, folder, "fail");
+
+            login(this.userA);
+            deleteFolder(assert, folder, "success");
+            done();
+
+        }.bind(this));
+
+    assert.expect(expect);
+});
+
 
 
 QUnit.test("Core Permissions - Application", function(assert) {
@@ -444,56 +554,70 @@ QUnit.test("Core Permissions - Log", function(assert) {
 
 
 
-QUnit.module("File Permissions", {
+function prepFileTests(assert, permissions) {
+    this.user = {
+        user: "quinitTestUser",
+        password: "qunitTestPassword",
+        name: "QUnit Test User",
+    };
+
+    var done1 = assert.async();
+    var done2 = assert.async();
+    var done3 = assert.async();
+    var done4 = assert.async();
+
+    //Create test user 
+    fh.user.new(this.user)
+        .always(function(result) {
+            assert.equal(result.status, "success", result.message);
+            done1();
+            //Create testing folder
+            this.folder = "/v1/file/qunitTestingFolder";
+            this.childFolder = "/v1/file/qunitTestingFolder/child";
+
+            permissions.owner = this.user.user;
+            fh.file.newFolder(this.folder)
+                .always(function(result) {
+                    assert.equal(result.status, "success", result.message);
+                    fh.properties.set(this.folder, {
+                            permissions: permissions,
+                        })
+                        .always(function(result) {
+                            assert.equal(result.status, "success", result.message);
+                            done3();
+                            login(this.user);
+                            fh.file.newFolder(this.childFolder)
+                                .always(function(result) {
+                                    done4();
+                                });
+                        }.bind(this));
+                }.bind(this));
+        }.bind(this));
+
+    this.friend = {
+        user: "quinitTestUserFriend",
+        password: "qunitTestPassword",
+        name: "QUnit Test User B"
+    };
+
+    //Create test user friend
+    fh.user.new(this.friend)
+        .always(function(result) {
+            assert.equal(result.status, "success", result.message);
+            done2();
+        });
+
+}
+
+
+
+QUnit.module("Private File Permissions", {
     beforeEach: function(assert) {
-        this.userA = {
-            user: "quinitTestUserA",
-            password: "qunitTestPassword",
-            name: "QUnit Test User A",
-        };
-
-        var done1 = assert.async();
-        var done2 = assert.async();
-        var done3 = assert.async();
-
-        //Create test user A
-        fh.user.new(this.userA)
-            .always(function(result) {
-                assert.equal(result.status, "success", result.message);
-                done1();
-                //Create testing folder
-                this.folder = "/v1/file/qunitTestingFolder";
-                fh.file.newFolder(this.folder)
-                    .always(function(result) {
-                        assert.equal(result.status, "success", result.message);
-                        fh.properties.set(this.folder, {
-                                permissions: {
-                                    owner: this.userA.user,
-                                }
-                            })
-                            .always(function(result) {
-                                assert.equal(result.status, "success", result.message);
-                                done3();
-                            }.bind(this));
-                    }.bind(this));
-
-
-            }.bind(this));
-
-        this.userB = {
-            user: "quinitTestUserB",
-            password: "qunitTestPassword",
-            name: "QUnit Test User B"
-        };
-
-        //Create test user B
-        fh.user.new(this.userB)
-            .always(function(result) {
-                assert.equal(result.status, "success", result.message);
-                done2();
-            });
-
-
+        prepFileTests.call(this, assert, {
+            private: "rw",
+            friend: "",
+            public: "",
+        });
     },
     afterEach: function(assert) {
         var done1 = assert.async();
@@ -504,12 +628,12 @@ QUnit.module("File Permissions", {
         fh.file.delete(this.folder);
 
         //delete test users
-        fh.user.delete(this.userA.user)
+        fh.user.delete(this.user.user)
             .always(function(result) {
                 assert.equal(result.status, "success", result.message);
                 done1();
             });
-        fh.user.delete(this.userB.user)
+        fh.user.delete(this.friend.user)
             .always(function(result) {
                 assert.equal(result.status, "success", result.message);
                 done2();
@@ -517,139 +641,46 @@ QUnit.module("File Permissions", {
     }
 });
 
-function readFolder(assert, folder, expected) {
-    var done = assert.async();
 
-    fh.properties.get(folder)
-        .always(function(result) {
-            assert.matchExisting(result, expected, "read folder");
-            done();
-        });
-
-    return 1;
-}
-
-function newFolder(assert, newfolder, status) {
-    var done = assert.async();
-
-    $.when(fh.file.newFolder(newfolder)).then()
-        .always(function(result) {
-            assert.equal(result.status, status, "New folder: " + result.message);
-            done();
-        });
-
-    return 1;
-}
-
-function moveFolder(assert, from, to, status) {
-    var done = assert.async();
-
-    fh.file.move(from, to)
-        .always(function(result) {
-            assert.equal(result.status, status, "Move Folder: " + result.message);
-            if (result.status === "success") {
-                //moveback
-                fh.file.move(to, from)
-                    .always(function() {
-                        done();
-                    });
-            } else {
-                done();
-            }
-        });
-
-    return 1;
-}
-
-function deleteFolder(assert, folder, status) {
-    var done = assert.async();
-
-    fh.file.delete(folder)
-        .always(function(result) {
-            assert.equal(result.status, status, "Delete Folder: " + result.message);
-            if (result.status === "success") {
-                //re-add
-                fh.file.newFolder(folder)
-                    .always(function(result) {
-                        done();
-                    });
-            } else {
-                done();
-            }
-        });
-
-    return 1;
-}
-
-QUnit.test("Move Folder Permissions", function(assert) {
-    var expect = 6;
-
-    var rename = this.folder + "_rename";
-
-    login(this.userA);
-    expect += moveFolder(assert, this.folder, rename, "fail");
-
-    logout();
-    expect += moveFolder(assert, this.folder, rename, "success");
-
-    assert.expect(expect);
-});
-
-QUnit.test("Delete Folder Permissions", function(assert) {
-    var expect = 6;
-
-
-    login(this.userA);
-    expect += deleteFolder(assert, this.folder, "fail");
-
-    logout();
-    expect += deleteFolder(assert, this.folder, "success");
-
-    assert.expect(expect);
-});
-
-QUnit.test("Private Folder Level Permissions", function(assert) {
+QUnit.test("Read Private Folder Properties", function(assert) {
     var expect = 6;
 
     //Folder Read
-    login(this.userA);
+    login(this.user);
     expect += readFolder(assert, this.folder, {
         status: "success",
         data: {
             permissions: {
-                owner: this.userA.user,
+                owner: this.user.user,
                 private: "rw",
             }
         }
     });
 
-    login(this.userB);
+    login(this.friend);
     expect += readFolder(assert, this.folder, {
         status: "fail"
     });
 
+    assert.expect(expect);
+});
 
-    var createFolder = fh.util.urlJoin(this.folder, "userfolder");
-    //Folder Write
-    //	new
-    login(this.userB);
-    expect += newFolder(assert, createFolder, "fail");
 
-    login(this.userA);
-    expect += newFolder(assert, createFolder, "success");
+QUnit.test("List Private Folder Contents", function(assert) {
+    var expect = 6;
 
     //Folder Read Contents
-    //A created a folder, can B read it in the contents?
-    login(this.userB);
+    //A created a folder, can friend read it in the contents?
+    login(this.friend);
     expect += readFolder(assert, this.folder + "/", {
         status: "fail"
     });
 
-    login(this.userA);
+    login(this.user);
     expect += readFolder(assert, this.folder + "/", {
         status: "success",
         data: [{
-            url: createFolder + "/"
+            url: this.childFolder + "/"
         }, ]
     });
 
@@ -657,139 +688,103 @@ QUnit.test("Private Folder Level Permissions", function(assert) {
     assert.expect(expect);
 });
 
-QUnit.test("Friend Read Folder Level Permissions", function(assert) {
+QUnit.test("Write Private Folder Contents", function(assert) {
     var expect = 6;
 
-    //Folder Read
-    login(this.userA);
+    var createFolder = fh.util.urlJoin(this.folder, "userfolder");
+    //Folder Write
+    //	new
+    login(this.friend);
+    expect += newFolder(assert, createFolder, "fail");
 
-    $.when(fh.properties.set(this.folder, {
-        permissions: {
-            owner: this.userA.user,
+    login(this.user);
+    expect += newFolder(assert, createFolder, "success");
+
+    assert.expect(expect);
+});
+
+
+QUnit.module("Friend Read File Permissions", {
+    beforeEach: function(assert) {
+        prepFileTests.call(this, assert, {
+            private: "rw",
             friend: "r",
-            private: "rw",
-        }
-    })).then();
+            public: "",
+        });
+    },
+    afterEach: function(assert) {
+        var done1 = assert.async();
+        var done2 = assert.async();
 
-    login(this.userA);
-    expect += readFolder(assert, this.folder, {
-        status: "success",
-        data: {
-            permissions: {
-                owner: this.userA.user,
-                private: "rw",
-                friend: "r",
-            }
-        }
-    });
+        logout();
 
-    login(this.userB);
-    expect += readFolder(assert, this.folder, {
-        status: "success",
-        data: {
-            permissions: {
-                owner: this.userA.user,
-                private: "rw",
-                friend: "r",
-            }
-        }
-    });
+        fh.file.delete(this.folder);
 
-
-    var createFolder = fh.util.urlJoin(this.folder, "userfolder");
-    //Folder Write
-    //	new
-    login(this.userB);
-    expect += newFolder(assert, createFolder, "fail");
-
-    login(this.userA);
-    expect += newFolder(assert, createFolder, "success");
-
-    //Folder Read Contents
-    //A created a folder, can B read it in the contents?
-    login(this.userB);
-    expect += readFolder(assert, this.folder + "/", {
-        status: "success",
-        data: [{
-            url: createFolder + "/"
-        }, ]
-    });
-
-    login(this.userA);
-    expect += readFolder(assert, this.folder + "/", {
-        status: "success",
-        data: [{
-            url: createFolder + "/"
-        }, ]
-    });
-
-
-    assert.expect(expect);
+        //delete test users
+        fh.user.delete(this.user.user)
+            .always(function(result) {
+                assert.equal(result.status, "success", result.message);
+                done1();
+            });
+        fh.user.delete(this.friend.user)
+            .always(function(result) {
+                assert.equal(result.status, "success", result.message);
+                done2();
+            });
+    }
 });
 
-QUnit.test("Friend Write Folder Level Permissions", function(assert) {
+
+QUnit.test("Read Folder Properties", function(assert) {
     var expect = 6;
 
     //Folder Read
-    login(this.userA);
-
-    $.when(fh.properties.set(this.folder, {
-        permissions: {
-            owner: this.userA.user,
-            friend: "rw",
-            private: "rw",
-        }
-    })).then();
-
-    login(this.userA);
+    login(this.user);
     expect += readFolder(assert, this.folder, {
         status: "success",
         data: {
             permissions: {
-                owner: this.userA.user,
+                owner: this.user.user,
                 private: "rw",
-                friend: "rw",
+                friend: "r",
             }
         }
     });
 
-    login(this.userB);
+    login(this.friend);
     expect += readFolder(assert, this.folder, {
         status: "success",
         data: {
             permissions: {
-                owner: this.userA.user,
+                owner: this.user.user,
                 private: "rw",
-                friend: "rw",
+                friend: "r",
             }
         }
     });
+    assert.expect(expect);
+});
 
 
-    var createFolder = fh.util.urlJoin(this.folder, "userfolder");
-    //Folder Write
-    //	new
-    login(this.userB);
-    expect += newFolder(assert, createFolder + "b", "success");
-
-    login(this.userA);
-    expect += newFolder(assert, createFolder + "a", "success");
+QUnit.test("List Folder Contents", function(assert) {
+    var expect = 6;
 
     //Folder Read Contents
-    //A created a folder, can B read it in the contents?
-    login(this.userB);
+    //A created a folder, can friend read it in the contents?
+    login(this.friend);
     expect += readFolder(assert, this.folder + "/", {
         status: "success",
         data: [{
-            url: createFolder + "b/"
+            url: this.childFolder + "/"
         }, ]
     });
 
-    login(this.userA);
+
+    login(this.user);
     expect += readFolder(assert, this.folder + "/", {
         status: "success",
         data: [{
-            url: createFolder + "a/"
+            url: this.childFolder + "/"
         }, ]
     });
 
@@ -797,7 +792,118 @@ QUnit.test("Friend Write Folder Level Permissions", function(assert) {
     assert.expect(expect);
 });
 
-//TODO: tame these damn async tests
+QUnit.test("Write Folder Contents", function(assert) {
+    var expect = 6;
 
-//File Read
-//File write
+    var createFolder = fh.util.urlJoin(this.folder, "userfolder");
+    //Folder Write
+    //	new
+    login(this.friend);
+    expect += newFolder(assert, createFolder, "fail");
+
+    login(this.user);
+    expect += newFolder(assert, createFolder, "success");
+
+    assert.expect(expect);
+});
+
+
+QUnit.module("Friend Write File Permissions", {
+    beforeEach: function(assert) {
+        prepFileTests.call(this, assert, {
+            private: "rw",
+            friend: "rw",
+            public: "",
+        });
+    },
+    afterEach: function(assert) {
+        var done1 = assert.async();
+        var done2 = assert.async();
+
+        logout();
+
+        fh.file.delete(this.folder);
+
+        //delete test users
+        fh.user.delete(this.user.user)
+            .always(function(result) {
+                assert.equal(result.status, "success", result.message);
+                done1();
+            });
+        fh.user.delete(this.friend.user)
+            .always(function(result) {
+                assert.equal(result.status, "success", result.message);
+                done2();
+            });
+    }
+});
+
+
+QUnit.test("Read Folder Properties", function(assert) {
+    var expect = 6;
+
+    //Folder Read
+    login(this.user);
+    expect += readFolder(assert, this.folder, {
+        status: "success",
+        data: {
+            permissions: {
+                owner: this.user.user,
+                private: "rw",
+                friend: "rw",
+            }
+        }
+    });
+
+    login(this.friend);
+    expect += readFolder(assert, this.folder, {
+        status: "success",
+        data: {
+            permissions: {
+                owner: this.user.user,
+                private: "rw",
+                friend: "rw",
+            }
+        }
+    });
+    assert.expect(expect);
+});
+
+
+QUnit.test("List Folder Contents", function(assert) {
+    var expect = 6;
+
+    //Folder Read Contents
+    //A created a folder, can friend read it in the contents?
+    login(this.friend);
+    expect += readFolder(assert, this.folder + "/", {
+        status: "success",
+        data: [{
+            url: this.childFolder + "/"
+        }, ]
+    });
+
+
+    login(this.user);
+    expect += readFolder(assert, this.folder + "/", {
+        status: "success",
+        data: [{
+            url: this.childFolder + "/"
+        }, ]
+    });
+
+
+    assert.expect(expect);
+});
+
+QUnit.test("Write Folder Contents", function(assert) {
+    var expect = 6;
+
+    var createFolder = fh.util.urlJoin(this.folder, "userfolder");
+    //Folder Write
+    //	new
+    login(this.friend);
+    expect += newFolder(assert, createFolder, "success");
+
+    assert.expect(expect);
+});
