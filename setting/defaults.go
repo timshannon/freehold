@@ -157,6 +157,14 @@ func init() {
 				"be set (Private RW). This can be used to back-load files into freehold.",
 			Value: "",
 		},
+		"ModifiedDateForHTTPCaching": Setting{
+			Description: "Whether or not to use a files modified date to determine HTTP caching. If modified date is not " +
+				"used, then an etag will be generated from a checksum of the file.  This is more expensive, but more " +
+				"accurate as to when the file has changed. If you have rapidly changing content, consider setting this " +
+				"to false.  If you need more performance per call, consider setting this to true, but clients would " +
+				"possibly be seeing old cached content.",
+			Value: false,
+		},
 	}
 }
 

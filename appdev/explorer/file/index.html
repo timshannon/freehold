@@ -25,20 +25,50 @@
 <div class="alert alert-danger">
 	{{propError}}	
 </div>
-{{/if}}
+	<form class="form-horizontal property-form" role="form">
+		<span class="property-icon fa fa-5x fa-warning"></span>
+			<label for="currentFileName" class="col-sm-4 control-label">Name</label>
+			<div class="col-sm-8">
+				<p class="form-control-static">{{name}}</p>
+			</div>
+		<div class="form-group">
+			<label for="currentFileUrl" class="col-sm-4 control-label">Url</label>
+			<div class="col-sm-8">
+				<p class="form-control-static">{{url}}</p>
+			</div>
+		</div>
+		<div class="form-group">
+			<label for="currentFileSize" class="col-sm-4 control-label">Size</label>
+			<div class="col-sm-8">
+				<p class="form-control-static">{{humanSize}}</p>
+			</div>
+		</div>
+		<div class="form-group">
+			<label for="currentFileModified" class="col-sm-4 control-label">Last Modified</label>
+			<div class="col-sm-8">
+				<p class="form-control-static">{{modifiedDate}}</p>
+			</div>
+		</div>
+
+		</form>
+<div class="modal-footer">
+	<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+</div>
+
+{{else}}
 	<a href="#" class="pull-right" on-click="star" title="{{#if .starred}}Remove{{else}}Add{{/if}} Star">
 		<span class="glyphicon glyphicon-star star{{#starred}} starred{{/starred}}"></span></a>
 	<ul id="propTabs" class="nav nav-tabs" role="tablist">
 		<li class="active"><a href="#details" role="tab" data-toggle="tab">Details</a></li>
 		<li><a href="#permissions" role="tab" data-toggle="tab">Permissions</a></li>
-		<li><a href="#behavior" role="tab" data-toggle="tab">Behavior</a></li>
+		{{#if !isDir}}<li><a href="#behavior" role="tab" data-toggle="tab">Behavior</a></li>{{/if}}
 		<li><a href="#token" role="tab" data-toggle="tab">Token</a></li>
 	</ul>
 
 	<!-- Tab panes -->
 	<div class="tab-content">
 		<div class="tab-pane active" id="details">
-			<form class="form-horizontal property-form" role="form" on-submit="newFolderSave">
+			<form class="form-horizontal property-form" role="form">
 				<span class="property-icon fa fa-5x fa-{{explorerIcon}}"></span>
 				<div class="form-group {{#renameError}}has-error has-feedback{{/}}" title="{{renameError}}">
 					<label for="currentFileName" class="col-sm-4 control-label">Name</label>
@@ -79,20 +109,54 @@
 		</div>
 		<div class="tab-pane" id="permissions">
 			<div class="property-form">
-			<permissions readOnly="{{user !== permissions.owner}}" permissions="{{permissions}}" showOwner="{{permissions.owner != null}}"></permissions>
+			<permissions readOnly="{{user !== permissions.owner}}" permissions="{{permissions}}" showOwner="{{.showOwner}}"></permissions>
 			</div>
 		</div>
 		<div class="tab-pane" id="behavior">
+			<div class="row">	
+				<div class="col-sm-offset-1 col-sm-6">
+				<div class="radio">
+					<label>
+						<input type="radio" name="radioBehavior" value="download" checked="{{.download}}" on-click="setFileBehavior">
+						Download File
+					</label>
+				</div>
+				<div class="radio">
+					<label>
+						<input type="radio" name="radioBehavior" value="browser" checked="{{.browser}}" on-click="setFileBehavior">
+						Open File in Browser
+					</label>
+				</div>
+				<div class="radio">
+					<label>
+						<input type="radio" name="radioBehavior" value="app" checked="{{.app}}" on-click="setFileBehavior">
+						Open File with Application
+					</label>
+				</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-sm-offset-3 col-sm-8"> 
+					<select class="form-control disabled" value="{{.app}}">
+						<option></option>
+					{{#apps:i}}
+						<option>{{i}}</option>
+					{{/apps}}
+					</select>
+				</div>	
+			</div>
 		</div>
 		<div class="tab-pane" id="token">
 		</div>
 
 	</div>
+
 <div class="modal-footer">
 	<button type="button" class="btn btn-danger pull-left" on-click="deleteFromProperties">
 		<span class="glyphicon glyphicon-remove"></span> Delete</button>
 	<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 </div>
+{{/if}}
 {{/currentFile}}
 </modal>
 

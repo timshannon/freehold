@@ -144,6 +144,13 @@ func (r *File) Modified() string {
 	return ""
 }
 
+func (r *File) FileInfo() os.FileInfo {
+	if r.exists {
+		return r.info
+	}
+	return nil
+}
+
 func (r *File) Permission() (*permission.Permission, error) {
 	if r.permission != nil {
 		return r.permission, nil
