@@ -72,6 +72,7 @@ function moveFolder(assert, from, to, status) {
     return 1;
 }
 
+
 function deleteFolder(assert, folder, status) {
     var done = assert.async();
 
@@ -220,48 +221,6 @@ QUnit.test("Root Folder Create Permissions", function(assert) {
 
         });
 });
-
-QUnit.test("Root Move Folder Permissions", function(assert) {
-    var expect = 6;
-
-    var folder = "/v1/file/qunitTestingFolderRename";
-    var rename = folder + "_rename";
-    var done = assert.async();
-
-    fh.file.newFolder(folder)
-        .always(function(result) {
-            login(this.userB);
-            moveFolder(assert, folder, rename, "fail");
-
-            login(this.userA);
-            moveFolder(assert, folder, rename, "success");
-            done();
-
-        }.bind(this));
-
-    assert.expect(expect);
-});
-
-QUnit.test("Root Delete Folder Permissions", function(assert) {
-    var expect = 6;
-
-    var folder = "/v1/file/qunitTestingFolderDelete";
-    var done = assert.async();
-
-    fh.file.newFolder(folder)
-        .always(function(result) {
-            login(this.userB);
-            deleteFolder(assert, folder, "fail");
-
-            login(this.userA);
-            deleteFolder(assert, folder, "success");
-            done();
-
-        }.bind(this));
-
-    assert.expect(expect);
-});
-
 
 
 QUnit.test("Core Permissions - Application", function(assert) {
@@ -904,6 +863,34 @@ QUnit.test("Write Folder Contents", function(assert) {
     //	new
     login(this.friend);
     expect += newFolder(assert, createFolder, "success");
+
+    assert.expect(expect);
+});
+
+QUnit.test("Root Move Folder Permissions", function(assert) {
+    var expect = 6;
+
+    var rename = this.folder + "_rename";
+
+    login(this.user);
+    expect += moveFolder(assert, this.folder, rename, "fail");
+
+    logout();
+    expect += moveFolder(assert, this.folder, rename, "success");
+
+
+    assert.expect(expect);
+});
+
+QUnit.test("Root Delete Folder Permissions", function(assert) {
+    var expect = 6;
+
+    login(this.user);
+    expect += deleteFolder(assert, this.folder, "fail");
+
+    logout();
+    expect += deleteFolder(assert, this.folder, "success");
+
 
     assert.expect(expect);
 });

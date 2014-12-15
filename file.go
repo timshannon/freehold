@@ -388,13 +388,17 @@ func serveFile(w http.ResponseWriter, r *http.Request, res *resource.File, auth 
 		rs = file
 	}
 
-	//TODO: Setting for modified date instead of etag?
-	//  less consistant, but more performant
-
-	//ETag is an checksum has of the contents of the file.  If the file changes
-	// clients should know to grab the new version because the sum won't match.
-	w.Header().Add("ETag", checksum(rs))
-	http.ServeContent(w, r, file.Name(), time.Time{}, rs)
+	var modTime time.Time
+	if setting.Bool("ModifiedDateForHTTPCaching") {
+		modTime = res.FileInfo().ModTime()
+	} else {
+		//ETag is an checksum has of the contents of the file.  If the file changes
+		// clients should know to grab the new version because the sum won't match.
+		// but the server will pay the cost of the check sum and the filecheck no matter what
+		w.Header().Add("ETag", checksum(rs))
+		modTime = time.Time{}
+	}
+	http.ServeContent(w, r, file.Name(), modTime, rs)
 	return
 }
 

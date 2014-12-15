@@ -5,6 +5,7 @@
 $(document).ready(function() {
     var timer;
     var defaultIcons = buildDefaultIcons();
+    var defaultApps = buildDefaultApps();
     var settings = new Settings();
     settings.stars = new Stars();
     settings.fileType = new FileTypeSettings();
@@ -232,7 +233,15 @@ $(document).ready(function() {
                 file.starred = settings.stars.isStar(url);
                 file.url = trimSlash(url);
                 rMain.set("currentFile", setFileType(file));
+                if (file.permissions.owner) {
+                    rMain.set("currentFile.showOwner", true);
+                } else {
+                    rMain.set("currentFile.showOwner", false);
+                }
             }, function(result) {
+                if (result.message === "Resource not found") {
+                    result.data.propError = "You do not have permissions to view the properties of this file.";
+                }
                 rMain.set("currentFile", result.data);
             });
         },
@@ -286,9 +295,6 @@ $(document).ready(function() {
                     return;
                 }
 
-                console.log("new: ", newValue);
-                console.log("old: ", oldValue);
-
                 fh.properties.set(rMain.get("currentFile.url"), {
                         permissions: newValue
                     })
@@ -303,6 +309,8 @@ $(document).ready(function() {
     function selectFolder(keypath) {
         var folder = rMain.get(keypath);
         document.title = folder.name + " - Explorer - freehold";
+
+        var prevKeypath = rMain.get("currentKeypath");
 
         rMain.set("currentKeypath", keypath);
         if (keypath === "stars") {
@@ -327,25 +335,33 @@ $(document).ready(function() {
             sortCurrent();
 
             rMain.set("currentFolder.starred", settings.stars.isStar(folder.url));
+        }, function(result) {
+            //failed to update
+            selectFolder(prevKeypath);
         });
 
     }
 
-    function updateFolder(url, keypath, postUpdate) {
+    function updateFolder(url, keypath, postUpdate, postFail) {
         fh.properties.get(url)
             .done(function(result) {
                 mergeFolder(result.data, keypath + ".children");
                 if (postUpdate) {
                     postUpdate();
                 }
+            })
+            .fail(function(result) {
+                if (postFail) {
+                    postFail(result);
+                }
             });
     }
 
     function setRoot(app) {
-        //TODO: Auto select user folder if one exists
         rMain.set("app", app);
+        var fileUrl = fh.util.urlJoin(app, "/v1/file/");
         rMain.set("files", {
-            url: fh.util.urlJoin(app, "/v1/file/"),
+            url: fileUrl,
             name: "files",
             canSelect: true,
             selected: true,
@@ -365,7 +381,17 @@ $(document).ready(function() {
             iconClass: "glyphicon glyphicon-star",
         });
         rMain.set("listView", settings.get("listView", false));
-        selectFolder("files");
+
+        //open user folder if one exists
+        var userFolder = fh.util.urlJoin(fileUrl, fh.auth.user);
+        fh.properties.get(userFolder)
+            .fail(function() {
+                selectFolder("files");
+            })
+            .done(function() {
+                updateFilesTo("files", userFolder);
+            });
+
     }
 
     function keypathFromTree(keypath, ds) {
@@ -497,8 +523,13 @@ $(document).ready(function() {
         } else {
             var ext = file.name.slice(file.name.lastIndexOf(".") + 1);
 
-            file.explorerIcon = settings.fileType.icon(ext) || defaultIcons[ext] || "file-o";
-            file.download = settings.fileType.download(ext);
+            file.explorerIcon = settings.fileType.icon(ext);
+            file.behavior = {
+                download: settings.fileType.download(ext),
+                app: settings.fileType.app(ext),
+                browser: (!this.app && !this.download)
+            };
+
             file.hide = true; //hide from treeview
             if (file.size) {
                 file.humanSize = filesize(file.size); //thanks Jason Mulligan (https://github.com/avoidwork/filesize.js)
@@ -669,6 +700,7 @@ $(document).ready(function() {
                         url: url,
                         isDir: false,
                         size: 0,
+                        permissions: {},
                     };
                     failGet(result);
                 }
@@ -730,14 +762,23 @@ $(document).ready(function() {
                 if (file) {
                     return file.icon;
                 }
-                return;
+                return defaultIcons[filetype] || "file-o";
             },
             app: function(filetype) {
                 var file = settings.get("files", {})[filetype];
+                var app;
                 if (file) {
-                    return file.app;
+                    app = file.app;
+                } else {
+                    app = defaultApps[filetype];
                 }
-                return;
+
+                var apps = rMain.get("apps");
+                if (app && apps[app]) {
+                    //Only open with app if it's installed
+                    return app;
+                }
+                return "";
             },
             download: function(filetype) {
                 var file = settings.get("files", {})[filetype];
@@ -746,7 +787,13 @@ $(document).ready(function() {
                 }
                 return false;
 
-            }
+            },
+            set: function(filetype, file) {
+                var files = settings.get("files", {})[filetype];
+                files[filetype] = file;
+
+                settings.put("files", files);
+            },
         };
 
     }
@@ -859,6 +906,15 @@ $(document).ready(function() {
             "kf8": "book",
             "torrent": "share-alt",
         };
-
     }
+
+    function buildDefaultApps() {
+        return {
+            "ds": "datastore",
+            "odf": "webodf",
+            "ods": "webodf",
+            "odt": "webodf",
+        };
+    }
+
 }); //end ready
