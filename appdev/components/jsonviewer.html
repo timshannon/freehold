@@ -65,7 +65,7 @@
 	}
 
 	.json-item {
-		padding: 5px;
+		padding: 4px;
 	}
 
 	.collapser {
@@ -74,7 +74,6 @@
 
 	.json-item:hover {
 		background-color: #f5f5f5;
-		border: 1px solid #ccc;
 		border-radius: 4px;
 		padding: 4px;
 	}
@@ -100,6 +99,8 @@ component.exports = {
 				} else {
 					r.set(event.keypath+".collapsed", true);
 				}
+
+				r.update(event.keypath);
 			},
 			"expandAll": function(event) {
 				setRoot(r.get("object"), false);

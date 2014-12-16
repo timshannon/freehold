@@ -1920,7 +1920,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
               ]
             }]
         },
-        css: 'ul {\nlist-style: none;\n}\n.json-item {\npadding: 5px;\n}\n.collapser {\ncolor: #555;\n}\n.json-item:hover {\nbackground-color: #f5f5f5;\nborder: 1px solid #ccc;\nborder-radius: 4px;\npadding: 4px;\n}\n.jsonviewer {\ncursor: default;\n}\n'
+        css: 'ul {\nlist-style: none;\n}\n.json-item {\npadding: 4px;\n}\n.collapser {\ncolor: #555;\n}\n.json-item:hover {\nbackground-color: #f5f5f5;\nborder-radius: 4px;\npadding: 4px;\n}\n.jsonviewer {\ncursor: default;\n}\n'
       }, component = {};
     component.exports = {
       data: {
@@ -1937,6 +1937,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
             } else {
               r.set(event.keypath + '.collapsed', true);
             }
+            r.update(event.keypath);
           },
           'expandAll': function (event) {
             setRoot(r.get('object'), false);

@@ -204,10 +204,6 @@
 	top: 50%;
 }
 
-
-.property-form {
-	margin-top: 15px;
-}
 .property-form>.form-group {
 	margin-bottom: 0px;
 }
@@ -215,6 +211,7 @@
 .property-icon {
 	position: absolute;
 	left: 30px;
+	color: #333;
 }
 
 
@@ -240,3 +237,8 @@
 	position: absolute;
 	right: 15px;
 } 
+
+.property-content {
+	margin-top: 15px;
+	margin-bottom: 15px;
+}
