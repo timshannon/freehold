@@ -23,6 +23,7 @@ $(document).ready(function() {
             datastores: {},
             stars: {},
             user: fh.auth.user,
+            icons: buildIconList(),
         },
     });
 
@@ -37,7 +38,10 @@ $(document).ready(function() {
         rMain.set("newWindow", settings.get("newWindow", true));
         rMain.set("folderSort", settings.get("folderSort", true));
         rMain.set("hideSidebar", settings.get("hideSidebar", false));
+        rMain.set("listView", settings.get("listView", false));
+
         setRoot();
+        selectUserFolder();
     });
 
     //events
@@ -123,6 +127,7 @@ $(document).ready(function() {
                 setRoot(event.index.i);
             } else {
                 setRoot();
+                selectUserFolder();
             }
         },
         "changeView": function(event) {
@@ -262,6 +267,11 @@ $(document).ready(function() {
                     rMain.set("currentFile.propError", result.message);
                 });
         },
+        "defaultFileBehavior": function(event) {
+			var file = rMain.get("currentFile");
+            settings.fileType.default(settings.fileType.ext(file.name));
+			rMain.set("currentFile", setFileType(file));
+        },
     });
 
     rMain.observe({
@@ -303,6 +313,22 @@ $(document).ready(function() {
                     });
             }
         },
+        "currentFile.behavior": function(newValue, oldValue, keypath) {
+            if (newValue && oldValue) {
+                settings.fileType.set(rMain.get("currentFile"));
+                selectFolder(rMain.get("currentKeypath"));
+            }
+        },
+        "currentFile.explorerIcon": function(newValue, oldValue, keypath) {
+            if (newValue && oldValue) {
+                var file = rMain.get("currentFile");
+                file.icon = file.explorerIcon;
+
+                settings.fileType.set(file);
+                selectFolder(rMain.get("currentKeypath"));
+            }
+        },
+
     });
 
     //functions
@@ -359,9 +385,8 @@ $(document).ready(function() {
 
     function setRoot(app) {
         rMain.set("app", app);
-        var fileUrl = fh.util.urlJoin(app, "/v1/file/");
         rMain.set("files", {
-            url: fileUrl,
+            url: fh.util.urlJoin("/", app, "/v1/file/"),
             name: "files",
             canSelect: true,
             selected: true,
@@ -369,7 +394,7 @@ $(document).ready(function() {
             children: [],
         });
         rMain.set("datastores", {
-            url: fh.util.urlJoin(app, "/v1/datastore/"),
+            url: fh.util.urlJoin("/", app, "/v1/datastore/"),
             name: "datastores",
             canSelect: true,
             iconClass: "fa fa-database",
@@ -380,18 +405,7 @@ $(document).ready(function() {
             canSelect: true,
             iconClass: "glyphicon glyphicon-star",
         });
-        rMain.set("listView", settings.get("listView", false));
-
-        //open user folder if one exists
-        var userFolder = fh.util.urlJoin(fileUrl, fh.auth.user);
-        fh.properties.get(userFolder)
-            .fail(function() {
-                selectFolder("files");
-            })
-            .done(function() {
-                updateFilesTo("files", userFolder);
-            });
-
+        selectFolder("files");
     }
 
     function keypathFromTree(keypath, ds) {
@@ -521,14 +535,15 @@ $(document).ready(function() {
             }
 
         } else {
-            var ext = file.name.slice(file.name.lastIndexOf(".") + 1);
+            var ext = settings.fileType.ext(file.name);
 
             file.explorerIcon = settings.fileType.icon(ext);
-            file.behavior = {
-                download: settings.fileType.download(ext),
-                app: settings.fileType.app(ext),
-                browser: (!this.app && !this.download)
-            };
+            file.behavior = settings.fileType.behavior(ext);
+            if (file.behavior.app) {
+                file.explorerUrl = fh.util.urlJoin(file.behavior.appID, "?file=", file.url);
+            } else {
+                file.explorerUrl = file.url;
+            }
 
             file.hide = true; //hide from treeview
             if (file.size) {
@@ -538,6 +553,9 @@ $(document).ready(function() {
 
         if (file.modified) {
             file.modifiedDate = new Date(file.modified).toLocaleString();
+            file.canRead = true;
+        } else {
+            file.canRead = false;
         }
         return file;
     }
@@ -733,6 +751,22 @@ $(document).ready(function() {
             });
     }
 
+
+    function selectUserFolder() {
+        //open user folder if one exists
+        var userFolder = fh.util.urlJoin("/v1/file/", fh.auth.user);
+        fh.properties.get(userFolder)
+            .fail(function() {
+                selectFolder("files");
+            })
+            .done(function() {
+                updateFilesTo("files", userFolder);
+            });
+    }
+
+
+    //Settings
+
     function Stars() {
         return {
             add: function(url) {
@@ -756,42 +790,60 @@ $(document).ready(function() {
     }
 
     function FileTypeSettings() {
+        function get(filetype) {
+            var file = settings.get("files", {})[filetype];
+            if (!file) {
+                file = {
+                    behavior: {
+                        download: false,
+                        appID: defaultApps[filetype],
+                        app: (defaultApps[filetype] !== undefined),
+                        browser: (!defaultApps[filetype]),
+                    },
+                    icon: defaultIcons[filetype] || "file-o",
+                };
+            }
+            return file;
+
+        }
         return {
-            icon: function(filetype) {
-                var file = settings.get("files", {})[filetype];
-                if (file) {
-                    return file.icon;
-                }
-                return defaultIcons[filetype] || "file-o";
+            ext: function(name) {
+                return name.slice(name.lastIndexOf(".") + 1);
             },
-            app: function(filetype) {
-                var file = settings.get("files", {})[filetype];
-                var app;
-                if (file) {
-                    app = file.app;
-                } else {
-                    app = defaultApps[filetype];
-                }
+            icon: function(filetype) {
+                return get(filetype).icon;
+            },
+            behavior: function(filetype) {
+                var file = get(filetype);
 
                 var apps = rMain.get("apps");
-                if (app && apps[app]) {
-                    //Only open with app if it's installed
-                    return app;
+                if (file.behavior.app && !apps[file.behavior.appID]) {
+                    file.behavior.app = false;
+                    files.behavior.browser = true;
                 }
-                return "";
+
+                return file.behavior;
             },
-            download: function(filetype) {
-                var file = settings.get("files", {})[filetype];
-                if (file) {
-                    return file.download;
+            set: function(file) {
+                var files = settings.get("files", {});
+                var ext = this.ext(file.name);
+
+                if (!files[ext]) {
+                    files[ext] = get(ext);
                 }
-                return false;
+                if (file.behavior) {
+                    files[ext].behavior = file.behavior;
+                }
+                if (file.icon) {
+                    files[ext].icon = file.icon;
+                }
 
+                settings.put("files", files);
             },
-            set: function(filetype, file) {
-                var files = settings.get("files", {})[filetype];
-                files[filetype] = file;
+            default: function(filetype) {
+                var files = settings.get("files", {});
 
+                delete files[filetype];
                 settings.put("files", files);
             },
         };
@@ -864,50 +916,6 @@ $(document).ready(function() {
 
         } //Settings
 
-    function buildDefaultIcons() {
-        return {
-            "ds": "database",
-            "xls": "file-excel-o",
-            "ods": "file-excel-o",
-            "xlsx": "file-excel-o",
-            "pdf": "file-pdf-o",
-            "wav": "file-audio-o",
-            "ogg": "music",
-            "mp3": "music",
-            "flac": "music",
-            "odt": "file-word-o",
-            "doc": "file-word-o",
-            "docx": "file-word-o",
-            "zip": "file-archive-o",
-            "gz": "file-archive-o",
-            "7z": "file-archive-o",
-            "rar": "file-archive-o",
-            "png": "file-image-o",
-            "jpg": "file-image-o",
-            "jpeg": "file-image-o",
-            "gif": "file-image-o",
-            "bmp": "file-image-o",
-            "mov": "file-movie-o",
-            "mpg": "file-movie-o",
-            "mpeg": "file-movie-o",
-            "mkv": "file-movie-o",
-            "ogv": "file-movie-o",
-            "avi": "file-movie-o",
-            "txt": "file-text-o",
-            "xml": "file-code-o",
-            "html": "file-code-o",
-            "js": "file-code-o",
-            "css": "file-code-o",
-            "sh": "file-code-o",
-            "epub": "book",
-            "mobi": "book",
-            "azw3": "book",
-            "azw": "book",
-            "kf8": "book",
-            "torrent": "share-alt",
-        };
-    }
-
     function buildDefaultApps() {
         return {
             "ds": "datastore",
@@ -916,5 +924,6 @@ $(document).ready(function() {
             "odt": "webodf",
         };
     }
+
 
 }); //end ready

@@ -66,7 +66,7 @@
 	</ul>
 
 	<!-- Tab panes -->
-	<div class="tab-content">
+	<div class="tab-content property-content">
 		<div class="tab-pane active" id="details">
 			<form class="form-horizontal property-form" role="form">
 				<span class="property-icon fa fa-5x fa-{{explorerIcon}}"></span>
@@ -113,8 +113,27 @@
 			</div>
 		</div>
 		<div class="tab-pane" id="behavior">
+			<form class="form-horizontal" role="form">
+				<div class="form-group">
+					<label for="iconSelect" class="col-sm-offset-1 col-sm-1 control-label">Icon</label>
+					<div class=" col-sm-4">
+						<select id="iconSelect" class="form-control" value="{{.explorerIcon}}">
+							{{#icons:i}}
+								<option>{{.}}</option>
+							{{/icons}}
+						</select>
+					</div>
+					<div class="col-sm-1">
+						<span class="fa fa-3x fa-{{.explorerIcon}}"></span>
+					</div>
+				</div>
+			</form>
+			{{#behavior}}
 			<div class="row">	
-				<div class="col-sm-offset-1 col-sm-6">
+				<label class="col-sm-offset-1 col-sm-3 control-label">File Handling: </label>
+			</div>
+			<div class="row">	
+				<div class="col-sm-offset-2 col-sm-6">
 				<div class="radio">
 					<label>
 						<input type="radio" name="radioBehavior" value="download" checked="{{.download}}" on-click="setFileBehavior">
@@ -136,14 +155,19 @@
 				</div>
 			</div>
 			<div class="row">
-				<div class="col-sm-offset-3 col-sm-8"> 
-					<select class="form-control disabled" value="{{.app}}">
-						<option></option>
+				<div class="col-sm-offset-4 col-sm-6"> 
+					<select class="form-control" value="{{.appID}}" {{#if !.app}}disabled{{/if}}>
 					{{#apps:i}}
 						<option>{{i}}</option>
 					{{/apps}}
 					</select>
 				</div>	
+			</div>
+			{{/behavior}}
+			<div class="row">
+				<div class="col-sm-3">
+					<button type="button" class="btn btn-sm btn-default" on-click="defaultFileBehavior">Use Defaults</button>
+				</div>
 			</div>
 		</div>
 		<div class="tab-pane" id="token">
@@ -232,8 +256,8 @@
 				{{/apps}}
 			</ul>
 		</div>
-		<button type="button" class="btn btn-default pull-right" on-click ="refresh">
-			<span class="glyphicon glyphicon-refresh"></span></button>
+		<button type="button" class="btn btn-success pull-right" on-click ="uploadFile">
+			<span class="glyphicon glyphicon-upload"></span> Upload File</button>
 	</div>
 	<div id="folderNav" class="col-sm-7">
 		{{#if currentKeypath !== "stars"}}
@@ -398,9 +422,16 @@
 				</td>
 					{{else}}
 				<td>
-						<a href="{{url}}" target="{{#newWindow}}_blank{{/newWindow}}" {{#.download}}download=""{{/download}}>
+						{{#if .canRead}}
+						<a href="{{explorerUrl}}" target="{{#newWindow}}_blank{{/newWindow}}" {{#.behavior.download}}download=""{{/download}}>
 							<span class="explorer-icon fa fa-{{explorerIcon}}"></span>  {{name}}
 						</a>
+						{{else}}
+						<a href="#">
+							<span class="explorer-icon fa fa-{{explorerIcon}}"></span>  {{name}}
+						</a>
+
+						{{/if}}
 				</td>
 					{{/if}}
 				<td>{{permissions.owner}}</td>
@@ -408,10 +439,10 @@
 				<td>{{humanSize}}</td>
 				<td>
 				{{#if currentKeypath !== "stars"}}
-					{{^.isDir}}
+					{{#if !.isDir && .canRead}}
 					<button type="button" class="btn btn-default btn-xs pull-right" on-click="properties:{{.url}}" title="Properties">
 						<span class="glyphicon glyphicon-cog"></span></button>
-					{{/.isDir}}
+					{{/if}}
 				{{else}}
 					<button type="button" class="btn btn-xs btn-danger pull-right" on-click="removeStar" title="Remove Star">
 						<span class="glyphicon glyphicon-remove"></span></button>
@@ -438,7 +469,8 @@
 		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
 	</a>
 {{else}}
-	<a href="{{url}}" target="{{#newWindow}}_blank{{/newWindow}}" {{#.download}}download=""{{/download}} class="file-tile">
+	{{#if .canRead}}
+	<a href="{{explorerUrl}}" target="{{#newWindow}}_blank{{/newWindow}}" {{#.download}}download=""{{/download}} class="file-tile">
 		{{#if currentKeypath !== "stars"}}
 			<a href="#" class="btn btn-file-grid" on-click="properties:{{.url}}" title="Properties"><span class="glyphicon glyphicon-cog"></span></a>
 		{{else}}
@@ -447,6 +479,16 @@
 		<span class="grid-icon fa fa-5x fa-{{explorerIcon}}"></span>
 		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
 	</a>
+	{{else}}
+	<a href="#"  class="file-tile">
+		{{#if currentKeypath === "stars"}}
+			<a href="#" class="btn btn-file-grid" on-click="removeStar" title="Remove Star"><span class="glyphicon glyphicon-remove"></span></a>
+		{{/if}}
+		<span class="grid-icon fa fa-5x fa-{{explorerIcon}}"></span>
+		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
+	</a>
+
+	{{/if}}
 {{/if}}
 </span>
 <!-- {{/fileTile}} -->
@@ -459,6 +501,7 @@
 <script src="/core/v1/file/js/ractive.min.js"></script>
 <script src="/core/v1/file/js/fh.js"></script>
 <script src="/core/v1/file/js/components.js"></script>
+<script src="/explorer/v1/file/js/icons.js"></script>
 <script src="/explorer/v1/file/js/index.js"></script>
 <script src="/explorer/v1/file/js/filesize.min.js"></script>
 </body>
