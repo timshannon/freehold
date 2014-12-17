@@ -51,11 +51,16 @@ Settings
 
 Users
 --------
+* Add New User - Admin Only
+* Update / Delete a User - Admins can update any user, regular users can only update themselves
+* Make a User and Admin - Admin Only
+* Remove Admin Rights - Admins can only remove (relinquish) their own admin rights, and not the rights of any other admin.
 
 Tokens
 -----------
-
+* Generating a Security Token - Any authenticated user
+* Delete a token - Only the owner of a token can delete it
 
 Log
 -----------
-*View Log - Admin Only
+* View Log - Admin Only

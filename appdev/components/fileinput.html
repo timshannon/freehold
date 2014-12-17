@@ -1,0 +1,45 @@
+<span on-click="selectFiles">
+<input type="file" decorator="fileInput" accept="{{accept}}" {{#multiple}}multiple{{/multiple}} on-change="setFiles" style="display:none">
+	{{yield}}
+</span>
+
+<style>
+</style>
+
+<script>
+component.exports = {
+	data: {
+		accept: "",
+		files:[],
+	},
+	decorators: {
+		fileInput: function (node) {
+			//this is so I don't have to resort to jquery or searching the dom to find the file input
+			// and it guarentees that the file input this component is referring to is the correct one
+			// ractive is awesome
+			var r = this;
+			r.set("inputNode", node);
+			return {
+				teardown: function() {
+					r.set("inputNode", null);
+				}
+			};	
+		},
+	},
+	init: function() {
+		var r = this;
+
+		r.on({
+			"selectFiles": function(event) {
+				var input = r.get("inputNode");
+				input.click();
+			},
+			"setFiles": function(event) {
+				var input = r.get("inputNode");
+				r.set("files", input.files);
+			}
+		});
+	},
+
+};
+</script>

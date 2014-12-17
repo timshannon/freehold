@@ -73,6 +73,14 @@ func tokenPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//TODO: Don't allow token generation from session auth
+	// require login
+
+	if auth.AuthType != authTypeBasic {
+		errHandled(fail.New("Security Tokens cannot be generated from a Session or another Token.", nil), w, auth)
+		return
+	}
+
 	prm := permission.Token(auth.User.Username())
 	if !prm.CanWrite(auth.User) {
 		if !prm.CanRead(auth.User) {
