@@ -1,5 +1,5 @@
 ;(function() {
-var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jsonviewer, rvc_jquery_ui, rvc_datepicker, lib_jquery_ui_core, lib_jquery_ui_datepicker;
+var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jsonviewer, rvc_jquery_ui, rvc_datepicker, lib_jquery_ui_core, lib_jquery_ui_datepicker, rvc_fileinput, rvc_dropzone;
 (function (ractive, jquery) {
   rvc = {
     load: function (id) {
@@ -4260,6 +4260,113 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
     $.datepicker.version = '@VERSION';
     return $.datepicker;
   }));
+  rvc_fileinput = function (require, Ractive) {
+    var __options__ = {
+        template: {
+          v: 1,
+          t: [{
+              t: 7,
+              e: 'span',
+              v: { click: 'selectFiles' },
+              f: [
+                {
+                  t: 7,
+                  e: 'input',
+                  a: {
+                    type: 'file',
+                    accept: [{
+                        t: 2,
+                        r: 'accept'
+                      }],
+                    style: 'display:none'
+                  },
+                  o: 'fileInput',
+                  m: [{
+                      t: 4,
+                      r: 'multiple',
+                      f: ['multiple']
+                    }],
+                  v: { change: 'setFiles' }
+                },
+                ' ',
+                {
+                  t: 2,
+                  r: 'yield'
+                }
+              ]
+            }]
+        },
+        css: ''
+      }, component = {};
+    component.exports = {
+      data: {
+        accept: '',
+        files: []
+      },
+      decorators: {
+        fileInput: function (node) {
+          //this is so I don't have to resort to jquery or searching the dom to find the file input
+          // and it guarentees that the file input this component is referring to is the correct one
+          // ractive is awesome
+          var r = this;
+          r.set('inputNode', node);
+          return {
+            teardown: function () {
+              r.set('inputNode', null);
+            }
+          };
+        }
+      },
+      init: function () {
+        var r = this;
+        r.on({
+          'selectFiles': function (event) {
+            var input = r.get('inputNode');
+            input.click();
+          },
+          'setFiles': function (event) {
+            var input = r.get('inputNode');
+            r.set('files', input.files);
+          }
+        });
+      }
+    };
+    if (typeof component.exports === 'object') {
+      for (var __prop__ in component.exports) {
+        if (component.exports.hasOwnProperty(__prop__)) {
+          __options__[__prop__] = component.exports[__prop__];
+        }
+      }
+    }
+    return Ractive.extend(__options__);
+  }({}, ractive);
+  rvc_dropzone = function (require, Ractive) {
+    var __options__ = {
+        template: {
+          v: 1,
+          t: [{
+              t: 7,
+              e: 'div',
+              a: { 'class': 'dropzone' },
+              f: []
+            }]
+        },
+        css: ''
+      }, component = {};
+    component.exports = {
+      data: {},
+      init: function () {
+      }
+    };
+    if (typeof component.exports === 'object') {
+      for (var __prop__ in component.exports) {
+        if (component.exports.hasOwnProperty(__prop__)) {
+          __options__[__prop__] = component.exports[__prop__];
+        }
+      }
+    }
+    return Ractive.extend(__options__);
+  }({}, ractive);
   // Copyright 2014 Tim Shannon. All rights reserved.
   // Use of this source code is governed by the MIT license
   // that can be found in the LICENSE file.
@@ -4287,5 +4394,11 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
   (function (DatePicker, $) {
     Ractive.components.datepicker = DatePicker;
   }(rvc_datepicker, lib_jquery_ui_datepicker));
+  (function (FileInput) {
+    Ractive.components.fileinput = FileInput;
+  }(rvc_fileinput));
+  (function (DropZone) {
+    Ractive.components.dropzone = DropZone;
+  }(rvc_dropzone));
 }(Ractive, $));
 }());

@@ -242,3 +242,20 @@
 	margin-top: 15px;
 	margin-bottom: 15px;
 }
+
+.upload-list {
+	position: fixed;
+	width: 400px;
+	bottom: 20px;
+	right: 20px;
+}
+
+.upload-progress {
+	margin-bottom: 10px;
+}
+
+.upload-filename {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}

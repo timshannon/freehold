@@ -237,6 +237,7 @@
 	</div>
 </modal>
 
+
 <div class="row pageNav">
 	<div id="rootNav" class="col-sm-3">
 		<div class="btn-group">
@@ -256,8 +257,10 @@
 				{{/apps}}
 			</ul>
 		</div>
-		<button type="button" class="btn btn-success pull-right" on-click ="uploadFile">
+		<fileinput multiple="true">
+			<button type="button" class="btn btn-success pull-right">
 			<span class="glyphicon glyphicon-upload"></span> Upload File</button>
+		</fileinput>
 	</div>
 	<div id="folderNav" class="col-sm-7">
 		{{#if currentKeypath !== "stars"}}
@@ -428,7 +431,7 @@
 						</a>
 						{{else}}
 						<a href="#">
-							<span class="explorer-icon fa fa-{{explorerIcon}}"></span>  {{name}}
+							<span class="fa fa-{{explorerIcon}}"></span>  {{name}}
 						</a>
 
 						{{/if}}
@@ -492,6 +495,32 @@
 {{/if}}
 </span>
 <!-- {{/fileTile}} -->
+
+
+<div class="upload-list modal-content">
+	<div class="modal-body">
+		{{#uploads}}
+		<div class="row"> 
+			<div class="col-xs-4 upload-filename" title="{{name}}">
+			<span class="fa fa-{{explorerIcon}}"></span> {{name}}
+			</div>
+			<div class="col-xs-6">
+				<div class="progress upload-progress">
+					<div class="progress-bar progress-bar-striped active" role="progressbar" 
+						aria-valuenow="{{progress}}" aria-valuemin="0" aria-valuemax="100" style="width: {{progress}}%;">
+						{{progress}}%
+					</div>
+				</div>
+			</div>
+			<div class="col-xs-2">
+				<button type="button" class="btn btn-danger btn-xs" title="Cancel Upload" on-click="cancelUpload">
+					<span class="glyphicon glyphicon-remove"></span>
+				</button>
+			</div>
+		</div>
+		{{/uploads}}
+	</div>
+</div>
 
 </script>
 <!--end templates-->

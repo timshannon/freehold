@@ -33,3 +33,11 @@ require(['rvc!jsonviewer'], function(JsonViewer) {
 require(["rvc!datepicker", "./lib/jquery-ui/datepicker"], function(DatePicker, $) {
     Ractive.components.datepicker = DatePicker;
 });
+
+require(['rvc!fileinput'], function(FileInput) {
+    Ractive.components.fileinput = FileInput;
+});
+
+require(['rvc!dropzone'], function(DropZone) {
+    Ractive.components.dropzone = DropZone;
+});

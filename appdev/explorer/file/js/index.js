@@ -24,6 +24,15 @@ $(document).ready(function() {
             stars: {},
             user: fh.auth.user,
             icons: buildIconList(),
+            uploads: [{
+                name: "test",
+                progress: 50,
+                explorerIcon: "database",
+            }, {
+                name: "test2 witha realllong tname.txt.exe.zip.zip_rename",
+                progress: 70,
+                explorerIcon: "file-o",
+            }],
         },
     });
 
@@ -268,9 +277,16 @@ $(document).ready(function() {
                 });
         },
         "defaultFileBehavior": function(event) {
-			var file = rMain.get("currentFile");
+            var file = rMain.get("currentFile");
             settings.fileType.default(settings.fileType.ext(file.name));
-			rMain.set("currentFile", setFileType(file));
+            rMain.set("currentFile", setFileType(file));
+        },
+        "fileinput.setFiles": function(event) {
+            var files = event.context.files;
+
+            for (var i = 0; i < files.length; i++) {
+                uploadFile(rMain.get("currentFolder.url"), files[i]);
+            }
         },
     });
 
@@ -764,6 +780,17 @@ $(document).ready(function() {
             });
     }
 
+    function uploadFile(uploadPath, file) {
+        fh.file.upload(uploadPath, file, function(evt) {
+                //progress
+            })
+            .done(function(result) {
+
+            })
+            .fail(function(result) {
+
+            });
+    }
 
     //Settings
 

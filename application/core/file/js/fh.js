@@ -68,16 +68,34 @@ window.fh = (function() {
             return _auth;
         }(),
         file: {
-            upload: function(fileurl, formData) {
+            upload: function(uploadPath, fileData, progress) {
                 //very simple file upload, feel free to write you own or use a plugin
                 //  with progress handling, polyfills, etc
                 // just be sure to include the X-CSRFToken header:
                 //   xhr.setRequestHeader ("X-CSRFToken", fh.auth.CSRFToken);
-                return stdAjax("POST", fileurl, {
+                var formData;
+                if (fileData instanceof FormData) {
+                    formData = fileData;
+                } else if (fileData instanceof File) {
+                    formData = new FormData();
+
+                    formData.append(fileData.name,
+                        fileData, fileData.name);
+                } else {
+                    //not supported
+                    throw "FileData type not supported";
+                }
+
+                return stdAjax("POST", uploadPath, {
                     data: formData,
                     cache: false,
                     processData: false,
-                    contentType: false
+                    contentType: false,
+                    xhr: function() {
+                        var xhr = new window.XMLHttpRequest();
+                        xhr.upload.addEventListener("progress", progress                        , false);
+                        return xhr;
+                    },
                 });
             },
             newFolder: function(fileurl) {
@@ -201,7 +219,7 @@ window.fh = (function() {
                     data: JSON.stringify(userObject)
                 });
             },
-            update: function(userObject) { 
+            update: function(userObject) {
                 return stdAjax("PUT", "/v1/auth/user/", {
                     data: JSON.stringify(userObject)
                 });
