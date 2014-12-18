@@ -496,25 +496,30 @@
 </span>
 <!-- {{/fileTile}} -->
 
-
-<div class="upload-list modal-content fade in">
+{{#uploads}}
+<div class="upload-list modal-content">
 	<div class="modal-body">
 		{{#uploads:i}}
 		<div class="row"> 
-			{{.}}
-			<div class="col-xs-4 upload-filename" title="{{.name}}">
+			<div class="col-xs-5 upload-filename" title="{{.name}}">
 				<span class="fa fa-{{.explorerIcon}}"></span> {{.name}}
 			</div>
 			<div class="col-xs-6">
-				<div class="progress upload-progress">
-					<div class="progress-bar progress-bar-striped active" role="progressbar" 
-						aria-valuenow="{{progress}}" aria-valuemin="0" aria-valuemax="100" style="width: {{progress}}%;">
-						{{progress}}%
+				{{#if .error}}
+					<div class="label label-danger upload-error" title="{{.error}}">
+						{{.error}}
 					</div>
-				</div>
+				{{else}}
+					<div class="progress upload-progress">
+						<div class="progress-bar progress-bar-striped active" role="progressbar" 
+							aria-valuenow="{{progress}}" aria-valuemin="0" aria-valuemax="100" style="width: {{progress}}%;">
+							{{progress}}%
+						</div>
+					</div>
+				{{/if}}
 			</div>
-			<div class="col-xs-2">
-				<button type="button" class="btn btn-danger btn-xs" title="Cancel Upload" on-click="cancelUpload">
+			<div class="col-xs-1">
+				<button type="button" class="pull-right btn btn-danger btn-xs" title="Cancel Upload" on-click="cancelUpload">
 					<span class="glyphicon glyphicon-remove"></span>
 				</button>
 			</div>
@@ -522,6 +527,7 @@
 		{{/uploads}}
 	</div>
 </div>
+{{/uploads}}
 
 </script>
 <!--end templates-->

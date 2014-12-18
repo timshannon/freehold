@@ -959,11 +959,14 @@ Security tokens cannot be updated once created.  If you want to change permissio
 
 Use cases for Security Tokens would be setting up external applications without needing to use your password (like a local desktop sync, or a smartphone application), or temporarily sharing a file with another person without needing to give them a logon to your freehold instance.
 
+The actual token value is only available when the token is requested, and tokens can only be requested if the Basic Auth header is set (i.e they can't be requested from sessions, or other tokens).  The token value cannot be retrieved again once created with subsequent All or Get calls.
+
 ```
 core/token.ds
 {
 	key: <user>_<token>,
 	value: {
+		id:	<unique identifier for a token>,
 		name: <name / reason for token>,
 		expires: <expiration date>,
 		resource: <resource path>,
@@ -982,9 +985,9 @@ Response (200):
 {
 	status: "success",
 	data: [
-		{token: "aaaaaaaaaaaaaaaaaaaaa", name: "android phone"},
-		{token: "bbbbbbbbbbbbbbbbbbbbb", name: "testing", expires: "2044-04-23T18:25:43.511Z"},
-		{token: "ccccccccccccccccccccc", name: "temp torrent share", expires: "2014-08-18T00:00:00.000Z", resource: "/v1/file/public/checkthisout.torrent"},
+		{id: "aaaaaaaaaaaaaaaaaaaaa", name: "android phone"},
+		{id: "bbbbbbbbbbbbbbbbbbbbb", name: "testing", expires: "2044-04-23T18:25:43.511Z"},
+		{id: "ccccccccccccccccccccc", name: "temp torrent share", expires: "2014-08-18T00:00:00.000Z", resource: "/v1/file/public/checkthisout.torrent"},
 	]
 }
 ```
@@ -993,13 +996,13 @@ Response (200):
 ```
 GET /v1/auth/token
 {
-	token: "bbbbbbbbbbbbbbbbbbbbb"
+	id: "bbbbbbbbbbbbbbbbbbbbb"
 }
 
 Response (200):
 {
 	status: "success",
-	data: {token: "bbbbbbbbbbbbbbbbbbbbb", name: "desktop file sync", expires: "2044-04-23T18:25:43.511Z"}
+	data: {id: "bbbbbbbbbbbbbbbbbbbbb", name: "desktop file sync", expires: "2044-04-23T18:25:43.511Z"}
 }
 ```
 
@@ -1015,7 +1018,7 @@ POST /v1/auth/token
 Response (201):
 {
 	status: "success",
-	data: {token: "fffffffffffffffffffff", name: "Full Sync Access"}
+	data: {token: "fffffffffffffffffffff", id: "aaaaaaaaaaaaaa", name: "Full Sync Access"}
 }
 ```
 
@@ -1030,7 +1033,7 @@ POST /v1/auth/token
 Response (201):
 {
 	status: "success",
-	data: {token: "kkkkkkkkkkkkkkkkkkkkk", name: "Temporary full access", expires: "2044-04-23T18:25:43.511Z"}
+	data: {token: "kkkkkkkkkkkkkkkkkkkkk", id: "aaaaaaaaaaaaaa", name: "Temporary full access", expires: "2044-04-23T18:25:43.511Z"}
 }
 ```
 
@@ -1045,7 +1048,7 @@ POST /v1/auth/token
 Response (201):
 {
 	status: "success",
-	data: {token: "lllllllllllllllllllll", name: "Public comments", resource: "/v1/datastore/comments.ds"}
+	data: {token: "lllllllllllllllllllll", id: "aaaaaaaaaaaaaa", name: "Public comments", resource: "/v1/datastore/comments.ds"}
 }
 ```
 
@@ -1062,7 +1065,7 @@ POST /v1/auth/token
 Response (201):
 {
 	status: "success",
-	data: {token: "lllllllllllllllllllll", name: "Read Only comments", resource: "/v1/datastore/comments.ds"}
+	data: {token: "lllllllllllllllllllll", id: "aaaaaaaaaaaaaa", name: "Read Only comments", resource: "/v1/datastore/comments.ds"}
 }
 ```
 
@@ -1071,7 +1074,7 @@ Response (201):
 ```
 DELETE /v1/auth/token
 {
-	token: "kkkkkkkkkkkkkkkkkkkkk",
+	id: "kkkkkkkkkkkkkkkkkkkkk",
 }
 
 Response (200):

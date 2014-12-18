@@ -24,6 +24,7 @@ $(document).ready(function() {
                 loadData();
             })
             .fail(function(result) {
+				result = result.responseJSON;
                 rMain.set("fileError", result.message);
                 setEmpty();
             });
@@ -147,10 +148,12 @@ $(document).ready(function() {
                         setFilter();
                     })
                     .fail(function(result) {
+				result = result.responseJSON;
                         rMain.set("error", result.message);
                     });
             })
             .fail(function(result) {
+				result = result.responseJSON;
                 rMain.set("error", result.message);
             });
 
@@ -191,6 +194,7 @@ $(document).ready(function() {
                 setFilter();
             })
             .fail(function(result) {
+				result = result.responseJSON;
                 rMain.set("error", result.message);
             });
 

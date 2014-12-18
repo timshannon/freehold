@@ -32,7 +32,11 @@ function readFolder(assert, folder, expected) {
     var done = assert.async();
 
     fh.properties.get(folder)
-        .always(function(result) {
+        .done(function(result) {
+            assert.matchExisting(result, expected, "read folder");
+            done();
+        }).fail(function(result) {
+            result = result.responseJSON;
             assert.matchExisting(result, expected, "read folder");
             done();
         });
@@ -44,7 +48,12 @@ function newFolder(assert, newfolder, status) {
     var done = assert.async();
 
     fh.file.newFolder(newfolder)
-        .always(function(result) {
+        .done(function(result) {
+            assert.equal(result.status, status, "New folder: " + result.message);
+            done();
+        })
+        .fail(function(result) {
+            result = result.responseJSON;
             assert.equal(result.status, status, "New folder: " + result.message);
             done();
         });
@@ -57,16 +66,19 @@ function moveFolder(assert, from, to, status) {
 
     fh.file.move(from, to)
         .always(function(result) {
-            assert.equal(result.status, status, "Move Folder: " + result.message);
             if (result.status === "success") {
+                assert.equal(result.status, status, "Move Folder: " + result.message);
                 //moveback
                 fh.file.move(to, from)
                     .always(function() {
                         done();
                     });
             } else {
+                result = result.responseJSON;
+                assert.equal(result.status, status, "Move Folder: " + result.message);
                 done();
             }
+
         });
 
     return 1;
@@ -78,14 +90,16 @@ function deleteFolder(assert, folder, status) {
 
     fh.file.delete(folder)
         .always(function(result) {
-            assert.equal(result.status, status, "Delete Folder: " + result.message);
             if (result.status === "success") {
+                assert.equal(result.status, status, "Delete Folder: " + result.message);
                 //re-add
                 fh.file.newFolder(folder)
                     .always(function(result) {
                         done();
                     });
             } else {
+                result = result.responseJSON;
+                assert.equal(result.status, status, "Delete Folder: " + result.message);
                 done();
             }
         });
@@ -194,6 +208,7 @@ QUnit.test("Root Folder Create Permissions", function(assert) {
                 });
         })
         .fail(function(result) {
+            result = result.responseJSON;
             assert.ok(false, result.message);
 
             login(a);
@@ -208,6 +223,7 @@ QUnit.test("Root Folder Create Permissions", function(assert) {
 
     fh.file.newFolder("/v1/file/qunitTestingFolderB")
         .fail(function(result) {
+            result = result.responseJSON;
             assert.equal(result.status, "fail", "Success: " + result.message);
             doneB();
         })
@@ -245,6 +261,7 @@ QUnit.test("Core Permissions - Application", function(assert) {
 
     fh.application.postAvailable("invalidfilename.zip")
         .always(function(result) {
+            result = result.responseJSON;
             assert.deepEqual(result, {
                 status: "fail",
                 message: "Resource not found",
@@ -255,6 +272,7 @@ QUnit.test("Core Permissions - Application", function(assert) {
 
     fh.application.available()
         .always(function(result) {
+            result = result.responseJSON;
             assert.deepEqual(result, {
                 status: "fail",
                 message: "Resource not found",
@@ -265,6 +283,7 @@ QUnit.test("Core Permissions - Application", function(assert) {
 
     fh.application.install("invalidfilename.zip")
         .always(function(result) {
+            result = result.responseJSON;
             assert.deepEqual(result, {
                 status: "fail",
                 message: "You do not have permission to write to this resource.",
@@ -275,6 +294,7 @@ QUnit.test("Core Permissions - Application", function(assert) {
 
     fh.application.upgrade("invalidfilename.zip")
         .always(function(result) {
+            result = result.responseJSON;
             assert.deepEqual(result, {
                 status: "fail",
                 message: "You do not have permission to write to this resource.",
@@ -285,6 +305,7 @@ QUnit.test("Core Permissions - Application", function(assert) {
 
     fh.application.uninstall("invalidfilename.zip")
         .always(function(result) {
+            result = result.responseJSON;
             assert.deepEqual(result, {
                 status: "fail",
                 message: "You do not have permission to write to this resource.",
@@ -335,6 +356,7 @@ QUnit.test("Core Permissions - Settings", function(assert) {
 
             fh.settings.set("LogErrors", val)
                 .always(function(result) {
+            result = result.responseJSON;
                     assert.deepEqual(result, {
                         status: "fail",
                         message: "You do not have permissions to update settings.  Admin rights are required.",
@@ -343,6 +365,7 @@ QUnit.test("Core Permissions - Settings", function(assert) {
                 });
             fh.settings.default("LogErrors")
                 .fail(function(result) {
+                    result = result.responseJSON;
                     assert.deepEqual(result, {
                         status: "fail",
                         message: "You do not have permissions to update settings.  Admin rights are required.",
@@ -397,6 +420,7 @@ QUnit.test("Core Permissions - User", function(assert) {
             name: "invaliduser"
         })
         .always(function(result) {
+            result = result.responseJSON;
             assert.deepEqual(result, {
                 status: "fail",
                 message: "You do not have permissions to post a new user",
@@ -407,6 +431,7 @@ QUnit.test("Core Permissions - User", function(assert) {
     //update other user
     fh.user.update(this.userA)
         .always(function(result) {
+            result = result.responseJSON;
             assert.deepEqual(result, {
                 status: "fail",
                 message: "You do not have permissions to update this user.",
@@ -424,6 +449,7 @@ QUnit.test("Core Permissions - User", function(assert) {
 
     fh.user.makeAdmin(this.userB.user)
         .always(function(result) {
+            result = result.responseJSON;
             assert.deepEqual(result, {
                 status: "fail",
                 message: "Invalid permissions.  Admin is required to make a new admin user.",
@@ -439,6 +465,7 @@ QUnit.test("Core Permissions - User", function(assert) {
 
     fh.user.delete(this.userA.user)
         .always(function(result) {
+            result = result.responseJSON;
             assert.deepEqual(result, {
                 status: "fail",
                 message: "You do not have permissions to delete this user.",
@@ -467,6 +494,7 @@ QUnit.test("Core Permissions - User", function(assert) {
     };
     fh.user.update(data)
         .always(function(result) {
+            result = result.responseJSON;
             assert.deepEqual(result, {
                 status: "fail",
                 message: "You do not have permissions to remove admin rights.",
@@ -505,6 +533,7 @@ QUnit.test("Core Permissions - Log", function(assert) {
 
     fh.logs()
         .always(function(result) {
+            result = result.responseJSON;
             assert.equal(result.status, "fail");
             assert.equal(result.message, "Resource not found");
             done();

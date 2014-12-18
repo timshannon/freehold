@@ -469,7 +469,7 @@ QUnit.test("Get, Put and Delete Data in datastore", function(assert) {
                             ds.get(10)
                                 .always(function(result) {
                                     assert.ok(
-                                        (result.status == "fail") //should not be found
+                                        (result.responseJSON.status === "fail") //should not be found
                                     );
                                     done();
                                 });
@@ -759,7 +759,7 @@ QUnit.test("Test Full Range", function(assert) {
 
     ds.iter({})
         .always(function(result) {
-            assert.equal(result.status, "success",  result.message);
+            assert.equal(result.status, "success", result.message);
             assert.equal(result.data.length, 100);
             assert.ok(
                 (result.data[0].key === 0) &&

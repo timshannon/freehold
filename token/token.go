@@ -16,6 +16,7 @@ import (
 	"unicode/utf8"
 
 	"bitbucket.org/tshannon/freehold/data"
+	"bitbucket.org/tshannon/freehold/data/store"
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/log"
 	"bitbucket.org/tshannon/freehold/permission"
@@ -31,7 +32,8 @@ const (
 var FailTokenLevel = errors.New("Token grants invalid permissions.")
 
 type Token struct {
-	Token      string `json:"token,omitempty"`
+	Token      string `json:"token,omitempty"` // Unique identifier used for authentication
+	ID         string `json:"id,omitempty"`    //Unique identifier used for identification
 	Name       string `json:"name,omitempty"`
 	Expires    string `json:"expires,omitempty"`
 	Resource   string `json:"resource,omitempty"`
@@ -51,6 +53,7 @@ func New(t *Token, requester *user.User) (*Token, error) {
 		return nil, err
 	}
 	t.Token = generateToken()
+	t.ID = generateID()
 
 	t.Created = time.Now().Format(time.RFC3339)
 
@@ -118,7 +121,53 @@ func (t *Token) checkPermissionsLevel(prm *permission.Permission) error {
 	return nil
 }
 
-func Get(u *user.User, token string) (*Token, error) {
+func Get(u *user.User, id string) (*Token, error) {
+	t, err := get(u, id)
+	if err != nil {
+		return nil, err
+	}
+	t.Token = ""
+	return t, nil
+}
+func get(u *user.User, id string) (*Token, error) {
+	iter, err := iter(u)
+	if err != nil {
+		return nil, err
+	}
+
+	for iter.Next() {
+
+		t := &Token{}
+		if iter.Err() != nil {
+			return nil, iter.Err()
+		}
+
+		k := ""
+
+		err = json.Unmarshal(iter.Key(), &k)
+		if err != nil {
+			return nil, err
+		}
+		if username(k) != u.Username() {
+			continue
+		}
+
+		err = json.Unmarshal(iter.Value(), t)
+		if err != nil {
+			return nil, err
+		}
+
+		t.requester = u
+		if t.ID == id {
+			return t, nil
+		}
+
+	}
+
+	return nil, fail.NewFromErr(data.ErrNotFound, id)
+}
+
+func Login(u *user.User, tkn string) (*Token, error) {
 	t := &Token{}
 
 	ds, err := data.OpenCoreDS(DS)
@@ -126,7 +175,7 @@ func Get(u *user.User, token string) (*Token, error) {
 		return nil, err
 	}
 
-	k := key(u.Username(), token)
+	k := key(u.Username(), tkn)
 	err = ds.Get(k, t)
 	if err == data.ErrNotFound {
 		return nil, nil
@@ -146,11 +195,12 @@ func Get(u *user.User, token string) (*Token, error) {
 			return nil, err
 		}
 	}
+	t.Token = ""
 
 	return t, nil
 }
 
-func All(u *user.User) ([]*Token, error) {
+func iter(u *user.User) (store.Iterator, error) {
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return nil, err
@@ -166,6 +216,14 @@ func All(u *user.User) ([]*Token, error) {
 	}
 
 	iter, err := ds.Iter(from, to)
+	if err != nil {
+		return nil, err
+	}
+	return iter, nil
+}
+
+func All(u *user.User) ([]*Token, error) {
+	iter, err := iter(u)
 	if err != nil {
 		return nil, err
 	}
@@ -195,6 +253,7 @@ func All(u *user.User) ([]*Token, error) {
 		}
 
 		t.requester = u
+		t.Token = ""
 
 		tokens = append(tokens, t)
 	}
@@ -202,13 +261,18 @@ func All(u *user.User) ([]*Token, error) {
 	return tokens, nil
 }
 
-func Delete(u *user.User, token string) error {
+func Delete(u *user.User, id string) error {
+	tkn, err := get(u, id)
+	if err != nil {
+		return err
+	}
+
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return err
 	}
 
-	err = ds.Delete(key(u.Username(), token))
+	err = ds.Delete(key(u.Username(), tkn.Token))
 	if err != nil {
 		return err
 	}
@@ -216,12 +280,22 @@ func Delete(u *user.User, token string) error {
 	return nil
 }
 
-func key(username, token string) string {
-	return username + "_" + token
+func key(username, tkn string) string {
+	return username + "_" + tkn
 }
 
 func username(key string) string {
 	return strings.Split(key, "_")[0]
+}
+
+func generateID() string {
+	b := make([]byte, 16)
+	_, err := io.ReadFull(rand.Reader, b)
+	if err != nil {
+		panic(fmt.Sprintf("Error generating random values: %v", err))
+	}
+
+	return fmt.Sprintf("%x%x%x%x%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
 }
 
 func generateToken() string {

@@ -564,6 +564,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
             result.data.name = result.data.name.trim();
             r.set('user', result.data);
           }).fail(function (result) {
+            result = result.responseJSON;
             r.set('error', result.message);
           });
         }
@@ -572,6 +573,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
             fh.session.logout().done(function () {
               window.location = '/';
             }).fail(function (result) {
+              result = result.responseJSON;
               this.set('error', result.message);
             }.bind(this));
           },
@@ -611,6 +613,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
             fh.session.login(event.context.username, event.context.password, data).done(function (result) {
               location.reload();
             }).fail(function (result) {
+              result = result.responseJSON;
               this.set('loginErr', result.message);
               this.set('waiting', false);
             }.bind(this));
@@ -1020,6 +1023,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
         fh.user.all().done(function (result) {
           r.set('users', result.data);
         }).fail(function (result) {
+          result = result.responseJSON;
           r.set('error', result.message);
         });
         this.on({
@@ -1649,6 +1653,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
           fh.properties.get(file).done(function (result) {
             r.set(keypath + '.children', prepFiles(result.data));
           }).fail(function (result) {
+            result = result.responseJSON;
             r.set('error', result.message);
           });
         }

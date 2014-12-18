@@ -19,6 +19,7 @@ $(document).ready(function() {
             rMain.set("apps", result.data);
         })
         .fail(function(result) {
+					result = result.responseJSON;
             rMain.set("error", result.message);
         });
 
@@ -27,6 +28,7 @@ $(document).ready(function() {
             minPassLength = result.data.value;
         })
         .fail(function(result) {
+					result = result.responseJSON;
             rMain.set("error", result.message);
         });
 
@@ -61,6 +63,7 @@ $(document).ready(function() {
                     loadUser();
                 })
                 .fail(function(result) {
+					result = result.responseJSON;
                     rMain.set("errors.save", result.message);
                 });
         },
@@ -83,6 +86,7 @@ $(document).ready(function() {
                     loadUser();
                 })
                 .fail(function(result) {
+					result = result.responseJSON;
                     rMain.set("errors.save", result.message);
                 });
         },
@@ -92,6 +96,7 @@ $(document).ready(function() {
                     loadSessions();
                 })
                 .fail(function(result) {
+					result = result.responseJSON;
                     rMain.set("error", result.message);
                 });
 
@@ -156,6 +161,7 @@ $(document).ready(function() {
                     $("#tokenModal").modal("hide");
                 })
                 .fail(function(result) {
+					result = result.responseJSON;
                     rMain.set("token.errors.save", result.message);
                 });
 
@@ -166,6 +172,7 @@ $(document).ready(function() {
                     loadTokens();
                 })
                 .fail(function(result) {
+					result = result.responseJSON;
                     rMain.set("error", result.message);
                 });
         },
@@ -209,6 +216,7 @@ $(document).ready(function() {
                 document.title = fh.auth.user + " - freehold";
             })
             .fail(function(result) {
+					result = result.responseJSON;
                 rMain.set("error", result.message);
             });
     }
@@ -229,6 +237,7 @@ $(document).ready(function() {
                 rMain.set("sessions", sessions);
             })
             .fail(function(result) {
+					result = result.responseJSON;
                 rMain.set("error", result.message);
             });
     }
@@ -247,6 +256,7 @@ $(document).ready(function() {
                 rMain.set("tokens", tokens);
             })
             .fail(function(result) {
+					result = result.responseJSON;
                 rMain.set("error", result.message);
             });
     }

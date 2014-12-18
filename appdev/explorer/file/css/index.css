@@ -245,9 +245,13 @@
 
 .upload-list {
 	position: fixed;
-	width: 400px;
+	width: 500px;
 	bottom: 20px;
 	right: 20px;
+}
+
+.upload-list>.modal-body>.row {
+	height: 30px;
 }
 
 .upload-progress {
@@ -260,8 +264,11 @@
 	white-space: nowrap;
 }
 
-.upload-list.in {
-	transform: translate3d(0px, 0px, 0px);
-	transition: transform 0.3s ease-out 0s;
-	transform: translate3d(0px, -25%, 0px);
+.upload-error {
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+
 }
+

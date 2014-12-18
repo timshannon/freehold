@@ -27,26 +27,7 @@ window.fh = (function() {
             };
         }
 
-        return $.ajax(options)
-            .then(function(data) {
-                    return data;
-                },
-                function(data) {
-                    if (data.responseJSON) {
-                        return data.responseJSON;
-                    }
-                    if (data.status == 404) {
-                        return {
-                            status: "fail",
-                            message: "Resource not found"
-                        };
-                    } else {
-                        return {
-                            status: "error",
-                            message: "An error occurred: Status (" + data.status + ")",
-                        };
-                    }
-                });
+        return $.ajax(options);
     }
 
     return {
@@ -93,7 +74,7 @@ window.fh = (function() {
                     contentType: false,
                     xhr: function() {
                         var xhr = new window.XMLHttpRequest();
-                        xhr.upload.addEventListener("progress", progress                        , false);
+                        xhr.upload.addEventListener("progress", progress, false);
                         return xhr;
                     },
                 });
@@ -290,8 +271,11 @@ window.fh = (function() {
                     }),
                 });
             },
-            new: function(tokenObject) { //{name:"", resource: "", expires: "", permission: ""}
+            new: function(tokenObject, username, password) { //{name:"", resource: "", expires: "", permission: ""}
                 return stdAjax("POST", "/v1/auth/token/", {
+                    beforeSend: function(xhr) {
+                        xhr.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
+                    },
                     data: JSON.stringify(tokenObject),
                 });
             },

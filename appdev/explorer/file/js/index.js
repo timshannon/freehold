@@ -24,23 +24,6 @@ $(document).ready(function() {
             stars: {},
             user: fh.auth.user,
             icons: buildIconList(),
-            uploads: {
-                "file1.txt": {
-                    name: "file1.txt",
-                    progress: 80,
-                    explorerIcon: "file-o"
-                },
-                "file2.exe": {
-                    name: "file2.exe",
-                    progress: 20,
-                    explorerIcon: "file-txt-o"
-                },
-                "file3.zip": {
-                    name: "file3.zip",
-                    progress: 60,
-                    explorerIcon: "database"
-                },
-            }
         },
     });
 
@@ -131,6 +114,7 @@ $(document).ready(function() {
                     $("#newFolder").modal("hide");
                 })
                 .fail(function(result) {
+                    result = result.responseJSON;
                     rMain.set("newFolderError", result.message);
                 });
         },
@@ -181,6 +165,7 @@ $(document).ready(function() {
                     openUrl(newUrl);
                 })
                 .fail(function(result) {
+                    result = result.responseJSON;
                     rMain.set("renameFolderError", result.message);
                 });
             if (settings.stars.isStar(oldUrl)) {
@@ -224,6 +209,7 @@ $(document).ready(function() {
 
                 })
                 .fail(function(result) {
+                    result = result.responseJSON;
                     rMain.set("currentFile.renameError", result.message);
                 });
 
@@ -281,6 +267,7 @@ $(document).ready(function() {
                     $("#properties").modal("hide");
                 })
                 .fail(function(result) {
+                    result = result.responseJSON;
                     rMain.set("currentFile.propError", result.message);
                 });
         },
@@ -296,6 +283,14 @@ $(document).ready(function() {
                 uploadFile(rMain.get("currentFolder.url"), files[i]);
             }
         },
+        "cancelUpload": function(event) {
+            if (!event.context.error && event.context.xhr) {
+                event.context.xhr.abort();
+            } else {
+                removeUpload(event.context.id);
+            }
+        },
+
     });
 
     rMain.observe({
@@ -333,7 +328,7 @@ $(document).ready(function() {
                         permissions: newValue
                     })
                     .fail(function(result) {
-                        error(result.message);
+                        error(result);
                     });
             }
         },
@@ -352,7 +347,6 @@ $(document).ready(function() {
                 selectFolder(rMain.get("currentKeypath"));
             }
         },
-
     });
 
     //functions
@@ -385,7 +379,7 @@ $(document).ready(function() {
             sortCurrent();
 
             rMain.set("currentFolder.starred", settings.stars.isStar(folder.url));
-        }, function(result) {
+        }, function() {
             //failed to update
             selectFolder(prevKeypath);
         });
@@ -402,6 +396,7 @@ $(document).ready(function() {
             })
             .fail(function(result) {
                 if (postFail) {
+                    result = result.responseJSON;
                     postFail(result);
                 }
             });
@@ -500,7 +495,7 @@ $(document).ready(function() {
                 }
             })
             .fail(function(result) {
-                error("Invalid URL: " + result.message);
+                error("Invalid URL: " + result.responseJSON.message);
             });
     }
 
@@ -736,6 +731,7 @@ $(document).ready(function() {
                 }
             })
             .fail(function(result) {
+                result = result.responseJSON;
                 if (failGet) {
                     result.data = {
                         name: fileurl.split("/").pop(),
@@ -749,8 +745,12 @@ $(document).ready(function() {
             });
     }
 
-    function error(errMsg) {
-        rNav.set("error", errMsg);
+    function error(err) {
+        if (err instanceof String) {
+            rNav.set("error", err);
+        } else {
+            rNav.set("error", err.responseJSON.message);
+        }
     }
 
 
@@ -760,7 +760,7 @@ $(document).ready(function() {
                 rMain.set("apps", result.data);
             })
             .fail(function(result) {
-                error(result.message);
+                error(result);
             });
     }
 
@@ -771,7 +771,7 @@ $(document).ready(function() {
                 rMain.set("users", result.data);
             })
             .fail(function(result) {
-                error(result.message);
+                error(result);
             });
     }
 
@@ -789,25 +789,40 @@ $(document).ready(function() {
     }
 
     function uploadFile(uploadPath, file) {
-        //TODO: make file
         file = setFileType(file);
 
-        var name = file.name;
-        rMain.set("uploads." + name, file);
+        var id = file.name.replace(".", "_"); //ractive doesn't like object ids with "." in them
+        file.id = id;
 
-        fh.file.upload(uploadPath, file, function(evt) {
+        file.xhr = fh.file.upload(uploadPath, file, function(evt) {
                 if (evt.lengthComputable) {
-                    rMain.set("uploads." + name + ".progress", evt.loaded / evt.total);
+                    rMain.set("uploads." + id + ".progress", ((evt.loaded / evt.total) * 100).toFixed(1));
                 }
             })
             .done(function(result) {
-                var uploads = rMain.get("uploads");
-                delete uploads[name];
-                rMain.set("uploads", uploads);
+                removeUpload(id);
+                selectFolder(rMain.get("currentKeypath"));
             })
             .fail(function(result) {
-                rMain.set("uploads." + name + ".error", result.message);
+                if (result.status === 0) {
+                    rMain.set("uploads." + id + ".error", "Upload Canceled");
+                } else {
+                    rMain.set("uploads." + id + ".error", result.responseJSON.failures[0].message);
+                }
             });
+
+        rMain.set("uploads." + id, file);
+    }
+
+    function removeUpload(id) {
+        var uploads = rMain.get("uploads");
+        delete uploads[id];
+        if (Object.getOwnPropertyNames(uploads) < 1) {
+            rMain.set("uploads", null);
+        } else {
+            rMain.set("uploads", uploads);
+        }
+
     }
 
     //Settings
@@ -918,12 +933,12 @@ $(document).ready(function() {
                                 postLoad();
                             }.bind(this))
                             .fail(function(result) {
-                                error(result.message);
+                                error(result);
                             });
                     }.bind(this))
                     .fail(function(result) {
                         // if not exists, create it
-                        if (result.message == "Resource not found") {
+                        if (result.status === 404) {
                             fh.datastore.new(url)
                                 .done(function() {
                                     this.ds.iter({})
@@ -932,11 +947,11 @@ $(document).ready(function() {
                                             postLoad();
                                         }.bind(this))
                                         .fail(function(result) {
-                                            error(result.message);
+                                            error(result);
                                         });
                                 }.bind(this))
                                 .fail(function(result) {
-                                    error(result.message);
+                                    error(result);
                                 });
                         }
                     }.bind(this));
@@ -955,7 +970,7 @@ $(document).ready(function() {
                         this.settings[setting] = value;
                     }.bind(this))
                     .fail(function(result) {
-                        error(result.message);
+                        error(result);
                     });
             };
 

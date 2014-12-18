@@ -49,6 +49,7 @@ component.exports = {
 					r.set(keypath+".children", prepFiles(result.data));
 				})
 				.fail(function(result) {
+					result = result.responseJSON;
 					r.set("error", result.message);
 				});
 		}

@@ -31,7 +31,8 @@ $(document).ready(function() {
                     starred = result.data;
                     refreshApps();
                 })
-                .fail(function(result) {
+                .fail(function(xhr) {
+                    var result = xhr.responseJSON;
                     if (result.status == "error") {
                         rManage.set("error", result.message);
                     } else {
@@ -39,21 +40,24 @@ $(document).ready(function() {
                             .done(function() {
                                 refreshApps();
                             })
-                            .fail(function(result) {
+                            .fail(function(xhr) {
+                                var result = xhr.responseJSON;
                                 rManage.set("error", result.message);
                             });
 
                     }
                 });
         })
-        .fail(function(result) {
+        .fail(function(xhr) {
+            var result = xhr.responseJSON;
             // if not exists, create it
             if (result.message == "Resource not found") {
                 fh.datastore.new(usrSettingsDS)
                     .done(function() {
                         refreshApps();
                     })
-                    .fail(function(result) {
+                    .fail(function(xhr) {
+                        var result = xhr.responseJSON;
                         rManage.set("error", result.message);
                     });
             }
@@ -64,7 +68,7 @@ $(document).ready(function() {
         .done(function(result) {
             externalApps = result.data.value;
         })
-        .fail(function(result) {
+        .fail(function() {
             externalApps = false;
         });
 
@@ -90,7 +94,7 @@ $(document).ready(function() {
                     refreshApps();
                 })
                 .fail(function(result) {
-                    rManage.set("error", result.message);
+                    rManage.set("error", result.responseJSON.message);
                 });
         },
         upgrade: function(event) {
@@ -122,7 +126,7 @@ $(document).ready(function() {
                     refreshApps();
                 })
                 .fail(function(result) {
-                    rManage.set("error", result.message);
+                    rManage.set("error", result.responseJSON.message);
                 });
         },
         fetchExternal: function(event) {
@@ -145,6 +149,7 @@ $(document).ready(function() {
 
                 })
                 .fail(function(result) {
+					result = result.responseJSON;
                     rManage.set("fetchError", result);
                 })
                 .always(function() {
@@ -221,11 +226,12 @@ $(document).ready(function() {
                         });
                     })
                     .fail(function(result) {
-
+					result = result.responseJSON;
                         rManage.set("error", result.message);
                     });
             })
             .fail(function(result) {
+					result = result.responseJSON;
                 rManage.set("error", result.message);
             });
 

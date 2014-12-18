@@ -13,7 +13,7 @@ import (
 )
 
 type TokenInput struct {
-	Token      *string `json:"token,omitempty"`
+	ID         *string `json:"token,omitempty"`
 	Name       *string `json:"name,omitempty"`
 	Expires    *string `json:"expires,omitempty"`
 	Resource   *string `json:"resource,omitempty"`
@@ -38,8 +38,8 @@ func tokenGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if input.Token != nil {
-		t, err := token.Get(auth.User, *input.Token)
+	if input.ID != nil {
+		t, err := token.Get(auth.User, *input.ID)
 		if errHandled(err, w, auth) {
 			return
 		}
@@ -72,9 +72,6 @@ func tokenPost(w http.ResponseWriter, r *http.Request) {
 	if errHandled(err, w, auth) {
 		return
 	}
-
-	//TODO: Don't allow token generation from session auth
-	// require login
 
 	if auth.AuthType != authTypeBasic {
 		errHandled(fail.New("Security Tokens cannot be generated from a Session or another Token.", nil), w, auth)
@@ -140,12 +137,12 @@ func tokenDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if input.Token == nil {
+	if input.ID == nil {
 		errHandled(fail.New("You must specify a token to delete.", input), w, auth)
 		return
 	}
 
-	err = token.Delete(auth.User, *input.Token)
+	err = token.Delete(auth.User, *input.ID)
 	if errHandled(err, w, auth) {
 		return
 	}
