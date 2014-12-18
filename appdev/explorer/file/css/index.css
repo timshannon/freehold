@@ -259,3 +259,9 @@
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
+
+.upload-list.in {
+	transform: translate3d(0px, 0px, 0px);
+	transition: transform 0.3s ease-out 0s;
+	transform: translate3d(0px, -25%, 0px);
+}

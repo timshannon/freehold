@@ -24,15 +24,23 @@ $(document).ready(function() {
             stars: {},
             user: fh.auth.user,
             icons: buildIconList(),
-            uploads: [{
-                name: "test",
-                progress: 50,
-                explorerIcon: "database",
-            }, {
-                name: "test2 witha realllong tname.txt.exe.zip.zip_rename",
-                progress: 70,
-                explorerIcon: "file-o",
-            }],
+            uploads: {
+                "file1.txt": {
+                    name: "file1.txt",
+                    progress: 80,
+                    explorerIcon: "file-o"
+                },
+                "file2.exe": {
+                    name: "file2.exe",
+                    progress: 20,
+                    explorerIcon: "file-txt-o"
+                },
+                "file3.zip": {
+                    name: "file3.zip",
+                    progress: 60,
+                    explorerIcon: "database"
+                },
+            }
         },
     });
 
@@ -781,14 +789,24 @@ $(document).ready(function() {
     }
 
     function uploadFile(uploadPath, file) {
+        //TODO: make file
+        file = setFileType(file);
+
+        var name = file.name;
+        rMain.set("uploads." + name, file);
+
         fh.file.upload(uploadPath, file, function(evt) {
-                //progress
+                if (evt.lengthComputable) {
+                    rMain.set("uploads." + name + ".progress", evt.loaded / evt.total);
+                }
             })
             .done(function(result) {
-
+                var uploads = rMain.get("uploads");
+                delete uploads[name];
+                rMain.set("uploads", uploads);
             })
             .fail(function(result) {
-
+                rMain.set("uploads." + name + ".error", result.message);
             });
     }
 
@@ -846,7 +864,7 @@ $(document).ready(function() {
                 var apps = rMain.get("apps");
                 if (file.behavior.app && !apps[file.behavior.appID]) {
                     file.behavior.app = false;
-                    files.behavior.browser = true;
+                    file.behavior.browser = true;
                 }
 
                 return file.behavior;
