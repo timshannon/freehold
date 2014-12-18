@@ -141,6 +141,7 @@ component.exports = {
 					r.set("user", result.data);
 				})
 			.fail(function(result) {
+				result = result.responseJSON;
 				r.set("error", result.message);
 			});
 		}
@@ -152,7 +153,8 @@ component.exports = {
 										window.location = "/";
 								})
 								.fail(function(result) {
-										this.set("error", result.message);
+									result = result.responseJSON;
+									this.set("error", result.message);
 								}.bind(this));
 				},
 				openUser: function(event) {
@@ -197,6 +199,7 @@ component.exports = {
                     location.reload();
                 })
                 .fail(function(result) {
+										result = result.responseJSON;
                     this.set("loginErr", result.message);
                     this.set("waiting", false);
                 }.bind(this));

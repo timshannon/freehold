@@ -86,7 +86,8 @@
 						r.set("users", result.data);
 				})
 				.fail(function(result) {
-						r.set("error", result.message);
+					result = result.responseJSON;
+					r.set("error", result.message);
 				});
 
 			

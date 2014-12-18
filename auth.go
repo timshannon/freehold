@@ -85,7 +85,7 @@ func authenticate(w http.ResponseWriter, r *http.Request) (*Auth, error) {
 			return nil, err
 		}
 
-		t, err := token.Get(user, pass)
+		t, err := token.Login(user, pass)
 		if err != nil {
 			return nil, err
 		}

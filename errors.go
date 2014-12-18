@@ -37,9 +37,9 @@ func errHandled(err error, w http.ResponseWriter, auth *Auth) bool {
 
 	case *fail.Fail:
 		status = statusFail
-		if !fail.IsEqual(err, Err404) {
-			//404's are logged separately
-			log.Fail(err.(*fail.Fail), auth.Username)
+		if fail.IsEqual(err, Err404) {
+			respond404(w, err.(*fail.Fail).Data.(string))
+			return true
 		}
 	case *http.ProtocolError, *json.SyntaxError, *json.UnmarshalTypeError:
 		//Hardcoded external errors which can bubble up to the end users
@@ -76,16 +76,19 @@ func errHandled(err error, w http.ResponseWriter, auth *Auth) bool {
 // four04 is a standard 404 response to a rest request
 // if its a request for a file, then a user will get a four04Page
 func four04(w http.ResponseWriter, r *http.Request) {
-	if setting.Bool("Log404") {
-		log.NewEntry(log.Four04Type, "Resource not found: "+r.URL.String())
-	}
+	respond404(w, r.URL.String())
+}
 
+func respond404(w http.ResponseWriter, url string) {
+	if setting.Bool("Log404") {
+		log.NewEntry(log.Four04Type, "Resource not found: "+url)
+	}
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Content-Type", "application/json")
 	response := &JSend{
 		Status:  statusFail,
 		Message: "Resource not found",
-		Data:    r.URL.String(),
+		Data:    url,
 	}
 
 	w.WriteHeader(http.StatusNotFound)
@@ -97,12 +100,10 @@ func four04(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(result)
+
 }
 
 func four04Fail(url string) error {
-	if setting.Bool("Log404") {
-		log.NewEntry(log.Four04Type, "Resource not found: "+url)
-	}
 	return fail.NewFromErr(Err404, url)
 }
 

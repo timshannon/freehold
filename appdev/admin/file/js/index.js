@@ -60,6 +60,7 @@ $(document).ready(function() {
             defaultHome = result.data.value;
         })
         .fail(function(result) {
+            result = result.responseJSON;
             setError(result.message);
         });
 
@@ -68,6 +69,7 @@ $(document).ready(function() {
             minPassLength = result.data.value;
         })
         .fail(function(result) {
+            result = result.responseJSON;
             setError(result.message);
         });
 
@@ -76,6 +78,7 @@ $(document).ready(function() {
             rUsers.set("apps", result.data);
         })
         .fail(function(result) {
+            result = result.responseJSON;
             setError(result.message);
         });
 
@@ -202,6 +205,7 @@ $(document).ready(function() {
                         loadUsers();
                     })
                     .fail(function(result) {
+            result = result.responseJSON;
                         rUsers.set("errors.save", result.message);
                     });
                 return;
@@ -215,6 +219,7 @@ $(document).ready(function() {
                     loadUsers();
                 })
                 .fail(function(result) {
+            result = result.responseJSON;
                     rUsers.set("errors.save", result.message);
                 });
         },
@@ -229,6 +234,7 @@ $(document).ready(function() {
                     loadUsers();
                 })
                 .fail(function(result) {
+            result = result.responseJSON;
                     rUsers.set("errors.save", result.message);
                 });
         },
@@ -239,6 +245,7 @@ $(document).ready(function() {
                     loadUsers();
                 })
                 .fail(function(result) {
+            result = result.responseJSON;
                     rUsers.set("errors.save", result.message);
                 });
         },
@@ -249,6 +256,7 @@ $(document).ready(function() {
                     loadUsers();
                 })
                 .fail(function(result) {
+            result = result.responseJSON;
                     rUsers.set("errors.save", result.message);
                 });
         },
@@ -304,6 +312,7 @@ $(document).ready(function() {
                     loadSettings();
                 })
                 .fail(function(result) {
+            result = result.responseJSON;
                     event.context.error = result.message;
                     rSettings.set(event.keypath, event.context);
                 });
@@ -315,6 +324,7 @@ $(document).ready(function() {
                     loadSettings();
                 })
                 .fail(function(result) {
+            result = result.responseJSON;
                     event.context.error = result.message;
                     rSettings.set(event.keypath, event.context);
                 });
@@ -347,6 +357,7 @@ $(document).ready(function() {
                 setFilter(rLogs.get("filterText"));
             })
             .fail(function(result) {
+            result = result.responseJSON;
                 setError(result.message);
             });
 
@@ -372,6 +383,7 @@ $(document).ready(function() {
                 setFilter(rLogs.get("filterText"));
             })
             .fail(function(result) {
+            result = result.responseJSON;
                 setError(result.message);
             });
     }
@@ -437,6 +449,7 @@ $(document).ready(function() {
                 filterSettings();
             })
             .fail(function(result) {
+            result = result.responseJSON;
                 setError(result.message);
             });
     }
@@ -473,6 +486,7 @@ $(document).ready(function() {
                 rUsers.set("users", result.data);
             })
             .fail(function(result) {
+            result = result.responseJSON;
                 setError(result.message);
             });
     }
@@ -541,10 +555,12 @@ $(document).ready(function() {
                         }
                     })
                     .fail(function(result) {
+            result = result.responseJSON;
                         setError(result.message);
                     });
             })
             .fail(function(result) {
+            result = result.responseJSON;
                 setError(result.message);
             });
 
