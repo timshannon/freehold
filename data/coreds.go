@@ -9,6 +9,7 @@ import (
 	"errors"
 	"os"
 	"path"
+
 	"bitbucket.org/tshannon/freehold/data/store"
 )
 
@@ -33,7 +34,6 @@ func OpenCoreDS(filename string) (*CoreDS, error) {
 			return nil, errors.New("Error creating core datastore " + filename + ": " + err.Error())
 		}
 	}
-
 	ds, err := store.Open(filename)
 
 	if err != nil {

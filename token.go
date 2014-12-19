@@ -13,7 +13,7 @@ import (
 )
 
 type TokenInput struct {
-	ID         *string `json:"token,omitempty"`
+	ID         *string `json:"id,omitempty"`
 	Name       *string `json:"name,omitempty"`
 	Expires    *string `json:"expires,omitempty"`
 	Resource   *string `json:"resource,omitempty"`

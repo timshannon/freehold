@@ -6,6 +6,7 @@ window.fh = (function() {
     'use strict';
     var _auth;
     var versions = ["v1"];
+    var _runas;
 
     function stdAjax(type, url, options) {
         if (!options) {
@@ -21,7 +22,18 @@ window.fh = (function() {
             options.dataType = "json";
         }
 
-        if ((type.toUpperCase() !== "GET") && (!options.beforeSend)) {
+        if (_runas) {
+            var username = _runas.username;
+            var password = _runas.password;
+            options.beforeSend = function(xhr) {
+                xhr.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
+            };
+
+            _runas = null;
+
+        }
+
+        if ((type != "GET") && (!options.beforeSend)) {
             options.beforeSend = function(xhr) {
                 xhr.setRequestHeader("X-CSRFToken", fh.auth.CSRFToken);
             };
@@ -264,10 +276,10 @@ window.fh = (function() {
             all: function() {
                 return stdAjax("GET", "/v1/auth/token/");
             },
-            get: function(token) {
+            get: function(tokenID) {
                 return stdAjax("GET", "/v1/auth/token/", {
                     data: JSON.stringify({
-                        token: token
+                        id: tokenID
                     }),
                 });
             },
@@ -279,10 +291,10 @@ window.fh = (function() {
                     data: JSON.stringify(tokenObject),
                 });
             },
-            delete: function(token) {
+            delete: function(tokenID) {
                 return stdAjax("DELETE", "/v1/auth/token/", {
                     data: JSON.stringify({
-                        token: token
+                        id: tokenID
                     }),
                 });
             },
@@ -374,6 +386,12 @@ window.fh = (function() {
             });
         },
         util: {
+            runNextAs: function(username, password) {
+                _runas = {
+                    username: username,
+                    password: password
+                };
+            },
             uuid: function() {
                 function s4() {
                     return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);

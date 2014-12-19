@@ -1,32 +1,6 @@
-//Matches on only the object keys that exist in expected
-QUnit.assert.matchExisting = function(value, expected, message) {
-    this.push(matchExisting(value, expected), value, expected, message);
-};
-
-function matchExisting(value, expected) {
-    var matchedProp = false;
-
-    if (typeof expected !== "object") {
-        return value === expected;
-    }
-
-    for (var a in value) {
-        if (!expected.hasOwnProperty(a)) {
-            continue;
-        }
-        matchedProp = true;
-        if (!matchExisting(value[a], expected[a])) {
-            return false;
-        }
-    }
-
-    //must have at least one matching property
-    if (matchedProp) {
-        return true;
-    }
-    return false;
+function login(user) {
+	fh.util.runNextAs(user.user, user.password);
 }
-
 
 function readFolder(assert, folder, expected) {
     var done = assert.async();
@@ -148,7 +122,6 @@ QUnit.module("Implicit Permissions", {
         var done1 = assert.async();
         var done2 = assert.async();
 
-        logout();
 
         //delete test users
         fh.user.delete(this.userA.user)
@@ -163,25 +136,6 @@ QUnit.module("Implicit Permissions", {
             });
     }
 });
-
-function login(user) {
-    $.ajaxPrefilter(function(options, originalOptions) {
-        options.beforeSend = function(xhr) {
-            xhr.setRequestHeader("Authorization", "Basic " + btoa(user.user + ":" + user.password));
-        };
-    });
-}
-
-function logout() {
-    $.ajaxPrefilter(function(options) {
-        if (options.type.toUpperCase() !== "GET") {
-            options.beforeSend = function(xhr) {
-                xhr.setRequestHeader("X-CSRFToken", fh.auth.CSRFToken);
-            };
-        }
-    });
-
-}
 
 QUnit.test("Root Folder Create Permissions", function(assert) {
     //Admins should be able to write to the root file dir
@@ -356,7 +310,7 @@ QUnit.test("Core Permissions - Settings", function(assert) {
 
             fh.settings.set("LogErrors", val)
                 .always(function(result) {
-            result = result.responseJSON;
+                    result = result.responseJSON;
                     assert.deepEqual(result, {
                         status: "fail",
                         message: "You do not have permissions to update settings.  Admin rights are required.",
@@ -373,7 +327,6 @@ QUnit.test("Core Permissions - Settings", function(assert) {
                     done4();
                 })
                 .done(function(result) {
-                    logout();
                     fh.settings.set("LogErrors", val)
                         .always(function(result) {
                             done4();
@@ -611,7 +564,6 @@ QUnit.module("Private File Permissions", {
         var done1 = assert.async();
         var done2 = assert.async();
 
-        logout();
 
         fh.file.delete(this.folder);
 
@@ -704,7 +656,6 @@ QUnit.module("Friend Read File Permissions", {
         var done1 = assert.async();
         var done2 = assert.async();
 
-        logout();
 
         fh.file.delete(this.folder);
 
@@ -808,7 +759,6 @@ QUnit.module("Friend Write File Permissions", {
         var done1 = assert.async();
         var done2 = assert.async();
 
-        logout();
 
         fh.file.delete(this.folder);
 
@@ -904,7 +854,6 @@ QUnit.test("Root Move Folder Permissions", function(assert) {
     login(this.user);
     expect += moveFolder(assert, this.folder, rename, "fail");
 
-    logout();
     expect += moveFolder(assert, this.folder, rename, "success");
 
 
@@ -917,7 +866,6 @@ QUnit.test("Root Delete Folder Permissions", function(assert) {
     login(this.user);
     expect += deleteFolder(assert, this.folder, "fail");
 
-    logout();
     expect += deleteFolder(assert, this.folder, "success");
 
 
