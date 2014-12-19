@@ -8,6 +8,7 @@ import (
 	"archive/zip"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -52,10 +53,14 @@ func Get(id string) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("open app")
 
 	app := &App{}
 
+	fmt.Println("before get: ", id)
 	err = ds.Get(id, app)
+	fmt.Println("after get: ", id)
+
 	if err == data.ErrNotFound {
 		return nil, nil
 	}
@@ -114,12 +119,12 @@ func Install(file, owner string) (*App, error) {
 
 	a, err := Get(app.Id)
 
-	if a != nil {
-		return nil, fail.New("An app with the same id is already installed", app)
-	}
-
 	if err != nil && err != data.ErrNotFound {
 		return nil, err
+	}
+
+	if a != nil {
+		return nil, fail.New("An app with the same id is already installed", app)
 	}
 
 	installDir := path.Join(resource.AppDir, app.Id)

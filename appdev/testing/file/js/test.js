@@ -2,6 +2,36 @@
 // Use of this source code is governed by the MIT license
 // that can be found in the LICENSE file.
 
+
+//Matches on only the object keys that exist in expected
+QUnit.assert.matchExisting = function(value, expected, message) {
+    this.push(matchExisting(value, expected), value, expected, message);
+};
+
+function matchExisting(value, expected) {
+    var matchedProp = false;
+
+    if (typeof expected !== "object") {
+        return value === expected;
+    }
+
+    for (var a in value) {
+        if (!expected.hasOwnProperty(a)) {
+            continue;
+        }
+        matchedProp = true;
+        if (!matchExisting(value[a], expected[a])) {
+            return false;
+        }
+    }
+
+    //must have at least one matching property
+    if (matchedProp) {
+        return true;
+    }
+    return false;
+}
+
 QUnit.module("files", {
     beforeEach: function(assert) {
         var done = assert.async();
@@ -374,36 +404,65 @@ QUnit.test("Get Session", function(assert) {
 });
 
 
-QUnit.module("Token");
+QUnit.module("Token", {
+    beforeEach: function(assert) {
+        var done = assert.async();
+        //Create test user
+        this.user = {
+            user: "quinitTestUser",
+            password: "qunitTestPassword",
+            name: "QUnit Test User"
+        };
+
+        fh.user.new(this.user)
+            .always(function(result) {
+                assert.ok(
+                    (result.status == "success") &&
+                    (result.data.name == "QUnit Test User")
+                );
+                done();
+            });
+    },
+    afterEach: function(assert) {
+        var done = assert.async();
+        //delete test user
+        fh.user.delete(this.user.user)
+            .always(function(result) {
+                assert.ok((result.status == "success"));
+                done();
+            });
+    }
+});
 QUnit.test("New, Get and Delete Token", function(assert) {
-    assert.expect(3);
+    assert.expect(5);
     var done = assert.async();
 
     fh.token.new({
             name: "test token"
-        })
+        }, this.user.user, this.user.password)
         .always(function(result) {
             assert.ok(
                 (result.status == "success") &&
                 (result.data.name == "test token")
             );
-            var token = result.data.token;
-
-            fh.token.get(token)
+            var id = result.data.id;
+            fh.util.runNextAs(this.user.user, this.user.password);
+            fh.token.get(id)
                 .always(function(getResult) {
                     assert.ok(
                         (getResult.status == "success") &&
                         (getResult.data.name == "test token")
                     );
-                    fh.token.delete(token)
+                    fh.util.runNextAs(this.user.user, this.user.password);
+                    fh.token.delete(id)
                         .always(function(deleteResult) {
                             assert.ok(
                                 (deleteResult.status == "success")
                             );
                             done();
                         });
-                });
-        });
+                }.bind(this));
+        }.bind(this));
 });
 
 //TODO: Currently errors when multiple threads try to drop and 
