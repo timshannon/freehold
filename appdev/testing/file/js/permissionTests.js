@@ -100,7 +100,7 @@ QUnit.module("Implicit Permissions", {
         //Create test user A
         fh.user.new(this.userA)
             .always(function(result) {
-                assert.equal(result.status, "success", result.message);
+                assert.equal(result.status, "success", result.responseText);
                 done1();
             });
 
@@ -113,7 +113,7 @@ QUnit.module("Implicit Permissions", {
         //Create test user B
         fh.user.new(this.userB)
             .always(function(result) {
-                assert.equal(result.status, "success", result.message);
+                assert.equal(result.status, "success", result.responseText);
                 done2();
             });
 
@@ -126,12 +126,12 @@ QUnit.module("Implicit Permissions", {
         //delete test users
         fh.user.delete(this.userA.user)
             .always(function(result) {
-                assert.equal(result.status, "success", result.message);
+                assert.equal(result.status, "success", result.responseText);
                 done1();
             });
         fh.user.delete(this.userB.user)
             .always(function(result) {
-                assert.equal(result.status, "success", result.message);
+                assert.equal(result.status, "success", result.responseText);
                 done2();
             });
     }
@@ -352,8 +352,6 @@ QUnit.test("Core Permissions - User", function(assert) {
 
     assert.expect(15);
 
-    var done1 = assert.async();
-    var done2 = assert.async();
     var done3 = assert.async();
     var done4 = assert.async();
     var done5 = assert.async();
@@ -363,21 +361,23 @@ QUnit.test("Core Permissions - User", function(assert) {
     var done9 = assert.async();
     var done10 = assert.async();
     var done11 = assert.async();
+    var done12 = assert.async();
+    var done13 = assert.async();
 
 
     login(this.userB);
 
     fh.user.all()
         .always(function(result) {
-            assert.equal(result.status, "success");
-            done1();
+            assert.equal(result.status, "success", result.responseText);
+            done3();
         });
 
     login(this.userB);
     fh.user.get(this.userB.user)
         .always(function(result) {
             assert.equal(result.status, "success");
-            done2();
+            done4();
         });
 
     login(this.userB);
@@ -390,7 +390,7 @@ QUnit.test("Core Permissions - User", function(assert) {
                 status: "fail",
                 message: "You do not have permissions to post a new user",
             });
-            done3();
+            done5();
         });
 
     login(this.userB);
@@ -403,7 +403,7 @@ QUnit.test("Core Permissions - User", function(assert) {
                 message: "You do not have permissions to update this user.",
                 data: this.userA,
             });
-            done4();
+            done6();
         }.bind(this));
 
     login(this.userB);
@@ -411,7 +411,7 @@ QUnit.test("Core Permissions - User", function(assert) {
     fh.user.update(this.userB)
         .always(function(result) {
             assert.equal(result.status, "success");
-            done5();
+            done7();
         });
 
     login(this.userB);
@@ -426,7 +426,7 @@ QUnit.test("Core Permissions - User", function(assert) {
                     "user": this.userB.user,
                 },
             });
-            done6();
+            done8();
         }.bind(this));
 
     //removeAdmin: 
@@ -442,7 +442,7 @@ QUnit.test("Core Permissions - User", function(assert) {
                     user: this.userA.user,
                 },
             });
-            done8();
+            done9();
         }.bind(this));
 
 
@@ -451,7 +451,7 @@ QUnit.test("Core Permissions - User", function(assert) {
 
     fh.user.makeAdmin(this.userB.user)
         .always(function(result) {
-            assert.equal(result.status, "success");
+            assert.equal(result.status, "success", result.responseText);
             done10();
         });
 
@@ -477,8 +477,8 @@ QUnit.test("Core Permissions - User", function(assert) {
     login(this.userB);
     fh.user.removeAdmin()
         .always(function(result) {
-            assert.equal(result.status, "success");
-            done7();
+            assert.equal(result.status, "success", "Remove Admin on Self: " + result.responseText);
+            done12();
         }.bind(this));
 
 
@@ -486,8 +486,8 @@ QUnit.test("Core Permissions - User", function(assert) {
     //non-admin delete self
     fh.user.delete(this.userB.user)
         .always(function(result) {
-            assert.equal(result.status, "success");
-            done9();
+            assert.equal(result.status, "success", "delete self: " + result.responseText);
+            done13();
         }.bind(this));
 
 });

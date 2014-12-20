@@ -108,6 +108,11 @@ func authenticate(w http.ResponseWriter, r *http.Request) (*Auth, error) {
 		}
 		a.User = user
 		a.Username = user.Username()
+
+		err = ratelimit.ResetLimit(ipAddress(r), authRateLimitType)
+		if err != nil {
+			return nil, err
+		}
 		return a, nil
 	}
 

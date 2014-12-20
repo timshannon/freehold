@@ -60,7 +60,7 @@ func AttemptRequest(ipAddress string, requestType string, limit float64) error {
 		return err
 	}
 
-	//If limit is fractional, then the timerange is expand to encompas limit * 1 minute
+	//If limit is fractional, then the timerange is expand to encompass limit * 1 minute
 	// so if more than one entry is found within that expanded range, then they are over
 	// the fraction limit
 	if (limit >= 1 && float64(len(pAttempt)) > attempt.limit) ||
@@ -73,6 +73,27 @@ func AttemptRequest(ipAddress string, requestType string, limit float64) error {
 
 	return nil
 
+}
+
+func ResetLimit(ipAddress string, requestType string) error {
+	attempts, err := previousAttempts(ipAddress, requestType)
+	if err != nil {
+		return err
+	}
+
+	ds, err := data.OpenCoreDS(DS)
+	if err != nil {
+		return err
+	}
+
+	for i := range attempts {
+		err = ds.Delete(attempts[i].key())
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func previousAttempts(ipAddress string, requestType string) ([]*requestAttempt, error) {
