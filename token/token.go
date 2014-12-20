@@ -82,18 +82,18 @@ func (t *Token) verify() error {
 		return fail.New("You must log in before requesting a security token", nil)
 	}
 
-	if t.Resource == "" {
-		if t.Permission != "" {
-			return fail.New("You must specify a resource when generating a token with permissions.", t)
-		}
-		return nil
-	}
-
 	if t.expireTime().IsZero() {
 		t.Expires = time.Now().AddDate(0, 0, setting.Int("TokenMaxDaysTillExpire")).Format(time.RFC3339)
 	}
 	if t.expireTime().After(time.Now().AddDate(0, 0, setting.Int("TokenMaxDaysTillExpire"))) {
 		return fail.New("Token Expiration date is set too far into the future.  See TokenMaxDaysTillExpire setting.", t)
+	}
+
+	if t.Resource == "" {
+		if t.Permission != "" {
+			return fail.New("You must specify a resource when generating a token with permissions.", t)
+		}
+		return nil
 	}
 
 	prm, err := permission.Get(t.resource)
@@ -321,14 +321,15 @@ func (t *Token) IsExpired() bool {
 
 func (t *Token) expireTime() time.Time {
 	if t.Expires == "" {
-		return time.Unix(0, 0)
+		return time.Time{}
 	}
 
 	tm, err := time.Parse(time.RFC3339, t.Expires)
 	if err != nil {
 		log.Error(errors.New("Error parsing token expiration: " + err.Error()))
-		return time.Unix(0, 0)
+		return time.Time{}
 	}
+
 	return tm
 }
 

@@ -19,7 +19,7 @@ $(document).ready(function() {
             rMain.set("apps", result.data);
         })
         .fail(function(result) {
-					result = result.responseJSON;
+            result = result.responseJSON;
             rMain.set("error", result.message);
         });
 
@@ -28,7 +28,7 @@ $(document).ready(function() {
             minPassLength = result.data.value;
         })
         .fail(function(result) {
-					result = result.responseJSON;
+            result = result.responseJSON;
             rMain.set("error", result.message);
         });
 
@@ -63,7 +63,7 @@ $(document).ready(function() {
                     loadUser();
                 })
                 .fail(function(result) {
-					result = result.responseJSON;
+                    result = result.responseJSON;
                     rMain.set("errors.save", result.message);
                 });
         },
@@ -86,7 +86,7 @@ $(document).ready(function() {
                     loadUser();
                 })
                 .fail(function(result) {
-					result = result.responseJSON;
+                    result = result.responseJSON;
                     rMain.set("errors.save", result.message);
                 });
         },
@@ -96,26 +96,27 @@ $(document).ready(function() {
                     loadSessions();
                 })
                 .fail(function(result) {
-					result = result.responseJSON;
+                    result = result.responseJSON;
                     rMain.set("error", result.message);
                 });
 
         },
         "addToken": function(event) {
             rMain.set("token", {
+                username: "",
+                password: "",
                 name: "",
                 expires: null,
                 permission: "",
-                isResource: false,
                 resource: "",
                 errors: null
             });
 
             $("#tokenModal").modal();
-        },
-        "tokenMakeResource": function(event) {
-            rMain.set("token.isResource", !event.context.isResource);
-            rMain.set("token.resource", "");
+$("#tokenModal").on("shown.bs.modal", function() {
+                $("#tokenName").focus();
+            });
+
         },
         "clearHelp": function(event) {
             rMain.set("help", false);
@@ -134,6 +135,9 @@ $(document).ready(function() {
 
             if (!event.context.name) {
                 errors.name = "A name is required";
+            }
+            if (!event.context.username || !event.context.password) {
+                errors.username = "A username and password is required to generate a new token";
             }
 
             if (event.context.expires) {
@@ -155,29 +159,26 @@ $(document).ready(function() {
             fh.token.new({
                     name: event.context.name,
                     expires: event.context.expires
-                })
+                }, event.context.username, event.context.password)
                 .done(function() {
                     loadTokens();
                     $("#tokenModal").modal("hide");
                 })
                 .fail(function(result) {
-					result = result.responseJSON;
+                    result = result.responseJSON;
                     rMain.set("token.errors.save", result.message);
                 });
 
         },
         "delete": function(event) {
-            fh.token.delete(event.context.token)
+            fh.token.delete(event.context.id)
                 .done(function() {
                     loadTokens();
                 })
                 .fail(function(result) {
-					result = result.responseJSON;
+                    result = result.responseJSON;
                     rMain.set("error", result.message);
                 });
-        },
-        "showToken": function(event) {
-            rMain.set(event.keypath + ".showToken", true);
         },
 
     });
@@ -216,7 +217,7 @@ $(document).ready(function() {
                 document.title = fh.auth.user + " - freehold";
             })
             .fail(function(result) {
-					result = result.responseJSON;
+                result = result.responseJSON;
                 rMain.set("error", result.message);
             });
     }
@@ -237,7 +238,7 @@ $(document).ready(function() {
                 rMain.set("sessions", sessions);
             })
             .fail(function(result) {
-					result = result.responseJSON;
+                result = result.responseJSON;
                 rMain.set("error", result.message);
             });
     }
@@ -256,7 +257,7 @@ $(document).ready(function() {
                 rMain.set("tokens", tokens);
             })
             .fail(function(result) {
-					result = result.responseJSON;
+                result = result.responseJSON;
                 rMain.set("error", result.message);
             });
     }
