@@ -8,7 +8,6 @@ import (
 	"archive/zip"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -53,13 +52,10 @@ func Get(id string) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("open app")
 
 	app := &App{}
 
-	fmt.Println("before get: ", id)
 	err = ds.Get(id, app)
-	fmt.Println("after get: ", id)
 
 	if err == data.ErrNotFound {
 		return nil, nil
@@ -202,7 +198,7 @@ func Upgrade(file, owner string) (*App, error) {
 
 func Uninstall(appid string) error {
 	app, err := Get(appid)
-	if err == data.ErrNotFound {
+	if err == data.ErrNotFound || app == nil {
 		return fail.NewFromErr(FailInvalidId, appid)
 	}
 	if err != nil {

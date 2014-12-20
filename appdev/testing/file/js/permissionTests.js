@@ -1,5 +1,5 @@
 function login(user) {
-	fh.util.runNextAs(user.user, user.password);
+    fh.util.runNextAs(user.user, user.password);
 }
 
 function readFolder(assert, folder, expected) {
@@ -224,6 +224,7 @@ QUnit.test("Core Permissions - Application", function(assert) {
             done1();
         });
 
+    login(user);
     fh.application.available()
         .always(function(result) {
             result = result.responseJSON;
@@ -235,6 +236,7 @@ QUnit.test("Core Permissions - Application", function(assert) {
             done2();
         });
 
+    login(user);
     fh.application.install("invalidfilename.zip")
         .always(function(result) {
             result = result.responseJSON;
@@ -246,6 +248,7 @@ QUnit.test("Core Permissions - Application", function(assert) {
             done3();
         });
 
+    login(user);
     fh.application.upgrade("invalidfilename.zip")
         .always(function(result) {
             result = result.responseJSON;
@@ -257,6 +260,7 @@ QUnit.test("Core Permissions - Application", function(assert) {
             done4();
         });
 
+    login(user);
     fh.application.uninstall("invalidfilename.zip")
         .always(function(result) {
             result = result.responseJSON;
@@ -268,12 +272,14 @@ QUnit.test("Core Permissions - Application", function(assert) {
             done5();
         });
 
+    login(user);
     fh.application.get("testing")
         .always(function(result) {
             assert.equal(result.status, "success");
             done6();
         });
 
+    login(user);
     fh.application.installed()
         .always(function(result) {
             assert.equal(result.status, "success");
@@ -302,12 +308,14 @@ QUnit.test("Core Permissions - Settings", function(assert) {
             done1();
         });
 
+    login(user);
     fh.settings.get("LogErrors")
         .always(function(result) {
             assert.equal(result.status, "success");
             var val = result.data;
             done2();
 
+            login(user);
             fh.settings.set("LogErrors", val)
                 .always(function(result) {
                     result = result.responseJSON;
@@ -317,6 +325,8 @@ QUnit.test("Core Permissions - Settings", function(assert) {
                     });
                     done3();
                 });
+
+            login(user);
             fh.settings.default("LogErrors")
                 .fail(function(result) {
                     result = result.responseJSON;
@@ -363,12 +373,14 @@ QUnit.test("Core Permissions - User", function(assert) {
             done1();
         });
 
+    login(this.userB);
     fh.user.get(this.userB.user)
         .always(function(result) {
             assert.equal(result.status, "success");
             done2();
         });
 
+    login(this.userB);
     fh.user.new({
             name: "invaliduser"
         })
@@ -381,6 +393,7 @@ QUnit.test("Core Permissions - User", function(assert) {
             done3();
         });
 
+    login(this.userB);
     //update other user
     fh.user.update(this.userA)
         .always(function(result) {
@@ -393,6 +406,7 @@ QUnit.test("Core Permissions - User", function(assert) {
             done4();
         }.bind(this));
 
+    login(this.userB);
     //update self
     fh.user.update(this.userB)
         .always(function(result) {
@@ -400,6 +414,7 @@ QUnit.test("Core Permissions - User", function(assert) {
             done5();
         });
 
+    login(this.userB);
     fh.user.makeAdmin(this.userB.user)
         .always(function(result) {
             result = result.responseJSON;
@@ -416,6 +431,7 @@ QUnit.test("Core Permissions - User", function(assert) {
 
     //removeAdmin: 
 
+    login(this.userB);
     fh.user.delete(this.userA.user)
         .always(function(result) {
             result = result.responseJSON;
@@ -440,6 +456,7 @@ QUnit.test("Core Permissions - User", function(assert) {
         });
 
 
+    login(this.userA);
     //admin - remove admin of other user
     var data = {
         user: this.userB.user,
@@ -465,6 +482,7 @@ QUnit.test("Core Permissions - User", function(assert) {
         }.bind(this));
 
 
+    login(this.userB);
     //non-admin delete self
     fh.user.delete(this.userB.user)
         .always(function(result) {
