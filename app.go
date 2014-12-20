@@ -6,7 +6,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"path"
 
@@ -154,7 +153,6 @@ func appDelete(w http.ResponseWriter, r *http.Request) {
 		errHandled(fail.NewFromErr(ErrNoWritePermission, r.URL.Path), w, auth)
 		return
 	}
-	fmt.Println("past delete")
 
 	input := &ApplicationInput{}
 	err = parseJson(r, input)
