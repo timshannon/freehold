@@ -4353,13 +4353,86 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
               t: 7,
               e: 'div',
               a: { 'class': 'dropzone' },
-              f: []
+              o: 'dropzone',
+              f: [
+                {
+                  t: 4,
+                  n: 50,
+                  x: {
+                    r: ['mode'],
+                    s: '_0==="dragover"'
+                  },
+                  f: [{
+                      t: 7,
+                      e: 'div',
+                      a: { 'class': 'drop-overlay' },
+                      f: [{
+                          t: 7,
+                          e: 'p',
+                          a: { 'class': 'text-center drop-text' },
+                          f: ['Drop files here']
+                        }]
+                    }]
+                },
+                ' ',
+                {
+                  t: 2,
+                  r: 'yield'
+                }
+              ]
             }]
         },
-        css: ''
+        css: '.drop-overlay {\nz-index: 5000;\nposition: absolute;\ntop: 0;\nleft: 0;\nheight: 100%;\nwidth: 100%;\nopacity: .9;\nbackground-color: #fff;\nborder: 5px dashed #555;\nborder-radius: 4px;\n}\n.drop-text {\nfont-size: 4em;\nfont-weight: 700;\nposition: relative;\ntop: 50%;\ntransform: translateY(-50%);\n}\n'
       }, component = {};
+    var timer;
     component.exports = {
-      data: {},
+      data: { mode: 'none' },
+      decorators: {
+        dropzone: function (node) {
+          var r = this;
+          node.addEventListener('dragenter', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+          }, false);
+          node.addEventListener('dragover', function (e) {
+            r.set('mode', 'dragover');
+            e.stopPropagation();
+            e.preventDefault();
+            window.clearTimeout(timer);
+          }, false);
+          node.addEventListener('drop', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+            r.set('mode', 'drop');
+            r.set('dataTransfer', e.dataTransfer);
+            var files = e.dataTransfer.files;
+            var goodFiles = [];
+            for (var i = 0; i < files.length; i++) {
+              if (files[i].size > 0) {
+                goodFiles.push(files[i]);
+              }
+            }
+            if (goodFiles.length > 0) {
+              r.set('files', goodFiles);
+              r.fire('drop', goodFiles);
+            }
+          }, false);
+          node.addEventListener('dragleave', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+            if (timer) {
+              window.clearTimeout(timer);
+            }
+            timer = window.setTimeout(function () {
+              r.set('mode', 'none');
+            }, 200);
+          }, false);
+          return {
+            teardown: function () {
+            }
+          };
+        }
+      },
       init: function () {
       }
     };
