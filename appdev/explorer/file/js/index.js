@@ -125,7 +125,7 @@ $(document).ready(function() {
         },
         "selectApp": function(event) {
             if (event.index) {
-                setRoot(event.index.i);
+                setRoot(event.index.i, true);
             } else {
                 setRoot();
                 selectUserFolder();
@@ -240,12 +240,12 @@ $(document).ready(function() {
             getFile(url, function(file) {
                 file.starred = settings.stars.isStar(url);
                 file.url = trimSlash(url);
-                rMain.set("currentFile", setFileType(file));
                 if (file.permissions.owner) {
-                    rMain.set("currentFile.showOwner", true);
+                    file.showOwner = true;
                 } else {
-                    rMain.set("currentFile.showOwner", false);
+                    file.showOwner = false;
                 }
+                rMain.set("currentFile", setFileType(file));
             }, function(result) {
                 if (result.message === "Resource not found") {
                     result.data.propError = "You do not have permissions to view the properties of this file.";
@@ -339,12 +339,15 @@ $(document).ready(function() {
         },
         "currentFile.behavior": function(newValue, oldValue, keypath) {
             if (newValue && oldValue) {
+                //FIXME:  Change seems to be happening due to different keypaths
                 settings.fileType.set(rMain.get("currentFile"));
                 selectFolder(rMain.get("currentKeypath"));
             }
         },
         "currentFile.explorerIcon": function(newValue, oldValue, keypath) {
             if (newValue && oldValue) {
+
+                console.log("icon set");
                 var file = rMain.get("currentFile");
                 file.icon = file.explorerIcon;
 
@@ -407,7 +410,7 @@ $(document).ready(function() {
             });
     }
 
-    function setRoot(app) {
+    function setRoot(app, selectRootFolder) {
         rMain.set("app", app);
         rMain.set("files", {
             url: fh.util.urlJoin("/", app, "/v1/file/"),
@@ -429,7 +432,9 @@ $(document).ready(function() {
             canSelect: true,
             iconClass: "glyphicon glyphicon-star",
         });
-        selectFolder("files");
+        if (selectRootFolder) {
+            selectFolder("files");
+        }
     }
 
     function keypathFromTree(keypath, ds) {
@@ -913,7 +918,6 @@ $(document).ready(function() {
                     files[ext].icon = file.icon;
                 }
 
-				console.log("set");
                 settings.put("files", files);
             },
             default: function(filetype) {

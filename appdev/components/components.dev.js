@@ -41,3 +41,11 @@ require(['rvc!fileinput'], function(FileInput) {
 require(['rvc!dropzone'], function(DropZone) {
     Ractive.components.dropzone = DropZone;
 });
+
+require(['rvc!draggable', './lib/jquery-ui/draggable'], function(Draggable, $) {
+    Ractive.components.draggable = Draggable;
+});
+
+require(['rvc!droppable', './lib/jquery-ui/droppable'], function(Droppable, $) {
+    Ractive.components.droppable = Droppable;
+});

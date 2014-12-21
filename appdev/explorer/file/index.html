@@ -418,26 +418,30 @@
 		<tbody>
 			{{#currentFolder.files:i}}
 			<tr>
-					{{#if .isDir}}
-					<td>
-						<a href="#" on-click="explorerSelect">
-							<span class="explorer-icon fa fa-{{explorerIcon}}"></span>  {{name}}
-						</a>
-				</td>
-					{{else}}
+				{{#if .isDir}}
 				<td>
-						{{#if .canRead}}
+					<a href="#" on-click="explorerSelect">
+						<draggable useParent="true" revert="true" zIndex="100" disabled="{{currentKeypath === 'stars'}}">
+						<span class="explorer-icon fa fa-{{explorerIcon}}"></span>  {{name}}
+						</draggable>
+					</a>
+				</td>
+				{{else}}
+				<td>
+					{{#if .canRead}}
+						<draggable revert="true" zIndex="100" disabled="{{currentKeypath === 'stars'}}">
 						<a href="{{explorerUrl}}" target="{{#newWindow}}_blank{{/newWindow}}" {{#.behavior.download}}download=""{{/download}}>
 							<span class="explorer-icon fa fa-{{explorerIcon}}"></span>  {{name}}
 						</a>
+						</draggable>
 						{{else}}
 						<a href="#">
 							<span class="fa fa-{{explorerIcon}}"></span>  {{name}}
 						</a>
 
-						{{/if}}
-				</td>
 					{{/if}}
+				</td>
+				{{/if}}
 				<td>{{permissions.owner}}</td>
 				<td>{{modifiedDate}}</td>
 				<td>{{humanSize}}</td>
@@ -462,18 +466,20 @@
 </div> <!-- explorer -->
 
 <!-- {{>fileTile}} -->
-<span>
 {{#if .isDir}}
 	<a href="#" on-click="explorerSelect" class="file-tile">
 	{{#if currentKeypath === "stars"}}
 		<a href="#" class="btn btn-file-grid" on-click="removeStar" title="Remove Star"><span class="glyphicon glyphicon-remove"></span></a>
 	{{/if}}
 
+		<draggable revert="true" useParent="true" zIndex="100" disabled="{{currentKeypath === 'stars'}}">
 		<span class="grid-icon fa fa-5x fa-{{explorerIcon}}"></span>
 		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
+		</draggable>
 	</a>
 {{else}}
 	{{#if .canRead}}
+	<draggable revert="true" zIndex="100" disabled="{{currentKeypath === 'stars'}}">
 	<a href="{{explorerUrl}}" target="{{#newWindow}}_blank{{/newWindow}}" {{#.download}}download=""{{/download}} class="file-tile">
 		{{#if currentKeypath !== "stars"}}
 			<a href="#" class="btn btn-file-grid" on-click="properties:{{.url}}" title="Properties"><span class="glyphicon glyphicon-cog"></span></a>
@@ -483,6 +489,7 @@
 		<span class="grid-icon fa fa-5x fa-{{explorerIcon}}"></span>
 		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
 	</a>
+	</draggable>
 	{{else}}
 	<a href="#"  class="file-tile">
 		{{#if currentKeypath === "stars"}}
@@ -494,7 +501,6 @@
 
 	{{/if}}
 {{/if}}
-</span>
 <!-- {{/fileTile}} -->
 
 {{#uploads}}

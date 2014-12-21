@@ -42,17 +42,21 @@ component.exports = {
 		dropzone: function (node) {
 			var r = this;
 
-			node.addEventListener("dragenter", function(e) {
+			dragenter = function(e) {
 				e.stopPropagation();
 				e.preventDefault();
-			}, false);
-			node.addEventListener("dragover", function(e) {
+			};
+			node.addEventListener("dragenter", dragenter, false);
+
+			dragover = function(e) {
 				r.set("mode", "dragover");	
 				e.stopPropagation();
 				e.preventDefault();
 				window.clearTimeout(timer);
-			}, false);
-			node.addEventListener("drop", function(e) {
+			};
+			node.addEventListener("dragover", dragover, false);
+
+			drop = function(e) {
 				e.stopPropagation();
 				e.preventDefault();
 
@@ -71,8 +75,10 @@ component.exports = {
 					r.fire("drop", goodFiles);
 				}
 
-			}, false);			
-			node.addEventListener("dragleave", function(e) {
+			};
+			node.addEventListener("drop", drop, false);			
+
+			var dragleave = function(e) {
 				e.stopPropagation();
 				e.preventDefault();
         if (timer) {
@@ -81,10 +87,15 @@ component.exports = {
         timer = window.setTimeout(function() {
 					r.set("mode", "none");
 					}, 200);
-			}, false);
+			};
+			node.addEventListener("dragleave", dragleave, false);
 
 			return {
 				teardown: function () {
+					node.removeEventListener("dragenter", dragenter, false);
+					node.removeEventListener("dragover", dragover, false);
+					node.removeEventListener("drop", drop, false);			
+					node.removeEventListener("dragleave", dragleave, false);
 				}
 			};
 		},
