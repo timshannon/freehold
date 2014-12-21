@@ -913,6 +913,7 @@ $(document).ready(function() {
                     files[ext].icon = file.icon;
                 }
 
+				console.log("set");
                 settings.put("files", files);
             },
             default: function(filetype) {
