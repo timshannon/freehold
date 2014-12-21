@@ -280,7 +280,7 @@ $(document).ready(function() {
             var files = event.context.files;
 
             for (var i = 0; i < files.length; i++) {
-                uploadFile(rMain.get("currentFolder.url"), files[i]);
+                uploadFile(files[i]);
             }
         },
         "cancelUpload": function(event) {
@@ -288,6 +288,11 @@ $(document).ready(function() {
                 event.context.xhr.abort();
             } else {
                 removeUpload(event.context.id);
+            }
+        },
+        "dropzone.drop": function(files) {
+            for (var i = 0; i < files.length; i++) {
+                uploadFile(files[i]);
             }
         },
 
@@ -788,10 +793,14 @@ $(document).ready(function() {
             });
     }
 
-    function uploadFile(uploadPath, file) {
+    function uploadFile(file, uploadPath) {
+        if (!uploadPath) {
+            uploadPath = rMain.get("currentFolder.url");
+        }
         file = setFileType(file);
 
-        var id = file.name.replace(".", "_"); //ractive doesn't like object ids with "." in them
+
+        var id = file.name.replace(".", "_", "g"); //ractive doesn't like object ids with "." in them
         file.id = id;
 
         file.xhr = fh.file.upload(uploadPath, file, function(evt) {
@@ -807,7 +816,13 @@ $(document).ready(function() {
                 if (result.status === 0) {
                     rMain.set("uploads." + id + ".error", "Upload Canceled");
                 } else {
-                    rMain.set("uploads." + id + ".error", result.responseJSON.failures[0].message);
+                    var errMsg;
+                    if (result.responseJSON.failures) {
+                        errMsg = result.responseJSON.failures[0].message;
+                    } else {
+                        errMsg = result.responseJSON.message;
+                    }
+                    rMain.set("uploads." + id + ".error", errMsg);
                 }
             });
 
