@@ -49,3 +49,7 @@ require(['rvc!draggable', './lib/jquery-ui/draggable'], function(Draggable, $) {
 require(['rvc!droppable', './lib/jquery-ui/droppable'], function(Droppable, $) {
     Ractive.components.droppable = Droppable;
 });
+
+require(['rvc!selectable', './lib/jquery-ui/selectable'], function(Selectable, $) {
+    Ractive.components.selectable = Selectable;
+});

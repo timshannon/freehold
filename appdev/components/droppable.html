@@ -14,7 +14,9 @@ component.exports = {
 	// the jqueryui options
 	data: {
 			useParent: false,
+			addClasses: false,
 			disabled: false,
+			greedy: false,
 	},
 	decorators: {
 		droppable: function (srcNode) {
@@ -26,7 +28,18 @@ component.exports = {
 				node = srcNode;
 			}
 			$(node).droppable({
+				addClasses: r.get("addClasses"),
 				disabled: r.get("disabled"),
+				greedy: r.get("greedy"),
+				over: function() {
+					r.fire("over");
+				},
+				out: function() {
+					r.fire("out");
+				},
+				drop: function() {
+
+				},
 			});
 			return {
 				teardown: function () {

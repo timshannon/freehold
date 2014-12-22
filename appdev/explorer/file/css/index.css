@@ -276,4 +276,7 @@
 
 }
 
-
+.drop-over {
+	border: 2px solid #428bca;
+	border-radius: 4px;
+}

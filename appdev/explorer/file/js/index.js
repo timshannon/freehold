@@ -295,6 +295,9 @@ $(document).ready(function() {
                 uploadFile(files[i]);
             }
         },
+        "droppable.over": function(event) {
+            console.log(event);
+        },
 
     });
 

@@ -1,4 +1,4 @@
-<span class="draggable {{class}}" decorator="draggable">
+<span class="selectable {{class}}" decorator="selectable">
 	{{yield}}
 </span>
 
@@ -14,16 +14,10 @@ component.exports = {
 	// the jqueryui options
 	data: {
 			useParent: false,
-			addClasses: false,
-			revert: false,
-			snap: false,
-			containment: false,
-			zIndex: false,	
 			disabled: false,
-			dragData: {},
 	},
 	decorators: {
-		draggable: function (srcNode) {
+		selectable: function (srcNode) {
 			var r = this;
 			var node;
 			if(r.get("useParent")) {
@@ -31,17 +25,12 @@ component.exports = {
 			} else {
 				node = srcNode;
 			}
-			$(node).draggable({
-				addClasses: r.get("addClasses"),
-				revert: r.get("revert"),
-				snap: r.get("snap"),
-				containment: r.get("containment"),
-				zIndex: r.get("zIndex"),
+			$(node).selectable({
 				disabled: r.get("disabled"),
 			});
 			return {
 				teardown: function () {
-					$(node).draggable("destroy");
+					$(node).selectable("destroy");
 				}
 			};
 		},
