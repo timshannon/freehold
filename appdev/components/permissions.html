@@ -11,7 +11,7 @@
 		<div class="col-sm-6">
 			<select class="form-control" name="Owner" value="{{owner}}" {{#readOnly}}disabled{{/readonly}}>
 				{{#users:i}}
-				<option value="{{i}}">{{name}}</option>
+				<option value="{{i}}">{{.name || i}}</option>
 				{{/users}}
 			</select>
 		</div>
