@@ -717,7 +717,13 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
                                           },
                                           f: [{
                                               t: 2,
-                                              r: 'name'
+                                              x: {
+                                                r: [
+                                                  '.name',
+                                                  'i'
+                                                ],
+                                                s: '_0||_1'
+                                              }
                                             }]
                                         }]
                                     }]
