@@ -38,6 +38,9 @@ component.exports = {
 				containment: r.get("containment"),
 				zIndex: r.get("zIndex"),
 				disabled: r.get("disabled"),
+				start: function(event, ui) {
+					ui.dragData = r.get("dragData");
+				},
 			});
 			return {
 				teardown: function () {

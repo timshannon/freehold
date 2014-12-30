@@ -4513,7 +4513,10 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
             snap: r.get('snap'),
             containment: r.get('containment'),
             zIndex: r.get('zIndex'),
-            disabled: r.get('disabled')
+            disabled: r.get('disabled'),
+            start: function (event, ui) {
+              ui.dragData = r.get('dragData');
+            }
           });
           return {
             teardown: function () {
@@ -6061,7 +6064,8 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
         useParent: false,
         addClasses: false,
         disabled: false,
-        greedy: false
+        greedy: false,
+        hoverClass: false
       },
       decorators: {
         droppable: function (srcNode) {
@@ -6076,13 +6080,9 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
             addClasses: r.get('addClasses'),
             disabled: r.get('disabled'),
             greedy: r.get('greedy'),
-            over: function () {
-              r.fire('over');
-            },
-            out: function () {
-              r.fire('out');
-            },
-            drop: function () {
+            hoverClass: r.get('hoverClass'),
+            drop: function (event, ui) {
+              console.log(ui.draggable);
             }
           });
           return {

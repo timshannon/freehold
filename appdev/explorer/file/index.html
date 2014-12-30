@@ -467,18 +467,18 @@
 
 <!-- {{>fileTile}} -->
 {{#if .isDir}}
-	<droppable class="{{#.dropover}}drop-over{{/.dropover}}">
 	<a href="#" on-click="explorerSelect" class="file-tile">
 	{{#if currentKeypath === "stars"}}
 		<a href="#" class="btn btn-file-grid" on-click="removeStar" title="Remove Star"><span class="glyphicon glyphicon-remove"></span></a>
 	{{/if}}
 
+		<droppable useParent="true" hoverClass="drop-over">
+		</droppable>
 		<draggable revert="true" useParent="true" zIndex="1000" dragData="{{.}}" disabled="{{currentKeypath === 'stars'}}">
 		<span class="grid-icon fa fa-5x fa-{{explorerIcon}}"></span>
 		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
 		</draggable>
 	</a>
-	</droppable>
 {{else}}
 	{{#if .canRead}}
 	<draggable revert="true" zIndex="1000" disabled="{{currentKeypath === 'stars'}}">
