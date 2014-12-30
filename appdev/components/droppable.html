@@ -17,6 +17,7 @@ component.exports = {
 			addClasses: false,
 			disabled: false,
 			greedy: false,
+			hoverClass: false,
 	},
 	decorators: {
 		droppable: function (srcNode) {
@@ -31,14 +32,9 @@ component.exports = {
 				addClasses: r.get("addClasses"),
 				disabled: r.get("disabled"),
 				greedy: r.get("greedy"),
-				over: function() {
-					r.fire("over");
-				},
-				out: function() {
-					r.fire("out");
-				},
-				drop: function() {
-
+				hoverClass: r.get("hoverClass"),
+				drop: function(event, ui) {
+					r.fire("drop", );
 				},
 			});
 			return {
