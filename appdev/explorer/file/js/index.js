@@ -807,6 +807,7 @@ $(document).ready(function() {
         }
         file = setFileType(file);
 
+		//TODO: If file already exists in folder ask for replace instead
 
         var id = file.name.replace(".", "_", "g"); //ractive doesn't like object ids with "." in them
         file.id = id;
