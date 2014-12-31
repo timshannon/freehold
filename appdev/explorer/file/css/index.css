@@ -278,7 +278,10 @@
 }
 
 .drop-over {
-	border: 1px solid #428bca;
-	border-radius: 4px;
+	background: #d9edf7;
+}
+
+.ui-draggable-dragging {
+	opacity: 0.7;
 }
 

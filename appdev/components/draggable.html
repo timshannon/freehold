@@ -19,6 +19,7 @@ component.exports = {
 			snap: false,
 			containment: false,
 			zIndex: false,	
+			scope: "default",
 			disabled: false,
 			dragData: {},
 	},
@@ -35,11 +36,12 @@ component.exports = {
 				addClasses: r.get("addClasses"),
 				revert: r.get("revert"),
 				snap: r.get("snap"),
+				scope: r.get("scope"),
 				containment: r.get("containment"),
 				zIndex: r.get("zIndex"),
 				disabled: r.get("disabled"),
 				start: function(event, ui) {
-					ui.dragData = r.get("dragData");
+					$(node).data(r.get("dragData"));	
 				},
 			});
 			return {

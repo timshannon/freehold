@@ -88,9 +88,6 @@ $(document).ready(function() {
         "viewStarred": function(event) {
             selectFolder("stars");
         },
-        "refresh": function(event) {
-            openUrl(rMain.get("currentFolder.url"));
-        },
         "newFolder": function(event) {
             rMain.set("newFolderName", null);
             rMain.set("newFolderError", null);
@@ -110,7 +107,7 @@ $(document).ready(function() {
 
             fh.file.newFolder(newUrl)
                 .done(function() {
-                    selectFolder(event.context.currentKeypath);
+                    refresh();
                     $("#newFolder").modal("hide");
                 })
                 .fail(function(result) {
@@ -159,7 +156,7 @@ $(document).ready(function() {
             var newUrl = fh.util.urlJoin(rMain.get(parentKeypath(event.context.currentKeypath) + ".url"), event.context.folderRename);
             var oldUrl = event.context.currentFolder.url;
 
-            fh.file.move(oldUrl, newUrl)
+            moveFile(oldUrl, newUrl)
                 .done(function() {
                     $("#renameFolder").modal("hide");
                     openUrl(newUrl);
@@ -168,10 +165,6 @@ $(document).ready(function() {
                     result = result.responseJSON;
                     rMain.set("renameFolderError", result.message);
                 });
-            if (settings.stars.isStar(oldUrl)) {
-                settings.stars.remove(oldUrl);
-                settings.stars.add(newUrl);
-            }
         },
         "renameFile": function(event) {
             if (!event.context.name) {
@@ -188,13 +181,10 @@ $(document).ready(function() {
                 return;
             }
 
-            fh.file.move(oldUrl, newUrl)
+            moveFile(oldUrl, newUrl)
                 .done(function() {
                     rMain.set("currentFile.rename", false);
-                    if (settings.stars.isStar(oldUrl)) {
-                        settings.stars.remove(oldUrl);
-                        settings.stars.add(newUrl);
-                    }
+
                     getFile(newUrl, function(file) {
                         rMain.set("currentFile", setFileType(file));
                     }, function(result) {
@@ -204,7 +194,7 @@ $(document).ready(function() {
                     if (event.context.isDir) {
                         openUrl(newUrl);
                     } else {
-                        selectFolder(rMain.get("currentKeypath"));
+                        refresh();
                     }
 
                 })
@@ -301,8 +291,16 @@ $(document).ready(function() {
                 uploadFile(files[i]);
             }
         },
-        "droppable.over": function(event) {
-            console.log(event);
+        "droppable.drop": function(source, dest) {
+            var newUrl = fh.util.urlJoin(dest.url, trimSlash(source.url).split("/").pop());
+
+            moveFile(source.url, newUrl)
+                .done(function() {
+                    refresh();
+                })
+                .fail(function(result) {
+                    error(result);
+                });
         },
 
     });
@@ -311,10 +309,7 @@ $(document).ready(function() {
         "newWindow": function(newValue, oldValue, keypath) {
             if (newValue !== undefined) {
                 settings.put("newWindow", newValue);
-                var currentKeypath = rMain.get("currentKeypath");
-                if (currentKeypath) {
-                    selectFolder(currentKeypath);
-                }
+                refresh();
             }
         },
         "folderSort": function(newValue, oldValue, keypath) {
@@ -350,18 +345,17 @@ $(document).ready(function() {
             if (newValue && oldValue) {
                 //FIXME:  Change seems to be happening due to different keypaths
                 settings.fileType.set(rMain.get("currentFile"));
-                selectFolder(rMain.get("currentKeypath"));
+                refresh();
             }
         },
         "currentFile.explorerIcon": function(newValue, oldValue, keypath) {
             if (newValue && oldValue) {
 
-                console.log("icon set");
                 var file = rMain.get("currentFile");
                 file.icon = file.explorerIcon;
 
                 settings.fileType.set(file);
-                selectFolder(rMain.get("currentKeypath"));
+                refresh();
             }
         },
     });
@@ -764,6 +758,23 @@ $(document).ready(function() {
             });
     }
 
+    function refresh() {
+        var keypath = rMain.get("currentKeypath");
+        if (keypath) {
+            selectFolder(keypath);
+        }
+    }
+
+    function moveFile(from, to) {
+        return fh.file.move(from, to)
+            .done(function() {
+                if (settings.stars.isStar(from)) {
+                    settings.stars.remove(from);
+                    settings.stars.add(to);
+                }
+            });
+    }
+
     function error(err) {
         if (err instanceof String) {
             rNav.set("error", err);
@@ -836,7 +847,7 @@ $(document).ready(function() {
             })
             .done(function(result) {
                 removeUpload(id);
-                selectFolder(rMain.get("currentKeypath"));
+                refresh();
             })
             .fail(function(result) {
                 if (result.status === 0) {
@@ -882,17 +893,17 @@ $(document).ready(function() {
         return {
             add: function(url) {
                 var stars = settings.get("starred", {});
-                stars[url] = {};
+                stars[trimSlash(url)] = {};
                 settings.put("starred", stars);
             },
             remove: function(url) {
                 var stars = settings.get("starred", {});
-                delete stars[url];
+                delete stars[trimSlash(url)];
                 settings.put("starred", stars);
             },
             isStar: function(url) {
                 var stars = settings.get("starred", {});
-                if (stars.hasOwnProperty(url)) {
+                if (stars.hasOwnProperty(trimSlash(url))) {
                     return true;
                 }
                 return false;

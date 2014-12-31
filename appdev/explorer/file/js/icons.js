@@ -1,6 +1,7 @@
 function buildDefaultIcons() {
     return {
         "ds": "database",
+        "exe": "gears",
         "xls": "file-excel-o",
         "ods": "file-excel-o",
         "xlsx": "file-excel-o",
