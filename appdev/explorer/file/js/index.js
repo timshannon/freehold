@@ -283,6 +283,12 @@ $(document).ready(function() {
                 uploadFile(files[i]);
             }
         },
+        "replaceUpload": function(event) {
+            var file = event.context;
+            file.error = false;
+            file.exists = false;
+            uploadFile(file, true);
+        },
         "cancelUpload": function(event) {
             if (!event.context.error && event.context.xhr) {
                 event.context.xhr.abort();
@@ -801,18 +807,29 @@ $(document).ready(function() {
             });
     }
 
-    function uploadFile(file, uploadPath) {
-        if (!uploadPath) {
-            uploadPath = rMain.get("currentFolder.url");
+    function uploadFile(file, replace) {
+        var uploadFunc;
+
+        if (!replace) {
+            uploadFunc = fh.file.upload;
+        } else {
+            uploadFunc = fh.file.update;
         }
+        uploadPath = rMain.get("currentFolder.url");
         file = setFileType(file);
 
-		//TODO: If file already exists in folder ask for replace instead
-
-        var id = file.name.replace(".", "_", "g"); //ractive doesn't like object ids with "." in them
+        var id = file.name.split(".").join("_"); //ractive doesn't like object ids with "." in them
         file.id = id;
 
-        file.xhr = fh.file.upload(uploadPath, file, function(evt) {
+        rMain.set("uploads." + id, file);
+
+        if (!replace && fileExists(file)) {
+            rMain.set("uploads." + id + ".exists", true);
+            rMain.set("uploads." + id + ".error", "File already exists!");
+            return;
+        }
+
+        file.xhr = uploadFunc(uploadPath, file, function(evt) {
                 if (evt.lengthComputable) {
                     rMain.set("uploads." + id + ".progress", ((evt.loaded / evt.total) * 100).toFixed(1));
                 }
@@ -835,7 +852,17 @@ $(document).ready(function() {
                 }
             });
 
-        rMain.set("uploads." + id, file);
+    }
+
+    function fileExists(file) {
+        var files = rMain.get("currentFolder.children");
+
+        for (var i = 0; i < files.length; i++) {
+            if (files[i].name === file.name) {
+                return true;
+            }
+        }
+        return false;
     }
 
     function removeUpload(id) {

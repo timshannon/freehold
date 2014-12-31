@@ -94,12 +94,30 @@ window.fh = (function() {
             newFolder: function(fileurl) {
                 return stdAjax("POST", fileurl);
             },
-            update: function(fileurl, formData) {
-                return stdAjax("PUT", fileurl, {
+            update: function(uploadPath, fileData, progress) {
+                var formData;
+                if (fileData instanceof FormData) {
+                    formData = fileData;
+                } else if (fileData instanceof File) {
+                    formData = new FormData();
+
+                    formData.append(fileData.name,
+                        fileData, fileData.name);
+                } else {
+                    //not supported
+                    throw "FileData type not supported";
+                }
+                return stdAjax("PUT", uploadPath, {
                     data: formData,
                     cache: false,
                     processData: false,
-                    contentType: false
+                    contentType: false,
+                    xhr: function() {
+                        var xhr = new window.XMLHttpRequest();
+                        xhr.upload.addEventListener("progress", progress, false);
+                        return xhr;
+                    },
+
                 });
             },
             move: function(from, to) {
