@@ -106,6 +106,7 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	word-wrap: break-word;
+	white-space: nowrap;
 }
 
 .filename:hover {
@@ -252,6 +253,7 @@
 	width: 500px;
 	bottom: 20px;
 	right: 20px;
+	z-index: 500;
 }
 
 .upload-list>.modal-body>.row {
@@ -266,14 +268,13 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	padding-right: 0px;
 }
 
 .upload-error {
-	display: block;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-
 }
 
 .drop-over {

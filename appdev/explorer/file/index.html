@@ -515,9 +515,12 @@
 			</div>
 			<div class="col-xs-6">
 				{{#if .error}}
-					<div class="label label-danger upload-error" title="{{.error}}">
+					<span class="label label-danger upload-error" title="{{#if !.exists}}{{.error}}{{/if}}">
 						{{.error}}
-					</div>
+					</span>
+					{{#exists}}
+						 <a href="#" class="btn btn-xs btn-success" on-click="replaceUpload">Replace?</a> 
+					{{/exists}}
 				{{else}}
 					<div class="progress upload-progress">
 						<div class="progress-bar progress-bar-striped active" role="progressbar" 
@@ -528,7 +531,7 @@
 				{{/if}}
 			</div>
 			<div class="col-xs-1">
-				<button type="button" class="pull-right btn btn-danger btn-xs" title="Cancel Upload" on-click="cancelUpload">
+				<button type="button" class="upload-cancel pull-right btn btn-danger btn-xs" title="Cancel Upload" on-click="cancelUpload">
 					<span class="glyphicon glyphicon-remove"></span>
 				</button>
 			</div>
