@@ -17,7 +17,10 @@ component.exports = {
 			addClasses: false,
 			disabled: false,
 			greedy: false,
+			tolerance: "intersect",
 			hoverClass: false,
+			scope: "default",
+			dropData: {},
 	},
 	decorators: {
 		droppable: function (srcNode) {
@@ -33,8 +36,11 @@ component.exports = {
 				disabled: r.get("disabled"),
 				greedy: r.get("greedy"),
 				hoverClass: r.get("hoverClass"),
+				tolerance: r.get("tolerance"),
+				scope: r.get("scope"),
 				drop: function(event, ui) {
-					r.fire("drop", );
+					r.fire("drop", $(ui.draggable).data(), r.get("dropData"));
+					ui.draggable.remove();
 				},
 			});
 			return {

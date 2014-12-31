@@ -381,7 +381,7 @@
 		{{/currentFolder.files}}
 	{{else}}
 	<!--gridview-->
-	<table class="table table-condensed table-striped table-hover">
+	<table class="table table-condensed table-hover">
 		<thead>
 			<tr>
 				<th>
@@ -420,21 +420,23 @@
 			<tr>
 				{{#if .isDir}}
 				<td>
+					<droppable useParent="true" hoverClass="drop-over" dropData="{{.}}">
+					</droppable>
 					<a href="#" on-click="explorerSelect">
 						<draggable useParent="true" revert="true" zIndex="1000" disabled="{{currentKeypath === 'stars'}}">
-						<span class="explorer-icon fa fa-{{explorerIcon}}"></span>  {{name}}
+							<span class="explorer-icon fa fa-{{explorerIcon}}"></span>  {{name}}
 						</draggable>
 					</a>
 				</td>
 				{{else}}
 				<td>
 					{{#if .canRead}}
-						<draggable revert="true" zIndex="1000" disabled="{{currentKeypath === 'stars'}}">
 						<a href="{{explorerUrl}}" target="{{#newWindow}}_blank{{/newWindow}}" {{#.behavior.download}}download=""{{/download}}>
+						<draggable useParent="true" revert="true" zIndex="1000" disabled="{{currentKeypath === 'stars'}}" dragData="{{.}}">
 							<span class="explorer-icon fa fa-{{explorerIcon}}"></span>  {{name}}
-						</a>
 						</draggable>
-						{{else}}
+						</a>
+					{{else}}
 						<a href="#">
 							<span class="fa fa-{{explorerIcon}}"></span>  {{name}}
 						</a>
@@ -474,15 +476,15 @@
 
 		<droppable useParent="true" hoverClass="drop-over">
 		</droppable>
-		<draggable revert="true" useParent="true" zIndex="1000" dragData="{{.}}" disabled="{{currentKeypath === 'stars'}}">
+		<draggable revert="true" useParent="true" zIndex="1000" disabled="{{currentKeypath === 'stars'}}">
 		<span class="grid-icon fa fa-5x fa-{{explorerIcon}}"></span>
 		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
 		</draggable>
 	</a>
 {{else}}
 	{{#if .canRead}}
-	<draggable revert="true" zIndex="1000" disabled="{{currentKeypath === 'stars'}}">
 	<a href="{{explorerUrl}}" target="{{#newWindow}}_blank{{/newWindow}}" {{#.download}}download=""{{/download}} class="file-tile">
+		<draggable revert="true" useParent="true" zIndex="1000" disabled="{{currentKeypath === 'stars'}}">
 		{{#if currentKeypath !== "stars"}}
 			<a href="#" class="btn btn-file-grid" on-click="properties:{{.url}}" title="Properties"><span class="glyphicon glyphicon-cog"></span></a>
 		{{else}}
@@ -490,8 +492,8 @@
 		{{/if}}
 		<span class="grid-icon fa fa-5x fa-{{explorerIcon}}"></span>
 		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
+		</draggable>
 	</a>
-	</draggable>
 	{{else}}
 	<a href="#"  class="file-tile">
 		{{#if currentKeypath === "stars"}}

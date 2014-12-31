@@ -4495,6 +4495,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
         snap: false,
         containment: false,
         zIndex: false,
+        scope: 'default',
         disabled: false,
         dragData: {}
       },
@@ -4511,11 +4512,12 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
             addClasses: r.get('addClasses'),
             revert: r.get('revert'),
             snap: r.get('snap'),
+            scope: r.get('scope'),
             containment: r.get('containment'),
             zIndex: r.get('zIndex'),
             disabled: r.get('disabled'),
             start: function (event, ui) {
-              ui.dragData = r.get('dragData');
+              $(node).data(r.get('dragData'));
             }
           });
           return {
@@ -6065,7 +6067,10 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
         addClasses: false,
         disabled: false,
         greedy: false,
-        hoverClass: false
+        tolerance: 'intersect',
+        hoverClass: false,
+        scope: 'default',
+        dropData: {}
       },
       decorators: {
         droppable: function (srcNode) {
@@ -6081,8 +6086,11 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
             disabled: r.get('disabled'),
             greedy: r.get('greedy'),
             hoverClass: r.get('hoverClass'),
+            tolerance: r.get('tolerance'),
+            scope: r.get('scope'),
             drop: function (event, ui) {
-              console.log(ui.draggable);
+              ui.draggable.remove();
+              r.fire('drop', $(ui.draggable).data(), r.get('dropData'));
             }
           });
           return {
