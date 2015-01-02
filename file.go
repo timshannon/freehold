@@ -480,12 +480,3 @@ func writeFile(reader io.Reader, filename string, overwrite bool) error {
 	}
 	return nil
 }
-
-func moveFile(from, to *resource.File) error {
-	//move permissions
-	err := permission.Move(from, to)
-	if err != nil {
-		return err
-	}
-	return os.Rename(from.Filepath(), to.Filepath())
-}

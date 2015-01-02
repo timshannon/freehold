@@ -418,31 +418,32 @@
 		<tbody>
 			{{#currentFolder.files:i}}
 			<tr>
-				{{#if .isDir}}
-				<td>
-					<droppable useParent="true" hoverClass="drop-over" dropData="{{.}}">
-					</droppable>
-					<a href="#" on-click="explorerSelect">
-						<draggable useParent="true" revert="true" zIndex="1000" disabled="{{currentKeypath === 'stars'}}">
-							<span class="explorer-icon fa fa-{{explorerIcon}}"></span>  {{name}}
-						</draggable>
-					</a>
-				</td>
-				{{else}}
-				<td>
-					{{#if .canRead}}
-						<a href="{{explorerUrl}}" target="{{#newWindow}}_blank{{/newWindow}}" {{#.behavior.download}}download=""{{/download}}>
-						<draggable useParent="true" revert="true" zIndex="1000" disabled="{{currentKeypath === 'stars'}}" dragData="{{.}}">
-							<span class="explorer-icon fa fa-{{explorerIcon}}"></span>  {{name}}
-						</draggable>
-						</a>
+				{{#if .canRead}}
+					{{#if .isDir}}
+						<td>
+							<droppable useParent="true" hoverClass="drop-over" dropData="{{.}}">
+							</droppable>
+							<a href="#" on-click="explorerSelect">
+								<draggable useParent="true" opacity="0.7" helper="clone" zIndex="1000" dragData="{{.}}" disabled="{{currentKeypath === 'stars'}}">
+								</draggable>
+								<span class="explorer-icon fa fa-{{explorerIcon}}"></span>  {{name}}
+							</a>
+						</td>
 					{{else}}
-						<a href="#">
+						<td>
+							<a href="{{explorerUrl}}" target="{{#newWindow}}_blank{{/newWindow}}" {{#.behavior.download}}download=""{{/download}}>
+								<draggable useParent="true" opacity="0.7" helper="clone" zIndex="1000" disabled="{{currentKeypath === 'stars'}}" dragData="{{.}}">
+								</draggable>
+								<span class="explorer-icon fa fa-{{explorerIcon}}"></span>  {{name}}
+							</a>
+						</td>
+					{{/if}}
+				{{else}}
+					<td>
+						<a href="#" onmousedown="return false">
 							<span class="fa fa-{{explorerIcon}}"></span>  {{name}}
 						</a>
-
-					{{/if}}
-				</td>
+					</td>
 				{{/if}}
 				<td>{{permissions.owner}}</td>
 				<td>{{modifiedDate}}</td>
@@ -469,22 +470,23 @@
 
 <!-- {{>fileTile}} -->
 {{#if .isDir}}
-	<a href="#" on-click="explorerSelect" class="file-tile">
+	<a href="#" on-click="explorerSelect" class="file-tile" {{^canRead}}onmousedown="return false"{{/}}>
 	{{#if currentKeypath === "stars"}}
 		<a href="#" class="btn btn-file-grid" on-click="removeStar" title="Remove Star"><span class="glyphicon glyphicon-remove"></span></a>
 	{{/if}}
-
-		<droppable useParent="true" hoverClass="drop-over">
+		{{#if .canRead}}
+		<droppable useParent="true" hoverClass="drop-over" dropData="{{.}}">
 		</droppable>
-		<draggable revert="true" useParent="true" zIndex="1000" disabled="{{currentKeypath === 'stars'}}">
+		<draggable helper="clone" opacity="0.7" useParent="true" zIndex="1000" dragData="{{.}}" disabled="{{currentKeypath === 'stars'}}">
+		</draggable>
+		{{/if}}
 		<span class="grid-icon fa fa-5x fa-{{explorerIcon}}"></span>
 		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
-		</draggable>
 	</a>
 {{else}}
 	{{#if .canRead}}
 	<a href="{{explorerUrl}}" target="{{#newWindow}}_blank{{/newWindow}}" {{#.download}}download=""{{/download}} class="file-tile">
-		<draggable revert="true" useParent="true" zIndex="1000" disabled="{{currentKeypath === 'stars'}}">
+		<draggable helper="clone" opacity="0.7" useParent="true" zIndex="1000" dragData="{{.}}" disabled="{{currentKeypath === 'stars'}}">
 		{{#if currentKeypath !== "stars"}}
 			<a href="#" class="btn btn-file-grid" on-click="properties:{{.url}}" title="Properties"><span class="glyphicon glyphicon-cog"></span></a>
 		{{else}}
@@ -495,7 +497,7 @@
 		</draggable>
 	</a>
 	{{else}}
-	<a href="#"  class="file-tile">
+	<a href="#"  class="file-tile" onmousedown="return false">
 		{{#if currentKeypath === "stars"}}
 			<a href="#" class="btn btn-file-grid" on-click="removeStar" title="Remove Star"><span class="glyphicon glyphicon-remove"></span></a>
 		{{/if}}

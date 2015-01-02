@@ -20,7 +20,7 @@ component.exports = {
 			tolerance: "intersect",
 			hoverClass: false,
 			scope: "default",
-			dropData: {},
+			dropData: null,
 	},
 	decorators: {
 		droppable: function (srcNode) {
@@ -40,7 +40,6 @@ component.exports = {
 				scope: r.get("scope"),
 				drop: function(event, ui) {
 					r.fire("drop", $(ui.draggable).data(), r.get("dropData"));
-					ui.draggable.remove();
 				},
 			});
 			return {

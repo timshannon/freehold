@@ -19,9 +19,11 @@ component.exports = {
 			snap: false,
 			containment: false,
 			zIndex: false,	
+			opacity: false,
 			scope: "default",
+			helper: "original",
 			disabled: false,
-			dragData: {},
+			dragData: null,
 	},
 	decorators: {
 		draggable: function (srcNode) {
@@ -38,10 +40,14 @@ component.exports = {
 				snap: r.get("snap"),
 				scope: r.get("scope"),
 				containment: r.get("containment"),
+				opacity: r.get("opacity"),
 				zIndex: r.get("zIndex"),
+				helper: r.get("helper"),
 				disabled: r.get("disabled"),
 				start: function(event, ui) {
-					$(node).data(r.get("dragData"));	
+					if(r.get("dragData")) {
+						$(node).data(r.get("dragData"));	
+					}
 				},
 			});
 			return {

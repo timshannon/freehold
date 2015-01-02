@@ -292,7 +292,13 @@ $(document).ready(function() {
             }
         },
         "droppable.drop": function(source, dest) {
+            if (source.url === dest.url) {
+                return;
+            }
             var newUrl = fh.util.urlJoin(dest.url, trimSlash(source.url).split("/").pop());
+            if (trimSlash(source.url) == newUrl) {
+                return;
+            }
 
             moveFile(source.url, newUrl)
                 .done(function() {
@@ -557,6 +563,7 @@ $(document).ready(function() {
         if (file.isDir) {
             file.explorerIcon = "folder";
             file.canSelect = true;
+            file.droppable = true;
             if (file.open) {
                 file.iconClass = "fa fa-folder-open";
             } else {

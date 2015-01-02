@@ -1,3 +1,6 @@
+<link rel="ractive" href="draggable.html" name="draggable">
+<link rel="ractive" href="droppable.html" name="droppable">
+
 <div class="tree">
 	{{#root}}
 	<div class="{{#if .selected}}selected bg-info{{else}}child{{/if}}">
@@ -44,7 +47,14 @@
 
 <!-- {{>child}} -->
 <li>
-	<div class="{{#if .selected}}selected bg-info{{else}}child{{/if}}">
+	<div class="{{#if .selected}}selected{{else}}child{{/if}}" {{^.draggable}}onmousedown="return false"{{/}}>
+		{{#if .draggable}}
+			<draggable useParent="true" opacity="0.7" helper="clone" zIndex="1000" dragData="{{.}}"></draggable>	
+		{{/if}}
+		{{#if .droppable}}
+			<droppable useParent="true" hoverClass="dropHover" dropData="{{.}}"></droppable>	
+		{{/if}}
+
 		{{#tree.hasChildren(this)}}
 			<a href="#" on-click="open">
 				<span class="glyphicon glyphicon-{{#if .open}}minus{{else}}plus{{/if}}"></span>
@@ -76,12 +86,13 @@
 <!-- {{/child}} -->
 
 <style>
-	.selected {
+	.selected, .dropHover {
 		border-color: #ccc;
 		border: 0px solid transparent;
 		border-radius: 4px;
 		padding: 5px;
 		font-weight:bold;
+		background-color: #D9EDF7;
 	}
 
 	.child {
