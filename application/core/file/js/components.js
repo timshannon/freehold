@@ -4600,14 +4600,22 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
               ]
             }]
         },
-        css: '.drop-overlay {\nz-index: 5000;\nposition: absolute;\ntop: 0;\nleft: 0;\nheight: 100%;\nwidth: 100%;\nopacity: .9;\nbackground-color: #fff;\nborder: 5px dashed #555;\nborder-radius: 4px;\n}\n.drop-text {\nfont-size: 4em;\nfont-weight: 700;\nposition: relative;\ntop: 50%;\ntransform: translateY(-50%);\n}\n'
+        css: '.drop-overlay {\nz-index: 5000;\nposition: absolute;\ntop: 0;\nleft: 0;\nmax-height: 100vh;\nmax-width: 100vw;\nwidth: 100%;\nheight: 100%;\nopacity: .9;\nbackground-color: #fff;\nborder: 5px dashed #555;\nborder-radius: 4px;\n}\n.drop-text {\nfont-size: 4em;\nfont-weight: 700;\nposition: relative;\ntop: 50%;\ntransform: translateY(-50%);\n}\n'
       }, component = {};
     var timer;
     component.exports = {
-      data: { mode: 'none' },
+      data: {
+        mode: 'none',
+        useParent: false
+      },
       decorators: {
-        dropzone: function (node) {
+        dropzone: function (srcNode) {
           var r = this;
+          if (r.get('useParent')) {
+            node = srcNode.parentNode;
+          } else {
+            node = srcNode;
+          }
           dragenter = function (e) {
             e.stopPropagation();
             e.preventDefault();

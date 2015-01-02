@@ -305,6 +305,7 @@ $(document).ready(function() {
                     refresh();
                 })
                 .fail(function(result) {
+                    //TODO: Better error handling.  Replace option?
                     error(result);
                 });
         },
@@ -476,7 +477,7 @@ $(document).ready(function() {
         var app;
         var rootPlace = 2;
 
-        if (urlParts[1] !== "v1") {
+        if (fh.util.versions().indexOf(urlParts[1]) === -1) {
             app = urlParts[1];
             rootPlace = 3;
         }
@@ -485,6 +486,13 @@ $(document).ready(function() {
         rMain.set("loading", true);
 
         updateFilesTo(urlParts[rootPlace] === "file" ? "files" : "datastores", url);
+    }
+
+    function isDS(url) {
+		var s = fh.util.splitRootAndPath(url);
+
+		if(fh.util.versions().indexOf(s[0]) !== -1) {
+		}
     }
 
 
@@ -560,10 +568,22 @@ $(document).ready(function() {
 
 
     function setFileType(file) {
+        if (file.modified) {
+            file.modifiedDate = new Date(file.modified).toLocaleString();
+            file.canRead = true;
+        } else {
+            file.canRead = false;
+        }
+
         if (file.isDir) {
             file.explorerIcon = "folder";
-            file.canSelect = true;
-            file.droppable = true;
+            if (file.canRead) {
+                file.canSelect = true;
+                file.droppable = true;
+            } else {
+                file.open = false;
+            }
+
             if (file.open) {
                 file.iconClass = "fa fa-folder-open";
             } else {
@@ -590,12 +610,7 @@ $(document).ready(function() {
             }
         }
 
-        if (file.modified) {
-            file.modifiedDate = new Date(file.modified).toLocaleString();
-            file.canRead = true;
-        } else {
-            file.canRead = false;
-        }
+
         return file;
     }
 

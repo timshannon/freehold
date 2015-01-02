@@ -238,7 +238,7 @@
 </modal>
 
 
-<div class="row pageNav">
+<div class="row page-nav">
 	<div id="rootNav" class="col-sm-3">
 		<div class="btn-group">
 			<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
@@ -345,8 +345,8 @@
 		</div>
 
 </div> <!-- row -->
-<div class="row">
-	<div class="sidebar  col-sm-3{{#if hideSidebar}} hidden-sidebar{{/if}}">
+<div class="file-nav row">
+	<div id="sidebar" class="col-sm-3{{#if hideSidebar}} hidden-sidebar{{/if}}">
 		{{#if hideSidebar}}
 			<a href="#" class="sidebar-hide-btn" on-click="toggle('hideSidebar')" title="Show Sidebar"><span class="glyphicon glyphicon-chevron-right"></span></a>
 		{{else}}
@@ -363,7 +363,7 @@
 	</div> <!-- sidebar -->
 
 	<div id="explorer" class="{{#if hideSidebar}}col-sm-12{{else}}col-sm-9{{/if}}">
-	<dropzone>
+	<dropzone useParent="true"></dropzone>
 	{{#loading}}
 		<div class="overlay"></div>
 		<div class="loading">
@@ -465,7 +465,6 @@
 	</table>		
 	{{/if}}
 	</div>	
-</dropzone>
 </div> <!-- explorer -->
 
 <!-- {{>fileTile}} -->
