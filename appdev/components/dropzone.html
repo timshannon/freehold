@@ -13,8 +13,10 @@
 		position: absolute;
 		top: 0;
 		left: 0;
-		height: 100%;
+		max-height: 100vh;
+		max-width: 100vw;
 		width: 100%;
+		height: 100%;
 		opacity: .9;
 
 		background-color: #fff;
@@ -37,10 +39,17 @@ var timer;
 component.exports = {
 	data: {
 		mode: "none",
+		useParent: false,
 	},
 	decorators: {
-		dropzone: function (node) {
+		dropzone: function (srcNode) {
 			var r = this;
+
+			if(r.get("useParent")) {
+				node = srcNode.parentNode;	
+			} else {
+				node = srcNode;
+			}
 
 			dragenter = function(e) {
 				e.stopPropagation();

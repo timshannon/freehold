@@ -5,7 +5,7 @@
 window.fh = (function() {
     'use strict';
     var _auth;
-    var versions = ["v1"];
+    var versions = ["v1"]; //will only show versions supported by this library
     var _runas;
 
     function stdAjax(type, url, options) {
@@ -404,6 +404,9 @@ window.fh = (function() {
             });
         },
         util: {
+            versions: function() {
+                return versions;
+            },
             runNextAs: function(username, password) {
                 _runas = {
                     username: username,

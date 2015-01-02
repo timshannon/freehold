@@ -5,7 +5,6 @@
 package resource
 
 import (
-	"errors"
 	"os"
 	"path"
 	"path/filepath"
@@ -56,7 +55,8 @@ func (r *File) Parent() *File {
 
 func (r *File) Children() ([]*File, error) {
 	if !r.IsDir() {
-		return nil, errors.New("File " + r.Filepath() + " is not a folder!")
+		return make([]*File, 0), nil
+		//return nil, errors.New("File " + r.Filepath() + " is not a folder!")
 	}
 
 	file, err := os.Open(r.Filepath())
@@ -151,14 +151,38 @@ func (r *File) FileInfo() os.FileInfo {
 	return nil
 }
 
-func (r *File) Move(to *File) {
-	//TODO: Recursively move permissions
-	//move permissions
-	err := permission.Move(from, to)
+func (r *File) Move(to *File) error {
+	err := r.movePermissions(to)
 	if err != nil {
 		return err
 	}
-	return os.Rename(from.Filepath(), to.Filepath())
+
+	return os.Rename(r.Filepath(), to.Filepath())
+}
+
+func (r *File) movePermissions(to *File) error {
+	err := permission.Move(r, to)
+	if err != nil {
+		return err
+	}
+
+	if !r.IsDir() {
+		return nil
+	}
+
+	children, err := r.Children()
+	if err != nil {
+		return err
+	}
+	for i := range children {
+		child := children[i]
+		childTo := NewFile(path.Join(to.Url(), child.Name()))
+		err = child.movePermissions(childTo)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (r *File) Permission() (*permission.Permission, error) {

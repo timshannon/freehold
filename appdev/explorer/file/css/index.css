@@ -2,24 +2,27 @@
 	width: 100%;
 	padding-right: 15px;
 	padding-left: 15px;
-	padding-bottom: 25px;
-	margin-top: -20px
+	margin-top: -20px;
+	min-height: 80vh;
 }
 
-.pageNav {
+a:focus {
+	outline: none;
+}
+
+.page-nav {
 	border-bottom: 1px solid #ccc;
 	padding-top: 15px;
 	padding-bottom: 15px;
 	background-color: #f8f8f8;
 }
 
-
-.sidebar {
+#sidebar {
 	border-right: 1px solid #ccc;
 	min-height: 80vh;
 }
 
-.dropzone {
+#explorer {
 	min-height: 80vh;
 }
 

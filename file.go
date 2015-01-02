@@ -183,6 +183,16 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 		sourceFile := resource.NewFile(r.URL.Path)
 		destFile := resource.NewFile(input.Move)
 
+		if sourceFile.IsDatastore() {
+			errHandled(fail.New("Invalid file type", sourceFile.Name()), w, auth)
+			return
+		}
+
+		if destFile.IsDatastore() {
+			errHandled(fail.New("Invalid file type", destFile.Name()), w, auth)
+			return
+		}
+
 		//Source parent permissions
 		if errHandled(auth.tryWrite(sourceFile.Parent()), w, auth) {
 			return
@@ -203,7 +213,7 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err = moveFile(sourceFile, destFile)
+		err = sourceFile.Move(destFile)
 		if os.IsExist(err) {
 			err = fail.New("Folder already exists!", destFile.Url())
 		} else if os.IsNotExist(err) {
