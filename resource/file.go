@@ -151,6 +151,16 @@ func (r *File) FileInfo() os.FileInfo {
 	return nil
 }
 
+func (r *File) Move(to *File) {
+	//TODO: Recursively move permissions
+	//move permissions
+	err := permission.Move(from, to)
+	if err != nil {
+		return err
+	}
+	return os.Rename(from.Filepath(), to.Filepath())
+}
+
 func (r *File) Permission() (*permission.Permission, error) {
 	if r.permission != nil {
 		return r.permission, nil

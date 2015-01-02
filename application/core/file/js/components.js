@@ -1,5 +1,5 @@
 ;(function() {
-var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jsonviewer, rvc_jquery_ui, rvc_datepicker, lib_jquery_ui_core, lib_jquery_ui_datepicker, rvc_fileinput, rvc_dropzone, rvc_draggable, lib_jquery_ui_widget, lib_jquery_ui_mouse, lib_jquery_ui_draggable, rvc_droppable, lib_jquery_ui_droppable, rvc_selectable, lib_jquery_ui_selectable;
+var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, rvc_tree, rvc_filetree, rvc_jsonviewer, rvc_jquery_ui, rvc_datepicker, lib_jquery_ui_core, lib_jquery_ui_datepicker, rvc_fileinput, rvc_dropzone, lib_jquery_ui_widget, lib_jquery_ui_mouse, lib_jquery_ui_draggable, lib_jquery_ui_droppable, rvc_selectable, lib_jquery_ui_selectable;
 (function (ractive, jquery) {
   rvc = {
     load: function (id) {
@@ -1077,7 +1077,171 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
     }
     return Ractive.extend(__options__);
   }({}, ractive);
-  rvc_tree = function (require, Ractive) {
+  rvc_droppable = function (require, Ractive) {
+    var __options__ = {
+        template: {
+          v: 1,
+          t: [{
+              t: 7,
+              e: 'span',
+              a: {
+                'class': [
+                  'droppable ',
+                  {
+                    t: 2,
+                    r: 'class'
+                  }
+                ]
+              },
+              o: 'droppable',
+              f: [{
+                  t: 2,
+                  r: 'yield'
+                }]
+            }]
+        },
+        css: ''
+      }, component = {};
+    component.exports = {
+      //defaulted options, can be overridden at component markup
+      // options to be added as needed, and they should match
+      // the jqueryui options
+      data: {
+        useParent: false,
+        addClasses: false,
+        disabled: false,
+        greedy: false,
+        tolerance: 'intersect',
+        hoverClass: false,
+        scope: 'default',
+        dropData: null
+      },
+      decorators: {
+        droppable: function (srcNode) {
+          var r = this;
+          var node;
+          if (r.get('useParent')) {
+            node = srcNode.parentNode;
+          } else {
+            node = srcNode;
+          }
+          $(node).droppable({
+            addClasses: r.get('addClasses'),
+            disabled: r.get('disabled'),
+            greedy: r.get('greedy'),
+            hoverClass: r.get('hoverClass'),
+            tolerance: r.get('tolerance'),
+            scope: r.get('scope'),
+            drop: function (event, ui) {
+              r.fire('drop', $(ui.draggable).data(), r.get('dropData'));
+            }
+          });
+          return {
+            teardown: function () {
+              $(node).droppable('destroy');
+            }
+          };
+        }
+      },
+      init: function () {
+      }
+    };
+    if (typeof component.exports === 'object') {
+      for (var __prop__ in component.exports) {
+        if (component.exports.hasOwnProperty(__prop__)) {
+          __options__[__prop__] = component.exports[__prop__];
+        }
+      }
+    }
+    return Ractive.extend(__options__);
+  }({}, ractive);
+  rvc_draggable = function (require, Ractive) {
+    var __options__ = {
+        template: {
+          v: 1,
+          t: [{
+              t: 7,
+              e: 'span',
+              a: {
+                'class': [
+                  'draggable ',
+                  {
+                    t: 2,
+                    r: 'class'
+                  }
+                ]
+              },
+              o: 'draggable',
+              f: [{
+                  t: 2,
+                  r: 'yield'
+                }]
+            }]
+        },
+        css: ''
+      }, component = {};
+    component.exports = {
+      //defaulted options, can be overridden at component markup
+      // options to be added as needed, and they should match
+      // the jqueryui options
+      data: {
+        useParent: false,
+        addClasses: false,
+        revert: false,
+        snap: false,
+        containment: false,
+        zIndex: false,
+        opacity: false,
+        scope: 'default',
+        helper: 'original',
+        disabled: false,
+        dragData: null
+      },
+      decorators: {
+        draggable: function (srcNode) {
+          var r = this;
+          var node;
+          if (r.get('useParent')) {
+            node = srcNode.parentNode;
+          } else {
+            node = srcNode;
+          }
+          $(node).draggable({
+            addClasses: r.get('addClasses'),
+            revert: r.get('revert'),
+            snap: r.get('snap'),
+            scope: r.get('scope'),
+            containment: r.get('containment'),
+            opacity: r.get('opacity'),
+            zIndex: r.get('zIndex'),
+            helper: r.get('helper'),
+            disabled: r.get('disabled'),
+            start: function (event, ui) {
+              if (r.get('dragData')) {
+                $(node).data(r.get('dragData'));
+              }
+            }
+          });
+          return {
+            teardown: function () {
+              $(node).draggable('destroy');
+            }
+          };
+        }
+      },
+      init: function () {
+      }
+    };
+    if (typeof component.exports === 'object') {
+      for (var __prop__ in component.exports) {
+        if (component.exports.hasOwnProperty(__prop__)) {
+          __options__[__prop__] = component.exports[__prop__];
+        }
+      }
+    }
+    return Ractive.extend(__options__);
+  }({}, ractive);
+  rvc_tree = function (require, Ractive, _import_0, _import_1) {
     var __options__ = {
         template: {
           v: 1,
@@ -1112,7 +1276,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
                           t: 4,
                           n: 50,
                           r: '.selected',
-                          f: ['selected bg-info']
+                          f: ['selected']
                         },
                         {
                           t: 4,
@@ -1122,7 +1286,51 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
                         }
                       ]
                     },
+                    m: [{
+                        t: 4,
+                        r: '.draggable',
+                        f: ['onmousedown="return false"'],
+                        n: 51
+                      }],
                     f: [
+                      {
+                        t: 4,
+                        n: 50,
+                        r: '.draggable',
+                        f: [{
+                            t: 7,
+                            e: 'draggable',
+                            a: {
+                              useParent: 'true',
+                              opacity: '0.7',
+                              helper: 'clone',
+                              zIndex: '1000',
+                              dragData: [{
+                                  t: 2,
+                                  r: '.'
+                                }]
+                            }
+                          }]
+                      },
+                      ' ',
+                      {
+                        t: 4,
+                        n: 50,
+                        r: '.droppable',
+                        f: [{
+                            t: 7,
+                            e: 'droppable',
+                            a: {
+                              useParent: 'true',
+                              hoverClass: 'dropHover',
+                              dropData: [{
+                                  t: 2,
+                                  r: '.'
+                                }]
+                            }
+                          }]
+                      },
+                      ' ',
                       {
                         t: 4,
                         x: {
@@ -1462,7 +1670,11 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
                 }]
             }]
         },
-        css: '.selected {\nborder-color: #ccc;\nborder: 0px solid transparent;\nborder-radius: 4px;\npadding: 5px;\nfont-weight:bold;\n}\n.child {\npadding: 5px;\n}\n.child:hover {\nbackground-color: #f5f5f5;\nborder: 0px solid transparent;\nborder-radius: 4px;\npadding: 5px;\n}\na:hover, a:focus {\ntext-decoration: none;\t\ncolor: #333;\n}\na {\ncolor: #333;\n}\n.tree {\ncursor: default;\noverflow: auto;\n}\nul {\nlist-style: none;\n}\nli {\nmargin-left: -22px;\n}\n.icon {\ncolor: #555;\n}\n.icon {\nmax-width: 14px;\nmax-height: 14px;\t\n}\n'
+        css: '.selected, .dropHover {\nborder-color: #ccc;\nborder: 0px solid transparent;\nborder-radius: 4px;\npadding: 5px;\nfont-weight:bold;\nbackground-color: #D9EDF7;\n}\n.child {\npadding: 5px;\n}\n.child:hover {\nbackground-color: #f5f5f5;\nborder: 0px solid transparent;\nborder-radius: 4px;\npadding: 5px;\n}\na:hover, a:focus {\ntext-decoration: none;\t\ncolor: #333;\n}\na {\ncolor: #333;\n}\n.tree {\ncursor: default;\noverflow: auto;\n}\nul {\nlist-style: none;\n}\nli {\nmargin-left: -22px;\n}\n.icon {\ncolor: #555;\n}\n.icon {\nmax-width: 14px;\nmax-height: 14px;\t\n}\n',
+        components: {
+          'droppable': _import_0,
+          'draggable': _import_1
+        }
       }, component = {};
     component.exports = {
       data: {
@@ -1580,7 +1792,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
       }
     }
     return Ractive.extend(__options__);
-  }({}, ractive);
+  }({}, ractive, rvc_droppable, rvc_draggable);
   rvc_filetree = function (require, Ractive, _import_0) {
     var __options__ = {
         template: {
@@ -4459,86 +4671,6 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
     }
     return Ractive.extend(__options__);
   }({}, ractive);
-  rvc_draggable = function (require, Ractive) {
-    var __options__ = {
-        template: {
-          v: 1,
-          t: [{
-              t: 7,
-              e: 'span',
-              a: {
-                'class': [
-                  'draggable ',
-                  {
-                    t: 2,
-                    r: 'class'
-                  }
-                ]
-              },
-              o: 'draggable',
-              f: [{
-                  t: 2,
-                  r: 'yield'
-                }]
-            }]
-        },
-        css: ''
-      }, component = {};
-    component.exports = {
-      //defaulted options, can be overridden at component markup
-      // options to be added as needed, and they should match
-      // the jqueryui options
-      data: {
-        useParent: false,
-        addClasses: false,
-        revert: false,
-        snap: false,
-        containment: false,
-        zIndex: false,
-        scope: 'default',
-        disabled: false,
-        dragData: {}
-      },
-      decorators: {
-        draggable: function (srcNode) {
-          var r = this;
-          var node;
-          if (r.get('useParent')) {
-            node = srcNode.parentNode;
-          } else {
-            node = srcNode;
-          }
-          $(node).draggable({
-            addClasses: r.get('addClasses'),
-            revert: r.get('revert'),
-            snap: r.get('snap'),
-            scope: r.get('scope'),
-            containment: r.get('containment'),
-            zIndex: r.get('zIndex'),
-            disabled: r.get('disabled'),
-            start: function (event, ui) {
-              $(node).data(r.get('dragData'));
-            }
-          });
-          return {
-            teardown: function () {
-              $(node).draggable('destroy');
-            }
-          };
-        }
-      },
-      init: function () {
-      }
-    };
-    if (typeof component.exports === 'object') {
-      for (var __prop__ in component.exports) {
-        if (component.exports.hasOwnProperty(__prop__)) {
-          __options__[__prop__] = component.exports[__prop__];
-        }
-      }
-    }
-    return Ractive.extend(__options__);
-  }({}, ractive);
   /*!
    * jQuery UI Widget @VERSION
    * http://jqueryui.com
@@ -6033,85 +6165,6 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_tree, rvc_filetree, rvc_jso
     });
     return $.ui.draggable;
   }));
-  rvc_droppable = function (require, Ractive) {
-    var __options__ = {
-        template: {
-          v: 1,
-          t: [{
-              t: 7,
-              e: 'span',
-              a: {
-                'class': [
-                  'droppable ',
-                  {
-                    t: 2,
-                    r: 'class'
-                  }
-                ]
-              },
-              o: 'droppable',
-              f: [{
-                  t: 2,
-                  r: 'yield'
-                }]
-            }]
-        },
-        css: ''
-      }, component = {};
-    component.exports = {
-      //defaulted options, can be overridden at component markup
-      // options to be added as needed, and they should match
-      // the jqueryui options
-      data: {
-        useParent: false,
-        addClasses: false,
-        disabled: false,
-        greedy: false,
-        tolerance: 'intersect',
-        hoverClass: false,
-        scope: 'default',
-        dropData: {}
-      },
-      decorators: {
-        droppable: function (srcNode) {
-          var r = this;
-          var node;
-          if (r.get('useParent')) {
-            node = srcNode.parentNode;
-          } else {
-            node = srcNode;
-          }
-          $(node).droppable({
-            addClasses: r.get('addClasses'),
-            disabled: r.get('disabled'),
-            greedy: r.get('greedy'),
-            hoverClass: r.get('hoverClass'),
-            tolerance: r.get('tolerance'),
-            scope: r.get('scope'),
-            drop: function (event, ui) {
-              ui.draggable.remove();
-              r.fire('drop', $(ui.draggable).data(), r.get('dropData'));
-            }
-          });
-          return {
-            teardown: function () {
-              $(node).droppable('destroy');
-            }
-          };
-        }
-      },
-      init: function () {
-      }
-    };
-    if (typeof component.exports === 'object') {
-      for (var __prop__ in component.exports) {
-        if (component.exports.hasOwnProperty(__prop__)) {
-          __options__[__prop__] = component.exports[__prop__];
-        }
-      }
-    }
-    return Ractive.extend(__options__);
-  }({}, ractive);
   /*!
    * jQuery UI Droppable @VERSION
    * http://jqueryui.com
