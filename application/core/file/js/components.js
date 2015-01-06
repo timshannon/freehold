@@ -1108,7 +1108,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
       // the jqueryui options
       data: {
         useParent: false,
-        addClasses: false,
+        addClasses: true,
         disabled: false,
         greedy: false,
         tolerance: 'intersect',
@@ -1178,7 +1178,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
                 }]
             }]
         },
-        css: ''
+        css: '.drag-nametag {\nfont-size: 1.4em; \n}\n'
       }, component = {};
     component.exports = {
       //defaulted options, can be overridden at component markup
@@ -1195,7 +1195,12 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
         scope: 'default',
         helper: 'original',
         disabled: false,
-        dragData: null
+        cursor: false,
+        cursorAt: false,
+        appendTo: false,
+        dragData: null,
+        name: null,
+        count: null
       },
       decorators: {
         draggable: function (srcNode) {
@@ -1206,6 +1211,22 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
           } else {
             node = srcNode;
           }
+          var helper = r.get('helper');
+          if (r.get('helper') == 'nametag') {
+            if (!r.get('cursor')) {
+              r.set('cursor', 'move');
+            }
+            if (!r.get('cursorAt')) {
+              r.set('cursorAt', {
+                top: 0,
+                left: 10
+              });
+            }
+            helper = function () {
+              console.log(srcNode);
+              return $(srcNode).clone(true);
+            };
+          }
           $(node).draggable({
             addClasses: r.get('addClasses'),
             revert: r.get('revert'),
@@ -1214,8 +1235,10 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
             containment: r.get('containment'),
             opacity: r.get('opacity'),
             zIndex: r.get('zIndex'),
-            helper: r.get('helper'),
+            helper: helper,
             disabled: r.get('disabled'),
+            cursor: r.get('cursor'),
+            cursorAt: r.get('cursorAt'),
             start: function (event, ui) {
               if (r.get('dragData')) {
                 $(node).data(r.get('dragData'));

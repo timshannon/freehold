@@ -3,7 +3,9 @@
 </span>
 
 <style>
-	
+	.drag-nametag {
+		font-size: 1.4em; 
+	}
 </style>
 
 <script>
@@ -23,7 +25,12 @@ component.exports = {
 			scope: "default",
 			helper: "original",
 			disabled: false,
+			cursor: false,
+			cursorAt: false,
+			appendTo: false,
 			dragData: null,
+			name:	null,
+			count: null,
 	},
 	decorators: {
 		draggable: function (srcNode) {
@@ -34,6 +41,28 @@ component.exports = {
 			} else {
 				node = srcNode;
 			}
+
+			var helper = r.get("helper")
+
+			if (r.get("helper") == "nametag") {
+				if(!r.get("cursor")) {
+					r.set("cursor", "move");
+				}
+
+				if(!r.get("cursorAt")) {
+					r.set("cursorAt", {
+						top: 0,
+						left: 10,
+					});
+				}
+
+				helper = function() {
+					console.log(srcNode);
+					return $(srcNode).clone(true);
+	
+				}
+			}
+
 			$(node).draggable({
 				addClasses: r.get("addClasses"),
 				revert: r.get("revert"),
@@ -42,8 +71,10 @@ component.exports = {
 				containment: r.get("containment"),
 				opacity: r.get("opacity"),
 				zIndex: r.get("zIndex"),
-				helper: r.get("helper"),
+				helper: helper,
 				disabled: r.get("disabled"),
+				cursor: r.get("cursor"),
+				cursorAt: r.get("cursorAt"),
 				start: function(event, ui) {
 					if(r.get("dragData")) {
 						$(node).data(r.get("dragData"));	
