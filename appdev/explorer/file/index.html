@@ -421,19 +421,16 @@
 				{{#if .canRead}}
 					{{#if .isDir}}
 						<td>
-							<droppable useParent="true" hoverClass="drop-over" dropData="{{.}}">
-							</droppable>
+							{{>droppable}}
 							<a href="#" on-click="explorerSelect">
-								<draggable useParent="true" opacity="0.7" helper="clone" zIndex="1000" dragData="{{.}}" disabled="{{currentKeypath === 'stars'}}">
-								</draggable>
+								{{>draggable}}
 								<span class="explorer-icon fa fa-{{explorerIcon}}"></span>  {{name}}
 							</a>
 						</td>
 					{{else}}
 						<td>
 							<a href="{{explorerUrl}}" target="{{#newWindow}}_blank{{/newWindow}}" {{#.behavior.download}}download=""{{/download}}>
-								<draggable useParent="true" opacity="0.7" helper="clone" zIndex="1000" disabled="{{currentKeypath === 'stars'}}" dragData="{{.}}">
-								</draggable>
+								{{>draggable}}
 								<span class="explorer-icon fa fa-{{explorerIcon}}"></span>  {{name}}
 							</a>
 						</td>
@@ -467,6 +464,17 @@
 	</div>	
 </div> <!-- explorer -->
 
+<!-- {{>draggable}} -->
+<draggable useParent="true" helper="nametag" zIndex="1000" disabled="{{currentKeypath === 'stars'}}" dragData="{{.}}" name="{{.name}}">
+</draggable>
+<!-- {{/draggable}} -->
+
+<!-- {{>droppable}} -->
+<droppable useParent="true" hoverClass="drop-over" dropData="{{.}}" greedy="true" tolerance="pointer" addClasses="false">
+</droppable>
+<!-- {{/droppable}} -->
+
+
 <!-- {{>fileTile}} -->
 {{#if .isDir}}
 	<a href="#" on-click="explorerSelect" class="file-tile" {{^canRead}}onmousedown="return false"{{/}}>
@@ -474,10 +482,8 @@
 		<a href="#" class="btn btn-file-grid" on-click="removeStar" title="Remove Star"><span class="glyphicon glyphicon-remove"></span></a>
 	{{/if}}
 		{{#if .canRead}}
-		<droppable useParent="true" hoverClass="drop-over" dropData="{{.}}">
-		</droppable>
-		<draggable helper="clone" opacity="0.7" useParent="true" zIndex="1000" dragData="{{.}}" disabled="{{currentKeypath === 'stars'}}">
-		</draggable>
+				{{>droppable}}
+				{{>draggable}}
 		{{/if}}
 		<span class="grid-icon fa fa-5x fa-{{explorerIcon}}"></span>
 		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
@@ -485,7 +491,7 @@
 {{else}}
 	{{#if .canRead}}
 	<a href="{{explorerUrl}}" target="{{#newWindow}}_blank{{/newWindow}}" {{#.download}}download=""{{/download}} class="file-tile">
-		<draggable helper="clone" opacity="0.7" useParent="true" zIndex="1000" dragData="{{.}}" disabled="{{currentKeypath === 'stars'}}">
+		{{>draggable}}
 		{{#if currentKeypath !== "stars"}}
 			<a href="#" class="btn btn-file-grid" on-click="properties:{{.url}}" title="Properties"><span class="glyphicon glyphicon-cog"></span></a>
 		{{else}}
@@ -493,7 +499,6 @@
 		{{/if}}
 		<span class="grid-icon fa fa-5x fa-{{explorerIcon}}"></span>
 		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
-		</draggable>
 	</a>
 	{{else}}
 	<a href="#"  class="file-tile" onmousedown="return false">
