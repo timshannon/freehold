@@ -1178,7 +1178,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
                 }]
             }]
         },
-        css: '.drag-nametag {\nfont-size: 1.4em; \n}\n'
+        css: '.drag-nametag {\nfont-size: 1.3em; \ncolor: #fff;\nbackground-color: #337ab7;\nborder-radius: 4px;\npadding: 5px 10px;\nmax-width: 300px;\noverflow: hidden;\ntext-overflow: ellipsis;\nword-wrap: break-word;\nwhite-space: nowrap;\n}\n'
       }, component = {};
     component.exports = {
       //defaulted options, can be overridden at component markup
@@ -1213,18 +1213,23 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
           }
           var helper = r.get('helper');
           if (r.get('helper') == 'nametag') {
-            if (!r.get('cursor')) {
-              r.set('cursor', 'move');
-            }
             if (!r.get('cursorAt')) {
               r.set('cursorAt', {
-                top: 0,
+                top: 5,
                 left: 10
               });
             }
             helper = function () {
-              console.log(srcNode);
-              return $(srcNode).clone(true);
+              var helpNode = new Ractive({
+                template: '<div data-rvcguid=\'{{guid}}\' class=\'drag-nametag\'><span class=\'{{iconClass}}\'></span>  {{name}}</div>',
+                data: {
+                  name: r.get('name'),
+                  count: r.get('count'),
+                  iconClass: r.get('iconClass'),
+                  guid: $(srcNode).attr('data-rvcguid')
+                }
+              });
+              return $(helpNode.toHTML());
             };
           }
           $(node).draggable({
@@ -1346,6 +1351,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
                             a: {
                               useParent: 'true',
                               hoverClass: 'dropHover',
+                              tolerance: 'pointer',
                               dropData: [{
                                   t: 2,
                                   r: '.'
@@ -6519,15 +6525,12 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
           v: 1,
           t: [{
               t: 7,
-              e: 'span',
+              e: 'div',
               a: {
-                'class': [
-                  'selectable ',
-                  {
+                'class': [{
                     t: 2,
                     r: 'class'
-                  }
-                ]
+                  }]
               },
               o: 'selectable',
               f: [{
@@ -6536,7 +6539,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
                 }]
             }]
         },
-        css: ''
+        css: '.ui-selectable-helper { \nposition: absolute; z-index: 1000; border:1px dotted black; \n}\t\n'
       }, component = {};
     component.exports = {
       //defaulted options, can be overridden at component markup
@@ -6546,6 +6549,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
         useParent: false,
         disabled: false
       },
+      noCssTransform: true,
       decorators: {
         selectable: function (srcNode) {
           var r = this;

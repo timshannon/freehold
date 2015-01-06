@@ -22,7 +22,7 @@ a:focus {
 	min-height: 80vh;
 }
 
-#explorer {
+#explorer, .ui-selectable {
 	min-height: 80vh;
 }
 
@@ -280,7 +280,11 @@ a:focus {
 	white-space: nowrap;
 }
 
-.drop-over {
+.drop-over, .ui-selecting {
 	background: #d9edf7;
+}
+
+.ui-selected {
+	background: #999;
 }
 

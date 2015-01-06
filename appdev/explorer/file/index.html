@@ -363,7 +363,7 @@
 	</div> <!-- sidebar -->
 
 	<div id="explorer" class="{{#if hideSidebar}}col-sm-12{{else}}col-sm-9{{/if}}">
-	<dropzone useParent="true"></dropzone>
+		<dropzone useParent="true"></dropzone>
 	{{#loading}}
 		<div class="overlay"></div>
 		<div class="loading">
@@ -376,9 +376,11 @@
 		</div>
 	{{/loading}}
 	{{#if !listView}}
+	<selectable disabled=""> 
 		{{#currentFolder.files:i}}
 			{{>fileTile}}
 		{{/currentFolder.files}}
+	</selectable>
 	{{else}}
 	<!--gridview-->
 	<table class="table table-condensed table-hover">
@@ -416,6 +418,7 @@
 			</tr>
 		</thead>
 		<tbody>
+			<selectable useParent="true"></selectable>
 			{{#currentFolder.files:i}}
 			<tr>
 				{{#if .canRead}}
@@ -424,14 +427,14 @@
 							{{>droppable}}
 							<a href="#" on-click="explorerSelect">
 								{{>draggable}}
-								<span class="explorer-icon fa fa-{{explorerIcon}}"></span>  {{name}}
+								<span class="fa fa-{{explorerIcon}}"></span>  {{name}}
 							</a>
 						</td>
 					{{else}}
 						<td>
 							<a href="{{explorerUrl}}" target="{{#newWindow}}_blank{{/newWindow}}" {{#.behavior.download}}download=""{{/download}}>
 								{{>draggable}}
-								<span class="explorer-icon fa fa-{{explorerIcon}}"></span>  {{name}}
+								<span class="fa fa-{{explorerIcon}}"></span>  {{name}}
 							</a>
 						</td>
 					{{/if}}
@@ -465,7 +468,8 @@
 </div> <!-- explorer -->
 
 <!-- {{>draggable}} -->
-<draggable useParent="true" helper="nametag" zIndex="1000" disabled="{{currentKeypath === 'stars'}}" dragData="{{.}}" name="{{.name}}">
+<draggable useParent="true" helper="nametag" zIndex="1000" disabled="{{currentKeypath === 'stars'}}" 
+	dragData="{{.}}" name="{{.name}}" iconClass="fa fa-{{explorerIcon}}">
 </draggable>
 <!-- {{/draggable}} -->
 
@@ -473,7 +477,6 @@
 <droppable useParent="true" hoverClass="drop-over" dropData="{{.}}" greedy="true" tolerance="pointer" addClasses="false">
 </droppable>
 <!-- {{/droppable}} -->
-
 
 <!-- {{>fileTile}} -->
 {{#if .isDir}}

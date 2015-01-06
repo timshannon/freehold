@@ -489,6 +489,7 @@ $(document).ready(function() {
     }
 
     function isDS(url) {
+		//TODO: use
 		var s = fh.util.splitRootAndPath(url);
 
 		if(fh.util.versions().indexOf(s[0]) !== -1) {
