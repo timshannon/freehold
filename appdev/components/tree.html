@@ -52,7 +52,7 @@
 			<draggable useParent="true" opacity="0.7" helper="clone" zIndex="1000" dragData="{{.}}"></draggable>	
 		{{/if}}
 		{{#if .droppable}}
-			<droppable useParent="true" hoverClass="dropHover" dropData="{{.}}"></droppable>	
+			<droppable useParent="true" hoverClass="dropHover" tolerance="pointer" dropData="{{.}}"></droppable>	
 		{{/if}}
 
 		{{#tree.hasChildren(this)}}

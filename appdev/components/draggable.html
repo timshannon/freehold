@@ -4,8 +4,19 @@
 
 <style>
 	.drag-nametag {
-		font-size: 1.4em; 
+		font-size: 1.3em; 
+		color: #fff;
+		background-color: #337ab7;
+		border-radius: 4px;
+		padding: 5px 10px;
+		max-width: 300px;
+
+		overflow: hidden;
+		text-overflow: ellipsis;
+		word-wrap: break-word;
+		white-space: nowrap;
 	}
+
 </style>
 
 <script>
@@ -45,21 +56,25 @@ component.exports = {
 			var helper = r.get("helper")
 
 			if (r.get("helper") == "nametag") {
-				if(!r.get("cursor")) {
-					r.set("cursor", "move");
-				}
-
 				if(!r.get("cursorAt")) {
 					r.set("cursorAt", {
-						top: 0,
+						top: 5,
 						left: 10,
 					});
 				}
 
 				helper = function() {
-					console.log(srcNode);
-					return $(srcNode).clone(true);
-	
+					var helpNode = new Ractive({
+						template: "<div data-rvcguid='{{guid}}' class='drag-nametag'><span class='{{iconClass}}'></span>  {{name}}</div>",
+						data: {
+							name: r.get("name"),
+							count: r.get("count"),
+							iconClass: r.get("iconClass"),
+							guid: $(srcNode).attr("data-rvcguid")
+						},
+					});
+
+					return $(helpNode.toHTML());
 				}
 			}
 

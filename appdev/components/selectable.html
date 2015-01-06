@@ -1,9 +1,11 @@
-<span class="selectable {{class}}" decorator="selectable">
+<div class="{{class}}" decorator="selectable">
 	{{yield}}
-</span>
+</div>
 
 <style>
-	
+	.ui-selectable-helper { 
+		position: absolute; z-index: 1000; border:1px dotted black; 
+	}	
 </style>
 
 <script>
@@ -16,6 +18,7 @@ component.exports = {
 			useParent: false,
 			disabled: false,
 	},
+	noCssTransform: true,
 	decorators: {
 		selectable: function (srcNode) {
 			var r = this;
@@ -25,6 +28,7 @@ component.exports = {
 			} else {
 				node = srcNode;
 			}
+
 			$(node).selectable({
 				disabled: r.get("disabled"),
 			});
