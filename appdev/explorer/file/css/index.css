@@ -19,10 +19,9 @@ a:focus {
 
 #sidebar {
 	border-right: 1px solid #ccc;
-	min-height: 80vh;
 }
 
-#explorer, .ui-selectable {
+.fill-page {
 	min-height: 80vh;
 }
 
@@ -280,11 +279,11 @@ a:focus {
 	white-space: nowrap;
 }
 
-.drop-over, .ui-selecting {
+.drop-over, .ui-selecting, .ui-selecting:hover {
 	background: #d9edf7;
 }
 
-.ui-selected {
-	background: #999;
+.ui-selected, .ui-selected:hover {
+	background: #d9edf7;
 }
 
