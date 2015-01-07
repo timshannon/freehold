@@ -1094,6 +1094,11 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
                 ]
               },
               o: 'droppable',
+              m: [{
+                  t: 4,
+                  r: '.useParent',
+                  f: ['style="display:none;"']
+                }],
               f: [{
                   t: 2,
                   r: 'yield'
@@ -1163,6 +1168,10 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
               t: 7,
               e: 'span',
               a: {
+                id: [{
+                    t: 2,
+                    r: 'id'
+                  }],
                 'class': [
                   'draggable ',
                   {
@@ -1172,6 +1181,11 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
                 ]
               },
               o: 'draggable',
+              m: [{
+                  t: 4,
+                  r: '.useParent',
+                  f: ['style="display:none;"']
+                }],
               f: [{
                   t: 2,
                   r: 'yield'
@@ -4651,6 +4665,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
           };
           node.addEventListener('dragenter', dragenter, false);
           dragover = function (e) {
+            //TODO: Figure out how to only show dropzone on files and not anything else
             r.set('mode', 'dragover');
             e.stopPropagation();
             e.preventDefault();
@@ -6533,13 +6548,18 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
                   }]
               },
               o: 'selectable',
+              m: [{
+                  t: 4,
+                  r: '.useParent',
+                  f: ['style="display:none;"']
+                }],
               f: [{
                   t: 2,
                   r: 'yield'
                 }]
             }]
         },
-        css: '.ui-selectable-helper { \nposition: absolute; z-index: 1000; border:1px dotted black; \n}\t\n'
+        css: '.ui-selectable-helper { \nposition: absolute; z-index: 500; border:1px dotted black; \n}\t\n'
       }, component = {};
     component.exports = {
       //defaulted options, can be overridden at component markup
@@ -6547,7 +6567,13 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
       // the jqueryui options
       data: {
         useParent: false,
-        disabled: false
+        disabled: false,
+        filter: '*',
+        dataAttribute: false,
+        idAttribute: false,
+        delay: 0,
+        cancel: null,
+        selected: []
       },
       noCssTransform: true,
       decorators: {
@@ -6559,7 +6585,28 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
           } else {
             node = srcNode;
           }
-          $(node).selectable({ disabled: r.get('disabled') });
+          $(node).selectable({
+            disabled: r.get('disabled'),
+            filter: r.get('filter'),
+            cancel: r.get('cancel'),
+            delay: r.get('delay'),
+            selected: function (event, ui) {
+              var data;
+              if (r.get('dataAttribute') && r.get('idAttribute')) {
+                data = ui.getAttribute(r.get('dataAttribute'));
+              } else {
+                data = ui;
+              }
+            },
+            unselected: function (event, ui) {
+              r.pop('selected');
+            },
+            stop: function (e, ui) {
+              console.log(e);
+              console.log(ui);
+              r.fire('selected', r.get('selected'));
+            }
+          });
           return {
             teardown: function () {
               $(node).selectable('destroy');
@@ -6568,6 +6615,16 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
         }
       },
       init: function () {
+        var r = this;
+        r.on({
+          'reset': function (event) {
+            var selected = r.get('selected');
+            for (var i = 0; i < selected.length; i++) {
+              $(selected[i].selected).removeClass('ui-selected');
+              r.pop('selected');
+            }
+          }
+        });
       }
     };
     if (typeof component.exports === 'object') {

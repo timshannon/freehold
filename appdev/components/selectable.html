@@ -1,10 +1,10 @@
-<div class="{{class}}" decorator="selectable">
+<div class="{{class}}" decorator="selectable" {{#.useParent}}style="display:none;"{{/}}>
 	{{yield}}
 </div>
 
 <style>
 	.ui-selectable-helper { 
-		position: absolute; z-index: 1000; border:1px dotted black; 
+		position: absolute; z-index: 500; border:1px dotted black; 
 	}	
 </style>
 
@@ -17,6 +17,12 @@ component.exports = {
 	data: {
 			useParent: false,
 			disabled: false,
+			filter: "*",
+			dataAttribute: false,
+			idAttribute: false,
+			delay: 0,
+			cancel: null,
+			selected: [],
 	},
 	noCssTransform: true,
 	decorators: {
@@ -31,6 +37,23 @@ component.exports = {
 
 			$(node).selectable({
 				disabled: r.get("disabled"),
+				filter: r.get("filter"),
+				cancel: r.get("cancel"),
+				delay: r.get("delay"),
+				selected: function(event, ui) {
+					var data;
+					if (r.get("dataAttribute") && r.get("idAttribute")) {
+						data = ui.getAttribute(r.get("dataAttribute"));
+					} else {
+						data = ui;
+					}
+				},
+				unselected: function(event, ui) {
+					r.pop("selected");	
+				},
+				stop: function(e, ui) {
+					r.fire("selected", r.get("selected"));
+				},
 			});
 			return {
 				teardown: function () {
@@ -41,6 +64,18 @@ component.exports = {
 	},
 
 	init: function() {
+		var r = this;
+		
+		r.on({
+			"reset": function(event) {
+				var selected = r.get("selected");
+				for(var i = 0; i < selected.length; i++) {
+					$(selected[i].selected).removeClass('ui-selected');
+					r.pop("selected");
+				}
+			},
+		});
+		
 	},
 
 };

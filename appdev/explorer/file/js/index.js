@@ -369,6 +369,7 @@ $(document).ready(function() {
 
     //functions
     function selectFolder(keypath) {
+        resetSelection();
         var folder = rMain.get(keypath);
         document.title = folder.name + " - Explorer - freehold";
 
@@ -489,11 +490,10 @@ $(document).ready(function() {
     }
 
     function isDS(url) {
-		//TODO: use
-		var s = fh.util.splitRootAndPath(url);
+        //TODO: use
+        var s = fh.util.splitRootAndPath(url);
 
-		if(fh.util.versions().indexOf(s[0]) !== -1) {
-		}
+        if (fh.util.versions().indexOf(s[0]) !== -1) {}
     }
 
 
@@ -786,6 +786,7 @@ $(document).ready(function() {
         if (keypath) {
             selectFolder(keypath);
         }
+		resetSelection();
     }
 
     function moveFile(from, to) {
@@ -908,6 +909,14 @@ $(document).ready(function() {
             rMain.set("uploads", uploads);
         }
 
+    }
+
+    function resetSelection() {
+        var comps = rMain.findAllComponents("selectable");
+
+        for (var i = 0; i < comps.length; i++) {
+            comps[i].fire("reset");
+        }
     }
 
     //Settings

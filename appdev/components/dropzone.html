@@ -58,10 +58,11 @@ component.exports = {
 			node.addEventListener("dragenter", dragenter, false);
 
 			dragover = function(e) {
-				r.set("mode", "dragover");	
-				e.stopPropagation();
-				e.preventDefault();
-				window.clearTimeout(timer);
+					//TODO: Figure out how to only show dropzone on files and not anything else
+					r.set("mode", "dragover");	
+					e.stopPropagation();
+					e.preventDefault();
+					window.clearTimeout(timer);
 			};
 			node.addEventListener("dragover", dragover, false);
 

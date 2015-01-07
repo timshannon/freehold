@@ -346,7 +346,7 @@
 
 </div> <!-- row -->
 <div class="file-nav row">
-	<div id="sidebar" class="col-sm-3{{#if hideSidebar}} hidden-sidebar{{/if}}">
+	<div id="sidebar" class="fill-page col-sm-3{{#if hideSidebar}} hidden-sidebar{{/if}}">
 		{{#if hideSidebar}}
 			<a href="#" class="sidebar-hide-btn" on-click="toggle('hideSidebar')" title="Show Sidebar"><span class="glyphicon glyphicon-chevron-right"></span></a>
 		{{else}}
@@ -362,8 +362,8 @@
 		{{/if}}
 	</div> <!-- sidebar -->
 
-	<div id="explorer" class="{{#if hideSidebar}}col-sm-12{{else}}col-sm-9{{/if}}">
-		<dropzone useParent="true"></dropzone>
+	<div id="explorer" class="fill-page {{#if hideSidebar}}col-sm-12{{else}}col-sm-9{{/if}}">
+	<dropzone useParent="true"></dropzone>
 	{{#loading}}
 		<div class="overlay"></div>
 		<div class="loading">
@@ -376,13 +376,15 @@
 		</div>
 	{{/loading}}
 	{{#if !listView}}
-	<selectable disabled=""> 
+	<selectable disabled="" filter=".file-tile" draggable="true" dragIconClass="fa fa-files-o" dragName="multiple files"> 
 		{{#currentFolder.files:i}}
 			{{>fileTile}}
 		{{/currentFolder.files}}
 	</selectable>
-	{{else}}
 	<!--gridview-->
+	{{else}}
+	<!--listview-->
+	<div class="fill-page">
 	<table class="table table-condensed table-hover">
 		<thead>
 			<tr>
@@ -418,9 +420,8 @@
 			</tr>
 		</thead>
 		<tbody>
-			<selectable useParent="true"></selectable>
 			{{#currentFolder.files:i}}
-			<tr>
+			<tr class="{{#if .canRead}}file-row{{/if}}">
 				{{#if .canRead}}
 					{{#if .isDir}}
 						<td>
@@ -463,9 +464,11 @@
 			{{/currentFolder.files}}
 		</tbody>
 	</table>		
+	<selectable useParent="true" filter=".file-row" draggable="true" dragIconClass="fa fa-files-o" dragName="multiple files" cancel="a,button"> 
+	</div>
 	{{/if}}
-	</div>	
-</div> <!-- explorer -->
+	</div>	<!-- explorer -->
+</div> 
 
 <!-- {{>draggable}} -->
 <draggable useParent="true" helper="nametag" zIndex="1000" disabled="{{currentKeypath === 'stars'}}" 

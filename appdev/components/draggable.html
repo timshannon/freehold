@@ -1,4 +1,4 @@
-<span class="draggable {{class}}" decorator="draggable">
+<span id="{{id}}" class="draggable {{class}}" decorator="draggable" {{#.useParent}}style="display:none;"{{/}}>
 	{{yield}}
 </span>
 
@@ -16,6 +16,7 @@
 		word-wrap: break-word;
 		white-space: nowrap;
 	}
+
 
 </style>
 
