@@ -8,13 +8,21 @@
 		color: #fff;
 		background-color: #337ab7;
 		border-radius: 4px;
-		padding: 5px 10px;
+		padding: 5px 10px; 
 		max-width: 300px;
-
 		overflow: hidden;
 		text-overflow: ellipsis;
 		word-wrap: break-word;
 		white-space: nowrap;
+	}
+
+	.drag-nametag>.badge {
+		position: relative;
+		color: #337ab7;
+		background-color: #fff;
+		margin-left: 5px;
+		top: -2px;
+
 	}
 
 
@@ -66,7 +74,8 @@ component.exports = {
 
 				helper = function() {
 					var helpNode = new Ractive({
-						template: "<div data-rvcguid='{{guid}}' class='drag-nametag'><span class='{{iconClass}}'></span>  {{name}}</div>",
+						template: "<div data-rvcguid='{{guid}}' class='drag-nametag'><span class='{{iconClass}}'></span>  {{name}}" +
+											"{{#count}}<span class='badge'>{{count}}</span>{{/}}</div>",
 						data: {
 							name: r.get("name"),
 							count: r.get("count"),
