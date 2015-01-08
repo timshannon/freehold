@@ -275,7 +275,7 @@
 				{{name}} <span class="caret"></span>
 				</a>
 				<ul class="dropdown-menu" role="menu" aria-labelledby="folderDrop">
-					{{#if currentKeypath.indexOf("files") > -1}}
+					{{#if currentKeypath.indexOf("riles") > -1}}
 					<li>
 						<a href="#" on-click="newFolder"><span class="glyphicon glyphicon-plus"></span> New Folder</a> 
 					</li>
@@ -376,7 +376,7 @@
 		</div>
 	{{/loading}}
 	{{#if !listView}}
-	<selectable disabled="" filter=".file-tile" draggable="true" dragIconClass="fa fa-files-o" dragName="multiple files"> 
+	<selectable disabled="" filter=".selectable"> 
 		{{#currentFolder.files:i}}
 			{{>fileTile}}
 		{{/currentFolder.files}}
@@ -421,7 +421,7 @@
 		</thead>
 		<tbody>
 			{{#currentFolder.files:i}}
-			<tr class="{{#if .canRead}}file-row{{/if}}">
+			<tr class="{{#if .canRead}}selectable{{/if}}" data-select="{{i}}">
 				{{#if .canRead}}
 					{{#if .isDir}}
 						<td>
@@ -464,16 +464,18 @@
 			{{/currentFolder.files}}
 		</tbody>
 	</table>		
-	<selectable useParent="true" filter=".file-row" draggable="true" dragIconClass="fa fa-files-o" dragName="multiple files" cancel="a,button"> 
+	<selectable useParent="true" filter=".selectable" cancel="a,button"> 
 	</div>
 	{{/if}}
 	</div>	<!-- explorer -->
 </div> 
 
 <!-- {{>draggable}} -->
-<draggable useParent="true" helper="nametag" zIndex="1000" disabled="{{currentKeypath === 'stars'}}" 
-	dragData="{{.}}" name="{{.name}}" iconClass="fa fa-{{explorerIcon}}">
-</draggable>
+	<draggable useParent="true" helper="nametag" zIndex="1000" disabled="{{currentKeypath === 'stars'}}" 
+		dragData="{{ inSelection ? selection : .}}" name="{{ inSelection && selection.length > 1 ? 'multiple files' : name}}" 
+		iconClass="fa fa-{{inSelection && selection.length > 1 ? 'files-o' : explorerIcon}}" 
+		count="{{inSelection && selection.length > 1 ? selection.length : false}}">
+	</draggable>
 <!-- {{/draggable}} -->
 
 <!-- {{>droppable}} -->
@@ -483,7 +485,7 @@
 
 <!-- {{>fileTile}} -->
 {{#if .isDir}}
-	<a href="#" on-click="explorerSelect" class="file-tile" {{^canRead}}onmousedown="return false"{{/}}>
+	<a href="#" on-click="explorerSelect" class="file-tile {{#canRead}}selectable{{/}}" {{^canRead}}onmousedown="return false"{{/}} data-select="{{i}}">
 	{{#if currentKeypath === "stars"}}
 		<a href="#" class="btn btn-file-grid" on-click="removeStar" title="Remove Star"><span class="glyphicon glyphicon-remove"></span></a>
 	{{/if}}
@@ -496,7 +498,7 @@
 	</a>
 {{else}}
 	{{#if .canRead}}
-	<a href="{{explorerUrl}}" target="{{#newWindow}}_blank{{/newWindow}}" {{#.download}}download=""{{/download}} class="file-tile">
+	<a href="{{explorerUrl}}" target="{{#newWindow}}_blank{{/newWindow}}" {{#.download}}download=""{{/download}} class="file-tile selectable" data-select="{{i}}">
 		{{>draggable}}
 		{{#if currentKeypath !== "stars"}}
 			<a href="#" class="btn btn-file-grid" on-click="properties:{{.url}}" title="Properties"><span class="glyphicon glyphicon-cog"></span></a>

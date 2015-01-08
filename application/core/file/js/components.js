@@ -1192,7 +1192,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
                 }]
             }]
         },
-        css: '.drag-nametag {\nfont-size: 1.3em; \ncolor: #fff;\nbackground-color: #337ab7;\nborder-radius: 4px;\npadding: 5px 10px;\nmax-width: 300px;\noverflow: hidden;\ntext-overflow: ellipsis;\nword-wrap: break-word;\nwhite-space: nowrap;\n}\n'
+        css: '.drag-nametag {\nfont-size: 1.3em; \ncolor: #fff;\nbackground-color: #337ab7;\nborder-radius: 4px;\npadding: 5px 10px; \nmax-width: 300px;\noverflow: hidden;\ntext-overflow: ellipsis;\nword-wrap: break-word;\nwhite-space: nowrap;\n}\n.drag-nametag>.badge {\nposition: relative;\ncolor: #337ab7;\nbackground-color: #fff;\nmargin-left: 5px;\ntop: -2px;\n}\n'
       }, component = {};
     component.exports = {
       //defaulted options, can be overridden at component markup
@@ -1235,7 +1235,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
             }
             helper = function () {
               var helpNode = new Ractive({
-                template: '<div data-rvcguid=\'{{guid}}\' class=\'drag-nametag\'><span class=\'{{iconClass}}\'></span>  {{name}}</div>',
+                template: '<div data-rvcguid=\'{{guid}}\' class=\'drag-nametag\'><span class=\'{{iconClass}}\'></span>  {{name}}' + '{{#count}}<span class=\'badge\'>{{count}}</span>{{/}}</div>',
                 data: {
                   name: r.get('name'),
                   count: r.get('count'),
@@ -6569,8 +6569,6 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
         useParent: false,
         disabled: false,
         filter: '*',
-        dataAttribute: false,
-        idAttribute: false,
         delay: 0,
         cancel: null,
         selected: []
@@ -6591,20 +6589,20 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
             cancel: r.get('cancel'),
             delay: r.get('delay'),
             selected: function (event, ui) {
-              var data;
-              if (r.get('dataAttribute') && r.get('idAttribute')) {
-                data = ui.getAttribute(r.get('dataAttribute'));
-              } else {
-                data = ui;
-              }
+              r.fire('selected', ui.selected);
             },
             unselected: function (event, ui) {
-              r.pop('selected');
+              r.fire('unselected', ui.unselected);
             },
-            stop: function (e, ui) {
-              console.log(e);
-              console.log(ui);
-              r.fire('selected', r.get('selected'));
+            start: function () {
+              r.fire('start');
+            },
+            stop: function () {
+              var selected = [];
+              $('.ui-selected').each(function () {
+                selected.push(this);
+              });
+              r.fire('stop', selected);
             }
           });
           return {
@@ -6617,12 +6615,11 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
       init: function () {
         var r = this;
         r.on({
-          'reset': function (event) {
-            var selected = r.get('selected');
-            for (var i = 0; i < selected.length; i++) {
-              $(selected[i].selected).removeClass('ui-selected');
-              r.pop('selected');
-            }
+          'reset': function () {
+            $('.ui-selected').each(function () {
+              $(this).removeClass('ui-selected');
+              r.fire('unselected', this);
+            });
           }
         });
       }

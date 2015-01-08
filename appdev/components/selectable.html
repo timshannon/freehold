@@ -18,8 +18,6 @@ component.exports = {
 			useParent: false,
 			disabled: false,
 			filter: "*",
-			dataAttribute: false,
-			idAttribute: false,
 			delay: 0,
 			cancel: null,
 			selected: [],
@@ -41,18 +39,20 @@ component.exports = {
 				cancel: r.get("cancel"),
 				delay: r.get("delay"),
 				selected: function(event, ui) {
-					var data;
-					if (r.get("dataAttribute") && r.get("idAttribute")) {
-						data = ui.getAttribute(r.get("dataAttribute"));
-					} else {
-						data = ui;
-					}
+					r.fire("selected", ui.selected);	
 				},
 				unselected: function(event, ui) {
-					r.pop("selected");	
+					r.fire("unselected", ui.unselected);	
 				},
-				stop: function(e, ui) {
-					r.fire("selected", r.get("selected"));
+				start: function() {
+					r.fire("start");
+				},
+				stop: function() {
+					var selected = [];
+					$(".ui-selected").each(function() {
+						selected.push(this);
+					});
+					r.fire("stop", selected);
 				},
 			});
 			return {
@@ -67,12 +67,11 @@ component.exports = {
 		var r = this;
 		
 		r.on({
-			"reset": function(event) {
-				var selected = r.get("selected");
-				for(var i = 0; i < selected.length; i++) {
-					$(selected[i].selected).removeClass('ui-selected');
-					r.pop("selected");
-				}
+			"reset": function() {
+				$(".ui-selected").each(function() {
+					$(this).removeClass("ui-selected");
+					r.fire("unselected", this);	
+				});
 			},
 		});
 		

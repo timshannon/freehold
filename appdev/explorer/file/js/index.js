@@ -24,6 +24,7 @@ $(document).ready(function() {
             stars: {},
             user: fh.auth.user,
             icons: buildIconList(),
+            selection: [],
         },
     });
 
@@ -309,7 +310,29 @@ $(document).ready(function() {
                     error(result);
                 });
         },
+        "selectable.selected": function(node) {
+            var index = node.getAttribute("data-select");
+            var files = rMain.get("currentFolder.files");
+            files[index].inSelection = true;
+            rMain.push("selection", files[index]);
+            rMain.set("currentFolder.files", files);
+        },
+        "selectable.unselected": function(node) {
+            var index = node.getAttribute("data-select");
+            var files = rMain.get("currentFolder.files");
 
+            files[index].inSelection = false;
+            rMain.set("currentFolder.files", files);
+            var selected = rMain.get("selection");
+
+            for (var i = 0; i < selected.length; i++) {
+                if (selected[i].url === files[index].url) {
+                    selected.splice(i, 1);
+                    rMain.set("selection", selected);
+                    return;
+                }
+            }
+        },
     });
 
     rMain.observe({
@@ -489,8 +512,8 @@ $(document).ready(function() {
         updateFilesTo(urlParts[rootPlace] === "file" ? "files" : "datastores", url);
     }
 
-    function isDS(url) {
-        //TODO: use
+    function isFilePath(url) {
+        //TODO: finish
         var s = fh.util.splitRootAndPath(url);
 
         if (fh.util.versions().indexOf(s[0]) !== -1) {}
@@ -786,7 +809,7 @@ $(document).ready(function() {
         if (keypath) {
             selectFolder(keypath);
         }
-		resetSelection();
+        resetSelection();
     }
 
     function moveFile(from, to) {
