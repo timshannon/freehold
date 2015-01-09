@@ -328,8 +328,16 @@ $(document).ready(function() {
                     return;
                 }
             }
-            console.log("not found! ", files[index].url);
         },
+        "deleteSelect": function(event) {
+            var selected = rMain.get("selection");
+
+                for (var i = 0; i < selected.length; i++) {
+                    fh.file.delete(selected[i].url);
+					//FIXME
+                }
+
+        }
     });
 
     rMain.observe({
@@ -411,7 +419,6 @@ $(document).ready(function() {
 
             for (var i = 0; i < folder.children.length; i++) {
                 folder.files.push(folder.children[i]);
-                folder.files[i].treepath = keypath + ".children." + i;
             }
 
             rMain.set("currentFolder", folder);
@@ -449,6 +456,8 @@ $(document).ready(function() {
             canSelect: true,
             selected: true,
             iconClass: "fa fa-folder-open",
+            droppable: true,
+            treepath: "files",
             children: [],
         });
         rMain.set("datastores", {
@@ -549,6 +558,11 @@ $(document).ready(function() {
 
     function mergeFolder(newFiles, keypath) {
         var current = rMain.get(keypath);
+        sort(newFiles, {
+            by: "name",
+            asc: true
+        });
+
 
         //merge the current data with the new data so that
         // tree attributes like open and selected aren't lost
@@ -566,13 +580,10 @@ $(document).ready(function() {
                 }
             }
             newFiles[i] = setFileType(newFiles[i]);
+            newFiles[i].treepath = keypath + "." + i;
         }
 
         rMain.set(keypath, newFiles);
-        sort(rMain.get(keypath), {
-            by: "name",
-            asc: true
-        });
     }
 
     function mergeAttributes(current, newval) {
@@ -652,6 +663,8 @@ $(document).ready(function() {
         var sorting = rMain.get("sorting");
         var files = rMain.get("currentFolder.files");
         sort(files, sorting);
+
+        rMain.set("currentFolder.files", files);
     }
 
     function sort(files, sorting) {
@@ -819,8 +832,12 @@ $(document).ready(function() {
             return;
         }
 
+        var sourceParent = rMain.get(parentKeypath(source.treepath));
+
         moveFile(source.url, newUrl)
             .done(function() {
+                updateFolder(sourceParent.url, sourceParent.treepath);
+                updateFolder(dest.url, dest.treepath);
                 refresh();
             })
             .fail(function(result) {
