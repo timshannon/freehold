@@ -275,7 +275,7 @@
 				{{name}} <span class="caret"></span>
 				</a>
 				<ul class="dropdown-menu" role="menu" aria-labelledby="folderDrop">
-					{{#if currentKeypath.indexOf("riles") > -1}}
+					{{#if currentKeypath.indexOf("files") > -1}}
 					<li>
 						<a href="#" on-click="newFolder"><span class="glyphicon glyphicon-plus"></span> New Folder</a> 
 					</li>
@@ -375,16 +375,16 @@
 			</div>
 		</div>
 	{{/loading}}
+	<div class="fill-page">
+	<selectable useParent="true" disabled="" filter=".selectable" cancel="a,button"> 
+	</selectable>
 	{{#if !listView}}
-	<selectable disabled="" filter=".selectable"> 
 		{{#currentFolder.files:i}}
 			{{>fileTile}}
 		{{/currentFolder.files}}
-	</selectable>
 	<!--gridview-->
 	{{else}}
 	<!--listview-->
-	<div class="fill-page">
 	<table class="table table-condensed table-hover">
 		<thead>
 			<tr>
@@ -464,9 +464,8 @@
 			{{/currentFolder.files}}
 		</tbody>
 	</table>		
-	<selectable useParent="true" filter=".selectable" cancel="a,button"> 
-	</div>
 	{{/if}}
+	</div>
 	</div>	<!-- explorer -->
 </div> 
 

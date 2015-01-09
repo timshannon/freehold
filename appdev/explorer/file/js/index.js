@@ -137,6 +137,7 @@ $(document).ready(function() {
                 rMain.set("listView", true);
                 settings.put("listView", true);
             }
+            refresh();
         },
         "renameFolder": function(event) {
             rMain.set("folderRename", event.context.name);
@@ -243,6 +244,8 @@ $(document).ready(function() {
                 }
                 rMain.set("currentFile", result.data);
             });
+
+            resetSelection();
         },
         "deleteFromProperties": function(event) {
             fh.file.delete(event.context.url)
@@ -293,26 +296,20 @@ $(document).ready(function() {
             }
         },
         "droppable.drop": function(source, dest) {
-            if (source.url === dest.url) {
+            if (source instanceof Array) {
+                for (var i = 0; i < source.length; i++) {
+                    moveExplorerFile(source[i], dest);
+                }
                 return;
             }
-            var newUrl = fh.util.urlJoin(dest.url, trimSlash(source.url).split("/").pop());
-            if (trimSlash(source.url) == newUrl) {
-                return;
-            }
-
-            moveFile(source.url, newUrl)
-                .done(function() {
-                    refresh();
-                })
-                .fail(function(result) {
-                    //TODO: Better error handling.  Replace option?
-                    error(result);
-                });
+            moveExplorerFile(source, dest);
         },
         "selectable.selected": function(node) {
             var index = node.getAttribute("data-select");
             var files = rMain.get("currentFolder.files");
+            if (files[index].inSelection) {
+                return;
+            }
             files[index].inSelection = true;
             rMain.push("selection", files[index]);
             rMain.set("currentFolder.files", files);
@@ -320,7 +317,6 @@ $(document).ready(function() {
         "selectable.unselected": function(node) {
             var index = node.getAttribute("data-select");
             var files = rMain.get("currentFolder.files");
-
             files[index].inSelection = false;
             rMain.set("currentFolder.files", files);
             var selected = rMain.get("selection");
@@ -332,6 +328,7 @@ $(document).ready(function() {
                     return;
                 }
             }
+            console.log("not found! ", files[index].url);
         },
     });
 
@@ -812,6 +809,26 @@ $(document).ready(function() {
         resetSelection();
     }
 
+    function moveExplorerFile(source, dest) {
+        if (source.url === dest.url) {
+            return;
+        }
+
+        var newUrl = fh.util.urlJoin(dest.url, trimSlash(source.url).split("/").pop());
+        if (trimSlash(source.url) == newUrl) {
+            return;
+        }
+
+        moveFile(source.url, newUrl)
+            .done(function() {
+                refresh();
+            })
+            .fail(function(result) {
+                //TODO: Better error handling.  Replace option?
+                error(result);
+            });
+    }
+
     function moveFile(from, to) {
         return fh.file.move(from, to)
             .done(function() {
@@ -935,11 +952,9 @@ $(document).ready(function() {
     }
 
     function resetSelection() {
-        var comps = rMain.findAllComponents("selectable");
-
-        for (var i = 0; i < comps.length; i++) {
-            comps[i].fire("reset");
-        }
+        var comp = rMain.findComponent("selectable");
+        comp.fire("reset");
+        rMain.set("selection", []);
     }
 
     //Settings

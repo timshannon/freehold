@@ -38,7 +38,7 @@ component.exports = {
 				tolerance: r.get("tolerance"),
 				scope: r.get("scope"),
 				drop: function(event, ui) {
-					r.fire("drop", $(ui.draggable).data(), r.get("dropData"));
+					r.fire("drop", $(ui.draggable).data("dragData"), r.get("dropData"));
 				},
 			});
 			return {

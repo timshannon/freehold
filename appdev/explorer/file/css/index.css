@@ -282,8 +282,7 @@ a:focus {
 .drop-over, .ui-selecting, .ui-selecting:hover {
 	background: #d9edf7;
 }
-
-.ui-selected, .ui-selected:hover {
+.ui-selected, .ui-selected:hover, .table-hover > tbody > tr.ui-selected:hover > td {
 	background: #d9edf7;
 }
 
