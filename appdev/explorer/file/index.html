@@ -301,7 +301,13 @@
 		</ol>
 		{{/if}}
 	</div> <!-- folderNav -->
-		<div class="folder-nav-btns">
+	<div class="folder-nav-btns">
+		{{#if selection.length > 1}}
+		<span class="selection-buttons">
+			<button type="button" class="btn btn-info" on-click="deleteSelect" title="Delete Selection"><span class="glyphicon glyphicon-trash"></span></button>
+		</span>
+		{{/if}}
+
 		<div class="btn-group">
 		{{#if !listView}}
 			<button type="button" class="btn btn-default" on-click="changeView" title="List View"><span class="fa fa-2 fa-list"></span></button>
@@ -342,7 +348,7 @@
 			</ul>
 		</div>
 		<button type="button" class="btn btn-default" on-click="openSettings" title="Settings"><span class="fa fa-2 fa-cogs"></span></button>
-		</div>
+	</div>
 
 </div> <!-- row -->
 <div class="file-nav row">
@@ -478,8 +484,10 @@
 <!-- {{/draggable}} -->
 
 <!-- {{>droppable}} -->
+{{^.inSelection}}
 <droppable useParent="true" hoverClass="drop-over" dropData="{{.}}" greedy="true" tolerance="pointer" addClasses="false">
 </droppable>
+{{/}}
 <!-- {{/droppable}} -->
 
 <!-- {{>fileTile}} -->
@@ -497,7 +505,8 @@
 	</a>
 {{else}}
 	{{#if .canRead}}
-	<a href="{{explorerUrl}}" target="{{#newWindow}}_blank{{/newWindow}}" {{#.download}}download=""{{/download}} class="file-tile selectable" data-select="{{i}}">
+	<a href="{{explorerUrl}}" target="{{#newWindow}}_blank{{/newWindow}}" {{#.download}}download=""{{/download}} 
+		class="file-tile selectable" data-select="{{i}}">
 		{{>draggable}}
 		{{#if currentKeypath !== "stars"}}
 			<a href="#" class="btn btn-file-grid" on-click="properties:{{.url}}" title="Properties"><span class="glyphicon glyphicon-cog"></span></a>

@@ -1316,16 +1316,10 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
                       'class': [
                         {
                           t: 4,
-                          n: 50,
                           r: '.selected',
                           f: ['selected']
                         },
-                        {
-                          t: 4,
-                          n: 51,
-                          f: ['child'],
-                          r: '.selected'
-                        }
+                        ' child'
                       ]
                     },
                     m: [{
@@ -1364,7 +1358,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
                             e: 'droppable',
                             a: {
                               useParent: 'true',
-                              hoverClass: 'dropHover',
+                              hoverClass: 'drop-over',
                               tolerance: 'pointer',
                               dropData: [{
                                   t: 2,
@@ -1544,19 +1538,32 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
                         'class': [
                           {
                             t: 4,
-                            n: 50,
-                            r: '.selected',
+                            r: 'selected',
                             f: ['selected bg-info']
                           },
-                          {
-                            t: 4,
-                            n: 51,
-                            f: ['child'],
-                            r: '.selected'
-                          }
+                          ' child'
                         ]
                       },
                       f: [
+                        {
+                          t: 4,
+                          n: 50,
+                          r: '.droppable',
+                          f: [{
+                              t: 7,
+                              e: 'droppable',
+                              a: {
+                                useParent: 'true',
+                                hoverClass: 'drop-over',
+                                tolerance: 'pointer',
+                                dropData: [{
+                                    t: 2,
+                                    r: '.'
+                                  }]
+                              }
+                            }]
+                        },
+                        ' ',
                         {
                           t: 4,
                           x: {
@@ -1713,7 +1720,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
                 }]
             }]
         },
-        css: '.selected {\nborder-color: #ccc;\nborder: 0px solid transparent;\nborder-radius: 4px;\npadding: 5px;\nfont-weight:bold;\nbackground-color: #D9EDF7;\n}\n.dropHover  {\nbackground-color: #D9EDF7;\n}\n.child {\npadding: 5px;\n}\n.child:hover {\nbackground-color: #f5f5f5;\nborder: 0px solid transparent;\nborder-radius: 4px;\npadding: 5px;\n}\na:hover, a:focus {\ntext-decoration: none;\t\ncolor: #333;\n}\na {\ncolor: #333;\n}\n.tree {\ncursor: default;\noverflow: auto;\n}\nul {\nlist-style: none;\n}\nli {\nmargin-left: -22px;\n}\n.icon {\ncolor: #555;\n}\n.icon {\nmax-width: 14px;\nmax-height: 14px;\t\n}\n',
+        css: '.child.selected, .child.selected:hover {\nborder-color: #ccc;\nborder-radius: 4px;\nfont-weight:bold;\nbackground-color: #D9EDF7;\n}\n.child.drop-over  {\nbackground-color: #D9EDF7;\nborder: 1px solid #337ab7;\nborder-radius: 4px;\npadding: 4px;\n}\n.child {\npadding: 5px;\n}\n.child:hover {\nbackground-color: #f5f5f5;\nborder: 0px solid transparent;\nborder-radius: 4px;\npadding: 5px;\n}\na:hover, a:focus {\ntext-decoration: none;\t\ncolor: #333;\n}\na {\ncolor: #333;\n}\n.tree {\ncursor: default;\noverflow: auto;\n}\nul {\nlist-style: none;\n}\nli {\nmargin-left: -22px;\n}\n.icon {\ncolor: #555;\n}\n.icon {\nmax-width: 14px;\nmax-height: 14px;\t\n}\n',
         components: {
           'droppable': _import_0,
           'draggable': _import_1
