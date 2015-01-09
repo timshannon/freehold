@@ -1138,7 +1138,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
             tolerance: r.get('tolerance'),
             scope: r.get('scope'),
             drop: function (event, ui) {
-              r.fire('drop', $(ui.draggable).data(), r.get('dropData'));
+              r.fire('drop', $(ui.draggable).data('dragData'), r.get('dropData'));
             }
           });
           return {
@@ -1260,7 +1260,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
             cursorAt: r.get('cursorAt'),
             start: function (event, ui) {
               if (r.get('dragData')) {
-                $(node).data(r.get('dragData'));
+                $(node).data('dragData', r.get('dragData'));
               }
             }
           });

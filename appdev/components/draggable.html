@@ -102,7 +102,7 @@ component.exports = {
 				cursorAt: r.get("cursorAt"),
 				start: function(event, ui) {
 					if(r.get("dragData")) {
-						$(node).data(r.get("dragData"));	
+						$(node).data("dragData", r.get("dragData"));	
 					}
 				},
 			});
