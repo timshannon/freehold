@@ -1038,32 +1038,46 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
             var prm = r.get(keypath);
             if (!prm) {
               r.set(keypath, 'r');
+              r.fire('permissionsChange', r.get('permissions'));
               return;
             }
             var index = prm.indexOf('r');
             if (index !== -1) {
               r.set(keypath, prm.slice(index + 1));
+              r.fire('permissionsChange', r.get('permissions'));
               return;
             }
             r.set(keypath, 'r' + prm);
+            r.fire('permissionsChange', r.get('permissions'));
           },
           'toggleWrite': function (event, level) {
             var keypath = 'permissions.' + level;
             var prm = r.get(keypath);
             if (!prm) {
               r.set(keypath, 'w');
+              r.fire('permissionsChange', r.get('permissions'));
               return;
             }
             var index = prm.indexOf('w');
             if (index === 0) {
               r.set(keypath, '');
+              r.fire('permissionsChange', r.get('permissions'));
               return;
             }
             if (index === -1) {
               r.set(keypath, prm + 'w');
+              r.fire('permissionsChange', r.get('permissions'));
               return;
             }
             r.set(keypath, 'r');
+            r.fire('permissionsChange', r.get('permissions'));
+          }
+        });
+        this.observe({
+          'permissions.owner': function (newValue, oldValue, keypath) {
+            if (newValue && oldValue) {
+              r.fire('permissionsChange', r.get('permissions'));
+            }
           }
         });
       }
@@ -1720,7 +1734,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
                 }]
             }]
         },
-        css: '.child.selected, .child.selected:hover {\nborder-color: #ccc;\nborder-radius: 4px;\nfont-weight:bold;\nbackground-color: #D9EDF7;\n}\n.child.drop-over  {\nbackground-color: #D9EDF7;\nborder: 1px solid #337ab7;\nborder-radius: 4px;\npadding: 4px;\n}\n.child {\npadding: 5px;\n}\n.child:hover {\nbackground-color: #f5f5f5;\nborder: 0px solid transparent;\nborder-radius: 4px;\npadding: 5px;\n}\na:hover, a:focus {\ntext-decoration: none;\t\ncolor: #333;\n}\na {\ncolor: #333;\n}\n.tree {\ncursor: default;\noverflow: auto;\n}\nul {\nlist-style: none;\n}\nli {\nmargin-left: -22px;\n}\n.icon {\ncolor: #555;\n}\n.icon {\nmax-width: 14px;\nmax-height: 14px;\t\n}\n',
+        css: '.child.selected, .child.selected:hover {\nborder-color: #ccc;\nborder-radius: 4px;\nfont-weight:bold;\nbackground-color: #D9EDF7;\n}\n.child.drop-over  {\nbackground-color: #D9EDF7;\nborder: 3px solid #337ab7;\nborder-radius: 4px;\npadding: 4px;\n}\n.child {\npadding: 7px;\n}\n.child:hover {\nbackground-color: #f5f5f5;\nborder: 0px solid transparent;\nborder-radius: 4px;\npadding: 7px;\n}\na:hover, a:focus {\ntext-decoration: none;\t\ncolor: #333;\n}\na {\ncolor: #333;\n}\n.tree {\ncursor: default;\noverflow: auto;\n}\nul {\nlist-style: none;\n}\nli {\nmargin-left: -22px;\n}\n.icon {\ncolor: #555;\n}\n.icon {\nmax-width: 14px;\nmax-height: 14px;\t\n}\n',
         components: {
           'droppable': _import_0,
           'draggable': _import_1
