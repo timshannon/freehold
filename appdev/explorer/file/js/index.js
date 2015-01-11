@@ -331,11 +331,13 @@ $(document).ready(function() {
         },
         "deleteSelect": function(event) {
             var selected = rMain.get("selection");
+            var requests = [];
 
-                for (var i = 0; i < selected.length; i++) {
-                    fh.file.delete(selected[i].url);
-					//FIXME
-                }
+            for (var i = 0; i < selected.length; i++) {
+                requests.push(fh.file.delete(selected[i].url));
+            }
+
+            $.when(requests).then(refresh);
 
         }
     });
@@ -1009,7 +1011,7 @@ $(document).ready(function() {
                         app: (defaultApps[filetype] !== undefined),
                         browser: (!defaultApps[filetype]),
                     },
-                    icon: defaultIcons[filetype] || "file-o",
+                    icon: defaultIcons[filetype.toLowerCase()] || "file-o",
                 };
             }
             return file;
