@@ -302,7 +302,7 @@
 		{{/if}}
 	</div> <!-- folderNav -->
 	<div class="folder-nav-btns">
-		{{#if selection.length > 1}}
+		{{#if selection.length > 0}}
 		<span class="selection-buttons">
 			<button type="button" class="btn btn-info" on-click="deleteSelect" title="Delete Selection"><span class="glyphicon glyphicon-trash"></span></button>
 		</span>
@@ -382,7 +382,7 @@
 		</div>
 	{{/loading}}
 	<div class="fill-page">
-	<selectable useParent="true" disabled="" filter=".selectable" cancel="a,button"> 
+	<selectable useParent="true" disabled="" filter=".selectable" cancel="a,button" delay="10"> 
 	</selectable>
 	{{#if !listView}}
 		{{#currentFolder.files:i}}
