@@ -97,34 +97,49 @@
 					var prm = r.get(keypath);
 					if (!prm) {
 						r.set(keypath, "r");
+						r.fire("permissionsChange", r.get("permissions"));
 						return;
 					}
 					var index = prm.indexOf("r");
 					if(index !== -1) {
 						r.set(keypath, prm.slice(index+1));
+						r.fire("permissionsChange", r.get("permissions"));
 						return;
 					}
 					r.set(keypath, "r"+prm);
+					r.fire("permissionsChange", r.get("permissions"));
 				},
 				"toggleWrite": function(event, level) {
 					var keypath = "permissions."+level;
 					var prm = r.get(keypath);
 					if (!prm) {
 						r.set(keypath, "w");
+						r.fire("permissionsChange", r.get("permissions"));
 						return;
 					}
 					var index = prm.indexOf("w");
 					if(index === 0 ) {
 						r.set(keypath, "");
+						r.fire("permissionsChange", r.get("permissions"));
 						return;
 					}
 					if(index === -1 ) {
 						r.set(keypath, prm+"w");
+						r.fire("permissionsChange", r.get("permissions"));
 						return;
 					}
 					r.set(keypath, "r");
+					r.fire("permissionsChange", r.get("permissions"));
 				},
 			});
+			this.observe({
+				"permissions.owner": function(newValue, oldValue, keypath) {
+					if(newValue && oldValue) {
+						r.fire("permissionsChange", r.get("permissions"));
+					}
+				},
+			});
+ 
 
 		},
 

@@ -337,9 +337,24 @@ $(document).ready(function() {
                 requests.push(fh.file.delete(selected[i].url));
             }
 
-            $.when(requests).then(refresh);
+            $.when(requests)
+                .done(function() {
+                    refresh();
+                })
+                .fail(function(result) {
+                    error(result);
+                });
+        },
+        "permissions.permissionsChange": function(event) {
+            console.log("permissions change: ", event);
+            fh.properties.set(rMain.get("currentFile.url"), {
+                    permissions: event,
+                })
+                .fail(function(result) {
+                    error(result);
+                });
 
-        }
+        },
     });
 
     rMain.observe({
@@ -360,25 +375,7 @@ $(document).ready(function() {
                 settings.put("hideSidebar", newValue);
             }
         },
-        "currentFile.permissions": function(newValue, oldValue, keypath) {
-            if (newValue && oldValue) {
-                if (newValue.owner === oldValue.owner &&
-                    newValue.private === oldValue.private &&
-                    newValue.public === oldValue.public &&
-                    newValue.friend === oldValue.friend) {
-                    //no change
-                    return;
-                }
-
-                fh.properties.set(rMain.get("currentFile.url"), {
-                        permissions: newValue
-                    })
-                    .fail(function(result) {
-                        error(result);
-                    });
-            }
-        },
-        "currentFile.behavior": function(newValue, oldValue, keypath) {
+                "currentFile.behavior": function(newValue, oldValue, keypath) {
             if (newValue && oldValue) {
                 //FIXME:  Change seems to be happening due to different keypaths
                 settings.fileType.set(rMain.get("currentFile"));
