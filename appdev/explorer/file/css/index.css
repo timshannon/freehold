@@ -274,7 +274,7 @@ a:focus {
 	white-space: nowrap;
 }
 
-.drop-over, .table > tbody > tr > td.drop-over {
+.drop-over, .drop-over:focus, .table > tbody > tr > td.drop-over {
 	border: 3px solid #337ab7;
 	background: #d9edf7;
 }
@@ -284,7 +284,9 @@ a:focus {
 }
 
 
-.ui-selecting, .ui-selecting:hover, .ui-selected, .ui-selected:hover, .table-hover > tbody > tr.ui-selected:hover > td {
+.ui-selecting, .ui-selecting:hover, .ui-selecting:focus,
+.ui-selected, .ui-selected:hover, .ui-selected:focus,
+.table-hover > tbody > tr.ui-selected:hover > td {
 	background: #d9edf7;
 }
 
