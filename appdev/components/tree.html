@@ -3,13 +3,13 @@
 
 <div class="tree">
 	{{#root}}
-	<div class="{{#selected}}selected bg-info{{/}} child">
+	<div class="{{#.selected}}selected bg-info{{/}} child">
 		{{#if .droppable}}
 			<droppable useParent="true" hoverClass="drop-over" tolerance="pointer" dropData="{{.}}"></droppable>	
 		{{/if}}
 
 		{{#tree.hasChildren(this)}}
-			<a href="#" on-click="open">
+			<a href="javascript:void(0)" on-click="open">
 				<span class="glyphicon glyphicon-{{#if .open}}minus{{else}}plus{{/if}}"></span>
 			</a>
 		{{/this}}
@@ -21,10 +21,10 @@
 			<img class="icon" src="{{.icon}}">
 		{{/.icon}}
 		{{#if .canSelect}}
-			<a href="#"  on-click="select">{{.name}}</a>
+			<a href="javascript:void(0)"  on-click="select">{{.name}}</a>
 		{{else}}
 			 {{#tree.hasChildren(this)}}
-				<a href="#"  on-click="open">{{.name}}</a>
+				<a href="javascript:void(0)"  on-click="open">{{.name}}</a>
 			{{/tree}}
 			{{^tree.hasChildren(this)}}
 				{{.name}}
@@ -60,7 +60,7 @@
 		{{/if}}
 
 		{{#tree.hasChildren(this)}}
-			<a href="#" on-click="open">
+			<a href="javascript:void(0)" on-click="open">
 				<span class="glyphicon glyphicon-{{#if .open}}minus{{else}}plus{{/if}}"></span>
 			</a>
 		{{/this}}
@@ -71,10 +71,10 @@
 			<img class="icon" src="{{.icon}}">
 		{{/.icon}}
 		{{#if .canSelect}}
-			<a href="#"  on-click="select">{{.name}}</a>
+			<a href="javascript:void(0)"  on-click="select">{{.name}}</a>
 		{{else}}
 			{{#tree.hasChildren(this)}}
-				<a href="#"  on-click="open">{{.name}}</a>
+				<a href="javascript:void(0)"  on-click="open">{{.name}}</a>
 			{{/tree}}
 			{{^tree.hasChildren(this)}}
 				{{.name}}

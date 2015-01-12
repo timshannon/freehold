@@ -45,6 +45,13 @@ $(document).ready(function() {
         selectUserFolder();
     });
 
+    window.onpopstate = function(event) {
+        if (event.state) {
+            selectFolder(event.state, true);
+        }
+    };
+
+
     //events
     rMain.on({
         "fileTreeSelect": function(event) {
@@ -99,11 +106,11 @@ $(document).ready(function() {
             });
         },
         "newFolderSave": function(event) {
+            event.original.preventDefault();
             if (!event.context.newFolderName) {
                 rMain.set("newFolderError", "You must specify a folder name.");
                 return;
             }
-            event.original.preventDefault();
             var newUrl = fh.util.urlJoin(event.context.currentFolder.url, event.context.newFolderName);
 
             fh.file.newFolder(newUrl)
@@ -150,11 +157,11 @@ $(document).ready(function() {
             });
         },
         "renameFolderSave": function(event) {
+            event.original.preventDefault();
             if (!event.context.folderRename) {
                 rMain.set("renameFolderError", "You must specify a folder name.");
                 return;
             }
-            event.original.preventDefault();
             var newUrl = fh.util.urlJoin(rMain.get(parentKeypath(event.context.currentKeypath) + ".url"), event.context.folderRename);
             var oldUrl = event.context.currentFolder.url;
 
@@ -169,6 +176,8 @@ $(document).ready(function() {
                 });
         },
         "renameFile": function(event) {
+            event.original.preventDefault();
+
             if (!event.context.name) {
                 rMain.set("currentFile.renameError", "You must specify a name.");
                 return;
@@ -329,12 +338,25 @@ $(document).ready(function() {
                 }
             }
         },
+        "deleteSelectStars": function(event) {
+            var selected = rMain.get("selection");
+
+            for (var i = 0; i < selected.length; i++) {
+                settings.stars.remove(selected[i].url);
+            }
+            refresh();
+        },
         "deleteSelect": function(event) {
             var selected = rMain.get("selection");
             var requests = [];
 
             for (var i = 0; i < selected.length; i++) {
-                requests.push(fh.file.delete(selected[i].url));
+                if (selected[i].isFilePath) {
+                    requests.push(fh.file.delete(selected[i].url));
+                } else {
+                    var ds = new fh.Datastore(selected[i].url);
+                    requests.push(ds.drop());
+                }
             }
 
             $.when(requests)
@@ -346,7 +368,6 @@ $(document).ready(function() {
                 });
         },
         "permissions.permissionsChange": function(event) {
-            console.log("permissions change: ", event);
             fh.properties.set(rMain.get("currentFile.url"), {
                     permissions: event,
                 })
@@ -375,7 +396,7 @@ $(document).ready(function() {
                 settings.put("hideSidebar", newValue);
             }
         },
-                "currentFile.behavior": function(newValue, oldValue, keypath) {
+        "currentFile.behavior": function(newValue, oldValue, keypath) {
             if (newValue && oldValue) {
                 //FIXME:  Change seems to be happening due to different keypaths
                 settings.fileType.set(rMain.get("currentFile"));
@@ -395,10 +416,18 @@ $(document).ready(function() {
     });
 
     //functions
-    function selectFolder(keypath) {
+    function selectFolder(keypath, skipHistory) {
         resetSelection();
         var folder = rMain.get(keypath);
+
+        if (!folder || !folder.isDir) {
+            return;
+        }
+
         document.title = folder.name + " - Explorer - freehold";
+        if (!skipHistory) {
+            history.pushState(keypath, "");
+        }
 
         var prevKeypath = rMain.get("currentKeypath");
 
@@ -456,6 +485,8 @@ $(document).ready(function() {
             selected: true,
             iconClass: "fa fa-folder-open",
             droppable: true,
+            isDir: true,
+            isFilePath: true,
             treepath: "files",
             children: [],
         });
@@ -463,12 +494,16 @@ $(document).ready(function() {
             url: fh.util.urlJoin("/", app, "/v1/datastore/"),
             name: "datastores",
             canSelect: true,
+            isFilePath: false,
+            isDir: true,
             iconClass: "fa fa-database",
             children: [],
         });
         rMain.set("stars", {
             name: "Starred",
+            isDir: true,
             canSelect: true,
+            isFilePath: false,
             iconClass: "glyphicon glyphicon-star",
         });
         if (selectRootFolder) {
@@ -502,26 +537,32 @@ $(document).ready(function() {
     }
 
     function openUrl(url) {
-        var urlParts = url.split("/");
-        var app;
-        var rootPlace = 2;
-
-        if (fh.util.versions().indexOf(urlParts[1]) === -1) {
-            app = urlParts[1];
-            rootPlace = 3;
-        }
-
-        setRoot(app);
-        rMain.set("loading", true);
-
-        updateFilesTo(urlParts[rootPlace] === "file" ? "files" : "datastores", url);
-    }
-
-    function isFilePath(url) {
-        //TODO: finish
         var s = fh.util.splitRootAndPath(url);
 
-        if (fh.util.versions().indexOf(s[0]) !== -1) {}
+        if (fh.util.versions().indexOf(s[0]) === -1) {
+            //is app
+            setRoot(s[0]);
+        } else {
+            setRoot();
+        }
+        rMain.set("loading", true);
+
+        updateFilesTo(isFile(url) ? "files" : "datastores", url);
+    }
+
+    function isFile(url) {
+        if (!url) {
+            return false;
+        }
+        var s = fh.util.splitRootAndPath(url);
+
+        if (fh.util.versions().indexOf(s[0]) !== -1) {
+            //is version
+            return fh.util.splitRootAndPath(s[1])[0] == "file";
+        } else {
+            //isapp
+            return isFile(s[1]);
+        }
     }
 
 
@@ -606,11 +647,15 @@ $(document).ready(function() {
             file.canRead = false;
         }
 
+        file.isFilePath = isFile(file.url);
+
         if (file.isDir) {
             file.explorerIcon = "folder";
             if (file.canRead) {
                 file.canSelect = true;
-                file.droppable = true;
+                if (file.isFilePath) {
+                    file.droppable = true;
+                }
             } else {
                 file.open = false;
             }
@@ -744,6 +789,7 @@ $(document).ready(function() {
         var files = rMain.get("currentFolder.files");
 
         var fileAdd = function(file) {
+            file.isFilePath = false;
             files.push(file);
             sortCurrent();
         };
@@ -816,7 +862,7 @@ $(document).ready(function() {
     function refresh() {
         var keypath = rMain.get("currentKeypath");
         if (keypath) {
-            selectFolder(keypath);
+            selectFolder(keypath, true);
         }
         resetSelection();
     }
@@ -856,7 +902,7 @@ $(document).ready(function() {
     }
 
     function error(err) {
-        if (err instanceof String) {
+        if (typeof err === "string") {
             rNav.set("error", err);
         } else {
             rNav.set("error", err.responseJSON.message);

@@ -69,6 +69,7 @@ $(document).ready(function() {
         },
 
         "save": function(event) {
+            event.original.preventDefault();
             rMain.set("errors", null);
             var pass = rMain.get("changePassword");
 
@@ -113,7 +114,7 @@ $(document).ready(function() {
             });
 
             $("#tokenModal").modal();
-$("#tokenModal").on("shown.bs.modal", function() {
+            $("#tokenModal").on("shown.bs.modal", function() {
                 $("#tokenName").focus();
             });
 
@@ -131,6 +132,7 @@ $("#tokenModal").on("shown.bs.modal", function() {
             });
         },
         "saveToken": function(event) {
+			event.original.preventDefault();
             var errors = {};
 
             if (!event.context.name) {

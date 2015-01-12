@@ -56,7 +56,7 @@
 </div>
 
 {{else}}
-	<a href="#" class="pull-right" on-click="star" title="{{#if .starred}}Remove{{else}}Add{{/if}} Star">
+	<a href="javascript:void(0)" class="pull-right" on-click="star" title="{{#if .starred}}Remove{{else}}Add{{/if}} Star">
 		<span class="glyphicon glyphicon-star star{{#starred}} starred{{/starred}}"></span></a>
 	<ul id="propTabs" class="nav nav-tabs" role="tablist">
 		<li class="active"><a href="#details" role="tab" data-toggle="tab">Details</a></li>
@@ -68,7 +68,7 @@
 	<!-- Tab panes -->
 	<div class="tab-content property-content">
 		<div class="tab-pane active" id="details">
-			<form class="form-horizontal property-form" role="form">
+			<form class="form-horizontal property-form" role="form" on-submit="renameFile">
 				<span class="property-icon fa fa-5x fa-{{explorerIcon}}"></span>
 				<div class="form-group {{#renameError}}has-error has-feedback{{/}}" title="{{renameError}}">
 					<label for="currentFileName" class="col-sm-4 control-label">Name</label>
@@ -81,7 +81,7 @@
 							</span>
 						</div><!-- /input-group -->
 						{{else}}
-						<a href="#" on-click="toggle('currentFile.rename')" class="btn-property-rename form-control-static" title="Rename File">
+						<a href="javascript:void(0)" on-click="toggle('currentFile.rename')" class="btn-property-rename form-control-static" title="Rename File">
 							{{name}}</a>
 						{{/if}}
 					</div>
@@ -250,10 +250,10 @@
 				<span class="caret"></span>
 			</button>
 			<ul class="dropdown-menu" role="menu">
-				<li><a href="#" on-click="selectApp"><span class="glyphicon glyphicon-hdd"></span> Root</a></li>
+				<li><a href="javascript:void(0)" on-click="selectApp"><span class="glyphicon glyphicon-hdd"></span> Root</a></li>
 				<li class="divider"></li>
 				{{#apps:i}}
-					<li><a href="#" on-click="selectApp">{{name}}</a></li>
+					<li><a href="javascript:void(0)" on-click="selectApp">{{name}}</a></li>
 				{{/apps}}
 			</ul>
 		</div>
@@ -266,33 +266,33 @@
 		{{#if currentKeypath !== "stars"}}
 		<ol class="breadcrumb">
 			{{#breadcrumbs:i}}
-				<li><a href="#" on-click="crumbSelect">{{file.name}}</a></li>
+				<li><a href="javascript:void(0)" on-click="crumbSelect">{{file.name}}</a></li>
 			{{/breadcrumbs}}
 			{{#currentFolder}}
 			<li class="active">
 				<span class="breadcrumb-menu dropdown">
-				<a id="folderDrop" href="#" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false">
+				<a id="folderDrop" href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false">
 				{{name}} <span class="caret"></span>
 				</a>
 				<ul class="dropdown-menu" role="menu" aria-labelledby="folderDrop">
-					{{#if currentKeypath.indexOf("files") > -1}}
+					{{#if .isFilePath}}
 					<li>
-						<a href="#" on-click="newFolder"><span class="glyphicon glyphicon-plus"></span> New Folder</a> 
+						<a href="javascript:void(0)" on-click="newFolder"><span class="glyphicon glyphicon-plus"></span> New Folder</a> 
 					</li>
 					<li class="divider"></li>
 					{{/if}}
 					<li>
-						<a href="#" on-click="star">
+						<a href="javascript:void(0)" on-click="star">
 							<span class="glyphicon glyphicon-star"></span> {{#if currentFolder.starred}}Remove{{else}}Add{{/if}} Star
 						</a> 
 					</li>
-					{{#if currentKeypath.indexOf("files") > -1}}
+					{{#if .isFilePath}}
 						{{#if user === currentFolder.permissions.owner}}
-						<li><a href="#" on-click="renameFolder"><span class="glyphicon glyphicon-repeat"></span> Rename</a></li>
-						<li><a href="#" on-click="deleteFolder"><span class="glyphicon glyphicon-trash"></span> Delete</a></li>
+						<li><a href="javascript:void(0)" on-click="renameFolder"><span class="glyphicon glyphicon-repeat"></span> Rename</a></li>
+						<li><a href="javascript:void(0)" on-click="deleteFolder"><span class="glyphicon glyphicon-trash"></span> Delete</a></li>
 						{{/if}}
 						<li class="divider"></li>
-						<li><a href="#" on-click="properties:{{currentFolder.url}}"><span class="glyphicon glyphicon-cog"></span> Folder Properties</a></li>
+						<li><a href="javascript:void(0)" on-click="properties:{{currentFolder.url}}"><span class="glyphicon glyphicon-cog"></span> Folder Properties</a></li>
 					{{/if}}
 				</ul>
 				</span>
@@ -303,9 +303,13 @@
 	</div> <!-- folderNav -->
 	<div class="folder-nav-btns">
 		{{#if selection.length > 0}}
-		<span>
-			<button type="button" class="btn btn-danger" on-click="deleteSelect" title="Delete Selection"><span class="glyphicon glyphicon-trash"></span></button>
-		</span>
+				<span>
+			{{#if currentKeypath === "stars"}}
+					<button type="button" class="btn btn-danger" on-click="deleteSelectStars" title="Delete Stars"><span class="glyphicon glyphicon-trash"></span></button>
+			{{else}}
+					<button type="button" class="btn btn-danger" on-click="deleteSelect" title="Delete Selection"><span class="glyphicon glyphicon-trash"></span></button>
+			{{/if}}
+				</span>
 		{{/if}}
 
 		<div class="btn-group">
@@ -319,27 +323,27 @@
 			</button>
 			<ul class="dropdown-menu dropdown-menu-right" role="menu">
 				<li>
-					<a href="#" on-click="sortBy:name">Name {{#if sorting.by === "name"}}
+					<a href="javascript:void(0)" on-click="sortBy:name">Name {{#if sorting.by === "name"}}
 					<span class="pull-right glyphicon glyphicon-{{#if sorting.asc}}chevron-up{{else}}chevron-down{{/if}}"></span>
 					{{/if}}
 					</a>
 				</li>
 				<li>
-					<a href="#" on-click="sortBy:owner">Owner 
+					<a href="javascript:void(0)" on-click="sortBy:owner">Owner 
 					{{#if sorting.by === "owner"}}
 					<span class="pull-right glyphicon glyphicon-{{#if sorting.asc}}chevron-up{{else}}chevron-down{{/if}}"></span>
 					{{/if}}
 					</a>
 				</li>
 				<li>
-					<a href="#" on-click="sortBy:modified">Last Modified 
+					<a href="javascript:void(0)" on-click="sortBy:modified">Last Modified 
 					{{#if sorting.by === "modified"}}
 					<span class="pull-right glyphicon glyphicon-{{#if sorting.asc}}chevron-up{{else}}chevron-down{{/if}}"></span>
 					{{/if}}
 					</a>
 				</li>
 				<li>
-					<a href="#" on-click="sortBy:size">Size 
+					<a href="javascript:void(0)" on-click="sortBy:size">Size 
 					{{#if sorting.by === "size"}}
 					<span class="pull-right glyphicon glyphicon-{{#if sorting.asc}}chevron-up{{else}}chevron-down{{/if}}"></span>
 					{{/if}}
@@ -354,9 +358,11 @@
 <div class="file-nav row">
 	<div id="sidebar" class="fill-page col-sm-3{{#if hideSidebar}} hidden-sidebar{{/if}}">
 		{{#if hideSidebar}}
-			<a href="#" class="sidebar-hide-btn" on-click="toggle('hideSidebar')" title="Show Sidebar"><span class="glyphicon glyphicon-chevron-right"></span></a>
+			<a href="javascript:void(0)" class="sidebar-hide-btn" on-click="toggle('hideSidebar')" title="Show Sidebar">
+				<span class="glyphicon glyphicon-chevron-right"></span></a>
 		{{else}}
-			<a href="#" class="sidebar-hide-btn" on-click="toggle('hideSidebar')" title="Hide Sidebar"><span class="glyphicon glyphicon-chevron-left"></span></a>
+			<a href="javascript:void(0)" class="sidebar-hide-btn" on-click="toggle('hideSidebar')" title="Hide Sidebar">
+				<span class="glyphicon glyphicon-chevron-left"></span></a>
 			<div class="trees">
 				<tree root="{{files}}" on-select="fileTreeSelect" selectKeypath="{{currentKeypath.replace('files', 'root')}}">
 				</tree>
@@ -395,28 +401,28 @@
 		<thead>
 			<tr>
 				<th>
-					<a href="#" on-click="sortBy:name">Name 
+					<a href="javascript:void(0)" on-click="sortBy:name">Name 
 					{{#if sorting.by === "name"}}
 					<span class="caret{{#if sorting.asc}} caret-up{{/if}}"></span> 
 					{{/if}}
 					</a>
 				</th>
 				<th>
-					<a href="#" on-click="sortBy:owner">Owner  
+					<a href="javascript:void(0)" on-click="sortBy:owner">Owner  
 					{{#if sorting.by === "owner"}}
 					<span class="caret{{#if sorting.asc}} caret-up{{/if}}"></span> 
 					{{/if}}
 					</a>
 				</th>
 				<th>
-					<a href="#" on-click="sortBy:modified">Last Modified   
+					<a href="javascript:void(0)" on-click="sortBy:modified">Last Modified   
 					{{#if sorting.by === "modified"}}
 					<span class="caret{{#if sorting.asc}} caret-up{{/if}}"></span> 
 					{{/if}}
 					</a>
 				</th>
 				<th>
-					<a href="#" on-click="sortBy:size">Size 
+					<a href="javascript:void(0)" on-click="sortBy:size">Size 
 					{{#if sorting.by === "size"}}
 					<span class="caret{{#if sorting.asc}} caret-up{{/if}}"></span> 
 					{{/if}}
@@ -432,7 +438,7 @@
 					{{#if .isDir}}
 						<td>
 							{{>droppable}}
-							<a href="#" on-click="explorerSelect">
+							<a href="javascript:void(0)" on-click="explorerSelect">
 								{{>draggable}}
 								<span class="fa fa-{{explorerIcon}}"></span>  {{name}}
 							</a>
@@ -447,7 +453,7 @@
 					{{/if}}
 				{{else}}
 					<td>
-						<a href="#" onmousedown="return false">
+						<a href="javascript:void(0)" onmousedown="return false">
 							<span class="fa fa-{{explorerIcon}}"></span>  {{name}}
 						</a>
 					</td>
@@ -476,11 +482,13 @@
 </div> 
 
 <!-- {{>draggable}} -->
-	<draggable useParent="true" helper="nametag" zIndex="1000" disabled="{{currentKeypath === 'stars'}}" 
+{{#if .isFilePath}} 
+	<draggable useParent="true" helper="nametag" zIndex="1000"
 		dragData="{{ inSelection ? selection : .}}" name="{{ inSelection && selection.length > 1 ? 'multiple files' : name}}" 
 		iconClass="fa fa-{{inSelection && selection.length > 1 ? 'files-o' : explorerIcon}}" 
 		count="{{inSelection && selection.length > 1 ? selection.length : false}}">
 	</draggable>
+{{/if}}
 <!-- {{/draggable}} -->
 
 <!-- {{>droppable}} -->
@@ -492,9 +500,9 @@
 
 <!-- {{>fileTile}} -->
 {{#if .isDir}}
-	<a href="#" on-click="explorerSelect" class="file-tile {{#canRead}}selectable{{/}}" {{^canRead}}onmousedown="return false"{{/}} data-select="{{i}}">
+	<a href="javascript:void(0)" on-click="explorerSelect" class="file-tile {{#canRead}}selectable{{/}}" {{^canRead}}onmousedown="return false"{{/}} data-select="{{i}}">
 	{{#if currentKeypath === "stars"}}
-		<a href="#" class="btn btn-file-grid" on-click="removeStar" title="Remove Star"><span class="glyphicon glyphicon-remove"></span></a>
+		<a href="javascript:void(0)" class="btn btn-file-grid" on-click="removeStar" title="Remove Star"><span class="glyphicon glyphicon-remove"></span></a>
 	{{/if}}
 		{{#if .canRead}}
 				{{>droppable}}
@@ -509,17 +517,17 @@
 		class="file-tile selectable" data-select="{{i}}">
 		{{>draggable}}
 		{{#if currentKeypath !== "stars"}}
-			<a href="#" class="btn btn-file-grid" on-click="properties:{{.url}}" title="Properties"><span class="glyphicon glyphicon-cog"></span></a>
+			<a href="javascript:void(0)" class="btn btn-file-grid" on-click="properties:{{.url}}" title="Properties"><span class="glyphicon glyphicon-cog"></span></a>
 		{{else}}
-			<a href="#" class="btn btn-file-grid" on-click="removeStar" title="Remove Star"><span class="glyphicon glyphicon-remove"></span></a>
+			<a href="javascript:void(0)" class="btn btn-file-grid" on-click="removeStar" title="Remove Star"><span class="glyphicon glyphicon-remove"></span></a>
 		{{/if}}
 		<span class="grid-icon fa fa-5x fa-{{explorerIcon}}"></span>
 		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
 	</a>
 	{{else}}
-	<a href="#"  class="file-tile" onmousedown="return false">
+	<a href="javascript:void(0)"  class="file-tile" onmousedown="return false">
 		{{#if currentKeypath === "stars"}}
-			<a href="#" class="btn btn-file-grid" on-click="removeStar" title="Remove Star"><span class="glyphicon glyphicon-remove"></span></a>
+			<a href="javascript:void(0)" class="btn btn-file-grid" on-click="removeStar" title="Remove Star"><span class="glyphicon glyphicon-remove"></span></a>
 		{{/if}}
 		<span class="grid-icon fa fa-5x fa-{{explorerIcon}}"></span>
 		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
@@ -543,7 +551,7 @@
 						{{.error}}
 					</span>
 					{{#exists}}
-						 <a href="#" class="btn btn-xs btn-success" on-click="replaceUpload">Replace?</a> 
+						 <a href="javascript:void(0)" class="btn btn-xs btn-success" on-click="replaceUpload">Replace?</a> 
 					{{/exists}}
 				{{else}}
 					<div class="progress upload-progress">

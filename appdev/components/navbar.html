@@ -5,12 +5,12 @@
 		<a class="navbar-brand" href="/" title="home">{{brand}}</a> 
 		{{#app}} 
 			<ul class="nav navbar-nav"> 
-				<li class="active"><a href="#" on-click="refresh">{{app}}</a></li> 
+				<li class="active"><a href="javascript:void(0)" on-click="refresh">{{app}}</a></li> 
 			</ul>
 		{{/app}} 
 		{{#help}} 
 			<ul class="nav navbar-nav"> 
-				<li><a href="#" id="navHelp" tabindex="0"  title="{{title}}"  
+				<li><a href="javascript:void(0)" id="navHelp" tabindex="0"  title="{{title}}" role="button"  
 				data-content="{{text}}" decorator="help"><span class="glyphicon glyphicon-question-sign"></span></a></li> 
 			</ul>
 		{{/help}} 
@@ -60,7 +60,7 @@
 	<div class="navbar-alert alert alert-danger container" role="alert"> 
 		<strong>{{errorLead}}</strong>  
 		{{{error}}} 
-		<a href="#" on-click="refresh"> 
+		<a href="javascript:void(0)" on-click="refresh"> 
 		<span class="close glyphicon glyphicon-refresh"></span><span class="sr-only">Refresh</span></a> 
 	</div> 
 {{/error}}
@@ -160,8 +160,8 @@ component.exports = {
 				openUser: function(event) {
 						window.location = "/home/v1/file/user/";
 				},
-				refresh: function() {
-						window.location.reload();
+				refresh: function(event) {
+					window.location.reload();
 				},
 				loginModal: function(event) {
             this.set({
@@ -178,9 +178,9 @@ component.exports = {
 
         },
         login: function(event) {
+					event.original.preventDefault();
             this.set("waiting", true);
             this.set("loginErr", null);
-            event.original.preventDefault();
             var data;
 
             if (event.context.rememberMe) {
