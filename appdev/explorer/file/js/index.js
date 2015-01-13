@@ -647,12 +647,14 @@ $(document).ready(function() {
             file.canRead = false;
         }
 
+		//TODO: Selectable
+
         file.isFilePath = isFile(file.url);
 
         if (file.isDir) {
             file.explorerIcon = "folder";
             if (file.canRead) {
-                file.canSelect = true;
+                file.canSelect = true; //for tree component
                 if (file.isFilePath) {
                     file.droppable = true;
                 }
