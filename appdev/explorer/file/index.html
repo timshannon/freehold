@@ -500,7 +500,8 @@
 
 <!-- {{>fileTile}} -->
 {{#if .isDir}}
-	<a href="javascript:void(0)" on-click="explorerSelect" class="file-tile {{#canRead}}selectable{{/}}" {{^canRead}}onmousedown="return false"{{/}} data-select="{{i}}">
+	<a href="javascript:void(0)" on-click="explorerSelect" class="file-tile {{#if .canRead && .isFilePath}}selectable{{/}}"
+		 {{^canRead}}onmousedown="return false"{{/}} data-select="{{i}}">
 	{{#if currentKeypath === "stars"}}
 		<a href="javascript:void(0)" class="btn btn-file-grid" on-click="removeStar" title="Remove Star"><span class="glyphicon glyphicon-remove"></span></a>
 	{{/if}}
