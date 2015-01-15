@@ -62,7 +62,22 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		mp := r.MultipartForm
-		uploadFile(w, res, auth.User, mp)
+
+		fileList, failures := uploadFile(w, res, auth.User, mp)
+		status := statusSuccess
+
+		if len(failures) == 0 {
+			w.WriteHeader(http.StatusCreated)
+		} else {
+			status = statusFail
+		}
+
+		respondJsend(w, &JSend{
+			Status:   status,
+			Data:     fileList,
+			Failures: failures,
+		})
+
 		return
 	}
 
@@ -95,17 +110,15 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func uploadFile(w http.ResponseWriter, parent *resource.File, owner *user.User, mp *multipart.Form) {
+func uploadFile(w http.ResponseWriter, parent *resource.File, owner *user.User, mp *multipart.Form) ([]Properties, []error) {
 	var fileList []Properties
 	var failures []error
-	status := statusSuccess
 
 	for _, files := range mp.File {
 		for i := range files {
 
 			if path.Base(files[i].Filename) != files[i].Filename {
 				failures = append(failures, fail.New("File name must not contain a path.", files[i].Filename))
-				status = statusFail
 
 				continue
 			}
@@ -121,7 +134,6 @@ func uploadFile(w http.ResponseWriter, parent *resource.File, owner *user.User, 
 			if err != nil {
 				log.Error(err)
 				failures = append(failures, fail.New("Error opening file for writing.", res.Url()))
-				status = statusFail
 
 				continue
 			}
@@ -129,14 +141,12 @@ func uploadFile(w http.ResponseWriter, parent *resource.File, owner *user.User, 
 			err = writeFile(file, res.Filepath(), false)
 			if err != nil {
 				failures = append(failures, fail.NewFromErr(err, res.Url()))
-				status = statusFail
 
 				continue
 			}
 			err = permission.Set(res, permission.FileNewDefault(owner.Username()))
 			if err != nil {
 				failures = append(failures, fail.NewFromErr(err, res.Url()))
-				status = statusFail
 
 				continue
 			}
@@ -148,14 +158,8 @@ func uploadFile(w http.ResponseWriter, parent *resource.File, owner *user.User, 
 		}
 	}
 
-	if status == statusSuccess {
-		w.WriteHeader(http.StatusCreated)
-	}
-	respondJsend(w, &JSend{
-		Status:   status,
-		Data:     fileList,
-		Failures: failures,
-	})
+	return fileList, failures
+
 }
 
 type FileInput struct {

@@ -375,7 +375,9 @@
 	</div> <!-- sidebar -->
 
 	<div id="explorer" class="fill-page {{#if hideSidebar}}col-sm-12{{else}}col-sm-9{{/if}}">
-	<dropzone useParent="true"></dropzone>
+	{{#if currentKeypath !== "stars"}}
+		<dropzone useParent="true"></dropzone>
+	{{/if}}
 	{{#loading}}
 		<div class="overlay"></div>
 		<div class="loading">

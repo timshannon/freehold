@@ -42,6 +42,37 @@ window.fh = (function() {
         return $.ajax(options);
     }
 
+    function uploadFile(type, uploadPath, fileData, progress) {
+        //very simple file upload, feel free to write you own or use a plugin
+        //  with progress handling, polyfills, etc
+        // just be sure to include the X-CSRFToken header:
+        //   xhr.setRequestHeader ("X-CSRFToken", fh.auth.CSRFToken);
+        var formData;
+        if (fileData instanceof FormData) {
+            formData = fileData;
+        } else if (fileData instanceof File) {
+            formData = new FormData();
+
+            formData.append(fileData.name,
+                fileData, fileData.name);
+        } else {
+            //not supported
+            throw "FileData type not supported";
+        }
+
+        return stdAjax(type, uploadPath, {
+            data: formData,
+            cache: false,
+            processData: false,
+            contentType: false,
+            xhr: function() {
+                var xhr = new window.XMLHttpRequest();
+                xhr.upload.addEventListener("progress", progress, false);
+                return xhr;
+            },
+        });
+    }
+
     return {
         auth: function() {
             if (_auth) {
@@ -62,63 +93,13 @@ window.fh = (function() {
         }(),
         file: {
             upload: function(uploadPath, fileData, progress) {
-                //very simple file upload, feel free to write you own or use a plugin
-                //  with progress handling, polyfills, etc
-                // just be sure to include the X-CSRFToken header:
-                //   xhr.setRequestHeader ("X-CSRFToken", fh.auth.CSRFToken);
-                var formData;
-                if (fileData instanceof FormData) {
-                    formData = fileData;
-                } else if (fileData instanceof File) {
-                    formData = new FormData();
-
-                    formData.append(fileData.name,
-                        fileData, fileData.name);
-                } else {
-                    //not supported
-                    throw "FileData type not supported";
-                }
-
-                return stdAjax("POST", uploadPath, {
-                    data: formData,
-                    cache: false,
-                    processData: false,
-                    contentType: false,
-                    xhr: function() {
-                        var xhr = new window.XMLHttpRequest();
-                        xhr.upload.addEventListener("progress", progress, false);
-                        return xhr;
-                    },
-                });
+                return uploadFile("POST", uploadPath, fileData, progress);
             },
             newFolder: function(fileurl) {
                 return stdAjax("POST", fileurl);
             },
             update: function(uploadPath, fileData, progress) {
-                var formData;
-                if (fileData instanceof FormData) {
-                    formData = fileData;
-                } else if (fileData instanceof File) {
-                    formData = new FormData();
-
-                    formData.append(fileData.name,
-                        fileData, fileData.name);
-                } else {
-                    //not supported
-                    throw "FileData type not supported";
-                }
-                return stdAjax("PUT", uploadPath, {
-                    data: formData,
-                    cache: false,
-                    processData: false,
-                    contentType: false,
-                    xhr: function() {
-                        var xhr = new window.XMLHttpRequest();
-                        xhr.upload.addEventListener("progress", progress, false);
-                        return xhr;
-                    },
-
-                });
+                return uploadFile("PUT", uploadPath, fileData, progress);
             },
             move: function(from, to) {
                 return stdAjax("PUT", from, {
@@ -321,13 +302,8 @@ window.fh = (function() {
             new: function(dsPath) {
                 return stdAjax("POST", dsPath);
             },
-            upload: function(dsPath, formData) {
-                return stdAjax("POST", dsPath, {
-                    data: formData,
-                    cache: false,
-                    processData: false,
-                    contentType: false
-                });
+            upload: function(dsPath, fileData, progress) {
+                return uploadFile("POST", dsPath, fileData, progress);
             },
         },
         Datastore: function(dsPath) {
