@@ -433,19 +433,19 @@
 		</thead>
 		<tbody>
 			{{#currentFolder.files:i}}
-			<tr class="{{#if .canRead}}selectable{{/if}}" data-select="{{i}}">
+			<tr class="{{#if .selectable}}selectable{{/if}}" data-select="{{i}}">
 				{{#if .canRead}}
 					{{#if .isDir}}
 						<td>
 							{{>droppable}}
-							<a href="javascript:void(0)" on-click="explorerSelect">
+							<a href="javascript:void(0)" on-click="explorerSelect" onmousedown="return false">
 								{{>draggable}}
 								<span class="fa fa-{{explorerIcon}}"></span>  {{name}}
 							</a>
 						</td>
 					{{else}}
 						<td>
-							<a href="{{explorerUrl}}" target="{{#newWindow}}_blank{{/newWindow}}" {{#.behavior.download}}download=""{{/download}}>
+							<a href="{{explorerUrl}}" target="{{#newWindow}}_blank{{/newWindow}}" {{#.behavior.download}}download=""{{/download}} onmousedown="return false">
 								{{>draggable}}
 								<span class="fa fa-{{explorerIcon}}"></span>  {{name}}
 							</a>
@@ -482,9 +482,9 @@
 </div> 
 
 <!-- {{>draggable}} -->
-{{#if .isFilePath}} 
-	<draggable useParent="true" helper="nametag" zIndex="1000"
-		dragData="{{ inSelection ? selection : .}}" name="{{ inSelection && selection.length > 1 ? 'multiple files' : name}}" 
+{{#if .exDraggable && currentKeypath !== 'stars'}}
+	<draggable useParent="true" helper="nametag" zIndex="1000" 	dragData="{{ inSelection ? selection : .}}" 
+		name="{{ inSelection && selection.length > 1 ? 'multiple files' : name}}" 
 		iconClass="fa fa-{{inSelection && selection.length > 1 ? 'files-o' : explorerIcon}}" 
 		count="{{inSelection && selection.length > 1 ? selection.length : false}}">
 	</draggable>
@@ -492,30 +492,28 @@
 <!-- {{/draggable}} -->
 
 <!-- {{>droppable}} -->
-{{^.inSelection}}
-<droppable useParent="true" hoverClass="drop-over" dropData="{{.}}" greedy="true" tolerance="pointer" addClasses="false">
-</droppable>
-{{/}}
+{{#if .droppable && currentKeypath !== 'stars' && !.inSelection}}
+	<droppable useParent="true" hoverClass="drop-over" dropData="{{.}}" greedy="true" tolerance="pointer" addClasses="false">
+	</droppable>
+{{/if}}
 <!-- {{/droppable}} -->
 
 <!-- {{>fileTile}} -->
 {{#if .isDir}}
-	<a href="javascript:void(0)" on-click="explorerSelect" class="file-tile {{#if .canRead && .isFilePath}}selectable{{/}}"
-		 {{^canRead}}onmousedown="return false"{{/}} data-select="{{i}}">
+	<a href="javascript:void(0)" on-click="explorerSelect" class="file-tile {{#if .selectable}}selectable{{/if}}"
+		 onmousedown="return false" data-select="{{i}}">
 	{{#if currentKeypath === "stars"}}
 		<a href="javascript:void(0)" class="btn btn-file-grid" on-click="removeStar" title="Remove Star"><span class="glyphicon glyphicon-remove"></span></a>
 	{{/if}}
-		{{#if .canRead}}
-				{{>droppable}}
-				{{>draggable}}
-		{{/if}}
+		{{>droppable}}
+		{{>draggable}}
 		<span class="grid-icon fa fa-5x fa-{{explorerIcon}}"></span>
 		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
 	</a>
 {{else}}
 	{{#if .canRead}}
 	<a href="{{explorerUrl}}" target="{{#newWindow}}_blank{{/newWindow}}" {{#.download}}download=""{{/download}} 
-		class="file-tile selectable" data-select="{{i}}">
+		class="file-tile selectable" data-select="{{i}}" onmousedown="return false">
 		{{>draggable}}
 		{{#if currentKeypath !== "stars"}}
 			<a href="javascript:void(0)" class="btn btn-file-grid" on-click="properties:{{.url}}" title="Properties"><span class="glyphicon glyphicon-cog"></span></a>

@@ -44,7 +44,6 @@ component.exports = {
 			opacity: false,
 			scope: "default",
 			helper: "original",
-			disabled: false,
 			cursor: false,
 			cursorAt: false,
 			appendTo: false,
@@ -88,6 +87,7 @@ component.exports = {
 				}
 			}
 
+
 			$(node).draggable({
 				addClasses: r.get("addClasses"),
 				revert: r.get("revert"),
@@ -97,13 +97,13 @@ component.exports = {
 				opacity: r.get("opacity"),
 				zIndex: r.get("zIndex"),
 				helper: helper,
-				disabled: r.get("disabled"),
 				cursor: r.get("cursor"),
 				cursorAt: r.get("cursorAt"),
 				start: function(event, ui) {
 					if(r.get("dragData")) {
 						$(node).data("dragData", r.get("dragData"));	
 					}
+					r.fire("start", r.get("dragData"));
 				},
 			});
 			return {

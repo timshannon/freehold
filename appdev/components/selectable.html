@@ -16,7 +16,6 @@ component.exports = {
 	// the jqueryui options
 	data: {
 			useParent: false,
-			disabled: false,
 			filter: "*",
 			delay: 0,
 			cancel: null,
@@ -34,7 +33,6 @@ component.exports = {
 			}
 
 			$(node).selectable({
-				disabled: r.get("disabled"),
 				filter: r.get("filter"),
 				cancel: r.get("cancel"),
 				delay: r.get("delay"),
