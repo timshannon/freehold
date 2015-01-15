@@ -246,7 +246,7 @@ $(document).ready(function() {
                 } else {
                     file.showOwner = false;
                 }
-                rMain.set("currentFile", setFileType(file));
+                rMain.set("currentFile", file);
             }, function(result) {
                 if (result.message === "Resource not found") {
                     result.data.propError = "You do not have permissions to view the properties of this file.";
@@ -281,16 +281,18 @@ $(document).ready(function() {
         },
         "fileinput.setFiles": function(event) {
             var files = event.context.files;
+            var isDS = !rMain.get("currentFolder.isFilepath");
 
             for (var i = 0; i < files.length; i++) {
-                uploadFile(files[i]);
+                uploadFile(files[i], false, isDS);
             }
         },
         "replaceUpload": function(event) {
             var file = event.context;
+            var isDS = !rMain.get("currentFolder.isFilepath");
             file.error = false;
             file.exists = false;
-            uploadFile(file, true);
+            uploadFile(file, true, isDS);
         },
         "cancelUpload": function(event) {
             if (!event.context.error && event.context.xhr) {
@@ -300,9 +302,9 @@ $(document).ready(function() {
             }
         },
         "dropzone.drop": function(files) {
-            //TODO: stars and datastores
+            var isDS = !rMain.get("currentFolder.isFilepath");
             for (var i = 0; i < files.length; i++) {
-                uploadFile(files[i]);
+                uploadFile(files[i], false, isDS);
             }
         },
         "droppable.drop": function(source, dest) {
@@ -400,8 +402,10 @@ $(document).ready(function() {
         "currentFile.behavior": function(newValue, oldValue, keypath) {
             if (newValue && oldValue) {
                 //FIXME:  Change seems to be happening due to different keypaths
+                //TODO: Property updates on a separate keypath?
+                console.log("behavior old: ", oldValue);
+                console.log("behavior new: ", newValue);
                 settings.fileType.set(rMain.get("currentFile"));
-                refresh();
             }
         },
         "currentFile.explorerIcon": function(newValue, oldValue, keypath) {
@@ -837,7 +841,7 @@ $(document).ready(function() {
             file.isFilePath = false;
             file.exDraggable = false;
             file.droppable = false;
-			file.selectable = true;
+            file.selectable = true;
             files.push(file);
             sortCurrent();
         };
@@ -992,13 +996,17 @@ $(document).ready(function() {
             });
     }
 
-    function uploadFile(file, replace) {
+    function uploadFile(file, replace, isDS) {
         var uploadFunc;
 
-        if (!replace) {
-            uploadFunc = fh.file.upload;
-        } else {
+        if (replace && !isDS) {
             uploadFunc = fh.file.update;
+        } else {
+            if (!isDS) {
+                uploadFunc = fh.file.upload;
+            } else {
+                uploadFunc = fh.datastore.upload;
+            }
         }
         uploadPath = rMain.get("currentFolder.url");
         file = setFileType(file);
@@ -1009,8 +1017,12 @@ $(document).ready(function() {
         rMain.set("uploads." + id, file);
 
         if (!replace && fileExists(file)) {
-            rMain.set("uploads." + id + ".exists", true);
-            rMain.set("uploads." + id + ".error", "File already exists!");
+            if (isDS) {
+                rMain.set("uploads." + id + ".error", "A datastore with this name already exists!");
+            } else {
+                rMain.set("uploads." + id + ".exists", true);
+                rMain.set("uploads." + id + ".error", "File already exists!");
+            }
             return;
         }
 
@@ -1027,6 +1039,7 @@ $(document).ready(function() {
                 if (result.status === 0) {
                     rMain.set("uploads." + id + ".error", "Upload Canceled");
                 } else {
+					//TODO: Handle failure list
                     var errMsg;
                     if (result.responseJSON.failures) {
                         errMsg = result.responseJSON.failures[0].message;
@@ -1127,6 +1140,7 @@ $(document).ready(function() {
                 return file.behavior;
             },
             set: function(file) {
+
                 var files = settings.get("files", {});
                 var ext = this.ext(file.name);
 
