@@ -300,6 +300,7 @@ $(document).ready(function() {
             }
         },
         "dropzone.drop": function(files) {
+            //TODO: stars and datastores
             for (var i = 0; i < files.length; i++) {
                 uploadFile(files[i]);
             }
@@ -647,19 +648,20 @@ $(document).ready(function() {
             file.canRead = false;
         }
 
-		//TODO: Selectable
 
         file.isFilePath = isFile(file.url);
 
+        file.selectable = isSelectable(file);
+        file.exDraggable = isDraggable(file);
+        file.droppable = isDroppable(file);
+
         if (file.isDir) {
             file.explorerIcon = "folder";
-            if (file.canRead) {
-                file.canSelect = true; //for tree component
-                if (file.isFilePath) {
-                    file.droppable = true;
-                }
-            } else {
+
+            if (!file.canRead) {
                 file.open = false;
+            } else {
+                file.canSelect = true;
             }
 
             if (file.open) {
@@ -690,6 +692,47 @@ $(document).ready(function() {
 
 
         return file;
+    }
+
+
+    function isSelectable(file) {
+        if (!file.canRead) {
+            return false;
+        }
+
+        if (file.isDir) {
+            if (file.isFilePath) {
+                return true;
+            }
+            //datastore dir
+            return false;
+        }
+
+        return true;
+    }
+
+    function isDroppable(file) {
+        if (!file.canRead) {
+            return false;
+        }
+        if (!file.isDir) {
+            return false;
+        }
+        if (!file.isFilePath) {
+            return false;
+        }
+        return true;
+    }
+
+    function isDraggable(file) {
+        if (!file.canRead) {
+            return false;
+        }
+
+        if (!file.isFilePath) {
+            return false;
+        }
+        return true;
     }
 
     function buildBreadcrumbs(keypath) {
@@ -792,6 +835,9 @@ $(document).ready(function() {
 
         var fileAdd = function(file) {
             file.isFilePath = false;
+            file.exDraggable = false;
+            file.droppable = false;
+			file.selectable = true;
             files.push(file);
             sortCurrent();
         };
