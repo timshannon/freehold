@@ -54,7 +54,7 @@
 	<thead>
 		<tr>
 			<th>
-				<a href="#" on-click="sortLog">When<span class="caret{{#iter.order == 'asc'}} caret-up{{/sortAsc}}"></span></a>
+				<a href="javascript:void(0)" on-click="sortLog">When<span class="caret{{#iter.order == 'asc'}} caret-up{{/sortAsc}}"></span></a>
 			</th>
 			<th>Type</th>
 			<th>Message</th>
@@ -78,9 +78,9 @@
 	</tbody>
 </table>
 <div class="btn-group">
-	<a href="#" class="btn btn-default{{#page.start === 0}} disabled{{/page}}" on-click="prev">
+	<a href="javascript:void(0)" class="btn btn-default{{#page.start === 0}} disabled{{/page}}" on-click="prev">
 		<span class="glyphicon glyphicon-chevron-left"></span></a>
-	<a href="#" class="btn btn-default{{#page.end > logs.length}} disabled{{/page}}" on-click="next">
+	<a href="javascript:void(0)" class="btn btn-default{{#page.end > logs.length}} disabled{{/page}}" on-click="next">
 		<span class="glyphicon glyphicon-chevron-right"></span></a>
 </div>
 

@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"bitbucket.org/tshannon/freehold/data/store"
+	"bitbucket.org/tshannon/freehold/resource"
 )
 
 func halt(msg string) {
@@ -65,17 +66,16 @@ func isDir(filename string) bool {
 	return false
 }
 
-func clearEmptyFolder(folder string) error {
-	file, err := os.Open(folder)
-	defer file.Close()
-
-	files, err := file.Readdir(0)
+func clearEmptyFolder(parent *resource.File) error {
+	children, err := parent.Children()
 	if err != nil {
 		return err
 	}
-	if len(files) == 0 {
-		return os.Remove(file.Name())
+
+	if len(children) == 0 {
+		return os.RemoveAll(parent.Filepath())
 	}
+
 	return nil
 }
 
