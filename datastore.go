@@ -383,7 +383,7 @@ func datastoreDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = clearEmptyFolder(res.Parent().Filepath())
+	err = clearEmptyFolder(res.Parent())
 	if errHandled(err, w, auth) {
 		return
 	}

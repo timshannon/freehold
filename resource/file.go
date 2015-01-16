@@ -74,7 +74,10 @@ func (r *File) Children() ([]*File, error) {
 	children := make([]*File, 0, len(childNames))
 
 	for i := range childNames {
-		children = append(children, NewFile(path.Join(r.Url(), filepath.Base(childNames[i]))))
+		n := NewFile(path.Join(r.Url(), filepath.Base(childNames[i])))
+		if !n.IsHidden() && n.Exists() {
+			children = append(children, n)
+		}
 	}
 
 	return children, nil
