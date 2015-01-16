@@ -230,24 +230,24 @@ func datastorePost(w http.ResponseWriter, r *http.Request) {
 
 		status := statusSuccess
 
-		if len(failures) == 0 {
-			w.WriteHeader(http.StatusCreated)
-		} else {
-			status = statusFail
-		}
-
 		//Validate datastore files
 		for i := range fileList {
 			dsRes := resource.NewFile(fileList[i].Url)
 			_, err = data.Open(dsRes.Filepath())
 			if err != nil {
-				failures = append(failures, fail.NewFromErr(err, dsRes.Name()))
+				failures = append(failures, fail.New("Invalid Datastore file", dsRes.Name()))
 				status = statusFail
 				os.Remove(dsRes.Filepath())
 				permission.Delete(dsRes)
 			} else {
 				data.Close(dsRes.Filepath())
 			}
+		}
+
+		if len(failures) == 0 {
+			w.WriteHeader(http.StatusCreated)
+		} else {
+			status = statusFail
 		}
 		respondJsend(w, &JSend{
 			Status:   status,

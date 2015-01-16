@@ -15,6 +15,8 @@ $(document).ready(function() {
         template: "#tNav",
     });
 
+    var nav = rNav.findComponent("navbar");
+
     var rMain = new Ractive({
         el: "#pageContainer",
         template: "#tMain",
@@ -308,6 +310,7 @@ $(document).ready(function() {
             }
         },
         "droppable.drop": function(source, dest) {
+            rMain.set("fileMove", []);
             if (source instanceof Array) {
                 for (var i = 0; i < source.length; i++) {
                     moveExplorerFile(source[i], dest);
@@ -379,6 +382,9 @@ $(document).ready(function() {
                 });
 
         },
+        "dismissFileAlert": function(event) {
+            rMain.splice(event.keypath.split(".")[0], event.index.i, 1);
+        },
     });
 
     rMain.observe({
@@ -401,16 +407,11 @@ $(document).ready(function() {
         },
         "currentFile.behavior": function(newValue, oldValue, keypath) {
             if (newValue && oldValue) {
-                //FIXME:  Change seems to be happening due to different keypaths
-                //TODO: Property updates on a separate keypath?
-                console.log("behavior old: ", oldValue);
-                console.log("behavior new: ", newValue);
                 settings.fileType.set(rMain.get("currentFile"));
             }
         },
         "currentFile.explorerIcon": function(newValue, oldValue, keypath) {
             if (newValue && oldValue) {
-
                 var file = rMain.get("currentFile");
                 file.icon = file.explorerIcon;
 
@@ -924,6 +925,8 @@ $(document).ready(function() {
             return;
         }
 
+        rMain.set("fileAlerts", []);
+
         var newUrl = fh.util.urlJoin(dest.url, trimSlash(source.url).split("/").pop());
         if (trimSlash(source.url) == newUrl) {
             return;
@@ -938,8 +941,14 @@ $(document).ready(function() {
                 refresh();
             })
             .fail(function(result) {
-                //TODO: Better error handling.  Replace option?
-                error(result);
+                var exists = (result.responseJSON.message == "Destination file already exists");
+				//Get dest file info?
+                rMain.push("fileAlerts", {
+                    source: source,
+                    dest: dest,
+                    error: result.responseJSON.message,
+                    exists: exists,
+                });
             });
     }
 
@@ -954,11 +963,13 @@ $(document).ready(function() {
     }
 
     function error(err) {
+        var msg;
         if (typeof err === "string") {
-            rNav.set("error", err);
+            msg = err;
         } else {
-            rNav.set("error", err.responseJSON.message);
+            msg = err.responseJSON.message;
         }
+        nav.fire("addAlert", "danger", "", msg);
     }
 
 
@@ -1039,7 +1050,6 @@ $(document).ready(function() {
                 if (result.status === 0) {
                     rMain.set("uploads." + id + ".error", "Upload Canceled");
                 } else {
-					//TODO: Handle failure list
                     var errMsg;
                     if (result.responseJSON.failures) {
                         errMsg = result.responseJSON.failures[0].message;
@@ -1108,18 +1118,35 @@ $(document).ready(function() {
         function get(filetype) {
             var file = settings.get("files", {})[filetype];
             if (!file) {
-                file = {
-                    behavior: {
-                        download: false,
-                        appID: defaultApps[filetype],
-                        app: (defaultApps[filetype] !== undefined),
-                        browser: (!defaultApps[filetype]),
-                    },
-                    icon: defaultIcons[filetype.toLowerCase()] || "file-o",
-                };
+                file = def(filetype);
             }
             return file;
 
+        }
+
+        function def(filetype) {
+            return {
+                behavior: {
+                    download: false,
+                    appID: defaultApps[filetype],
+                    app: (defaultApps[filetype] !== undefined),
+                    browser: (!defaultApps[filetype]),
+                },
+                icon: defaultIcons[filetype.toLowerCase()] || "file-o",
+            };
+        }
+
+        function equal(a, b) {
+            if (a.icon === b.icon &&
+                a.behavior.download === b.behavior.download &&
+                a.behavior.app === b.behavior.app &&
+                a.behavior.browser == b.behavior.browser) {
+                if (a.behavior.app) {
+                    return a.behavior.appID === b.behavior.appID;
+                }
+                return true;
+            }
+            return false;
         }
         return {
             ext: function(name) {
@@ -1154,6 +1181,9 @@ $(document).ready(function() {
                     files[ext].icon = file.icon;
                 }
 
+                if (equal(files[ext], def(ext))) {
+                    delete files[ext];
+                }
                 settings.put("files", files);
             },
             default: function(filetype) {

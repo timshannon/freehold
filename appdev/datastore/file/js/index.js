@@ -12,8 +12,9 @@ $(document).ready(function() {
         data: {}
     });
 
+    var nav = rMain.findComponent("navbar");
 
-//TODO: Import and Export JSON
+    //TODO: Import and Export JSON
 
 
     //Setup DS
@@ -27,7 +28,7 @@ $(document).ready(function() {
                 loadData();
             })
             .fail(function(result) {
-				result = result.responseJSON;
+                result = result.responseJSON;
                 rMain.set("fileError", result.message);
                 setEmpty();
             });
@@ -151,13 +152,11 @@ $(document).ready(function() {
                         setFilter();
                     })
                     .fail(function(result) {
-				result = result.responseJSON;
-                        rMain.set("error", result.message);
+                        error(result);
                     });
             })
             .fail(function(result) {
-				result = result.responseJSON;
-                rMain.set("error", result.message);
+                error(result);
             });
 
     }
@@ -197,8 +196,7 @@ $(document).ready(function() {
                 setFilter();
             })
             .fail(function(result) {
-				result = result.responseJSON;
-                rMain.set("error", result.message);
+                error(result);
             });
 
     }
@@ -252,6 +250,16 @@ $(document).ready(function() {
         rMain.set("filtered", 0);
         rMain.set("data", []);
 
+    }
+
+    function error(err) {
+        var msg;
+        if (typeof err === "string") {
+            msg = err;
+        } else {
+            msg = err.responseJSON.message;
+        }
+        nav.fire("addAlert", "danger", "", msg);
     }
 
 }); //end ready

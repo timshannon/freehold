@@ -313,6 +313,7 @@
 		{{/if}}
 
 		<div class="btn-group">
+			<button type="button" class="btn btn-default" on-click="openSearch" title="Search Files"><span class="fa fa-2 fa-search"></span></button>
 		{{#if !listView}}
 			<button type="button" class="btn btn-default" on-click="changeView" title="List View"><span class="fa fa-2 fa-list"></span></button>
 		{{else}}
@@ -355,6 +356,7 @@
 	</div>
 
 </div> <!-- row -->
+
 <div class="file-nav row">
 	<div id="sidebar" class="fill-page col-sm-3{{#if hideSidebar}} hidden-sidebar{{/if}}">
 		{{#if hideSidebar}}
@@ -573,6 +575,42 @@
 	</div>
 </div>
 {{/uploads}}
+
+{{#if fileAlerts.length > 0}}
+	<div class="file-alert-container">
+	{{#fileAlerts:i}}
+	<div class="file-alert alert alert-warning alert-dismissible" role="alert">
+		<button type="button" class="close" on-click="dismissFileAlert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<div>
+				<span class="fa fa-2x fa-{{.source.explorerIcon}}"></span> <strong>{{.source.name}}</strong>
+			</div>
+		{{#if exists}}
+			<div class="row file-alert-row">
+				<div class="col-sm-4">
+					<button type="button" class="btn btn-danger"><strong>Replace</strong> the destination file:
+						<div>{{.dest.modified}}</div>
+						<div>{{.dest.humanSize}}</div>
+					</button>
+				</div>
+				<div class="col-sm-4">
+					<button type="button" class="btn btn-warning"><strong>Rename</strong> the destination file to
+						<div>
+							<strong>{{.source.name+"_copy"}}</strong>
+						</div>
+					</button>
+				</div>
+			</div>
+		{{else}}
+			<span class="label label-danger" title="{{.error}}">
+				{{.error}}
+			</span>
+		{{/if}}
+	</div>
+	{{/fileAlerts}}
+	</div>
+	<div class="modal-backdrop fade in">
+	</div>
+{{/if}}
 
 </script>
 <!--end templates-->

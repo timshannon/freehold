@@ -55,30 +55,25 @@
 		{{/waiting}}
 	</form>
 </modal>
-{{#error}} 
-	<div class="overlay"></div> 
-	<div class="navbar-alert alert alert-danger container" role="alert"> 
-		<strong>{{errorLead}}</strong>  
-		{{{error}}} 
-		<a href="javascript:void(0)" on-click="refresh"> 
-		<span class="close glyphicon glyphicon-refresh"></span><span class="sr-only">Refresh</span></a> 
-	</div> 
-{{/error}}
 </div>
+
+{{#if alerts.length > 0}}
+	<div class="nav-alert-container">
+	{{#alerts:i}}
+	<div class="navbar-alert alert alert-{{.type || 'danger'}} alert-dismissible" role="alert">
+		<button type="button" class="close" on-click="dismissAlert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<strong>{{lead}}</strong>  
+			{{{detail}}} 
+	</div>
+	{{/alerts}}
+	</div>
+	<div class="modal-backdrop fade in">
+	</div>
+
+{{/if}}
 
         
 <style>
-.overlay {
-	position: fixed;
-	z-index: 10000;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	opacity: .7;
-	background: #aaaaaa;
-}
-
 .loginSpinner {
 	position: absolute;
 	top: -6px;
@@ -89,15 +84,21 @@
 	position: relative;
 }
 
-.navbar-alert {
-	position: absolute;
+.nav-alert-container {
+	position: fixed;
 	z-index: 10500;
+	width: 100%;
+	height: 100%;
+}
+
+.navbar-alert {
 	left: 0;
 	right: 0;
 	margin-left: auto;
 	margin-right: auto;
+	margin-top: 20px;
 	min-width: 100px;
-	border-color: #777;
+	max-width: 50%;
 }
 </style>
 
@@ -108,10 +109,9 @@ component.exports = {
 	data: {
 			brand: "freehold",
 			authenticated: (fh.auth.type != "none"),
-			errorLead: "An error occurred and you may need to refresh this page: ",
-			error: false,
 			app: false,
 			user: {},
+			alerts: [],
 	},
 	decorators: {
 		help: function (node) {
@@ -204,6 +204,19 @@ component.exports = {
                     this.set("waiting", false);
                 }.bind(this));
         },
+				"addAlert": function(type, lead, detail) {
+					if (!type) {
+						type = "danger";
+					}
+
+					if (!lead) {
+						lead = "An error occurred!";
+					}
+					r.push("alerts", {type: type, lead: lead, detail: detail});
+				},
+				"dismissAlert": function(event) {
+					r.splice(event.keypath.split(".")[0], event.index.i, 1);
+				},
 		});
 	}
 };
