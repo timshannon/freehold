@@ -23,6 +23,8 @@ $(document).ready(function() {
         }
     });
 
+    var nav = rNav.findComponent("navbar");
+
     var rLogs = new Ractive({
         el: "#logs",
         template: "#tLogs",
@@ -205,7 +207,7 @@ $(document).ready(function() {
                         loadUsers();
                     })
                     .fail(function(result) {
-            result = result.responseJSON;
+                        result = result.responseJSON;
                         rUsers.set("errors.save", result.message);
                     });
                 return;
@@ -219,7 +221,7 @@ $(document).ready(function() {
                     loadUsers();
                 })
                 .fail(function(result) {
-            result = result.responseJSON;
+                    result = result.responseJSON;
                     rUsers.set("errors.save", result.message);
                 });
         },
@@ -234,7 +236,7 @@ $(document).ready(function() {
                     loadUsers();
                 })
                 .fail(function(result) {
-            result = result.responseJSON;
+                    result = result.responseJSON;
                     rUsers.set("errors.save", result.message);
                 });
         },
@@ -245,7 +247,7 @@ $(document).ready(function() {
                     loadUsers();
                 })
                 .fail(function(result) {
-            result = result.responseJSON;
+                    result = result.responseJSON;
                     rUsers.set("errors.save", result.message);
                 });
         },
@@ -256,7 +258,7 @@ $(document).ready(function() {
                     loadUsers();
                 })
                 .fail(function(result) {
-            result = result.responseJSON;
+                    result = result.responseJSON;
                     rUsers.set("errors.save", result.message);
                 });
         },
@@ -312,7 +314,7 @@ $(document).ready(function() {
                     loadSettings();
                 })
                 .fail(function(result) {
-            result = result.responseJSON;
+                    result = result.responseJSON;
                     event.context.error = result.message;
                     rSettings.set(event.keypath, event.context);
                 });
@@ -324,7 +326,7 @@ $(document).ready(function() {
                     loadSettings();
                 })
                 .fail(function(result) {
-            result = result.responseJSON;
+                    result = result.responseJSON;
                     event.context.error = result.message;
                     rSettings.set(event.keypath, event.context);
                 });
@@ -357,7 +359,7 @@ $(document).ready(function() {
                 setFilter(rLogs.get("filterText"));
             })
             .fail(function(result) {
-            result = result.responseJSON;
+                result = result.responseJSON;
                 setError(result.message);
             });
 
@@ -383,7 +385,7 @@ $(document).ready(function() {
                 setFilter(rLogs.get("filterText"));
             })
             .fail(function(result) {
-            result = result.responseJSON;
+                result = result.responseJSON;
                 setError(result.message);
             });
     }
@@ -449,7 +451,7 @@ $(document).ready(function() {
                 filterSettings();
             })
             .fail(function(result) {
-            result = result.responseJSON;
+                result = result.responseJSON;
                 setError(result.message);
             });
     }
@@ -486,7 +488,7 @@ $(document).ready(function() {
                 rUsers.set("users", result.data);
             })
             .fail(function(result) {
-            result = result.responseJSON;
+                result = result.responseJSON;
                 setError(result.message);
             });
     }
@@ -555,12 +557,12 @@ $(document).ready(function() {
                         }
                     })
                     .fail(function(result) {
-            result = result.responseJSON;
+                        result = result.responseJSON;
                         setError(result.message);
                     });
             })
             .fail(function(result) {
-            result = result.responseJSON;
+                result = result.responseJSON;
                 setError(result.message);
             });
 
@@ -568,14 +570,12 @@ $(document).ready(function() {
 
     function setError(error) {
         if (!fh.auth.admin) {
-            rNav.set({
-                "errorLead": "You do not have admin rights and cannot use this tool: ",
-                "error": '<a href="/" class="alert-link">Return to your home page</a>'
-            });
+            nav.fire("addAlert", "danger", "You do not have admin rights and cannot use this tool: ", 
+				'<a href="/" class="alert-link">Return to your home page</a>');
             return;
         }
 
-        rNav.set("error", error);
+        nav.fire("addAlert", "danger", "", error);
     }
 
 }); //end ready

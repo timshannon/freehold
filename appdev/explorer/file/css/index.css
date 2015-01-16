@@ -290,3 +290,25 @@ a:focus {
 	background: #d9edf7;
 }
 
+.file-alert-container {
+	position: fixed;
+	z-index: 10000;
+	width: 100%;
+	height: 100%;
+	top: 0;
+	left: 0;
+}
+
+.file-alert {
+	left: 0;
+	right: 0;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 20px;
+	min-width: 100px;
+	max-width: 50%;
+}
+
+.file-alert-row {
+	margin-top: 10px;
+}

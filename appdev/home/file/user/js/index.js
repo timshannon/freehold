@@ -14,13 +14,14 @@ $(document).ready(function() {
         data: {}
     });
 
+    var nav = rMain.findComponent("navbar");
+
     fh.application.installed()
         .done(function(result) {
             rMain.set("apps", result.data);
         })
         .fail(function(result) {
-            result = result.responseJSON;
-            rMain.set("error", result.message);
+		error(result);
         });
 
     fh.settings.get("MinPasswordLength")
@@ -28,8 +29,7 @@ $(document).ready(function() {
             minPassLength = result.data.value;
         })
         .fail(function(result) {
-            result = result.responseJSON;
-            rMain.set("error", result.message);
+		error(result);
         });
 
     loadUser();
@@ -97,8 +97,7 @@ $(document).ready(function() {
                     loadSessions();
                 })
                 .fail(function(result) {
-                    result = result.responseJSON;
-                    rMain.set("error", result.message);
+		error(result);
                 });
 
         },
@@ -132,7 +131,7 @@ $(document).ready(function() {
             });
         },
         "saveToken": function(event) {
-			event.original.preventDefault();
+            event.original.preventDefault();
             var errors = {};
 
             if (!event.context.name) {
@@ -178,8 +177,7 @@ $(document).ready(function() {
                     loadTokens();
                 })
                 .fail(function(result) {
-                    result = result.responseJSON;
-                    rMain.set("error", result.message);
+		error(result);
                 });
         },
 
@@ -219,8 +217,7 @@ $(document).ready(function() {
                 document.title = fh.auth.user + " - freehold";
             })
             .fail(function(result) {
-                result = result.responseJSON;
-                rMain.set("error", result.message);
+		error(result);
             });
     }
 
@@ -240,8 +237,7 @@ $(document).ready(function() {
                 rMain.set("sessions", sessions);
             })
             .fail(function(result) {
-                result = result.responseJSON;
-                rMain.set("error", result.message);
+		error(result);
             });
     }
 
@@ -259,8 +255,7 @@ $(document).ready(function() {
                 rMain.set("tokens", tokens);
             })
             .fail(function(result) {
-                result = result.responseJSON;
-                rMain.set("error", result.message);
+		error(result);
             });
     }
 
@@ -310,6 +305,16 @@ $(document).ready(function() {
         rMain.set("errors.password2", null);
         return true;
 
+    }
+
+    function error(err) {
+        var msg;
+        if (typeof err === "string") {
+            msg = err;
+        } else {
+            msg = err.responseJSON.message;
+        }
+        nav.fire("addAlert", "danger", "", msg);
     }
 
 });

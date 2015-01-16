@@ -23,6 +23,8 @@ $(document).ready(function() {
         template: "#tManageApps",
     });
 
+    var nav = rManage.findComponent("navbar");
+
     //Get User's setting DS if exists
     fh.properties.get(usrSettingsDS)
         .done(function() {
@@ -34,15 +36,14 @@ $(document).ready(function() {
                 .fail(function(xhr) {
                     var result = xhr.responseJSON;
                     if (result.status == "error") {
-                        rManage.set("error", result.message);
+                        error(result);
                     } else {
                         dsSettings.put("starredApps", {})
                             .done(function() {
                                 refreshApps();
                             })
                             .fail(function(xhr) {
-                                var result = xhr.responseJSON;
-                                rManage.set("error", result.message);
+                                error(xhr);
                             });
 
                     }
@@ -57,8 +58,7 @@ $(document).ready(function() {
                         refreshApps();
                     })
                     .fail(function(xhr) {
-                        var result = xhr.responseJSON;
-                        rManage.set("error", result.message);
+                        error(result);
                     });
             }
         });
@@ -94,7 +94,7 @@ $(document).ready(function() {
                     refreshApps();
                 })
                 .fail(function(result) {
-                    rManage.set("error", result.responseJSON.message);
+				error(result);
                 });
         },
         upgrade: function(event) {
@@ -103,7 +103,7 @@ $(document).ready(function() {
                     refreshApps();
                 })
                 .fail(function() {
-                    rManage.set("error", result.message);
+				error(result);
                 });
         },
         remove: function(event) {
@@ -112,7 +112,7 @@ $(document).ready(function() {
                     refreshApps();
                 })
                 .fail(function() {
-                    rManage.set("error", result.message);
+				error(result);
                 });
         },
         star: function(event) {
@@ -126,7 +126,7 @@ $(document).ready(function() {
                     refreshApps();
                 })
                 .fail(function(result) {
-                    rManage.set("error", result.responseJSON.message);
+				error(result);
                 });
         },
         fetchExternal: function(event) {
@@ -149,7 +149,7 @@ $(document).ready(function() {
 
                 })
                 .fail(function(result) {
-					result = result.responseJSON;
+                    result = result.responseJSON;
                     rManage.set("fetchError", result);
                 })
                 .always(function() {
@@ -226,13 +226,11 @@ $(document).ready(function() {
                         });
                     })
                     .fail(function(result) {
-					result = result.responseJSON;
-                        rManage.set("error", result.message);
+				error(result);
                     });
             })
             .fail(function(result) {
-					result = result.responseJSON;
-                rManage.set("error", result.message);
+				error(result);
             });
 
 
@@ -260,6 +258,16 @@ $(document).ready(function() {
         }
 
         rManage.set("apps", apps);
+    }
+
+    function error(err) {
+        var msg;
+        if (typeof err === "string") {
+            msg = err;
+        } else {
+            msg = err.responseJSON.message;
+        }
+        nav.fire("addAlert", "danger", "", msg);
     }
 
 
