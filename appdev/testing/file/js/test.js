@@ -465,41 +465,43 @@ QUnit.test("New, Get and Delete Token", function(assert) {
         }.bind(this));
 });
 
-//TODO: Currently errors when multiple threads try to drop and 
-// create test.ds.  Rewrite so it only gets created once
-//  or move all tests into one large test
 QUnit.module("Datastore", {
     beforeEach: function(assert) {
         var done = assert.async();
-        fh.datastore.new("/testing/v1/datastore/testdata/test.ds")
+        this.ds = {
+            name: fh.util.uuid() + ".ds",
+        };
+        this.ds.url = "/testing/v1/datastore/testdata/" + this.ds.name;
+
+        fh.datastore.new(this.ds.url)
             .always(function(result) {
                 assert.deepEqual(result, {
                     status: "success",
                     data: {
-                        name: "test.ds",
-                        url: "/testing/v1/datastore/testdata/test.ds"
+                        name: this.ds.name,
+                        url: this.ds.url,
                     }
                 });
                 done();
-            });
+            }.bind(this));
 
     },
     afterEach: function(assert) {
         var done = assert.async();
         //delete file
-        var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
+        var ds = new fh.Datastore(this.ds.url);
 
         ds.drop()
             .always(function(result) {
                 assert.deepEqual(result, {
                     status: "success",
                     data: {
-                        name: "test.ds",
-                        url: "/testing/v1/datastore/testdata/test.ds"
+                        name: this.ds.name,
+                        url: this.ds.url,
                     }
                 });
                 done();
-            });
+            }.bind(this));
     }
 });
 QUnit.test("Get, Put and Delete Data in datastore", function(assert) {
@@ -508,7 +510,7 @@ QUnit.test("Get, Put and Delete Data in datastore", function(assert) {
     var done = assert.async();
     var testVal = "testvalue";
 
-    var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
+    var ds = new fh.Datastore(this.ds.url);
     ds.put(10, testVal)
         .always(function(result) {
             assert.ok(
@@ -541,7 +543,7 @@ QUnit.test("Get, Put and Delete Data in datastore", function(assert) {
 QUnit.test("Max Key", function(assert) {
     assert.expect(3);
     var done = assert.async();
-    var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
+    var ds = new fh.Datastore(this.ds.url);
 
     for (var i = 0; i < 100; i++) {
         $.when(ds.put(i, fh.util.uuid()))
@@ -561,7 +563,7 @@ QUnit.test("Max Key", function(assert) {
 QUnit.test("Min Key", function(assert) {
     assert.expect(3);
     var done = assert.async();
-    var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
+    var ds = new fh.Datastore(this.ds.url);
 
     for (var i = 0; i < 100; i++) {
         $.when(ds.put(i, fh.util.uuid()))
@@ -582,23 +584,23 @@ QUnit.test("Datastore Properties", function(assert) {
     assert.expect(3);
     var done = assert.async();
 
-    fh.properties.get("/testing/v1/datastore/testdata/test.ds")
+    fh.properties.get(this.ds.url)
         .always(function(result) {
             assert.ok(
-                (result.data.name == "test.ds") &&
+                (result.data.name == this.ds.name) &&
                 (result.data.permissions.owner == fh.auth.user) &&
                 (result.data.permissions.private == "rw") &&
-                (result.data.url == "/testing/v1/datastore/testdata/test.ds")
+                (result.data.url == this.ds.url)
             );
             done();
-        });
+        }.bind(this));
 });
 
 
 QUnit.test("Iterate through data", function(assert) {
     assert.expect(4);
     var done = assert.async();
-    var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
+    var ds = new fh.Datastore(this.ds.url);
 
     var data = {};
     for (var i = 0; i <= 100; i++) {
@@ -634,7 +636,7 @@ QUnit.test("Regex test", function(assert) {
     assert.expect(4);
     var done = assert.async();
 
-    var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
+    var ds = new fh.Datastore(this.ds.url);
 
     var data = {};
     for (var i = 0; i <= 100; i++) {
@@ -670,7 +672,7 @@ QUnit.test("Count + Regex", function(assert) {
     assert.expect(4);
     var done = assert.async();
 
-    var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
+    var ds = new fh.Datastore(this.ds.url);
 
     var data = {};
     for (var i = 0; i <= 100; i++) {
@@ -704,16 +706,21 @@ QUnit.test("Count + Regex", function(assert) {
 QUnit.module("Datastore Iter", {
     beforeEach: function(assert) {
         var done = assert.async();
-        fh.datastore.new("/testing/v1/datastore/testdata/test.ds")
+        this.ds = {
+            name: fh.util.uuid() + ".ds",
+        };
+        this.ds.url = "/testing/v1/datastore/testdata/" + this.ds.name;
+
+        fh.datastore.new(this.ds.url)
             .always(function(result) {
                 assert.deepEqual(result, {
                     status: "success",
                     data: {
-                        name: "test.ds",
-                        url: "/testing/v1/datastore/testdata/test.ds"
+                        name: this.ds.name,
+                        url: this.ds.url
                     }
                 });
-                var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
+                var ds = new fh.Datastore(this.ds.url);
 
                 for (var i = 0; i < 100; i++) {
                     $.when(ds.put(i, fh.util.uuid()))
@@ -721,25 +728,25 @@ QUnit.module("Datastore Iter", {
                 }
 
                 done();
-            });
+            }.bind(this));
 
     },
     afterEach: function(assert) {
         var done = assert.async();
         //delete file
-        var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
+        var ds = new fh.Datastore(this.ds.url);
 
         ds.drop()
             .always(function(result) {
                 assert.deepEqual(result, {
                     status: "success",
                     data: {
-                        name: "test.ds",
-                        url: "/testing/v1/datastore/testdata/test.ds"
+                        name: this.ds.name,
+                        url: this.ds.url,
                     }
                 });
                 done();
-            });
+            }.bind(this));
     }
 });
 
@@ -747,7 +754,7 @@ QUnit.test("Test From and To", function(assert) {
     assert.expect(3);
     var done = assert.async();
 
-    var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
+    var ds = new fh.Datastore(this.ds.url);
 
     ds.iter({
             from: 5,
@@ -769,7 +776,7 @@ QUnit.test("Test Reverse From and To", function(assert) {
     assert.expect(3);
     var done = assert.async();
 
-    var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
+    var ds = new fh.Datastore(this.ds.url);
 
     ds.iter({
             from: 10,
@@ -791,7 +798,7 @@ QUnit.test("Test Reverse From and To with forced asc order", function(assert) {
     assert.expect(3);
     var done = assert.async();
 
-    var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
+    var ds = new fh.Datastore(this.ds.url);
 
     ds.iter({
             from: 10,
@@ -814,7 +821,7 @@ QUnit.test("Test Full Range", function(assert) {
     assert.expect(5);
     var done = assert.async();
 
-    var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
+    var ds = new fh.Datastore(this.ds.url);
 
     ds.iter({})
         .always(function(result) {
@@ -833,7 +840,7 @@ QUnit.test("Test Reverse Full Range", function(assert) {
     assert.expect(3);
     var done = assert.async();
 
-    var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
+    var ds = new fh.Datastore(this.ds.url);
 
     ds.iter({
             order: "dsc"
@@ -855,7 +862,7 @@ QUnit.test("Iterate through reverse order non-string keys with limit", function(
     assert.expect(3);
     var done = assert.async();
 
-    var ds = new fh.Datastore("/testing/v1/datastore/testdata/test.ds");
+    var ds = new fh.Datastore(this.ds.url);
 
     ds.iter({
             from: 50,
