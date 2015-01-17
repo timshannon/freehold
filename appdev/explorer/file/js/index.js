@@ -283,15 +283,16 @@ $(document).ready(function() {
         },
         "fileinput.setFiles": function(event) {
             var files = event.context.files;
-            var isDS = !rMain.get("currentFolder.isFilepath");
+            var isDS = !rMain.get("currentFolder.isFilePath");
 
             for (var i = 0; i < files.length; i++) {
                 uploadFile(files[i], false, isDS);
             }
         },
         "replaceUpload": function(event) {
+            //TODO: handle losing dest folder
             var file = event.context;
-            var isDS = !rMain.get("currentFolder.isFilepath");
+            var isDS = !rMain.get("currentFolder.isFilePath");
             file.error = false;
             file.exists = false;
             uploadFile(file, true, isDS);
@@ -304,13 +305,13 @@ $(document).ready(function() {
             }
         },
         "dropzone.drop": function(files) {
-            var isDS = !rMain.get("currentFolder.isFilepath");
+            var isDS = !rMain.get("currentFolder.isFilePath");
             for (var i = 0; i < files.length; i++) {
                 uploadFile(files[i], false, isDS);
             }
         },
         "droppable.drop": function(source, dest) {
-            rMain.set("fileMove", []);
+            rMain.set("fileAlerts", []);
             if (source instanceof Array) {
                 for (var i = 0; i < source.length; i++) {
                     moveExplorerFile(source[i], dest);
@@ -384,6 +385,33 @@ $(document).ready(function() {
         },
         "dismissFileAlert": function(event) {
             rMain.splice(event.keypath.split(".")[0], event.index.i, 1);
+        },
+        "fileAlertReplace": function(event) {
+            rMain.splice(event.keypath.split(".")[0], event.index.i, 1);
+            var source = event.context.source;
+            var dest = event.context.dest;
+            fh.file.delete(dest.url)
+                .done(function() {
+                    moveExplorerFile(source, dest.destFolder);
+                })
+                .fail(function(result) {
+                    error(result);
+                });
+
+        },
+        "fileAlertRename": function(event) {
+            rMain.splice(event.keypath.split(".")[0], event.index.i, 1);
+            var source = event.context.source;
+            var dest = event.context.dest;
+
+            moveFile(dest.url, fh.util.urlJoin(dest.destFolder.url, dest.rename))
+                .done(function() {
+                    moveExplorerFile(source, dest.destFolder);
+                })
+                .fail(function(result) {
+                    error(result);
+                });
+
         },
     });
 
@@ -925,8 +953,6 @@ $(document).ready(function() {
             return;
         }
 
-        rMain.set("fileAlerts", []);
-
         var newUrl = fh.util.urlJoin(dest.url, trimSlash(source.url).split("/").pop());
         if (trimSlash(source.url) == newUrl) {
             return;
@@ -934,22 +960,34 @@ $(document).ready(function() {
 
         var sourceParent = rMain.get(parentKeypath(source.treepath));
 
-        moveFile(source.url, newUrl)
-            .done(function() {
-                updateFolder(sourceParent.url, sourceParent.treepath);
-                updateFolder(dest.url, dest.treepath);
-                refresh();
-            })
-            .fail(function(result) {
-                var exists = (result.responseJSON.message == "Destination file already exists");
-				//Get dest file info?
-                rMain.push("fileAlerts", {
-                    source: source,
-                    dest: dest,
-                    error: result.responseJSON.message,
-                    exists: exists,
-                });
+        //check if dest file already exists
+        getFile(newUrl, function(file) {
+            //file exists
+            //build possible rename
+            var split = file.name.split(".");
+            var ext = split.pop();
+            split.push("copy");
+            split.push(ext);
+            file.rename = split.join(".");
+            file.destFolder = dest; //store folder for later
+            rMain.push("fileAlerts", {
+                source: source,
+                dest: file,
             });
+
+        }, function() {
+            moveFile(source.url, newUrl)
+                .done(function() {
+                    updateFolder(sourceParent.url, sourceParent.treepath);
+                    updateFolder(dest.url, dest.treepath);
+                    refresh();
+                })
+                .fail(function(result) {
+                    error(result);
+                });
+
+        });
+
     }
 
     function moveFile(from, to) {
@@ -1019,7 +1057,7 @@ $(document).ready(function() {
                 uploadFunc = fh.datastore.upload;
             }
         }
-        uploadPath = rMain.get("currentFolder.url");
+        uploadPath = rMain.get("currentFolder.url"); //FIXME
         file = setFileType(file);
 
         var id = file.name.split(".").join("_"); //ractive doesn't like object ids with "." in them
@@ -1088,6 +1126,7 @@ $(document).ready(function() {
         var comp = rMain.findComponent("selectable");
         comp.fire("reset");
         rMain.set("selection", []);
+
     }
 
     //Settings

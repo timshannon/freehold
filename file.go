@@ -188,12 +188,12 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 		destFile := resource.NewFile(input.Move)
 
 		if sourceFile.IsDatastore() {
-			errHandled(fail.New("Invalid file type", sourceFile.Name()), w, auth)
+			errHandled(fail.New("Invalid file type or path", sourceFile.Name()), w, auth)
 			return
 		}
 
 		if destFile.IsDatastore() {
-			errHandled(fail.New("Invalid file type", destFile.Name()), w, auth)
+			errHandled(fail.New("Invalid file type or path", destFile.Name()), w, auth)
 			return
 		}
 

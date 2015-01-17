@@ -579,32 +579,29 @@
 {{#if fileAlerts.length > 0}}
 	<div class="file-alert-container">
 	{{#fileAlerts:i}}
-	<div class="file-alert alert alert-warning alert-dismissible" role="alert">
+	<div class="file-alert alert alert-info alert-dismissible" role="alert">
 		<button type="button" class="close" on-click="dismissFileAlert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 			<div>
 				<span class="fa fa-2x fa-{{.source.explorerIcon}}"></span> <strong>{{.source.name}}</strong>
 			</div>
-		{{#if exists}}
-			<div class="row file-alert-row">
-				<div class="col-sm-4">
-					<button type="button" class="btn btn-danger"><strong>Replace</strong> the destination file:
-						<div>{{.dest.modified}}</div>
-						<div>{{.dest.humanSize}}</div>
-					</button>
-				</div>
-				<div class="col-sm-4">
-					<button type="button" class="btn btn-warning"><strong>Rename</strong> the destination file to
-						<div>
-							<strong>{{.source.name+"_copy"}}</strong>
-						</div>
-					</button>
-				</div>
+			<div class="file-alert-option">
+				<button type="button" class="file-alert-btn btn btn-danger" on-click="fileAlertReplace">
+					<strong>Replace</strong> the destination file:
+					<div><strong>Last Modified:</strong> {{.dest.modifiedDate}}</div>
+					<div><strong>Size:</strong> {{.dest.humanSize}}</div>
+				</button>
 			</div>
-		{{else}}
-			<span class="label label-danger" title="{{.error}}">
-				{{.error}}
-			</span>
-		{{/if}}
+			<div class="file-alert-option">
+				<button type="button" class="file-alert-btn btn btn-warning" on-click="fileAlertRename">
+					<strong>Rename</strong> the destination file to
+					<div>
+						<strong>{{.dest.rename}}</strong>
+					</div>
+				</button>
+			</div>
+			<div class="file-alert-option">
+				<button type="button" class="pull-right btn btn-sm btn-default" on-click="dismissFileAlert">Cancel</button>
+			</div>
 	</div>
 	{{/fileAlerts}}
 	</div>
