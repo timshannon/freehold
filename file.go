@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"strconv"
 	"strings"
 	"time"
 
@@ -399,20 +398,17 @@ func serveFile(w http.ResponseWriter, r *http.Request, res *resource.File, auth 
 		rs = bytes.NewReader(buf)
 		w.Header().Add("Content-Type", "text/html; charset=utf-8")
 	} else {
-		//Add range request so large files can be handled without
-		// blowing out memory
-		rng := "bytes=0-" + strconv.Itoa(setting.Int("MaxFileMemory"))
-		w.Header().Add("Range", rng)
 		rs = file
 	}
 
 	var modTime time.Time
-	if setting.Bool("ModifiedDateForHTTPCaching") {
+	if setting.Bool("ModifiedDateForHTTPCaching") || res.FileInfo().Size() > setting.Int64("MaxFileMemory") {
 		modTime = res.FileInfo().ModTime()
 	} else {
 		//ETag is an checksum has of the contents of the file.  If the file changes
 		// clients should know to grab the new version because the sum won't match.
 		// but the server will pay the cost of the check sum and the filecheck no matter what
+		// ETag's won't be generated if the size of the file is greater than the max file memory to use
 		w.Header().Add("ETag", checksum(rs))
 		modTime = time.Time{}
 	}

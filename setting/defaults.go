@@ -161,7 +161,8 @@ func init() {
 				"used, then an etag will be generated from a checksum of the file.  This is more expensive, but more " +
 				"accurate as to when the file has changed. If you have rapidly changing content, consider setting this " +
 				"to false.  If you need more performance per call, consider setting this to true, but clients would " +
-				"possibly be seeing old cached content.",
+				"possibly be seeing old cached content. Etags will not be generated if the file size is greater than " +
+				"the MaxFileMemory setting.",
 			Value: false,
 		},
 	}
