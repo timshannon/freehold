@@ -5,8 +5,15 @@
 package resource
 
 import (
+	"io"
+	"os"
 	"path"
 	"strings"
+
+	"bufio"
+
+	"bitbucket.org/tshannon/freehold/fail"
+	"bitbucket.org/tshannon/freehold/setting"
 )
 
 const (
@@ -136,4 +143,49 @@ func resPathFromProperty(propertyPath string) string {
 	//must be app path
 	resource = resPathFromProperty(resource)
 	return path.Join("/", root, resource)
+}
+
+//WriteFile writes the contents of the reader, and closes it, respects MaxFileMemory setting
+func WriteFile(reader io.Reader, filepath string, overwrite bool) error {
+	//TODO: Currently multiple file uploads across multiple threads will push
+	// max memory past this limit.  If MaxFileMemory truely is the max to be used,
+	// then I'll need to add a mutex to lock threads until memory is available again
+	// Maybe have a setting to lock or not
+	var newFile *os.File
+	var err error
+
+	if overwrite {
+		newFile, err = os.Create(filepath)
+	} else {
+		newFile, err = os.OpenFile(filepath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
+	}
+
+	if os.IsExist(err) {
+		//capturing is exists error so that too much info isn't exposed to end users
+		return fail.New("File already exists", path.Base(filepath))
+	}
+	if err != nil {
+		return err
+	}
+
+	writer := bufio.NewWriterSize(newFile, setting.Int("MaxFileMemory"))
+
+	_, err = io.Copy(writer, reader)
+	if err != nil {
+		newFile.Close()
+		return err
+	}
+
+	err = writer.Flush()
+	if err != nil {
+		newFile.Close()
+		return err
+	}
+
+	err = newFile.Close()
+
+	if err != nil {
+		return err
+	}
+	return nil
 }

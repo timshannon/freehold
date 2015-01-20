@@ -349,6 +349,7 @@ QUnit.test("Core Permissions - Settings", function(assert) {
 
 QUnit.test("Core Permissions - User", function(assert) {
     //Non-admins shouldn't be able to add new users, or make users admins
+    //FIXME: Doesn't run consistently
 
     assert.expect(15);
 

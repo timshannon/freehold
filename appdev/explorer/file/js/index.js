@@ -283,19 +283,16 @@ $(document).ready(function() {
         },
         "fileinput.setFiles": function(event) {
             var files = event.context.files;
-            var isDS = !rMain.get("currentFolder.isFilePath");
 
             for (var i = 0; i < files.length; i++) {
-                uploadFile(files[i], false, isDS);
+                uploadFile(files[i], rMain.get("currentFolder.url"));
             }
         },
         "replaceUpload": function(event) {
-            //TODO: handle losing dest folder
             var file = event.context;
-            var isDS = !rMain.get("currentFolder.isFilePath");
             file.error = false;
             file.exists = false;
-            uploadFile(file, true, isDS);
+            uploadFile(file, event.uploadPath, true);
         },
         "cancelUpload": function(event) {
             if (!event.context.error && event.context.xhr) {
@@ -305,9 +302,8 @@ $(document).ready(function() {
             }
         },
         "dropzone.drop": function(files) {
-            var isDS = !rMain.get("currentFolder.isFilePath");
             for (var i = 0; i < files.length; i++) {
-                uploadFile(files[i], false, isDS);
+                uploadFile(files[i], rMain.get("currentFolder.url"));
             }
         },
         "droppable.drop": function(source, dest) {
@@ -1045,8 +1041,13 @@ $(document).ready(function() {
             });
     }
 
-    function uploadFile(file, replace, isDS) {
+    function uploadFile(file, uploadPath, replace) {
         var uploadFunc;
+        if (!uploadPath) {
+            uploadPath = file.uploadPath;
+        }
+
+        var isDS = !isFile(uploadPath);
 
         if (replace && !isDS) {
             uploadFunc = fh.file.update;
@@ -1057,8 +1058,9 @@ $(document).ready(function() {
                 uploadFunc = fh.datastore.upload;
             }
         }
-        uploadPath = rMain.get("currentFolder.url"); //FIXME
         file = setFileType(file);
+
+        file.uploadPath = uploadPath;
 
         var id = file.name.split(".").join("_"); //ractive doesn't like object ids with "." in them
         file.id = id;

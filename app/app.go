@@ -8,7 +8,6 @@ import (
 	"archive/zip"
 	"encoding/json"
 	"errors"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -155,7 +154,7 @@ func Install(file, owner string) (*App, error) {
 		}
 
 		defer fr.Close()
-		err = writeFile(fr, res.Filepath)
+		err = resource.WriteFile(fr, res.Filepath, false)
 		if err != nil {
 			return nil, err
 		}
@@ -359,7 +358,7 @@ func PostAvailable(url string) (string, error) {
 	}
 
 	filename := path.Base(url)
-	err = writeFile(r.Body, path.Join(resource.AvailableAppDir, filename))
+	err = resource.WriteFile(r.Body, path.Join(resource.AvailableAppDir, filename), false)
 	if err != nil {
 		return "", err
 	}
@@ -372,34 +371,6 @@ func PostAvailable(url string) (string, error) {
 		return "", fail.New("Downloaded file is not a zip file.", filename)
 	}
 	return filename, nil
-}
-
-//writeFile writes the contents of the reader, and closes it
-func writeFile(reader io.Reader, filename string) error {
-	bytes, err := ioutil.ReadAll(reader)
-	if err != nil {
-		return err
-	}
-	newFile, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
-	if os.IsExist(err) {
-		//capturing is exists error so that too much info isn't exposed to end users
-		return fail.New("An application file already exists with this name.", filepath.Base(filename))
-	}
-	if err != nil {
-		return err
-	}
-
-	n, err := newFile.Write(bytes)
-	if err == nil && n < len(bytes) {
-		err = io.ErrShortWrite
-	}
-	if err1 := newFile.Close(); err == nil {
-		err = err1
-	}
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 type AppResource struct {
