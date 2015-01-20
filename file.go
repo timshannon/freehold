@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 
@@ -398,6 +399,10 @@ func serveFile(w http.ResponseWriter, r *http.Request, res *resource.File, auth 
 		rs = bytes.NewReader(buf)
 		w.Header().Add("Content-Type", "text/html; charset=utf-8")
 	} else {
+		//Add range request so large files can be handled without
+		// blowing out memory
+		rng := "bytes=0-" + strconv.Itoa(setting.Int("MaxFileMemory"))
+		w.Header().Add("Range", rng)
 		rs = file
 	}
 
