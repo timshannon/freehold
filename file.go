@@ -5,7 +5,6 @@
 package main
 
 import (
-	"errors"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
@@ -57,7 +56,7 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err = r.ParseMultipartForm(setting.Int64("MaxUploadMemory"))
+		err = r.ParseMultipartForm(setting.Int64("MaxFileMemory"))
 		if errHandled(err, w, auth) {
 			return
 		}
@@ -138,7 +137,7 @@ func uploadFile(w http.ResponseWriter, parent *resource.File, owner *user.User, 
 				continue
 			}
 
-			err = writeFile(file, res.Filepath(), false)
+			err = resource.WriteFile(file, res.Filepath(), false)
 			if err != nil {
 				failures = append(failures, fail.NewFromErr(err, res.Url()))
 
@@ -239,7 +238,7 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 
 	parent := resource.NewFile(r.URL.Path)
 
-	err = r.ParseMultipartForm(setting.Int64("MaxUploadMemory"))
+	err = r.ParseMultipartForm(setting.Int64("MaxFileMemory"))
 	if errHandled(err, w, auth) {
 		return
 	}
@@ -281,7 +280,7 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 
-			err = writeFile(file, res.Filepath(), true)
+			err = resource.WriteFile(file, res.Filepath(), true)
 			if err != nil {
 				failures = append(failures, fail.NewFromErr(err, res.Url()))
 				status = statusFail
@@ -457,40 +456,4 @@ func writeMarkdown(file *os.File) ([]byte, error) {
 	extensions |= blackfriday.EXTENSION_HEADER_IDS
 
 	return blackfriday.Markdown(buf, renderer, extensions), nil
-}
-
-//writeFile writes the contents of the reader, and closes it
-func writeFile(reader io.Reader, filename string, overwrite bool) error {
-	bytes, err := ioutil.ReadAll(reader)
-	if err != nil {
-		return err
-	}
-
-	var newFile *os.File
-
-	if overwrite {
-		newFile, err = os.Create(filename)
-	} else {
-		newFile, err = os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
-	}
-
-	if os.IsExist(err) {
-		//capturing is exists error so that too much info isn't exposed to end users
-		return errors.New("File already exists")
-	}
-	if err != nil {
-		return err
-	}
-
-	n, err := newFile.Write(bytes)
-	if err == nil && n < len(bytes) {
-		err = io.ErrShortWrite
-	}
-	if err1 := newFile.Close(); err == nil {
-		err = err1
-	}
-	if err != nil {
-		return err
-	}
-	return nil
 }

@@ -109,10 +109,9 @@ func init() {
 				" i.e http://github.com/developer/app/app.zip",
 			Value: false,
 		},
-		"MaxUploadMemory": Setting{
-			Description: "Maximum amount of memory (in bytes) to be used for file uploads. After max memory " +
-				"is reached, temporary files are used to hold the rest of the upload.",
-			Value: float64(10 * 1024 * 1024), //10MB - Minimum target raspi
+		"MaxFileMemory": Setting{
+			Description: "Maximum amount of memory (in bytes) to be used for file processing (uploads, writing, etc).",
+			Value:       float64(10 * 1024 * 1024), //10MB - Minimum target raspi
 		},
 		"MarkdownCSSFile": Setting{
 			Description: "Path to css file used for displaying markdown files.",

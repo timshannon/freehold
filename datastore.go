@@ -215,7 +215,7 @@ func datastorePost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err = r.ParseMultipartForm(setting.Int64("MaxUploadMemory"))
+		err = r.ParseMultipartForm(setting.Int64("MaxFileMemory"))
 		if errHandled(err, w, auth) {
 			return
 		}
