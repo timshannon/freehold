@@ -51,7 +51,7 @@ func init() {
 func main() {
 	flag.Parse()
 
-	cfg, err := config.LoadOrCreate("settings.json")
+	cfg, err := config.LoadOrCreate(config.StandardFileLocations("freehold/settings.json")...)
 	if err != nil {
 		halt("Error loading settings.json file: " + err.Error())
 	}
