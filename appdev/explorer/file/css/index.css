@@ -300,6 +300,7 @@ a:focus {
 }
 
 .file-alert {
+	width: 355px;
 	display: table;
 	margin-left: auto;
 	margin-right: auto;
@@ -308,8 +309,12 @@ a:focus {
 
 .file-alert-btn {
 	width: 300px;
-
+	overflow: visible;
+	text-overflow: auto;
+	white-space: normal;
 }
+
 .file-alert-option {
 	margin-top: 10px;
+	max-width: 100%;
 }

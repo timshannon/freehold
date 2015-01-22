@@ -439,9 +439,14 @@ $(document).ready(function() {
         "currentFile.explorerIcon": function(newValue, oldValue, keypath) {
             if (newValue && oldValue) {
                 var file = rMain.get("currentFile");
-                file.icon = file.explorerIcon;
 
                 settings.fileType.set(file);
+                refresh();
+            }
+        },
+        "currentFile.iconColor": function(newValue, oldValue, keypath) {
+            if (newValue && oldValue) {
+                settings.fileType.set(rMain.get("currentFile"));
                 refresh();
             }
         },
@@ -707,8 +712,9 @@ $(document).ready(function() {
         } else {
             var ext = settings.fileType.ext(file.name);
 
-            file.explorerIcon = settings.fileType.icon(ext);
+            file.explorerIcon = settings.fileType.explorerIcon(ext);
             file.behavior = settings.fileType.behavior(ext);
+            file.iconColor = settings.fileType.iconColor(ext);
             if (file.behavior.app) {
                 file.explorerUrl = fh.util.urlJoin(file.behavior.appID, "?file=", file.url);
             } else {
@@ -1175,14 +1181,14 @@ $(document).ready(function() {
                     app: (defaultApps[filetype] !== undefined),
                     browser: (!defaultApps[filetype]),
                 },
-                icon: defaultIcons[filetype.toLowerCase()] || "file-o",
+                explorerIcon: defaultIcons[filetype.toLowerCase()] || "file-o",
                 iconColor: iconColors["default"],
             };
         }
 
         function equal(a, b) {
-            if (a.icon === b.icon &&
-				a.iconColor === b.iconColor &&
+            if (a.explorerIcon === b.explorerIcon &&
+                a.iconColor === b.iconColor &&
                 a.behavior.download === b.behavior.download &&
                 a.behavior.app === b.behavior.app &&
                 a.behavior.browser == b.behavior.browser) {
@@ -1197,8 +1203,8 @@ $(document).ready(function() {
             ext: function(name) {
                 return name.slice(name.lastIndexOf(".") + 1);
             },
-            icon: function(filetype) {
-                return get(filetype).icon;
+            explorerIcon: function(filetype) {
+                return get(filetype).explorerIcon;
             },
             iconColor: function(filetype) {
                 return get(filetype).iconColor;
@@ -1216,26 +1222,26 @@ $(document).ready(function() {
                 return file.behavior;
             },
             set: function(file) {
-
-                var files = settings.get("files", {});
                 var ext = this.ext(file.name);
+                var current = get(ext);
 
-                if (!files[ext]) {
-                    files[ext] = get(ext);
-                }
                 if (file.behavior) {
-                    files[ext].behavior = file.behavior;
+                    current.behavior = file.behavior;
                 }
-                if (file.icon) {
-                    files[ext].icon = file.icon;
+                if (file.explorerIcon) {
+                    current.explorerIcon = file.explorerIcon;
                 }
                 if (file.iconColor) {
-                    files[ext].iconColor = file.iconColor;
+                    current.iconColor = file.iconColor;
                 }
 
-                if (equal(files[ext], def(ext))) {
-                    delete files[ext];
+                if (equal(current, def(ext))) {
+                    return;
                 }
+
+                var files = settings.get("files", {});
+                files[ext] = current;
+
                 settings.put("files", files);
             },
             default: function(filetype) {
