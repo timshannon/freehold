@@ -25,25 +25,25 @@
 <div class="alert alert-danger">
 	{{propError}}	
 </div>
-	<form class="form-horizontal property-form" role="form">
+	<form class="form-horizontal" role="form">
 		<span class="property-icon fa fa-5x fa-warning"></span>
 			<label for="currentFileName" class="col-sm-4 control-label">Name</label>
 			<div class="col-sm-8">
 				<p class="form-control-static">{{name}}</p>
 			</div>
-		<div class="form-group">
+		<div class="property-form form-group">
 			<label for="currentFileUrl" class="col-sm-4 control-label">Url</label>
 			<div class="col-sm-8">
 				<p class="form-control-static">{{url}}</p>
 			</div>
 		</div>
-		<div class="form-group">
+		<div class="property-form form-group">
 			<label for="currentFileSize" class="col-sm-4 control-label">Size</label>
 			<div class="col-sm-8">
 				<p class="form-control-static">{{humanSize}}</p>
 			</div>
 		</div>
-		<div class="form-group">
+		<div class="property-form form-group">
 			<label for="currentFileModified" class="col-sm-4 control-label">Last Modified</label>
 			<div class="col-sm-8">
 				<p class="form-control-static">{{modifiedDate}}</p>
@@ -68,107 +68,125 @@
 	<!-- Tab panes -->
 	<div class="tab-content property-content">
 		<div class="tab-pane active" id="details">
-			<form class="form-horizontal property-form" role="form" on-submit="renameFile">
-				<span class="property-icon fa fa-5x fa-{{explorerIcon}}"></span>
-				<div class="form-group {{#renameError}}has-error has-feedback{{/}}" title="{{renameError}}">
-					<label for="currentFileName" class="col-sm-4 control-label">Name</label>
-					<div class="col-sm-8">
-						{{#if rename}}
-						<div class="input-group">
-							<input type="text" class="form-control" id="currentFileName" placeholder="Enter a new name" value="{{name}}">
-							<span class="input-group-btn">
-							<button class="btn btn-primary" type="button" on-click="renameFile">Save</button>
-							</span>
-						</div><!-- /input-group -->
-						{{else}}
-						<a href="javascript:void(0)" on-click="toggle('currentFile.rename')" class="btn-property-rename form-control-static" title="Rename File">
-							{{name}}</a>
-						{{/if}}
+			<form class="form-horizontal" role="form" on-submit="renameFile">
+				<div class="row">
+					<div class="col-sm-1">
+						<span class="property-icon fa fa-5x fa-{{explorerIcon}}" style="color:{{.iconColor}};"></span>
+					</div>
+					<div class="col-sm-10">
+						<div class="property-form form-group {{#renameError}}has-error has-feedback{{/}}" title="{{renameError}}">
+							<label for="currentFileName" class="col-sm-4 control-label">Name</label>
+							<div class="col-sm-8">
+								{{#if rename}}
+								<div class="input-group">
+									<input type="text" class="form-control" id="currentFileName" placeholder="Enter a new name" value="{{name}}">
+									<span class="input-group-btn">
+									<button class="btn btn-primary" type="button" on-click="renameFile">Save</button>
+									</span>
+								</div> <!-- /input-group -->
+								{{else}}
+								<a href="javascript:void(0)" on-click="toggle('currentFile.rename')" class="btn-property-rename form-control-static" title="Rename File">
+									{{name}}</a>
+								{{/if}}
+							</div>
+						</div>
+						<div class="property-form form-group">
+							<label for="currentFileUrl" class="col-sm-4 control-label">Url</label>
+							<div class="col-sm-8">
+								<p class="form-control-static">{{url}}</p>
+							</div>
+						</div>
+						<div class="property-form form-group">
+							<label for="currentFileSize" class="col-sm-4 control-label">Size</label>
+							<div class="col-sm-8">
+								<p class="form-control-static">{{humanSize}}</p>
+							</div>
+						</div>
+						<div class="property-form form-group">
+							<label for="currentFileModified" class="col-sm-4 control-label">Last Modified</label>
+							<div class="col-sm-8">
+								<p class="form-control-static">{{modifiedDate}}</p>
+							</div>
+						</div>
 					</div>
 				</div>
-				<div class="form-group">
-					<label for="currentFileUrl" class="col-sm-4 control-label">Url</label>
-					<div class="col-sm-8">
-						<p class="form-control-static">{{url}}</p>
-					</div>
-				</div>
-				<div class="form-group">
-					<label for="currentFileSize" class="col-sm-4 control-label">Size</label>
-					<div class="col-sm-8">
-						<p class="form-control-static">{{humanSize}}</p>
-					</div>
-				</div>
-				<div class="form-group">
-					<label for="currentFileModified" class="col-sm-4 control-label">Last Modified</label>
-					<div class="col-sm-8">
-						<p class="form-control-static">{{modifiedDate}}</p>
-					</div>
-				</div>
-
 			</form>
 		</div>
 		<div class="tab-pane" id="permissions">
-			<div class="property-form">
 			<permissions readOnly="{{user !== permissions.owner}}" permissions="{{permissions}}" showOwner="{{.showOwner}}"></permissions>
-			</div>
 		</div>
 		<div class="tab-pane" id="behavior">
-			<form class="form-horizontal" role="form">
-				<div class="form-group">
-					<label for="iconSelect" class="col-sm-offset-1 col-sm-1 control-label">Icon</label>
-					<div class=" col-sm-4">
-						<select id="iconSelect" class="form-control" value="{{.explorerIcon}}">
-							{{#icons:i}}
-								<option>{{.}}</option>
-							{{/icons}}
-						</select>
-					</div>
-					<div class="col-sm-1">
-						<span class="fa fa-3x fa-{{.explorerIcon}}"></span>
-					</div>
-				</div>
-			</form>
-			{{#behavior}}
-			<div class="row">	
-				<label class="col-sm-offset-1 col-sm-3 control-label">File Handling: </label>
-			</div>
-			<div class="row">	
-				<div class="col-sm-offset-2 col-sm-6">
-				<div class="radio">
-					<label>
-						<input type="radio" name="radioBehavior" value="download" checked="{{.download}}" on-click="setFileBehavior">
-						Download File
-					</label>
-				</div>
-				<div class="radio">
-					<label>
-						<input type="radio" name="radioBehavior" value="browser" checked="{{.browser}}" on-click="setFileBehavior">
-						Open File in Browser
-					</label>
-				</div>
-				<div class="radio">
-					<label>
-						<input type="radio" name="radioBehavior" value="app" checked="{{.app}}" on-click="setFileBehavior">
-						Open File with Application
-					</label>
-				</div>
-				</div>
-			</div>
 			<div class="row">
-				<div class="col-sm-offset-4 col-sm-6"> 
-					<select class="form-control" value="{{.appID}}" {{#if !.app}}disabled{{/if}}>
-					{{#apps:i}}
-						<option>{{i}}</option>
-					{{/apps}}
-					</select>
-				</div>	
-			</div>
-			{{/behavior}}
-			<div class="row">
-				<div class="col-sm-3">
-					<button type="button" class="btn btn-sm btn-default" on-click="defaultFileBehavior">Use Defaults</button>
+				<div class="col-sm-9">
+					<form class="form-horizontal" role="form">
+						<div class="form-group">
+							<label for="iconSelect" class="col-sm-4 control-label">Icon</label>
+							<div class="col-sm-8">
+								<select id="iconSelect" class="form-control" value="{{.explorerIcon}}">
+									{{#icons:i}}
+										<option>{{.}}</option>
+									{{/icons}}
+								</select>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="colorSelect" class="col-sm-4 control-label">Color</label>
+							<div class="col-sm-8">
+								<select id="colorSelect" class="form-control" value="{{.iconColor}}">
+									{{#iconColors:i}}
+										<option value="{{.}}">{{i}}</option>
+									{{/iconColors}}
+								</select>
+							</div>
+						</div>
+						
+					{{#behavior}}
+					<div class="form-group property-form">	
+						<label class="col-sm-4 control-label">File Handling: </label>
+					</div>
+					<div class="row">	
+						<div class="col-sm-offset-2 col-sm-6">
+							<div class="radio">
+								<label>
+									<input type="radio" name="radioBehavior" value="download" checked="{{.download}}" on-click="setFileBehavior">
+									Download File
+								</label>
+							</div>
+							<div class="radio">
+								<label>
+									<input type="radio" name="radioBehavior" value="browser" checked="{{.browser}}" on-click="setFileBehavior">
+									Open File in Browser
+								</label>
+							</div>
+							<div class="radio">
+								<label>
+									<input type="radio" name="radioBehavior" value="app" checked="{{.app}}" on-click="setFileBehavior">
+									Open File with Application
+								</label>
+							</div>
+						</div>
+					</div>
+					<div class="row property-form">
+						<div class="col-sm-offset-4 col-sm-8"> 
+							<select class="form-control" value="{{.appID}}" {{#if !.app}}disabled{{/if}}>
+							{{#apps:i}}
+								<option value="{{i}}">{{.name}}</option>
+							{{/apps}}
+							</select>
+						</div>	
+					</div>
+					{{/behavior}}
+					<div class="row">
+						<div class="col-sm-3">
+							<button type="button" class="btn btn-sm btn-default" on-click="defaultFileBehavior">Use Defaults</button>
+						</div>
+					</div>
+					</form>
 				</div>
-			</div>
+				<div class="col-sm-2">
+					<span class="property-icon fa fa-5x fa-{{explorerIcon}}" style="color:{{.iconColor}};"></span>
+				</div>
+			</div> <!-- row -->	
 		</div>
 		<div class="tab-pane" id="token">
 		</div>
@@ -444,21 +462,21 @@
 							{{>droppable}}
 							<a href="javascript:void(0)" on-click="explorerSelect" onmousedown="return false">
 								{{>draggable}}
-								<span class="fa fa-{{explorerIcon}}"></span>  {{name}}
+								<span class="fa fa-{{explorerIcon}}" style="color:{{.iconColor}};"></span>  {{name}}
 							</a>
 						</td>
 					{{else}}
 						<td>
 							<a href="{{explorerUrl}}" target="{{#newWindow}}_blank{{/newWindow}}" {{#.behavior.download}}download=""{{/download}} onmousedown="return false">
 								{{>draggable}}
-								<span class="fa fa-{{explorerIcon}}"></span>  {{name}}
+								<span class="fa fa-{{explorerIcon}}" style="color:{{.iconColor}};"></span>  {{name}}
 							</a>
 						</td>
 					{{/if}}
 				{{else}}
 					<td>
 						<a href="javascript:void(0)" onmousedown="return false">
-							<span class="fa fa-{{explorerIcon}}"></span>  {{name}}
+							<span class="fa fa-{{explorerIcon}}" style="color:{{.iconColor}};"></span>  {{name}}
 						</a>
 					</td>
 				{{/if}}
@@ -511,7 +529,7 @@
 	{{/if}}
 		{{>droppable}}
 		{{>draggable}}
-		<span class="grid-icon fa fa-5x fa-{{explorerIcon}}"></span>
+		<span class="grid-icon fa fa-5x fa-{{explorerIcon}}" style="color:{{.iconColor}};"></span>
 		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
 	</a>
 {{else}}
@@ -524,7 +542,7 @@
 		{{else}}
 			<a href="javascript:void(0)" class="btn btn-file-grid" on-click="removeStar" title="Remove Star"><span class="glyphicon glyphicon-remove"></span></a>
 		{{/if}}
-		<span class="grid-icon fa fa-5x fa-{{explorerIcon}}"></span>
+		<span class="grid-icon fa fa-5x fa-{{explorerIcon}}" style="color:{{.iconColor}};"></span>
 		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
 	</a>
 	{{else}}
@@ -532,7 +550,7 @@
 		{{#if currentKeypath === "stars"}}
 			<a href="javascript:void(0)" class="btn btn-file-grid" on-click="removeStar" title="Remove Star"><span class="glyphicon glyphicon-remove"></span></a>
 		{{/if}}
-		<span class="grid-icon fa fa-5x fa-{{explorerIcon}}"></span>
+		<span class="grid-icon fa fa-5x fa-{{explorerIcon}}" style="color:{{.iconColor}};"></span>
 		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
 	</a>
 
@@ -546,7 +564,7 @@
 		{{#uploads:i}}
 		<div class="row"> 
 			<div class="col-xs-5 upload-filename" title="{{.name}}">
-				<span class="fa fa-{{.explorerIcon}}"></span> {{.name}}
+				<span class="fa fa-{{.explorerIcon}}" style="color:{{.iconColor}};"></span> {{.name}}
 			</div>
 			<div class="col-xs-6">
 				{{#if .error}}

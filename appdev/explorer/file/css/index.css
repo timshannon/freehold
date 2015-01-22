@@ -206,16 +206,16 @@ a:focus {
 	top: 50%;
 }
 
-.property-form>.form-group {
-	margin-bottom: 0px;
-}
+@media (min-width: 768px) {
+	.property-form {
+		margin-bottom: 0px;
+	}
 
-.property-icon {
-	position: absolute;
-	left: 30px;
-	color: #333;
-}
+	.property-icon {
+		margin-left: 15px;
+	}
 
+}
 
 .btn-property-rename {
 	color: #333;

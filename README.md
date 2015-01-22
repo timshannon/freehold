@@ -19,7 +19,7 @@ Freehold is made to be easy to setup and get running.  If you have an executable
 
 That's it.  
 
-There are a few more steps if you want to customize how you are hosting your instance, however. You may need to run the executable with elevated rights in order to host on the default port 80.  If you want to change which port the freehold instance runs on, you can edit the settings.json file which should get created automatically in your running directory when you first run Freehold.  It should look like this:
+There are a few more steps if you want to customize how you are hosting your instance, however. You may need to run the executable with elevated rights in order to host on the default port 80.  If you want to change which port the freehold instance runs on, you can edit the settings.json file which should get created automatically directory when you first run Freehold.  The location of that settings file will be printed when you run freehold, along with other possible settings file locations. That file should look something like this:
 
 ```
 {
@@ -70,7 +70,7 @@ For example permissions on a page you want every user in the freehold instance t
 {
 	owner: "your username",
 	private: "rw",
-	pubilic: "",
+	public: "",
 	friend: "r"
 }
 ```
@@ -89,7 +89,7 @@ Authenticating External Applications
 ====================================
 Freehold is designed to work well with more than just browser based applications. You may want to synchronize files and data with your desktop or mobile phone. 
 
-In those cases, it's usually not a good idea to be storing your username and passwords on your phone or your desktop.  Instead you can generate *Security Tokens* that can be limited in their scope of permissions, and be set to expire which you can use to run external applications such as might be found on your phone or your desktop.
+In those cases, it's usually not a good idea to be storing your username and passwords on your phone or your desktop.  Instead you can generate *Security Tokens* that can be limited in their scope of permissions, and be set to expire. You can use these Tokens to run external applications such as might be found on your phone or your desktop.
 
 
 What Freehold is and isn't
@@ -98,6 +98,4 @@ Freehold is designed to be a personal server.  There is no server side validatio
 
 In this way Freehold's server side protections lie soley in it's permissions structure, and isn't robust enough for a diverse population of authenticated users who may or may not be trusted.
 
-As a personal server (or one with a small population of trusted users), it becomes in your best interest to preserve your own data.
-
-See the documentation for much more detailed information.
+See the built-in documentation (/docs) for more detailed information.
