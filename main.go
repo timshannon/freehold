@@ -6,6 +6,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -51,7 +52,8 @@ func init() {
 func main() {
 	flag.Parse()
 
-	cfg, err := config.LoadOrCreate(config.StandardFileLocations("freehold/settings.json")...)
+	settingPaths := config.StandardFileLocations("freehold/settings.json")
+	cfg, err := config.LoadOrCreate(settingPaths...)
 	if err != nil {
 		halt("Error loading settings.json file: " + err.Error())
 	}
@@ -61,6 +63,12 @@ func main() {
 	certFile := cfg.String("certificateFile", "")
 	keyFile := cfg.String("keyFile", "")
 	dataDir := cfg.String("dataDir", "./")
+
+	fmt.Printf("Freehold is currently using the file %s for settings.\n", cfg.FileName())
+	fmt.Println("Other possible locations include (in order of priority):")
+	for i := range settingPaths {
+		fmt.Println("\t", settingPaths[i])
+	}
 
 	cwd, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	if err != nil {
@@ -110,9 +118,6 @@ func main() {
 		}
 
 	}
-
-	//TODO: Dev - Remove
-	//setupCore("tshannon")
 
 	server := &http.Server{
 		Handler:        rootHandler,

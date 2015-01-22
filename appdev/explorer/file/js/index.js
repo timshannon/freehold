@@ -6,6 +6,7 @@ $(document).ready(function() {
     var timer;
     var defaultIcons = buildDefaultIcons();
     var defaultApps = buildDefaultApps();
+    var iconColors = buildIconColors();
     var settings = new Settings();
     settings.stars = new Stars();
     settings.fileType = new FileTypeSettings();
@@ -26,6 +27,7 @@ $(document).ready(function() {
             stars: {},
             user: fh.auth.user,
             icons: buildIconList(),
+            iconColors: iconColors,
             selection: [],
         },
     });
@@ -1174,11 +1176,13 @@ $(document).ready(function() {
                     browser: (!defaultApps[filetype]),
                 },
                 icon: defaultIcons[filetype.toLowerCase()] || "file-o",
+                iconColor: iconColors["default"],
             };
         }
 
         function equal(a, b) {
             if (a.icon === b.icon &&
+				a.iconColor === b.iconColor &&
                 a.behavior.download === b.behavior.download &&
                 a.behavior.app === b.behavior.app &&
                 a.behavior.browser == b.behavior.browser) {
@@ -1196,6 +1200,10 @@ $(document).ready(function() {
             icon: function(filetype) {
                 return get(filetype).icon;
             },
+            iconColor: function(filetype) {
+                return get(filetype).iconColor;
+            },
+
             behavior: function(filetype) {
                 var file = get(filetype);
 
@@ -1220,6 +1228,9 @@ $(document).ready(function() {
                 }
                 if (file.icon) {
                     files[ext].icon = file.icon;
+                }
+                if (file.iconColor) {
+                    files[ext].iconColor = file.iconColor;
                 }
 
                 if (equal(files[ext], def(ext))) {
