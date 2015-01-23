@@ -283,12 +283,16 @@ window.fh = (function() {
                 });
             },
             new: function(tokenObject, username, password) { //{name:"", resource: "", expires: "", permission: ""}
-                return stdAjax("POST", "/v1/auth/token/", {
-                    beforeSend: function(xhr) {
-                        xhr.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
-                    },
+				var options = {
                     data: JSON.stringify(tokenObject),
-                });
+                };
+				if(username && password) {
+options.beforeSend= function(xhr) {
+                        xhr.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
+                    };
+}
+
+                return stdAjax("POST", "/v1/auth/token/",options );
             },
             delete: function(tokenID) {
                 return stdAjax("DELETE", "/v1/auth/token/", {

@@ -16,7 +16,7 @@
 
 <!--templates-->
 <script id="tMain" type="text/ractive">
-<navbar error="{{error}}" app="User Info"></navbar>
+<navbar app="User Info"></navbar>
 
 <modal id="userModal" title="Modify User {{current.user}}" customFooter="true">
 	<div>
@@ -121,30 +121,32 @@
 
 		</div>
 
-		<div class="form-group">
-			<div class="col-sm-offset-1 col-sm-11">
-				<p class="help-block">Generating a token requires you to resubmit your Username and Password</p>
+		{{#if requirePassword}}
+			<div class="form-group">
+				<div class="col-sm-offset-1 col-sm-11">
+					<p class="help-block">Generating a token requires you to resubmit your Username and Password</p>
+				</div>
 			</div>
-		</div>
 
-		<div class="form-group {{#errors.username}}has-error has-feedback{{/errors.username}}" title="{{errors.username}}">
-			<label for="username" class="col-sm-3 control-label">User Name</label>
-			<div class="col-sm-9">
-				<input type="text" class="form-control" id="username" placeholder="Enter your username" value="{{username}}">
+			<div class="form-group {{#errors.username}}has-error has-feedback{{/errors.username}}" title="{{errors.username}}">
+				<label for="username" class="col-sm-3 control-label">User Name</label>
+				<div class="col-sm-9">
+					<input type="text" class="form-control" id="username" placeholder="Enter your username" value="{{username}}">
+				</div>
+				{{#errors.username}}
+					<span class="form-control-feedback glyphicon glyphicon-remove"></span>
+				{{/errors.username}}
 			</div>
-			{{#errors.username}}
-				<span class="form-control-feedback glyphicon glyphicon-remove"></span>
-			{{/errors.username}}
-		</div>
-		<div class="form-group {{#errors.password}}has-error has-feedback{{/errors.password}}" title="{{errors.password}}">
-			<label for="tokenPassword" class="col-sm-3 control-label">Password</label>
-			<div class="col-sm-9">
-				<input type="password" class="form-control" id="tokenPassword" placeholder="Enter your password" value="{{password}}">
+			<div class="form-group {{#errors.password}}has-error has-feedback{{/errors.password}}" title="{{errors.password}}">
+				<label for="tokenPassword" class="col-sm-3 control-label">Password</label>
+				<div class="col-sm-9">
+					<input type="password" class="form-control" id="tokenPassword" placeholder="Enter your password" value="{{password}}">
+				</div>
+				{{#errors.password}}
+					<span class="form-control-feedback glyphicon glyphicon-remove"></span>
+				{{/errors.password}}
 			</div>
-			{{#errors.password}}
-				<span class="form-control-feedback glyphicon glyphicon-remove"></span>
-			{{/errors.password}}
-		</div>
+		{{/if}}
 
 
 	</form>

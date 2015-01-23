@@ -12,7 +12,7 @@ $(document).ready(function() {
     //setup
     var rNav = new Ractive({
         el: "#navHook",
-        template: '<navbar app="Admin Console" errorLead="{{errorLead}}" error="{{error}}"></navbar>',
+        template: '<navbar app="Admin Console"></navbar>',
         data: {
             help: {
                 title: "Admin Console",

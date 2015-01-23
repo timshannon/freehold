@@ -165,6 +165,12 @@ func init() {
 				"the MaxFileMemory setting.",
 			Value: false,
 		},
+		"RequirePasswordToGenerateToken": Setting{
+			Description: "If True, the user is required to specify their username and password when generating a security token. " +
+				"This means a security token cannot be generated from Session authenticated via a cookie.  This is more secure " +
+				"as it prevents a possible CSRF attack, but it can also be inconvient.",
+			Value: false, //I'm willing to reconsider this default
+		},
 	}
 }
 

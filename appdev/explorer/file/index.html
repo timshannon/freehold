@@ -14,7 +14,7 @@
 	
 <!--templates-->
 <script id="tNav" type="text/ractive">
-<navbar error="{{error}}" app="Explorer"></navbar>
+<navbar app="Explorer"></navbar>
 </script>
 
 <script id="tMain" type="text/ractive">
@@ -62,7 +62,7 @@
 		<li class="active"><a href="#details" role="tab" data-toggle="tab">Details</a></li>
 		<li><a href="#permissions" role="tab" data-toggle="tab">Permissions</a></li>
 		{{#if !isDir}}<li><a href="#behavior" role="tab" data-toggle="tab">Behavior</a></li>{{/if}}
-		<li><a href="#token" role="tab" data-toggle="tab">Token</a></li>
+		<li><a href="#share" role="tab" data-toggle="tab" on-click="loadShareLinks">Share</a></li>
 	</ul>
 
 	<!-- Tab panes -->
@@ -93,7 +93,7 @@
 						<div class="property-form form-group">
 							<label for="currentFileUrl" class="col-sm-4 control-label">Url</label>
 							<div class="col-sm-8">
-								<p class="form-control-static">{{url}}</p>
+								<p class="form-control-static">{{domain + url}}</p>
 							</div>
 						</div>
 						<div class="property-form form-group">
@@ -111,10 +111,10 @@
 					</div>
 				</div>
 			</form>
-		</div>
+		</div> <!-- details -->
 		<div class="tab-pane" id="permissions">
 			<permissions readOnly="{{user !== permissions.owner}}" permissions="{{permissions}}" showOwner="{{.showOwner}}"></permissions>
-		</div>
+		</div> <!-- permissions -->
 		<div class="tab-pane" id="behavior">
 			<div class="row">
 				<div class="col-sm-9">
@@ -187,9 +187,19 @@
 					<span class="property-icon fa fa-5x fa-{{explorerIcon}}" style="color:{{.iconColor}};"></span>
 				</div>
 			</div> <!-- row -->	
-		</div>
-		<div class="tab-pane" id="token">
-		</div>
+		</div> <!-- behavior -->
+		<div class="tab-pane" id="share">
+			{{#shareLinks}}
+			<div class="row">
+				<div class="col-sm-12">
+					<button type="button" class="btn btn-success" on-click="generateShareLink" title="Get unique url for sharing this file">
+						<span class="glyphicon glyphicon-share"></span> New Link</button>
+				</div>
+			</div>
+			<div class="row">
+			</div>
+			{{/shareLinks}}
+		</div> <!-- share -->
 
 	</div>
 
@@ -467,7 +477,8 @@
 						</td>
 					{{else}}
 						<td>
-							<a href="{{explorerUrl}}" target="{{#newWindow}}_blank{{/newWindow}}" {{#.behavior.download}}download=""{{/download}} onmousedown="return false">
+							<a href="{{explorerUrl}}" target="{{#newWindow}}_blank{{/newWindow}}" 
+								{{#.behavior.download}}download=""{{/download}} onmousedown="return false">
 								{{>draggable}}
 								<span class="fa fa-{{explorerIcon}}" style="color:{{.iconColor}};"></span>  {{name}}
 							</a>
@@ -525,7 +536,8 @@
 	<a href="javascript:void(0)" on-click="explorerSelect" class="file-tile {{#if .selectable}}selectable{{/if}}"
 		 onmousedown="return false" data-select="{{i}}">
 	{{#if currentKeypath === "stars"}}
-		<a href="javascript:void(0)" class="btn btn-file-grid" on-click="removeStar" title="Remove Star"><span class="glyphicon glyphicon-remove"></span></a>
+		<a href="javascript:void(0)" class="btn btn-file-grid" on-click="removeStar" title="Remove Star">
+			<span class="glyphicon glyphicon-remove"></span></a>
 	{{/if}}
 		{{>droppable}}
 		{{>draggable}}
@@ -538,9 +550,11 @@
 		class="file-tile selectable" data-select="{{i}}" onmousedown="return false">
 		{{>draggable}}
 		{{#if currentKeypath !== "stars"}}
-			<a href="javascript:void(0)" class="btn btn-file-grid" on-click="properties:{{.url}}" title="Properties"><span class="glyphicon glyphicon-cog"></span></a>
+			<a href="javascript:void(0)" class="btn btn-file-grid" on-click="properties:{{.url}}" title="Properties">
+				<span class="glyphicon glyphicon-cog"></span></a>
 		{{else}}
-			<a href="javascript:void(0)" class="btn btn-file-grid" on-click="removeStar" title="Remove Star"><span class="glyphicon glyphicon-remove"></span></a>
+			<a href="javascript:void(0)" class="btn btn-file-grid" on-click="removeStar" title="Remove Star">
+				<span class="glyphicon glyphicon-remove"></span></a>
 		{{/if}}
 		<span class="grid-icon fa fa-5x fa-{{explorerIcon}}" style="color:{{.iconColor}};"></span>
 		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
@@ -548,7 +562,8 @@
 	{{else}}
 	<a href="javascript:void(0)"  class="file-tile" onmousedown="return false">
 		{{#if currentKeypath === "stars"}}
-			<a href="javascript:void(0)" class="btn btn-file-grid" on-click="removeStar" title="Remove Star"><span class="glyphicon glyphicon-remove"></span></a>
+			<a href="javascript:void(0)" class="btn btn-file-grid" on-click="removeStar" title="Remove Star">
+				<span class="glyphicon glyphicon-remove"></span></a>
 		{{/if}}
 		<span class="grid-icon fa fa-5x fa-{{explorerIcon}}" style="color:{{.iconColor}};"></span>
 		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>

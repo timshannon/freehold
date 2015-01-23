@@ -3,25 +3,17 @@
   <head>
     <title>freehold - Web ODF</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<link href="/core/v1/file/css/freehold.css" rel="stylesheet" media="screen"> 
 	</head>
 <body>
-<div id="odf"></div>
-	
+<div id="editorContainer" style="width: 600px;height: 600px;"></div>
 
+<script id="tNav" type="text/ractive">
+	<navbar  app="Web ODF"></navbar>
+</script>
 <script src="/core/v1/file/js/jquery-2.1.1.min.js"></script>
 <script src="/core/v1/file/js/fh.js"></script>
-<script src="/webodf/v1/file/js/webodf.js"></script>
-<script language="Javascript">
-	function init() {
-		var file = fh.util.urlParm("file"); 
-		var odfelement = document.getElementById("odf"),
-				odfcanvas = new odf.OdfCanvas(odfelement);
-		if (file) {
-			odfcanvas.load(file);
-		}
-	}
-	window.setTimeout(init, 0);
-</script>
-<script
+<script src="/webodf/v1/file/js/wodotexteditor/wodotexteditor.js"></script>
+<script src="/webodf/v1/file/js/index.js"></script>
 </body>
 </html>

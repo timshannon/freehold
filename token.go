@@ -9,6 +9,7 @@ import (
 
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/permission"
+	"bitbucket.org/tshannon/freehold/setting"
 	"bitbucket.org/tshannon/freehold/token"
 )
 
@@ -74,8 +75,14 @@ func tokenPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if auth.AuthType != authTypeBasic {
-		errHandled(fail.New("Security Tokens cannot be generated from a Session or another Token.", nil), w, auth)
-		return
+		if setting.Bool("RequirePasswordToGenerateToken") {
+			errHandled(fail.New("Security Tokens cannot be generated from a Session or another Token.", nil), w, auth)
+			return
+		}
+		if auth.AuthType != authTypeSession {
+			errHandled(fail.New("Security Tokens cannot be generated from another Token.", nil), w, auth)
+			return
+		}
 	}
 
 	prm := permission.Token(auth.User.Username())
