@@ -21,7 +21,7 @@ $(document).ready(function() {
             rMain.set("apps", result.data);
         })
         .fail(function(result) {
-		error(result);
+            error(result);
         });
 
     fh.settings.get("MinPasswordLength")
@@ -29,8 +29,17 @@ $(document).ready(function() {
             minPassLength = result.data.value;
         })
         .fail(function(result) {
-		error(result);
+            error(result);
         });
+
+    fh.settings.get("RequirePasswordToGenerateToken")
+        .done(function(result) {
+            rMain.set("requirePassword", result.data.value);
+        })
+        .fail(function(result) {
+            error(result);
+        });
+
 
     loadUser();
     loadSessions();
@@ -97,7 +106,7 @@ $(document).ready(function() {
                     loadSessions();
                 })
                 .fail(function(result) {
-		error(result);
+                    error(result);
                 });
 
         },
@@ -137,14 +146,18 @@ $(document).ready(function() {
             if (!event.context.name) {
                 errors.name = "A name is required";
             }
-            if (!event.context.username || !event.context.password) {
-                errors.username = "A username and password is required to generate a new token";
+            if (rMain.get("requirePassword")) {
+                if (!event.context.username || !event.context.password) {
+                    errors.username = "A username and password is required to generate a new token";
+                }
             }
 
             if (event.context.expires) {
                 var exp = new Date(event.context.expires);
                 if (isNaN(exp.getTime())) {
                     errors.expires = "Invalid Date";
+                } else if (exp.getTime() < Date.now()) {
+                    errors.expires = "Date must be after current date.";
                 } else {
                     exp.setHours(0); //set to midnight of local timezone
                     event.context.expires = exp.toJSON();
@@ -177,7 +190,7 @@ $(document).ready(function() {
                     loadTokens();
                 })
                 .fail(function(result) {
-		error(result);
+                    error(result);
                 });
         },
 
@@ -217,7 +230,7 @@ $(document).ready(function() {
                 document.title = fh.auth.user + " - freehold";
             })
             .fail(function(result) {
-		error(result);
+                error(result);
             });
     }
 
@@ -237,7 +250,7 @@ $(document).ready(function() {
                 rMain.set("sessions", sessions);
             })
             .fail(function(result) {
-		error(result);
+                error(result);
             });
     }
 
@@ -255,7 +268,7 @@ $(document).ready(function() {
                 rMain.set("tokens", tokens);
             })
             .fail(function(result) {
-		error(result);
+                error(result);
             });
     }
 

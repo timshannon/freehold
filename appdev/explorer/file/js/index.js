@@ -29,6 +29,7 @@ $(document).ready(function() {
             icons: buildIconList(),
             iconColors: iconColors,
             selection: [],
+            domain: location.origin,
         },
     });
 
@@ -410,6 +411,10 @@ $(document).ready(function() {
                     error(result);
                 });
 
+        },
+        "loadShareLinks": function(event) {
+            rMain.set(event.keypath + ".shareLinks", {});
+			//TODO:
         },
     });
 
@@ -1324,10 +1329,15 @@ $(document).ready(function() {
         return {
             "ds": "datastore",
             "odf": "webodf",
-            "ods": "webodf",
             "odt": "webodf",
         };
     }
 
 
 }); //end ready
+
+
+if (!window.location.origin) {
+    //for IE
+    window.location.origin = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port : '');
+}
