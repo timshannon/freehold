@@ -439,6 +439,7 @@ $(document).ready(function() {
         "currentFile.behavior": function(newValue, oldValue, keypath) {
             if (newValue && oldValue) {
                 settings.fileType.set(rMain.get("currentFile"));
+				refresh();
             }
         },
         "currentFile.explorerIcon": function(newValue, oldValue, keypath) {
@@ -1010,16 +1011,20 @@ $(document).ready(function() {
     }
 
     function error(err) {
-        var msg;
         if (typeof err === "string") {
-            msg = err;
+            nav.fire("addAlert", "danger", "", err);
+            return;
         } else {
-            msg = err.responseJSON.message;
+            err = err.responseJSON;
+            if (err.hasOwnProperty("failures")) {
+                for (var i = 0; i < err.failures.length; i++) {
+                    nav.fire("addAlert", "danger", "", err.failures[i].message);
+                }
+            } else {
+                nav.fire("addAlert", "danger", "", err.message);
+            }
         }
-        nav.fire("addAlert", "danger", "", msg);
     }
-
-
     function getApps() {
         fh.application.installed()
             .done(function(result) {
