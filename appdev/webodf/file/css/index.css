@@ -1,0 +1,7 @@
+#editorContainer {
+	width:100%;
+	height:calc(100% - 50px); 
+	margin:0px; 
+	padding:0px;
+	margin-top: -21px;
+}
