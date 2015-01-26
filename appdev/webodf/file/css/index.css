@@ -1,7 +1,12 @@
-#editorContainer {
+#odfContainer {
 	width:100%;
-	height:calc(100% - 50px); 
+	height:calc(100% - 51px); 
 	margin:0px; 
 	padding:0px;
 	margin-top: -21px;
+	background-color: #777;
+}
+
+#odfContainer > div:nth-child(1) {
+	margin: 0 auto;
 }

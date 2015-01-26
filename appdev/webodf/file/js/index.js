@@ -5,6 +5,7 @@
 $(document).ready(function() {
     var docUrl = fh.util.urlParm("file");
     var editor;
+    var viewer;
     var mimetype = "application/vnd.oasis.opendocument.text";
 
     var r = new Ractive({
@@ -14,37 +15,55 @@ $(document).ready(function() {
 
     var nav = r.findComponent("navbar");
 
-    //TODO: Only create editor if file is odt
-    // use viewerjs?
+    var ext = docUrl.slice(docUrl.lastIndexOf(".") + 1);
 
-    Wodo.createTextEditor("editorContainer", {
-            allFeaturesEnabled: true,
-            userData: {
-                fullName: fh.auth.user,
-            },
-            loadCallback: load,
-            saveCallback: save,
-        },
-        function(err, e) {
-            if (err) {
-                error(err);
-                return;
+    fh.properties.get(docUrl)
+        .done(function(result) {
+            document.title = result.data.name + " - Web ODF - freehold";
+            r.set("file", result.data);
+            if (ext == "odt") {
+                loadEditor();
+            } else {
+                loadViewer();
             }
-            editor = e;
-
-            loadFile(docUrl);
+        })
+        .fail(function(result) {
+            error(result);
         });
 
-    function loadFile(url) {
-        fh.properties.get(url)
-            .done(function(result) {
-                document.title = result.data.name + " - Web ODF - freehold";
-                r.set("file", result.data);
-            })
-            .fail(function(result) {
-                error(result);
-            });
 
+
+    function loadViewer() {
+        r.set("viewer", true);
+        odfElement = document.getElementById("odfContainer");
+        odfCanvas = new odf.OdfCanvas(odfElement);
+        odfCanvas.load(docUrl);
+        odfCanvas.showFirstPage();
+        console.log(odfCanvas);
+        viewer = odfCanvas;
+    }
+
+    function loadEditor() {
+        Wodo.createTextEditor("odfContainer", {
+                allFeaturesEnabled: true,
+                userData: {
+                    fullName: fh.auth.user,
+                },
+                loadCallback: load,
+                saveCallback: save,
+            },
+            function(err, e) {
+                if (err) {
+                    error(err);
+                    return;
+                }
+                editor = e;
+
+                loadFile(docUrl);
+            });
+    }
+
+    function loadFile(url) {
         editor.openDocumentFromUrl(url, function(err) {
             if (err) {
                 error("There was an error on opening the document: " + err);
@@ -57,12 +76,17 @@ $(document).ready(function() {
     r.on({
         "selectFile": function(event) {
             if (r.get("selected")) {
-
-                editor.closeDocument(function() {
-                    loadFile(r.get("selected"));
-                    $("#fileBrowse").modal("hide");
-                });
+                window.location = "/webodf?file=" + r.get("selected");
             }
+        },
+        "showFileBrowse": function(event) {
+            $("#fileBrowse").modal();
+        },
+        "prevPage": function(event) {
+			viewer.showPreviousPage();
+        },
+        "nextPage": function(event) {
+			viewer.showNextPage();
         },
     });
 
