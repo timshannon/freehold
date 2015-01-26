@@ -122,14 +122,10 @@ func authenticate(w http.ResponseWriter, r *http.Request) (*Auth, error) {
 		return nil, err
 	}
 
-	if ses == nil {
-		//No session cookie
+	if ses == nil || ses.IsExpired() {
+		//No valid session cookie
 		// public access
 		return a, a.attemptWrite(r)
-	}
-
-	if ses.IsExpired() {
-		return nil, fail.New("Your session has expired", nil)
 	}
 
 	// Check for CSRF token

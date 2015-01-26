@@ -1335,6 +1335,8 @@ $(document).ready(function() {
             "ds": "datastore",
             "odf": "webodf",
             "odt": "webodf",
+            "ods": "webodf",
+            "odp": "webodf",
         };
     }
 
