@@ -15,32 +15,40 @@ $(document).ready(function() {
 
     var nav = r.findComponent("navbar");
 
-    var ext = docUrl.slice(docUrl.lastIndexOf(".") + 1);
+    //TODO: New Document
+    // choose directory and a choose a starting template
+    //
+    // TODO: Rename file?
 
-    fh.properties.get(docUrl)
-        .done(function(result) {
-            document.title = result.data.name + " - Web ODF - freehold";
-            r.set("file", result.data);
-            if (ext == "odt") {
-                loadEditor();
-            } else {
-                loadViewer();
-            }
-        })
-        .fail(function(result) {
-            error(result);
-        });
+    if (!docUrl) {
+        loadViewer(true);
+    } else {
+        fh.properties.get(docUrl)
+            .done(function(result) {
+                var ext = docUrl.slice(docUrl.lastIndexOf(".") + 1);
+                document.title = result.data.name + " - Web ODF - freehold";
+                r.set("file", result.data);
+                if (ext == "odt") {
+                    loadEditor();
+                } else {
+                    loadViewer();
+                }
+            })
+            .fail(function(result) {
+                error(result);
+            });
 
+    }
 
-
-    function loadViewer() {
+    function loadViewer(empty) {
         r.set("viewer", true);
-        odfElement = document.getElementById("odfContainer");
-        odfCanvas = new odf.OdfCanvas(odfElement);
-        odfCanvas.load(docUrl);
-        odfCanvas.showFirstPage();
-        console.log(odfCanvas);
-        viewer = odfCanvas;
+        if (!empty) {
+            odfElement = document.getElementById("odfContainer");
+            odfCanvas = new odf.OdfCanvas(odfElement);
+            odfCanvas.load(docUrl);
+            odfCanvas.showFirstPage();
+            viewer = odfCanvas;
+        }
     }
 
     function loadEditor() {
@@ -83,10 +91,10 @@ $(document).ready(function() {
             $("#fileBrowse").modal();
         },
         "prevPage": function(event) {
-			viewer.showPreviousPage();
+            viewer.showPreviousPage();
         },
         "nextPage": function(event) {
-			viewer.showNextPage();
+            viewer.showNextPage();
         },
     });
 
