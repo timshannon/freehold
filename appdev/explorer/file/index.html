@@ -190,13 +190,65 @@
 		</div> <!-- behavior -->
 		<div class="tab-pane" id="share">
 			{{#shareLinks}}
+				{{#if .newUrl}}
+				<div class="row">
+					<div class="col-sm-12">
+						<input type="text" class="form-control" value="{{.newUrl}}" readonly>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-sm-12">
+						<small>Send this url to someone to share this file with them.  The url will <strong>not</strong> be retrievable after leaving this screen.</small>
+					</div>
+				</div>
+				{{else}}
+				<div class="row">
+					<div class="col-sm-12">
+						<form class="form-inline" on-submit="generateShareLink">
+							{{#requirePassword}}
+							<div class="form-group {{#.errors.username}}has-error has-feedback{{/.errors.username}}" title="{{.errors.username}}">
+								<label class="sr-only" for="tokenUsername">Username</label>
+								<input type="text" class="form-control" id="tokenUsername" placeholder="Enter Username" value="{{.username}}">
+								{{#errors.username}}
+									<span class="form-control-feedback glyphicon glyphicon-remove"></span>
+								{{/errors.username}}
+							</div>
+							<div class="form-group {{#.errors.password}}has-error has-feedback{{/.errors.password}}" title="{{.errors.password}}">
+								<label class="sr-only" for="tokenPassword">Password</label>
+								<input type="password" class="form-control" id="tokenPassword" placeholder="Enter Password" value="{{.password}}">
+								{{#errors.password}}
+									<span class="form-control-feedback glyphicon glyphicon-remove"></span>
+								{{/errors.password}}
+							</div>
+							{{/requirePassword}}
+							<button type="submit" class="pull-right btn btn-success"  title="Get unique url for sharing this file">
+								<span class="glyphicon glyphicon-share"></span> New Link</button>
+						</form>
+					</div>
+			</div>
+			{{/if}}
 			<div class="row">
 				<div class="col-sm-12">
-					<button type="button" class="btn btn-success" on-click="generateShareLink" title="Get unique url for sharing this file">
-						<span class="glyphicon glyphicon-share"></span> New Link</button>
+					<table class="table">
+						<thead>
+							<tr>
+								<th>Expires</th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody>
+							{{#.links:i}}
+							<tr>
+								<td>{{.expiresDate}}</td>
+								<td>
+									<button type="button" class="btn btn-danger btn-sm pull-right" on-click="removeLink" title="Remove Link">
+										<span class="glyphicon glyphicon-remove"></span></button>
+								</td>
+							</tr>
+							{{/.links}}
+						</tbody>
+					</table>
 				</div>
-			</div>
-			<div class="row">
 			</div>
 			{{/shareLinks}}
 		</div> <!-- share -->
@@ -214,14 +266,29 @@
 
 <!--settings-->
 <modal id="settings" title="Explorer Settings">
-	<form role="form">
-		<div class="checkbox">
-			<label><input type="checkbox" checked="{{newWindow}}"> Open files in new window.</label>
-		</div>
-		<div class="checkbox">
-			<label><input type="checkbox" checked="{{folderSort}}"> Sort by folder first.</label>
+	<form role="form" class="form-horizontal" onsubmit="return false">
+		<div class="form-group">
+			<label for="shareLinkExpireDays" class="col-sm-4 control-label">Days until share-links expire</lable>
+			<div class="col-sm-8">
+				<input type="number" input="shareLinkExpireDays" class="form-control" placeholder="Number of Days"
+					value="{{tokenExpireDays}}">
+			</div>
 		</div>
 
+		<div class="form-group">
+			<div class="col-sm-offset-4 col-sm-8">
+				<div class="checkbox ">
+					<label><input type="checkbox" checked="{{newWindow}}"> Open files in new window.</label>
+				</div>
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="col-sm-offset-4 col-sm-8">
+				<div class="checkbox ">
+					<label><input type="checkbox" checked="{{folderSort}}"> Sort by folder first.</label>
+				</div>
+			</div>
+		</div>
 	</form>
 </modal>
 

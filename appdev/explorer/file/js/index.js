@@ -36,6 +36,16 @@ $(document).ready(function() {
     getApps();
     getUsers();
 
+
+    fh.settings.get("RequirePasswordToGenerateToken")
+        .done(function(result) {
+            rMain.set("requirePassword", result.data.value);
+        })
+        .fail(function(result) {
+            error(result);
+        });
+
+
     settings.load(function() {
         rMain.set("sorting", settings.get("sorting", {
             by: "name",
@@ -45,6 +55,7 @@ $(document).ready(function() {
         rMain.set("folderSort", settings.get("folderSort", true));
         rMain.set("hideSidebar", settings.get("hideSidebar", false));
         rMain.set("listView", settings.get("listView", false));
+        rMain.set("tokenExpireDays", settings.get("tokenExpireDays", 30));
 
         setRoot();
         selectUserFolder();
@@ -413,8 +424,59 @@ $(document).ready(function() {
 
         },
         "loadShareLinks": function(event) {
-            rMain.set(event.keypath + ".shareLinks", {});
-			//TODO:
+            rMain.set("shareLinks.errors", {});
+            rMain.set("shareLinks.username", null);
+            rMain.set("shareLinks.password", null);
+            rMain.set("shareLinks.newUrl", null);
+
+            getLinks();
+        },
+        "generateShareLink": function(event) {
+            event.original.preventDefault();
+            var username, password;
+            if (rMain.get("requirePassword")) {
+                if (!event.context.username || !event.context.password) {
+                    rMain.set("shareLinks.errors.username", "A username and password is required to generate a new token");
+                    return;
+                }
+                username = event.context.username;
+                password = event.context.password;
+            }
+            var file = rMain.get("currentFile");
+
+            var expires = new Date(Date.now());
+            expires.setDate(expires.getDate() + rMain.get("tokenExpireDays"));
+
+            fh.token.new({
+                    name: "Explorer Share Link - " + file.name,
+                    expires: expires.toJSON(),
+                    resource: file.url,
+                }, username, password)
+                .done(function(result) {
+                    rMain.set("shareLinks.errors", {});
+                    rMain.set("shareLinks.username", null);
+                    rMain.set("shareLinks.password", null);
+
+                    var url = fh.util.urlJoin(rMain.get("domain"), "explorer/v1/file/guest/");
+                    url += "?u=" + fh.auth.user + "&t=" + result.data.token;
+                    rMain.set("shareLinks.newUrl", url);
+
+                    result.data.expiresDate = new Date(result.data.expires).toLocaleString();
+                    rMain.push("shareLinks.links", result.data);
+
+                })
+                .fail(function(result) {
+                    rMain.set("shareLinks.errors.username", result.responseJSON.message);
+                });
+        },
+        "removeLink": function(event) {
+            fh.token.delete(event.context.id)
+                .done(function() {
+                    rMain.splice("shareLinks.links", event.index.i, 1);
+                })
+                .fail(function(result) {
+                    error(result);
+                });
         },
     });
 
@@ -436,10 +498,15 @@ $(document).ready(function() {
                 settings.put("hideSidebar", newValue);
             }
         },
+        "tokenExpireDays": function(newValue, oldValue, keypath) {
+            if (newValue !== undefined) {
+                settings.put("tokenExpireDays", newValue);
+            }
+        },
         "currentFile.behavior": function(newValue, oldValue, keypath) {
             if (newValue && oldValue) {
                 settings.fileType.set(rMain.get("currentFile"));
-				refresh();
+                refresh();
             }
         },
         "currentFile.explorerIcon": function(newValue, oldValue, keypath) {
@@ -1025,6 +1092,7 @@ $(document).ready(function() {
             }
         }
     }
+
     function getApps() {
         fh.application.installed()
             .done(function(result) {
@@ -1147,6 +1215,25 @@ $(document).ready(function() {
         comp.fire("reset");
         rMain.set("selection", []);
 
+    }
+
+    function getLinks() {
+        var file = rMain.get("currentFile");
+        rMain.set("shareLinks.links", []);
+
+        fh.token.get()
+            .done(function(result) {
+                var tokens = result.data;
+                for (var i = 0; i < tokens.length; i++) {
+                    if (tokens[i].resource == file.url) {
+                        tokens[i].expiresDate = new Date(tokens[i].expires).toLocaleString();
+                        rMain.push("shareLinks.links", tokens[i]);
+                    }
+                }
+            })
+            .fail(function(result) {
+                error(result);
+            });
     }
 
     //Settings
