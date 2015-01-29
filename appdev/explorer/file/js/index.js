@@ -461,6 +461,9 @@ $(document).ready(function() {
                     var url = fh.util.urlJoin(rMain.get("domain"), "/v1/auth/token/");
                     url += "?user=" + fh.auth.user + "&token=" + result.data.token;
                     rMain.set("shareLinks.newUrl", url);
+					//select text for user
+					var node = rMain.find("#shareLinkUrl");
+					node.select();
 
                     result.data.expiresDate = new Date(result.data.expires).toLocaleString();
                     rMain.push("shareLinks.links", result.data);

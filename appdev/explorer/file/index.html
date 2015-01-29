@@ -83,19 +83,20 @@
 								<div class="input-group">
 									<input type="text" class="form-control" id="currentFileName" placeholder="Enter a new name" value="{{name}}">
 									<span class="input-group-btn">
-									<button class="btn btn-primary" type="button" on-click="renameFile">Save</button>
+									<button class="btn btn-primary" type="submit">Save</button>
 									</span>
 								</div> <!-- /input-group -->
 								{{else}}
-								<a href="javascript:void(0)" on-click="toggle('currentFile.rename')" class="btn-property-rename form-control-static" title="Rename File">
-									{{name}}</a>
+								<button type="button" on-click="toggle('currentFile.rename')" class="btn-property-rename btn btn-default" title="Rename File">
+									{{name}}
+								</button>
 								{{/if}}
 							</div>
 						</div>
 						<div class="property-form form-group">
 							<label for="currentFileUrl" class="col-sm-4 control-label">Url</label>
 							<div class="col-sm-8">
-								<p class="form-control-static">{{domain + url}}</p>
+								<p id="currentFileUrl" class="form-control-static">{{domain + url}}</p>
 							</div>
 						</div>
 						<div class="property-form form-group">
@@ -195,7 +196,7 @@
 				{{#if .newUrl}}
 				<div class="row">
 					<div class="col-sm-12">
-						<input type="text" class="form-control" value="{{.newUrl}}" readonly>
+						<input type="text" id="shareLinkUrl" class="form-control" value="{{.newUrl}}" readonly>
 					</div>
 				</div>
 				<div class="row">

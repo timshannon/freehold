@@ -158,6 +158,18 @@ func get(u *user.User, id string) (*Token, error) {
 			return nil, err
 		}
 
+		if t.IsExpired() && setting.Bool("RemoveExpiredTokens") {
+			ds, err := data.OpenCoreDS(DS)
+			if err != nil {
+				return nil, err
+			}
+			err = ds.Delete(k)
+			if err != nil {
+				return nil, err
+			}
+			continue
+		}
+
 		t.requester = u
 		if t.ID == id {
 			return t, nil
@@ -251,6 +263,19 @@ func All(u *user.User) ([]*Token, error) {
 		err = json.Unmarshal(iter.Value(), t)
 		if err != nil {
 			return nil, err
+		}
+
+		if t.IsExpired() && setting.Bool("RemoveExpiredTokens") {
+			ds, err := data.OpenCoreDS(DS)
+			if err != nil {
+				return nil, err
+			}
+			err = ds.Delete(k)
+
+			if err != nil {
+				return nil, err
+			}
+			continue
 		}
 
 		t.requester = u
