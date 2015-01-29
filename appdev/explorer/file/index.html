@@ -61,8 +61,10 @@
 	<ul id="propTabs" class="nav nav-tabs" role="tablist">
 		<li class="active"><a href="#details" role="tab" data-toggle="tab">Details</a></li>
 		<li><a href="#permissions" role="tab" data-toggle="tab">Permissions</a></li>
-		{{#if !isDir}}<li><a href="#behavior" role="tab" data-toggle="tab">Behavior</a></li>{{/if}}
-		<li><a href="#share" role="tab" data-toggle="tab" on-click="loadShareLinks">Share</a></li>
+		{{#if !isDir}}
+			<li><a href="#behavior" role="tab" data-toggle="tab">Behavior</a></li>
+			<li><a href="#share" role="tab" data-toggle="tab" on-click="loadShareLinks">Share</a></li>
+		{{/if}}
 	</ul>
 
 	<!-- Tab panes -->

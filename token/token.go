@@ -129,6 +129,7 @@ func Get(u *user.User, id string) (*Token, error) {
 	t.Token = ""
 	return t, nil
 }
+
 func get(u *user.User, id string) (*Token, error) {
 	iter, err := iter(u)
 	if err != nil {

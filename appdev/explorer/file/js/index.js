@@ -451,14 +451,15 @@ $(document).ready(function() {
                     name: "Explorer Share Link - " + file.name,
                     expires: expires.toJSON(),
                     resource: file.url,
+                    permission: "r",
                 }, username, password)
                 .done(function(result) {
                     rMain.set("shareLinks.errors", {});
                     rMain.set("shareLinks.username", null);
                     rMain.set("shareLinks.password", null);
 
-                    var url = fh.util.urlJoin(rMain.get("domain"), "explorer/v1/file/guest/");
-                    url += "?u=" + fh.auth.user + "&t=" + result.data.token;
+                    var url = fh.util.urlJoin(rMain.get("domain"), "/v1/auth/token/");
+                    url += "?user=" + fh.auth.user + "&token=" + result.data.token;
                     rMain.set("shareLinks.newUrl", url);
 
                     result.data.expiresDate = new Date(result.data.expires).toLocaleString();

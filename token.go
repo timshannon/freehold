@@ -5,12 +5,16 @@
 package main
 
 import (
+	"errors"
 	"net/http"
+	"net/url"
 
 	"bitbucket.org/tshannon/freehold/fail"
+	"bitbucket.org/tshannon/freehold/log"
 	"bitbucket.org/tshannon/freehold/permission"
 	"bitbucket.org/tshannon/freehold/setting"
 	"bitbucket.org/tshannon/freehold/token"
+	"bitbucket.org/tshannon/freehold/user"
 )
 
 type TokenInput struct {
@@ -22,8 +26,18 @@ type TokenInput struct {
 }
 
 func tokenGet(w http.ResponseWriter, r *http.Request) {
+	//Check for token url parms
+	if isTokenUrl(w, r) {
+		return
+	}
+
 	auth, err := authenticate(w, r)
 	if errHandled(err, w, auth) {
+		return
+	}
+
+	if auth.User == nil {
+		four04(w, r)
 		return
 	}
 
@@ -176,4 +190,48 @@ func (ti *TokenInput) makeToken() *token.Token {
 		t.Permission = *ti.Permission
 	}
 	return t
+}
+
+func isTokenUrl(w http.ResponseWriter, r *http.Request) bool {
+	u := r.FormValue("user")
+	t := r.FormValue("token")
+
+	if u == "" || t == "" {
+		return false
+	}
+
+	r.SetBasicAuth(u, t)
+
+	resUrl, err := url.Parse(getTokenResource(u, t))
+	if err != nil {
+		log.Error(errors.New("Error parsing token resource url: " + err.Error()))
+		resUrl, _ = url.Parse("/")
+	}
+
+	r.URL = resUrl
+	handler, _, _ := rootHandler.Handler(r)
+
+	handler.ServeHTTP(w, r)
+	return true
+}
+
+func getTokenResource(u, t string) string {
+	usr, err := user.Get(u)
+	if err != nil {
+		log.Error(errors.New("Error looking up token from user: " + err.Error()))
+		return "/"
+	}
+
+	if usr == nil {
+		log.Error(errors.New("Error, no user found in token request. "))
+		return "/"
+	}
+
+	tkn, err := token.Login(usr, t)
+	if err != nil || tkn == nil {
+		log.Error(errors.New("Error logging in with token: " + err.Error()))
+		return "/"
+	}
+
+	return tkn.Resource
 }

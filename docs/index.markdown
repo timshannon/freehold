@@ -959,7 +959,7 @@ Security tokens cannot be updated once created.  If you want to change permissio
 
 Use cases for Security Tokens would be setting up external applications without needing to use your password (like a local desktop sync, or a smartphone application), or temporarily sharing a file with another person without needing to give them a logon to your freehold instance.
 
-The actual token value is only available when the token is requested, and tokens can only be requested if the Basic Auth header is set (i.e they can't be requested from sessions, or other tokens).  The token value cannot be retrieved again once created with subsequent All or Get calls.
+The actual token value is only available when the token is requested. If the *RequirePasswordToGenerateToken* setting is true, then tokens can only be requested if the Basic Auth header is set (i.e they can't be requested from sessions).  New tokens can never be generated from an existing token.  The token value cannot be retrieved again once created with subsequent All or Get calls.
 
 ```
 core/token.ds
@@ -1006,6 +1006,14 @@ Response (200):
 }
 ```
 
+*Use a Token in a URL to retrieve a specific resource* - This only works on tokens that have specified a resource.
+```
+GET /v1/auth/token?user=tshannon&token=XZCIfzuCTLbdiifUSSonGDFmYPvEWzUx_pmgD_hRk_k
+
+Retrieves the resource specified in the token.  Return a 404 if token is invalid or doesn't specify a resource.
+```
+
+
 **POST**
 
 *Generate new token*  - If no expiration is specified then token is set to *TokenMaxDaysTillExpire* [setting](#settings).
@@ -1018,7 +1026,7 @@ POST /v1/auth/token
 Response (201):
 {
 	status: "success",
-	data: {token: "fffffffffffffffffffff", id: "aaaaaaaaaaaaaa", name: "Full Sync Access"}
+	data: {token: "XZCIfzuCTLbdiifUSSonGDFmYPvEWzUx_pmgD_hRk_k", id: "aaaaaaaaaaaaaa", name: "Full Sync Access"}
 }
 ```
 
