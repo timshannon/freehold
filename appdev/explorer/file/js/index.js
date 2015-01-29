@@ -55,7 +55,7 @@ $(document).ready(function() {
         rMain.set("folderSort", settings.get("folderSort", true));
         rMain.set("hideSidebar", settings.get("hideSidebar", false));
         rMain.set("listView", settings.get("listView", false));
-        rMain.set("tokenExpireDays", settings.get("tokenExpireDays", 30));
+        rMain.set("tokenExpireDays", settings.get("tokenExpireDays", 15));
 
         setRoot();
         selectUserFolder();

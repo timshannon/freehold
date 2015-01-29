@@ -228,9 +228,14 @@ func getTokenResource(u, t string) string {
 	}
 
 	tkn, err := token.Login(usr, t)
-	if err != nil || tkn == nil {
+	if err != nil {
 		log.Error(errors.New("Error logging in with token: " + err.Error()))
 		return "/"
+	}
+	if tkn == nil {
+		log.Error(errors.New("No Token found!"))
+		return "/"
+
 	}
 
 	return tkn.Resource
