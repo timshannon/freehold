@@ -96,8 +96,11 @@ func authenticate(w http.ResponseWriter, r *http.Request) (*Auth, error) {
 				return nil, fail.New("Your token has expired", nil)
 			}
 			a.Token = t
+
 			a.User = t.User()
-			a.Username = t.User().Username()
+			if a.User != nil {
+				a.Username = t.User().Username()
+			}
 			return a, nil
 		}
 
