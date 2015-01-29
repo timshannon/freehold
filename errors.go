@@ -10,12 +10,17 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/log"
 	"bitbucket.org/tshannon/freehold/permission"
 	"bitbucket.org/tshannon/freehold/resource"
 	"bitbucket.org/tshannon/freehold/setting"
+)
+
+const (
+	acceptHTML = "text/html"
 )
 
 var Err404 = errors.New("Resource not found")
@@ -38,7 +43,7 @@ func errHandled(err error, w http.ResponseWriter, auth *Auth) bool {
 	case *fail.Fail:
 		status = statusFail
 		if fail.IsEqual(err, Err404) {
-			respond404(w, err.(*fail.Fail).Data.(string))
+			respond404JSON(w, err.(*fail.Fail).Data.(string))
 			return true
 		}
 	case *http.ProtocolError, *json.SyntaxError, *json.UnmarshalTypeError:
@@ -73,13 +78,18 @@ func errHandled(err error, w http.ResponseWriter, auth *Auth) bool {
 	return true
 }
 
-// four04 is a standard 404 response to a rest request
-// if its a request for a file, then a user will get a four04Page
+// four04 is a standard 404 response if request header accepts text/html
+// they'll get a 404 page, otherwise a json response
 func four04(w http.ResponseWriter, r *http.Request) {
-	respond404(w, r.URL.String())
+	accept := r.Header.Get("Accept")
+	if strings.Contains(accept, acceptHTML) {
+		respond404Page(w, r)
+		return
+	}
+	respond404JSON(w, r.URL.String())
 }
 
-func respond404(w http.ResponseWriter, url string) {
+func respond404JSON(w http.ResponseWriter, url string) {
 	if setting.Bool("Log404") {
 		log.NewEntry(log.Four04Type, "Resource not found: "+url)
 	}
@@ -110,7 +120,7 @@ func four04Fail(url string) error {
 // four04Page returns a 404 status with custom page that can be set to any
 // file in the system.  This is displayed when a user tries to access a file
 // that doesn't exist, or they don't have the right to know it exists
-func four04Page(w http.ResponseWriter, r *http.Request) {
+func respond404Page(w http.ResponseWriter, r *http.Request) {
 	if setting.Bool("Log404") {
 		log.NewEntry(log.Four04Type, "Resource not found: "+r.URL.String())
 	}

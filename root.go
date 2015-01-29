@@ -24,7 +24,7 @@ func rootGet(w http.ResponseWriter, r *http.Request) {
 	}
 	_, pth := splitRootAndPath(r.URL.Path)
 	if pth != "/" {
-		four04Page(w, r)
+		four04(w, r)
 		return
 	}
 	auth, err := authenticate(w, r)

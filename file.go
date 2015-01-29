@@ -338,7 +338,7 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 func serveResource(w http.ResponseWriter, r *http.Request, res *resource.File, auth *Auth) {
 	err := auth.tryRead(res)
 	if fail.IsEqual(err, Err404) {
-		four04Page(w, r)
+		four04(w, r)
 		return
 	}
 	if errHandled(err, w, auth) {

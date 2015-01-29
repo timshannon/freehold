@@ -178,7 +178,7 @@ func appDelete(w http.ResponseWriter, r *http.Request) {
 func appRootGet(w http.ResponseWriter, r *http.Request) {
 	_, pth := splitRootAndPath(r.URL.Path)
 	if pth != "/" {
-		four04Page(w, r)
+		four04(w, r)
 		return
 	}
 	auth, err := authenticate(w, r)
@@ -196,7 +196,7 @@ func serveApp(w http.ResponseWriter, r *http.Request, appid string, auth *Auth) 
 		return
 	}
 	if a == nil {
-		four04Page(w, r)
+		four04(w, r)
 		return
 	}
 
