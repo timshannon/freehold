@@ -43,7 +43,6 @@ $(document).ready(function() {
 
     loadUser();
     loadSessions();
-    loadTokens();
 
     var timer;
 
@@ -126,6 +125,8 @@ $(document).ready(function() {
                 $("#tokenName").focus();
             });
 
+            rMain.set("tokenStep", 1);
+
         },
         "clearHelp": function(event) {
             rMain.set("help", false);
@@ -138,9 +139,10 @@ $(document).ready(function() {
                     "applications. More info can be found in the " +
                     "<a href='/docs/#token'>documentation</a>."
             });
+            loadTokens();
         },
-        "saveToken": function(event) {
-            event.original.preventDefault();
+
+        "tokenStep1": function(event) {
             var errors = {};
 
             if (!event.context.name) {
@@ -156,10 +158,12 @@ $(document).ready(function() {
                 var exp = new Date(event.context.expires);
                 if (isNaN(exp.getTime())) {
                     errors.expires = "Invalid Date";
-                } else if (exp.getTime() < Date.now()) {
+                }
+
+                exp.setHours(0); //set to midnight of local timezone
+                if (exp.getTime() < Date.now()) {
                     errors.expires = "Date must be after current date.";
                 } else {
-                    exp.setHours(0); //set to midnight of local timezone
                     event.context.expires = exp.toJSON();
                 }
             }
@@ -169,6 +173,13 @@ $(document).ready(function() {
                 rMain.set("token.errors", errors);
                 return;
             }
+
+			rMain.set("token.errors", null);
+
+            rMain.add('tokenStep', 1);
+        },
+        "saveToken": function(event) {
+
 
             fh.token.new({
                     name: event.context.name,
@@ -262,14 +273,29 @@ $(document).ready(function() {
                     if (!tokens[i].expires) {
                         tokens[i].expires = "No expiration";
                     } else {
-                        tokens[i].expires = new Date(tokens[i].expires).toLocaleDateString();
+                        tokens[i].expires = new Date(tokens[i].expires).toLocaleString();
                     }
+                    tokens[i].permissionString = permissionString(tokens[i].permission);
+
                 }
                 rMain.set("tokens", tokens);
             })
             .fail(function(result) {
                 error(result);
             });
+    }
+
+
+    function permissionString(permission) {
+        if (permission == "r") {
+            return "Read";
+        }
+        if (permission == "rw") {
+            return "Read+Write";
+        }
+        if (permission == "w") {
+            return "Write";
+        }
     }
 
 

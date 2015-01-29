@@ -218,21 +218,12 @@ a:focus {
 }
 
 .btn-property-rename {
-	color: #333;
-	display: inline-block;
-	border: 1px solid #adadad;
-	border-radius: 4px;
-	padding: 6px 12px;
+	max-width: 100%;
 }
 
-.btn-property-rename:hover, .btn-property-rename:focus {
-	text-decoration: none;
-	color: #333;
 
-	border: 1px solid #adadad;
-	border-radius: 4px;
-	background-color: #e6e6e6;
-
+#currentFileUrl {
+	word-wrap: break-word;
 }
 
 .folder-nav-btns {
