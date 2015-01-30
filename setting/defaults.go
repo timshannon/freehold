@@ -123,8 +123,9 @@ func init() {
 			Value: float64(15),
 		},
 		"RemoveExpiredTokens": Setting{
-			Description: "Whether or not to automatically remove expired tokens from the datastore.",
-			Value:       true,
+			Description: "Whether or not to automatically remove expired tokens from the datastore. You may want to set " +
+				"this to false to retain a history of previous tokens generated.",
+			Value: true,
 		},
 		"LogonAttemptRateLimit": Setting{
 			Description: "Number of logon attempts per minute a given IP address can make. Limits can be fractional " +

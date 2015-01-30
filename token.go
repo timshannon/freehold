@@ -8,6 +8,7 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
+	"path"
 
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/log"
@@ -209,6 +210,8 @@ func isTokenUrl(w http.ResponseWriter, r *http.Request) bool {
 	}
 
 	r.URL = resUrl
+	w.Header().Add("Content-disposition", "attachment; filename="+path.Base(resUrl.Path))
+
 	handler, _, _ := rootHandler.Handler(r)
 
 	handler.ServeHTTP(w, r)

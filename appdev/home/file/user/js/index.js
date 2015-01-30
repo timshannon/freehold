@@ -117,7 +117,8 @@ $(document).ready(function() {
                 expires: null,
                 permission: "",
                 resource: "",
-                errors: null
+                errors: null,
+                type: "user",
             });
 
             $("#tokenModal").modal();
@@ -148,11 +149,7 @@ $(document).ready(function() {
             if (!event.context.name) {
                 errors.name = "A name is required";
             }
-            if (rMain.get("requirePassword")) {
-                if (!event.context.username || !event.context.password) {
-                    errors.username = "A username and password is required to generate a new token";
-                }
-            }
+
 
             if (event.context.expires) {
                 var exp = new Date(event.context.expires);
@@ -160,7 +157,6 @@ $(document).ready(function() {
                     errors.expires = "Invalid Date";
                 }
 
-                exp.setHours(0); //set to midnight of local timezone
                 if (exp.getTime() < Date.now()) {
                     errors.expires = "Date must be after current date.";
                 } else {
@@ -174,20 +170,66 @@ $(document).ready(function() {
                 return;
             }
 
-			rMain.set("token.errors", null);
+            rMain.set("token.errors", null);
+            rMain.update("token");
 
             rMain.add('tokenStep', 1);
         },
-        "saveToken": function(event) {
+        "tokenStep2": function(event) {
+            if (event.context.type == "file") {
+                if (!event.context.selected) {
+                    rMain.set(event.keypath + ".errNoFile", true);
+                    return;
+                }
+                rMain.set("token.resource", event.context.selected);
+                if (!event.context.permission) {
+                    rMain.set("token.permission", "r");
+                }
+            } else {
+                rMain.set("token.resource", null);
+            }
 
+            rMain.set(event.keypath + ".errNoFile", false);
+            rMain.add('tokenStep', 1);
+        },
+        "tokenStepPrevious": function(event) {
+            rMain.subtract('tokenStep', 1);
+            rMain.update("token");
+        },
+        "generateToken": function(event) {
+            var errors = {};
+
+            if (rMain.get("requirePassword")) {
+                if (!event.context.username || !event.context.password) {
+                    errors.username = "A username and password is required to generate a new token";
+                }
+            }
+            if (Object.getOwnPropertyNames(errors).length > 0) {
+                rMain.set("token.errors", errors);
+                return;
+            }
 
             fh.token.new({
                     name: event.context.name,
-                    expires: event.context.expires
+                    expires: event.context.expires,
+                    resource: event.context.resource,
+                    permission: event.context.permission,
                 }, event.context.username, event.context.password)
-                .done(function() {
+                .done(function(result) {
+                    rMain.set("token.token", result.data.token);
+                    rMain.set("token.errors", null);
                     loadTokens();
-                    $("#tokenModal").modal("hide");
+                    rMain.set("tokenStep", 4);
+
+
+                    if (event.context.type == "file") {
+                        var url = fh.util.urlJoin(location.origin, "/v1/auth/token/");
+                        url += "?user=" + fh.auth.user + "&token=" + result.data.token;
+                        rMain.set("token.url", url);
+                    }
+
+                    var node = rMain.find("#tokenSelect");
+                    node.select();
                 })
                 .fail(function(result) {
                     result = result.responseJSON;
@@ -204,6 +246,38 @@ $(document).ready(function() {
                     error(result);
                 });
         },
+        "toggleRead": function() {
+            var keypath = "token.permission";
+            var prm = rMain.get(keypath);
+            if (!prm) {
+                rMain.set(keypath, "r");
+                return;
+            }
+            var index = prm.indexOf("r");
+            if (index !== -1) {
+                rMain.set(keypath, prm.slice(index + 1));
+                return;
+            }
+            rMain.set(keypath, "r" + prm);
+        },
+        "toggleWrite": function() {
+            var keypath = "token.permission";
+            var prm = rMain.get(keypath);
+            if (!prm) {
+                rMain.set(keypath, "w");
+                return;
+            }
+            var index = prm.indexOf("w");
+            if (index === 0) {
+                rMain.set(keypath, "");
+                return;
+            }
+            if (index === -1) {
+                rMain.set(keypath, prm + "w");
+                return;
+            }
+            rMain.set(keypath, "r");
+        }
 
     });
 
@@ -275,6 +349,7 @@ $(document).ready(function() {
                     } else {
                         tokens[i].expires = new Date(tokens[i].expires).toLocaleString();
                     }
+                    tokens[i].created = new Date(tokens[i].created).toLocaleString();
                     tokens[i].permissionString = permissionString(tokens[i].permission);
 
                 }
@@ -357,3 +432,9 @@ $(document).ready(function() {
     }
 
 });
+
+
+if (!window.location.origin) {
+    //for IE
+    window.location.origin = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port : '');
+}
