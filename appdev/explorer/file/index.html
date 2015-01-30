@@ -235,6 +235,7 @@
 					<table class="table">
 						<thead>
 							<tr>
+								<th>Created</th>
 								<th>Expires</th>
 								<th></th>
 							</tr>
@@ -242,6 +243,7 @@
 						<tbody>
 							{{#.links:i}}
 							<tr>
+								<td>{{.createdDate}}</td>
 								<td>{{.expiresDate}}</td>
 								<td>
 									<button type="button" class="btn btn-danger btn-sm pull-right" on-click="removeLink" title="Remove Link">

@@ -29,7 +29,7 @@ const (
 	DS = "core/token.ds"
 )
 
-var FailTokenLevel = errors.New("Token grants invalid permissions.")
+var FailTokenLevel = errors.New("Token grants permissions that the requester does not currently have.")
 
 type Token struct {
 	Token      string `json:"token,omitempty"` // Unique identifier used for authentication

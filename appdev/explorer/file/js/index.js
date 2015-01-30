@@ -349,8 +349,7 @@ $(document).ready(function() {
 
             for (var i = 0; i < selected.length; i++) {
                 if (selected[i].url === files[index].url) {
-                    selected.splice(i, 1);
-                    rMain.set("selection", selected);
+                    rMain.splice("selection", i, 1);
                     return;
                 }
             }
@@ -461,11 +460,12 @@ $(document).ready(function() {
                     var url = fh.util.urlJoin(rMain.get("domain"), "/v1/auth/token/");
                     url += "?user=" + fh.auth.user + "&token=" + result.data.token;
                     rMain.set("shareLinks.newUrl", url);
-					//select text for user
-					var node = rMain.find("#shareLinkUrl");
-					node.select();
+                    //select text for user
+                    var node = rMain.find("#shareLinkUrl");
+                    node.select();
 
                     result.data.expiresDate = new Date(result.data.expires).toLocaleString();
+                    result.data.createdDate = new Date(result.data.created).toLocaleString();
                     rMain.push("shareLinks.links", result.data);
 
                 })
@@ -1231,6 +1231,7 @@ $(document).ready(function() {
                 for (var i = 0; i < tokens.length; i++) {
                     if (tokens[i].resource == file.url) {
                         tokens[i].expiresDate = new Date(tokens[i].expires).toLocaleString();
+                        tokens[i].createdDate = new Date(tokens[i].created).toLocaleString();
                         rMain.push("shareLinks.links", tokens[i]);
                     }
                 }
