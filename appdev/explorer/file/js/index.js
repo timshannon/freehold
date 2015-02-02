@@ -482,6 +482,22 @@ $(document).ready(function() {
                     error(result);
                 });
         },
+        "toggleSearch": function(event) {
+            rMain.toggle("searchMode");
+            var searchMode = rMain.get("searchMode");
+            if (searchMode) {
+                $("#searchInput").focus();
+            } else {
+                rMain.set("searchValue", "");
+				//stop search
+				rMain.set("searching", false);
+                refresh();
+            }
+        },
+        "search": function(event) {
+            event.original.preventDefault();
+            rMain.set("searching", true);
+        },
     });
 
     rMain.observe({

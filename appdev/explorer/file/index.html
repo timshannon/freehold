@@ -363,7 +363,7 @@
 		</fileinput>
 	</div>
 	<div id="folderNav" class="col-sm-7">
-		{{#if currentKeypath !== "stars"}}
+		{{#if currentKeypath !== "stars" && !searchMode}}
 		<ol class="breadcrumb">
 			{{#breadcrumbs:i}}
 				<li><a href="javascript:void(0)" on-click="crumbSelect">{{file.name}}</a></li>
@@ -400,6 +400,23 @@
 			{{/currentFolder}}
 		</ol>
 		{{/if}}
+		{{#if searchMode}}
+		<div class="row">
+			<div class="col-sm-11">
+				<form on-submit="search">
+					<div class="input-group">
+						<input type="text" id="searchInput" class="form-control" value="{{searchValue}}" placeholder="Search for...">
+						<span class="input-group-btn">
+							<button type="submit" class="btn btn-primary">Search</button>
+						</span>
+					</div>
+				</form>
+			</div>
+			<div class="col-sm-1">
+				{{#searching}}<span class="pull-left spinner search-spinner"></span>{{/searching}}
+			</div>
+		</div>
+		{{/if}}
 	</div> <!-- folderNav -->
 	<div class="folder-nav-btns">
 		{{#if selection.length > 0}}
@@ -413,7 +430,9 @@
 		{{/if}}
 
 		<div class="btn-group">
-			<button type="button" class="btn btn-default" on-click="openSearch" title="Search Files"><span class="fa fa-2 fa-search"></span></button>
+			<button type="button" class="btn btn-{{#if searchMode}}primary active{{else}}default{{/if}}" on-click="toggleSearch" title="Search Files">
+				<span class="fa fa-2 fa-search"></span>
+			</button>
 		{{#if !listView}}
 			<button type="button" class="btn btn-default" on-click="changeView" title="List View"><span class="fa fa-2 fa-list"></span></button>
 		{{else}}
@@ -646,7 +665,7 @@
 <!-- {{/fileTile}} -->
 
 {{#uploads}}
-<div class="upload-list modal-content">
+<div class="upload-list modal-content" intro="slide" outro="slide">
 	<div class="modal-body">
 		{{#uploads:i}}
 		<div class="row"> 
@@ -684,7 +703,7 @@
 {{#if fileAlerts.length > 0}}
 	<div class="file-alert-container">
 	{{#fileAlerts:i}}
-	<div class="file-alert alert alert-info alert-dismissible" role="alert">
+	<div class="file-alert alert alert-info alert-dismissible" role="alert" intro="slide" outro="slide">
 		<button type="button" class="close" on-click="dismissFileAlert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 			<div>
 				<span class="fa fa-2x fa-{{.source.explorerIcon}}"></span> <strong>{{.source.name}}</strong>
