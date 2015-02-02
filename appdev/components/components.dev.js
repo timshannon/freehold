@@ -54,3 +54,11 @@ require(['rvc!selectable', './lib/jquery-ui/selectable'], function(Selectable, $
     Ractive.components.selectable = Selectable;
 });
 
+
+
+//Transitions
+require(["./lib/transitions/ractive-transitions-slide"]);
+require(["./lib/transitions/Ractive-transitions-scale"]);
+require(["./lib/transitions/ractive-transitions-fly"]);
+require(["./lib/transitions/ractive-transitions-fade"]);
+require(["./lib/transitions/Ractive-transitions-typewriter"]);
