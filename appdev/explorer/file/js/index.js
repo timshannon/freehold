@@ -489,14 +489,29 @@ $(document).ready(function() {
                 $("#searchInput").focus();
             } else {
                 rMain.set("searchValue", "");
-				//stop search
-				rMain.set("searching", false);
+                //stop search
+                rMain.set("searching", false);
                 refresh();
             }
         },
         "search": function(event) {
             event.original.preventDefault();
             rMain.set("searching", true);
+            var regex;
+            try {
+                regex = new RegExp(rMain.get("searchValue"), "i");
+            } catch (e) {
+                //TODO: Better error
+                error(e.message);
+                rMain.set("searching", false);
+                return;
+            }
+            rMain.set("currentFolder.files", []);
+
+            var files = rMain.get("currentFolder.files");
+
+            searchFolder(files, regex, rMain.get("currentFolder.url"));
+
         },
     });
 
@@ -541,6 +556,27 @@ $(document).ready(function() {
             if (newValue && oldValue) {
                 settings.fileType.set(rMain.get("currentFile"));
                 refresh();
+            }
+        },
+        "searchCompleteFolders": function(newValue, oldValue, keypath) {
+            if (newValue) {
+                var allSearched = true;
+
+                for (var f in newValue) {
+					console.log(f);
+                    if (!newValue.hasOwnProperty(f)) {
+                        console.log("SearchCompleted: ", f, newValue[f]);
+                        if (!newValue[f]) {
+                            allSearched = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (allSearched) {
+                    rMain.set("searching", false);
+                    rMain.set("searchCompleteFolders", null);
+                }
             }
         },
     });
@@ -1253,6 +1289,37 @@ $(document).ready(function() {
                 }
             })
             .fail(function(result) {
+                error(result);
+            });
+    }
+
+
+    //searchFolder finds all files that match the regex and
+    // adds them to the passed in array
+    function searchFolder(matchedFiles, regex, folderUrl) {
+        rMain.set("searchCompleteFolders." + folderUrl, false);
+        if (!rMain.get("searching")) {
+            return;
+        }
+        console.log(folderUrl);
+
+        fh.properties.get(folderUrl)
+            .done(function(result) {
+                for (var i = 0; i < result.data.length; i++) {
+                    var file = result.data[i];
+                    if (file.isDir) {
+                        searchFolder(matchedFiles, regex, file.url);
+                    } else {
+                        if (regex.exec(file.name)) {
+                            matchedFiles.push(setFileType(file));
+                        }
+                    }
+                }
+                rMain.set("searchCompleteFolders." + folderUrl, true);
+
+            })
+            .fail(function(result) {
+                rMain.set("searching", false);
                 error(result);
             });
     }
