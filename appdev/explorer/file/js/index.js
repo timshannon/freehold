@@ -496,20 +496,19 @@ $(document).ready(function() {
         },
         "search": function(event) {
             event.original.preventDefault();
-            rMain.set("searching", true);
             var regex;
             try {
                 regex = new RegExp(rMain.get("searchValue"), "i");
             } catch (e) {
                 //TODO: Better error
                 error(e.message);
-                rMain.set("searching", false);
                 return;
             }
             rMain.set("currentFolder.files", []);
 
             var files = rMain.get("currentFolder.files");
 
+            rMain.set("searching", true);
             searchFolder(files, regex, rMain.get("currentFolder.url"));
 
         },
@@ -556,27 +555,6 @@ $(document).ready(function() {
             if (newValue && oldValue) {
                 settings.fileType.set(rMain.get("currentFile"));
                 refresh();
-            }
-        },
-        "searchCompleteFolders": function(newValue, oldValue, keypath) {
-            if (newValue) {
-                var allSearched = true;
-
-                for (var f in newValue) {
-					console.log(f);
-                    if (!newValue.hasOwnProperty(f)) {
-                        console.log("SearchCompleted: ", f, newValue[f]);
-                        if (!newValue[f]) {
-                            allSearched = false;
-                            break;
-                        }
-                    }
-                }
-
-                if (allSearched) {
-                    rMain.set("searching", false);
-                    rMain.set("searchCompleteFolders", null);
-                }
             }
         },
     });
@@ -1297,11 +1275,10 @@ $(document).ready(function() {
     //searchFolder finds all files that match the regex and
     // adds them to the passed in array
     function searchFolder(matchedFiles, regex, folderUrl) {
-        rMain.set("searchCompleteFolders." + folderUrl, false);
         if (!rMain.get("searching")) {
             return;
         }
-        console.log(folderUrl);
+        searchFolderStart(folderUrl);
 
         fh.properties.get(folderUrl)
             .done(function(result) {
@@ -1315,13 +1292,31 @@ $(document).ready(function() {
                         }
                     }
                 }
-                rMain.set("searchCompleteFolders." + folderUrl, true);
-
+                searchFolderFinish(folderUrl);
             })
-            .fail(function(result) {
-                rMain.set("searching", false);
-                error(result);
+            .fail(function() {
+                searchFolderFinish(folderUrl);
             });
+    }
+
+    function searchFolderStart(folder) {
+        var sFolders = rMain.get("searchFolders") || {};
+
+        sFolders[folder] = true;
+
+        rMain.set("searchFolders", sFolders);
+    }
+
+    function searchFolderFinish(folder) {
+        var sFolders = rMain.get("searchFolders");
+        delete sFolders[folder];
+
+        if (Object.getOwnPropertyNames(sFolders).length === 0) {
+            rMain.set("searching", false);
+        }
+
+        rMain.set("searchFolders", sFolders);
+
     }
 
     //Settings
