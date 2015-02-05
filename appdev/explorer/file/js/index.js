@@ -485,10 +485,10 @@ $(document).ready(function() {
         "toggleSearch": function(event) {
             rMain.toggle("searchMode");
             var searchMode = rMain.get("searchMode");
+            rMain.set("searchValue", "");
             if (searchMode) {
                 $("#searchInput").focus();
             } else {
-                rMain.set("searchValue", "");
                 //stop search
                 rMain.set("searching", false);
                 refresh();
@@ -496,6 +496,8 @@ $(document).ready(function() {
         },
         "search": function(event) {
             event.original.preventDefault();
+
+            resetSelection();
             var regex;
             try {
                 regex = new RegExp(rMain.get("searchValue"), "i");
@@ -562,6 +564,7 @@ $(document).ready(function() {
     //functions
     function selectFolder(keypath, skipHistory) {
         resetSelection();
+        stopSearch();
         var folder = rMain.get(keypath);
 
         if (!folder || !folder.isDir) {
@@ -1057,6 +1060,7 @@ $(document).ready(function() {
             selectFolder(keypath, true);
         }
         resetSelection();
+        stopSearch();
     }
 
     function moveExplorerFile(source, dest) {
@@ -1069,7 +1073,6 @@ $(document).ready(function() {
             return;
         }
 
-        var sourceParent = rMain.get(parentKeypath(source.treepath));
 
         //check if dest file already exists
         getFile(newUrl, function(file) {
@@ -1089,8 +1092,15 @@ $(document).ready(function() {
         }, function() {
             moveFile(source.url, newUrl)
                 .done(function() {
-                    updateFolder(sourceParent.url, sourceParent.treepath);
-                    updateFolder(dest.url, dest.treepath);
+                    if (source.treepath) {
+                        //if source is in tree, update tree
+                        var sourceParent = rMain.get(parentKeypath(source.treepath));
+                        updateFolder(sourceParent.url, sourceParent.treepath);
+                    }
+                    if (dest.treepath) {
+                        //if dest is in tree, update tree
+                        updateFolder(dest.url, dest.treepath);
+                    }
                     refresh();
                 })
                 .fail(function(result) {
@@ -1317,6 +1327,11 @@ $(document).ready(function() {
 
         rMain.set("searchFolders", sFolders);
 
+    }
+
+    function stopSearch() {
+        rMain.set("searchMode", false);
+        rMain.set("searching", false);
     }
 
     //Settings

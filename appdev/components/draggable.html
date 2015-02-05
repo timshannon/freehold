@@ -39,6 +39,7 @@ component.exports = {
 			addClasses: false,
 			revert: false,
 			snap: false,
+			scroll: true,
 			containment: false,
 			zIndex: false,	
 			opacity: false,
@@ -72,6 +73,7 @@ component.exports = {
 				}
 
 				helper = function() {
+					//Ractive is so freaking fast
 					var helpNode = new Ractive({
 						template: "<div data-rvcguid='{{guid}}' class='drag-nametag'><span class='{{iconClass}}'></span>  {{name}}" +
 											"{{#count}}<span class='badge'>{{count}}</span>{{/}}</div>",
@@ -92,6 +94,8 @@ component.exports = {
 				addClasses: r.get("addClasses"),
 				revert: r.get("revert"),
 				snap: r.get("snap"),
+				scroll: r.get("scroll"),
+				appendTo: r.get("appendTo"),
 				scope: r.get("scope"),
 				containment: r.get("containment"),
 				opacity: r.get("opacity"),
