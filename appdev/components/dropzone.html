@@ -1,6 +1,6 @@
-<div class="dropzone" decorator="dropzone">
+<div class="dropzone {{class}}" decorator="dropzone">
 	{{#if mode==="dragover"}}
-		<div class="drop-overlay">
+		<div class="drop-overlay" intro="scale" outro="scale">
 			<p class="text-center drop-text">Drop files here</p>
 		</div>
 	{{/if}}
@@ -13,8 +13,6 @@
 		position: absolute;
 		top: 0;
 		left: 0;
-		max-height: 100vh;
-		max-width: 100vw;
 		width: 100%;
 		height: 100%;
 		opacity: .9;

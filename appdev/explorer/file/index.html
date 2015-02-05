@@ -430,9 +430,11 @@
 		{{/if}}
 
 		<div class="btn-group">
+		{{#if currentKeypath !== "stars"}}
 			<button type="button" class="btn btn-{{#if searchMode}}primary active{{else}}default{{/if}}" on-click="toggleSearch" title="Search Files">
 				<span class="fa fa-2 fa-search"></span>
 			</button>
+		{{/if}}
 		{{#if !listView}}
 			<button type="button" class="btn btn-default" on-click="changeView" title="List View"><span class="fa fa-2 fa-list"></span></button>
 		{{else}}
@@ -477,7 +479,7 @@
 </div> <!-- row -->
 
 <div class="file-nav row">
-	<div id="sidebar" class="fill-page col-sm-3{{#if hideSidebar}} hidden-sidebar{{/if}}">
+	<div id="sidebar" class="{{#if hideSidebar}}hidden-sidebar{{else}}col-sm-3{{/if}}">
 		{{#if hideSidebar}}
 			<a href="javascript:void(0)" class="sidebar-hide-btn" on-click="toggle('hideSidebar')" title="Show Sidebar">
 				<span class="glyphicon glyphicon-chevron-right"></span></a>
@@ -495,7 +497,7 @@
 		{{/if}}
 	</div> <!-- sidebar -->
 
-	<div id="explorer" class="fill-page {{#if hideSidebar}}col-sm-12{{else}}col-sm-9{{/if}}">
+	<div id="explorer" class="{{#if hideSidebar}}col-sm-12{{else}}col-sm-9{{/if}}">
 	{{#if currentKeypath !== "stars"}}
 		<dropzone useParent="true"></dropzone>
 	{{/if}}
@@ -510,7 +512,6 @@
 			</div>
 		</div>
 	{{/loading}}
-	<div class="fill-page">
 	<selectable useParent="true" disabled="" filter=".selectable" cancel="a,button" delay="10"> 
 	</selectable>
 	{{#if !listView}}
@@ -601,7 +602,6 @@
 		</tbody>
 	</table>		
 	{{/if}}
-	</div>
 	</div>	<!-- explorer -->
 </div> 
 
@@ -610,7 +610,8 @@
 	<draggable useParent="true" helper="nametag" zIndex="1000" 	dragData="{{ inSelection ? selection : .}}" 
 		name="{{ inSelection && selection.length > 1 ? 'multiple files' : name}}" 
 		iconClass="fa fa-{{inSelection && selection.length > 1 ? 'files-o' : explorerIcon}}" 
-		count="{{inSelection && selection.length > 1 ? selection.length : false}}">
+		count="{{inSelection && selection.length > 1 ? selection.length : false}}"
+		containment="window" appendTo="body">
 	</draggable>
 {{/if}}
 <!-- {{/draggable}} -->

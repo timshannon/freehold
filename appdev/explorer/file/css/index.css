@@ -1,9 +1,14 @@
+html, body {
+	height: 100%;
+	width: 100%;
+}
+
 #pageContainer {
 	width: 100%;
 	padding-right: 15px;
 	padding-left: 15px;
 	margin-top: -20px;
-	min-height: 80vh;
+	height:calc(100% - 51px); 
 }
 
 a:focus {
@@ -17,16 +22,25 @@ a:focus {
 	background-color: #f8f8f8;
 }
 
-#sidebar {
-	border-right: 1px solid #ccc;
+.file-nav {
+	height:calc(100% - 65px); 
 }
 
-.fill-page {
-	min-height: 80vh;
+#sidebar {
+	border-right: 1px solid #ccc;
+	height: 100%;
+	overflow-x: auto;
 }
+
+#explorer {
+	height: 100%;
+	overflow-x: auto;
+}
+
 
 .trees {
 	margin-top: 10px;
+	margin-bottom: 10px;
 }
 
 .breadcrumb {
@@ -188,7 +202,11 @@ a:focus {
 	position: absolute;
 	width: 15px;
 	padding: 0px;
-	}
+	overflow-x: hidden;
+	/*Hidden sidebar grows past 100% ? I don't know why this is, but this fixes it
+  	I should probabaly figure this out someday*/
+	max-height:calc(100% - 116px); 
+}
 
 .sidebar-hide-btn {
 	position: absolute;
@@ -313,3 +331,4 @@ a:focus {
 .search-spinner {
 	margin-left: -15px;
 }
+
