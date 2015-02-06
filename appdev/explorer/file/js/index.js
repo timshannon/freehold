@@ -3,6 +3,7 @@
 // that can be found in the LICENSE file.
 
 $(document).ready(function() {
+    var urlParm = fh.util.urlParm("url");
     var timer;
     var defaultIcons = buildDefaultIcons();
     var defaultApps = buildDefaultApps();
@@ -58,7 +59,12 @@ $(document).ready(function() {
         rMain.set("tokenExpireDays", settings.get("tokenExpireDays", 15));
 
         setRoot();
-        selectUserFolder();
+        if (urlParm) {
+            urlParm = decodeURI(urlParm);
+            openUrl(urlParm);
+        } else {
+            selectUserFolder();
+        }
     });
 
     window.onpopstate = function(event) {
@@ -143,6 +149,7 @@ $(document).ready(function() {
             var stars = rMain.get("currentFolder.files");
             settings.stars.remove(event.context.url);
             stars.splice(event.index.i, 1);
+            resetSelection();
         },
         "selectApp": function(event) {
             if (event.index) {
@@ -502,8 +509,7 @@ $(document).ready(function() {
             try {
                 regex = new RegExp(rMain.get("searchValue"), "i");
             } catch (e) {
-                //TODO: Better error
-                error(e.message);
+                nav.fire("addAlert", "warning", "Invalid Search Value: ", e.message);
                 return;
             }
             rMain.set("currentFolder.files", []);
@@ -684,6 +690,11 @@ $(document).ready(function() {
     }
 
     function openUrl(url) {
+        //FIXME: Issue with current Ractive, teardown on non-initiated decorators
+        // need to eventually switch to latest Ractive to resolve it
+        if (url.indexOf(location.origin) === 0) {
+            url = url.slice(location.origin.length);
+        }
         var s = fh.util.splitRootAndPath(url);
 
         if (fh.util.versions().indexOf(s[0]) === -1) {
@@ -739,7 +750,10 @@ $(document).ready(function() {
                 }
             })
             .fail(function(result) {
-                error("Invalid URL: " + result.responseJSON.message);
+                error("Invalid or inaccessible URL: " + result.responseJSON.message);
+                //select last valid keypath and stop loading
+                selectFolder(fromKeypath);
+                rMain.set("loading", false);
             });
     }
 
@@ -893,7 +907,7 @@ $(document).ready(function() {
         }
         crumbs.reverse();
         rMain.set("breadcrumbs", crumbs);
-    }
+            }
 
     function sortCurrent() {
         var sorting = rMain.get("sorting");

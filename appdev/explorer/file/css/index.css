@@ -20,6 +20,8 @@ a:focus {
 	padding-top: 15px;
 	padding-bottom: 15px;
 	background-color: #f8f8f8;
+
+
 }
 
 .file-nav {
@@ -29,12 +31,26 @@ a:focus {
 #sidebar {
 	border-right: 1px solid #ccc;
 	height: 100%;
-	overflow-x: auto;
+}
+
+
+@media (min-width: 768px) {
+	#sidebar {
+		overflow-x: auto;
+	}
+	.file-area {
+		overflow-x: auto;
+	}
 }
 
 #explorer {
 	height: 100%;
-	overflow-x: auto;
+	padding-right: 0px;
+}
+
+.file-area {
+	height: 100%;
+	padding-right: 15px;
 }
 
 
@@ -43,11 +59,35 @@ a:focus {
 	margin-bottom: 10px;
 }
 
+#rootNav {
+/*
+	this is a hacky work around so I can have drop
+	down menus and not have breadcrumbs go multi-line
+	If I limit breadcrumbs with an overflow in folderNav,
+	I can't use the drop down menu.  I don't like this.
+	I need to find somethinger better.
+	Possible alternative would be to handle in JS and
+	provide a drop down menu of all hidden breadcumbs
+	when the breadcumbs get too long, but that doesn't
+	solve the issue of long folder names causing it to 
+	overrun.
+*/
+	background: #f8f8f8;
+	z-index: 10;
+}
+
+#folderNav {
+	/*overflow: hidden;*/
+}
+
 .breadcrumb {
 	background-color: transparent;
 	font-size: 1.3em;
 	margin-bottom: 0px;
 	padding: 0px;
+
+	white-space: nowrap;
+	float: right;
 }
 
 .breadcrumb>.active {
@@ -59,6 +99,8 @@ a:focus {
 	color: #777;
 	padding: 4px;
 	text-decoration: none;	
+
+
 }
 
 .breadcrumb>li>a:hover, .breadcrumb-menu:hover {
@@ -71,9 +113,9 @@ a:focus {
 }
 
 .breadcrumb-menu>.dropdown-menu {
-    margin-top: 0;
-    border-top-left-radius: 0;
-    border-top-right-radius: 0
+	margin-top: 0;
+	border-top-left-radius: 0;
+	border-top-right-radius: 0;
 }
 
 .file-tile {

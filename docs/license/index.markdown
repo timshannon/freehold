@@ -26,3 +26,4 @@ Attribution and Credits
 * [Opticons](https://octicons.github.com) - Github - (MIT / SIL)
 * [Font Awesome](http://fortawesome.github.io/Font-Awesome/) - Dave Gandy - (SIL OFL 1.1 / MIT) http://fortawesome.github.io/Font-Awesome/license/
 * [filesize.js](http://filesizejs.com/) - Jason Mulligan - (BSD-3) https://github.com/avoidwork/filesize.js/blob/master/LICENSE
+* [webodf](http://www.webodf.org/) - KO GmbH - (AGPL) http://www.webodf.org/about/license.html
