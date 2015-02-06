@@ -29,3 +29,14 @@
 	}
 }
 
+
+.tab-pane > .well {
+	border-top-left-radius: 0px;
+	border-top-right-radius: 0px;
+}
+
+.tab-pane > .list-group > .list-group-item:first-child ,
+.tab-pane > .container >.list-group > .list-group-item:first-child {
+	border-top-left-radius: 0px;
+	border-top-right-radius: 0px;
+}
