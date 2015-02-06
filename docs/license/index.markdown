@@ -27,3 +27,4 @@ Attribution and Credits
 * [Font Awesome](http://fortawesome.github.io/Font-Awesome/) - Dave Gandy - (SIL OFL 1.1 / MIT) http://fortawesome.github.io/Font-Awesome/license/
 * [filesize.js](http://filesizejs.com/) - Jason Mulligan - (BSD-3) https://github.com/avoidwork/filesize.js/blob/master/LICENSE
 * [webodf](http://www.webodf.org/) - KO GmbH - (AGPL) http://www.webodf.org/about/license.html
+* [MapJs](https://github.com/mindmup/mapjs) - Damjan Vujnovic, David de Florinier, Gojko Adzic - (MIT) https://github.com/mindmup/mapjs/blob/master/LICENSE
