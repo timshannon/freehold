@@ -232,6 +232,7 @@
 			{{/if}}
 			<div class="row">
 				<div class="col-sm-12">
+				{{#if .links.length > 0}}
 					<table class="table">
 						<thead>
 							<tr>
@@ -253,6 +254,7 @@
 							{{/.links}}
 						</tbody>
 					</table>
+				{{/if}}
 				</div>
 			</div>
 			{{/shareLinks}}
@@ -340,7 +342,7 @@
 
 <div class="row page-nav">
 	<div id="rootNav" class="col-sm-3">
-		<div class="btn-group">
+		<div class="btn-group hidden-xs hidden-sm">
 			<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
 				{{#if app}}
 					{{app}}
@@ -505,7 +507,7 @@
 		<div class="overlay"></div>
 		<div class="loading">
 			<div class="progress">
-				<div class="progress-bar progress-bar-striped active"  role="progressbar" 
+				<div class="progress-bar progress-bar-striped active" role="progressbar" 
 					aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
 					<span>Loading...</span>
 				</div>
@@ -515,12 +517,15 @@
 	<selectable useParent="true" disabled="" filter=".selectable" cancel="a,button" delay="10"> 
 	</selectable>
 	{{#if !listView}}
+		<div class="file-area">
 		{{#currentFolder.files:i}}
 			{{>fileTile}}
 		{{/currentFolder.files}}
+		</div>
 	<!--gridview-->
 	{{else}}
 	<!--listview-->
+	<div class="file-area">
 	<table class="table table-condensed table-hover">
 		<thead>
 			<tr>
@@ -601,6 +606,7 @@
 			{{/currentFolder.files}}
 		</tbody>
 	</table>		
+	</div>
 	{{/if}}
 	</div>	<!-- explorer -->
 </div> 
