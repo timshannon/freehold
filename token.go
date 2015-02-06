@@ -210,7 +210,7 @@ func isTokenUrl(w http.ResponseWriter, r *http.Request) bool {
 	}
 
 	r.URL = resUrl
-	w.Header().Add("Content-disposition", "attachment; filename="+path.Base(resUrl.Path))
+	w.Header().Add("Content-disposition", `attachment; filename="`+path.Base(resUrl.Path)+`"`)
 
 	handler, _, _ := rootHandler.Handler(r)
 
