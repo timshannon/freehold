@@ -20,7 +20,7 @@ component.exports = {
 		var r = this;
 		
 		this._super();
-		
+
 		this.on({
 			"tree.open": function(event) {
 				if (event.context.isFolder) {
@@ -61,6 +61,7 @@ component.exports = {
 			try {
 					regEx = new RegExp(r.get("filterRegex"), "i");
 			} catch (e) {
+					console.log("invalid regxex: " + e.message);
 					regEx = new RegExp("", "i");
 			}
 
@@ -110,8 +111,7 @@ component.exports = {
 				return 0;
 			});
     }
-
-
+		
 	},
 
 };

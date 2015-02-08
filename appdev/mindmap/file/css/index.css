@@ -1,5 +1,35 @@
-#container {
-	background-color: #FFFFFF;
+html, body {
 	height: 100%;
 	width: 100%;
 }
+
+#container {
+	background-color: #FFFFFF;
+	width:100%;
+	margin-top: -21px;
+	height:calc(100% - 51px); 
+	padding:0px;
+}
+
+.filebrowse {
+	margin-bottom: 15px;
+}
+
+.hotkey {
+	position: absolute;
+	color: #777;
+	font-size: 80%;
+	right: 0;
+	padding-right: 10px;
+	padding-top: 3px;
+}
+
+#filename {
+	position: absolute;
+	left: 0;
+	right: 0;
+	text-align: center;
+	font-weight: bold;
+	z-index: -1;
+}
+

@@ -43,6 +43,7 @@ function buildDefaultIcons() {
         "azw": "book",
         "kf8": "book",
         "torrent": "share-alt",
+		"mmap": "sitemap",
     };
 }
 
