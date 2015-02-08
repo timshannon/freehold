@@ -54,6 +54,10 @@ require(['rvc!selectable', './lib/jquery-ui/selectable'], function(Selectable, $
     Ractive.components.selectable = Selectable;
 });
 
+require(['rvc!filebrowse'], function(FileBrowse) {
+    Ractive.components.filebrowse = FileBrowse;
+});
+
 
 
 //Transitions
