@@ -19,13 +19,15 @@
 			<textarea class="form-control" value="{{markdown}}" placeholder="Enter markdown here"></textarea>
 		</div>
     <div role="tabpanel" class="tab-pane" id="view">
-			{{{parsed}}}
+			<div class="parsed">
+				{{{parsed}}}
+			</div>
 		</div>
   </div>
 </div>
 
 <style>
-.tab-content, #edit, #edit>textarea {
+.tab-content, #edit, #view, .parsed, #edit>textarea {
 	height: 100%;
 }
 
@@ -59,6 +61,7 @@ component.exports = {
 			},
 			
 		});
+
 	},
 
 };

@@ -1,5 +1,5 @@
 ;(function() {
-var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, rvc_tree, rvc_filetree, rvc_jsonviewer, rvc_jquery_ui, rvc_datepicker, lib_jquery_ui_core, lib_jquery_ui_datepicker, rvc_fileinput, rvc_dropzone, lib_jquery_ui_widget, lib_jquery_ui_mouse, lib_jquery_ui_draggable, lib_jquery_ui_droppable, rvc_selectable, lib_jquery_ui_selectable, rvc_filebrowse, rvc_commonMarkEditor, lib_commonmark, lib_transitions_ractive_transitions_slide, lib_transitions_Ractive_transitions_scale, lib_transitions_ractive_transitions_fly, lib_transitions_ractive_transitions_fade, lib_transitions_Ractive_transitions_typewriter, _node_, _common_, _blocks_, _html_;
+var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, rvc_tree, rvc_filetree, rvc_jsonviewer, rvc_jquery_ui, rvc_datepicker, lib_jquery_ui_core, lib_jquery_ui_datepicker, rvc_fileinput, rvc_dropzone, lib_jquery_ui_widget, lib_jquery_ui_mouse, lib_jquery_ui_draggable, lib_jquery_ui_droppable, rvc_selectable, lib_jquery_ui_selectable, rvc_filebrowse, rvc_commonMarkEditor, lib_commonmark, lib_transitions_ractive_transitions_slide, lib_transitions_Ractive_transitions_scale, lib_transitions_ractive_transitions_fly, lib_transitions_ractive_transitions_fade, lib_transitions_Ractive_transitions_typewriter;
 (function (ractive, jquery) {
   rvc = {
     load: function (id) {
@@ -115,7 +115,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
         title: 'Modal Title',
         id: 'modalId',
         customFooter: false
-      }
+      }  //TODO: Help popout
     };
     if (typeof component.exports === 'object') {
       for (var __prop__ in component.exports) {
@@ -2444,7 +2444,6 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
    */
   (function (factory) {
     if (true) {
-      // AMD. Register as an anonymous module.
       lib_jquery_ui_core = function (jquery) {
         return typeof factory === 'function' ? factory(jquery) : factory;
       }(jquery);
@@ -2703,7 +2702,6 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
    */
   (function (factory) {
     if (true) {
-      // AMD. Register as an anonymous module.
       lib_jquery_ui_datepicker = function (jquery, lib_jquery_ui_core) {
         return typeof factory === 'function' ? factory(jquery, lib_jquery_ui_core) : factory;
       }(jquery, lib_jquery_ui_core);
@@ -4831,7 +4829,6 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
    */
   (function (factory) {
     if (true) {
-      // AMD. Register as an anonymous module.
       lib_jquery_ui_widget = function (jquery) {
         return typeof factory === 'function' ? factory(jquery) : factory;
       }(jquery);
@@ -5273,7 +5270,6 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
    */
   (function (factory) {
     if (true) {
-      // AMD. Register as an anonymous module.
       lib_jquery_ui_mouse = function (jquery, lib_jquery_ui_widget) {
         return typeof factory === 'function' ? factory(jquery, lib_jquery_ui_widget) : factory;
       }(jquery, lib_jquery_ui_widget);
@@ -5427,7 +5423,6 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
    */
   (function (factory) {
     if (true) {
-      // AMD. Register as an anonymous module.
       lib_jquery_ui_draggable = function (jquery, lib_jquery_ui_core, lib_jquery_ui_mouse, lib_jquery_ui_widget) {
         return typeof factory === 'function' ? factory(jquery, lib_jquery_ui_core, lib_jquery_ui_mouse, lib_jquery_ui_widget) : factory;
       }(jquery, lib_jquery_ui_core, lib_jquery_ui_mouse, lib_jquery_ui_widget);
@@ -6325,7 +6320,6 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
    */
   (function (factory) {
     if (true) {
-      // AMD. Register as an anonymous module.
       lib_jquery_ui_droppable = function (jquery, lib_jquery_ui_core, lib_jquery_ui_widget, lib_jquery_ui_mouse, lib_jquery_ui_draggable) {
         return typeof factory === 'function' ? factory(jquery, lib_jquery_ui_core, lib_jquery_ui_widget, lib_jquery_ui_mouse, lib_jquery_ui_draggable) : factory;
       }(jquery, lib_jquery_ui_core, lib_jquery_ui_widget, lib_jquery_ui_mouse, lib_jquery_ui_draggable);
@@ -6739,7 +6733,6 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
    */
   (function (factory) {
     if (true) {
-      // AMD. Register as an anonymous module.
       lib_jquery_ui_selectable = function (jquery, lib_jquery_ui_core, lib_jquery_ui_mouse, lib_jquery_ui_widget) {
         return typeof factory === 'function' ? factory(jquery, lib_jquery_ui_core, lib_jquery_ui_mouse, lib_jquery_ui_widget) : factory;
       }(jquery, lib_jquery_ui_core, lib_jquery_ui_mouse, lib_jquery_ui_widget);
@@ -7450,8 +7443,13 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
                         id: 'view'
                       },
                       f: [{
-                          t: 3,
-                          r: 'parsed'
+                          t: 7,
+                          e: 'div',
+                          a: { 'class': 'parsed' },
+                          f: [{
+                              t: 3,
+                              r: 'parsed'
+                            }]
                         }]
                     }
                   ]
@@ -7459,7 +7457,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
               ]
             }]
         },
-        css: '.tab-content, #edit, #edit>textarea {\nheight: 100%;\n}\n#edit>textarea {\nborder-top-left-radius: 0px;\nborder-top-right-radius: 0px;\nborder-top-width: 0px;\nbox-shadow: 0px 0px 0px; \n}\n.cm-editor {\nmin-height: 100px;\n}\n'
+        css: '.tab-content, #edit, #view, .parsed, #edit>textarea {\nheight: 100%;\n}\n#edit>textarea {\nborder-top-left-radius: 0px;\nborder-top-right-radius: 0px;\nborder-top-width: 0px;\nbox-shadow: 0px 0px 0px; \n}\n.cm-editor {\nmin-height: 100px;\n}\n'
       }, component = {};
     component.exports = {
       data: { viewFirst: false },
@@ -7525,13 +7523,9 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
       1: [
         function (require, module, exports) {
           
-          var Node = _node_;
-          var unescapeString = _common_.unescapeString;
+          var Node = node;
+          var unescapeString = common.unescapeString;
           var CODE_INDENT = 4;
-          var C_NEWLINE = 10;
-          var C_GREATERTHAN = 62;
-          var C_SPACE = 32;
-          var C_OPEN_BRACKET = 91;
           var InlineParser = inlines;
           var BLOCKTAGNAME = '(?:article|header|aside|hgroup|iframe|blockquote|hr|body|li|map|button|object|canvas|ol|caption|output|col|p|colgroup|pre|dd|progress|div|section|dl|table|td|dt|tbody|embed|textarea|fieldset|tfoot|figcaption|th|figure|thead|footer|footer|tr|form|ul|h1|h2|h3|h4|h5|h6|video|script|style)';
           var HTMLBLOCKOPEN = '<(?:' + BLOCKTAGNAME + '[\\s/>]' + '|' + '/' + BLOCKTAGNAME + '[\\s>]' + '|' + '[?!])';
@@ -7570,11 +7564,14 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
             }
             return text;
           };
-          var peek = function (ln, pos) {
-            if (pos < ln.length) {
-              return ln.charCodeAt(pos);
-            } else {
+          // Attempt to match a regex in string s at offset offset.
+          // Return index of match or -1.
+          var matchAt = function (re, s, offset) {
+            var res = s.slice(offset).match(re);
+            if (res === null) {
               return -1;
+            } else {
+              return offset + res.index;
             }
           };
           // DOC PARSER
@@ -7619,8 +7616,8 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
           };
           // Add a line to the block at the tip.  We assume the tip
           // can accept lines -- that check should be done before calling this.
-          var addLine = function () {
-            this.tip._string_content += this.currentLine.slice(this.offset) + '\n';
+          var addLine = function (ln) {
+            this.tip._string_content += ln.slice(this.offset) + '\n';
           };
           // Add block of type tag as a child of the tip.  If the tip can't
           // accept children, close and finalize it and try its parent,
@@ -7752,11 +7749,11 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
               acceptsLines: false
             },
             BlockQuote: {
-              continue: function (parser) {
+              continue: function (parser, container, nextNonspace) {
                 var ln = parser.currentLine;
-                if (parser.indent <= 3 && peek(ln, parser.nextNonspace) === C_GREATERTHAN) {
-                  parser.offset = parser.nextNonspace + 1;
-                  if (peek(ln, parser.offset) === C_SPACE) {
+                if (nextNonspace - parser.offset <= 3 && ln.charAt(nextNonspace) === '>') {
+                  parser.offset = nextNonspace + 1;
+                  if (ln.charAt(parser.offset) === ' ') {
                     parser.offset++;
                   }
                 } else {
@@ -7773,10 +7770,11 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
               acceptsLines: false
             },
             Item: {
-              continue: function (parser, container) {
-                if (parser.blank) {
-                  parser.offset = parser.nextNonspace;
-                } else if (parser.indent >= container._listData.markerOffset + container._listData.padding) {
+              continue: function (parser, container, nextNonspace) {
+                if (nextNonspace === parser.currentLine.length) {
+                  // blank
+                  parser.offset = nextNonspace;
+                } else if (nextNonspace - parser.offset >= container._listData.markerOffset + container._listData.padding) {
                   parser.offset += container._listData.markerOffset + container._listData.padding;
                 } else {
                   return 1;
@@ -7818,12 +7816,12 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
               acceptsLines: false
             },
             CodeBlock: {
-              continue: function (parser, container) {
+              continue: function (parser, container, nextNonspace) {
                 var ln = parser.currentLine;
-                var indent = parser.indent;
+                var indent = nextNonspace - parser.offset;
                 if (container._isFenced) {
                   // fenced
-                  var match = indent <= 3 && ln.charAt(parser.nextNonspace) === container._fenceChar && ln.slice(parser.nextNonspace).match(reClosingCodeFence);
+                  var match = indent <= 3 && ln.charAt(nextNonspace) === container._fenceChar && ln.slice(nextNonspace).match(reClosingCodeFence);
                   if (match && match[0].length >= container._fenceLength) {
                     // closing fence - we're at end of line, so we can return
                     parser.finalize(container, parser.lineNumber);
@@ -7831,7 +7829,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
                   } else {
                     // skip optional spaces of fence offset
                     var i = container._fenceOffset;
-                    while (i > 0 && peek(ln, parser.offset) === C_SPACE) {
+                    while (i > 0 && ln.charAt(parser.offset) === ' ') {
                       parser.offset++;
                       i--;
                     }
@@ -7840,8 +7838,9 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
                   // indented
                   if (indent >= CODE_INDENT) {
                     parser.offset += CODE_INDENT;
-                  } else if (parser.blank) {
-                    parser.offset = parser.nextNonspace;
+                  } else if (nextNonspace === ln.length) {
+                    // blank
+                    parser.offset = nextNonspace;
                   } else {
                     return 1;
                   }
@@ -7870,8 +7869,8 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
               acceptsLines: true
             },
             HtmlBlock: {
-              continue: function (parser) {
-                return parser.blank ? 1 : 0;
+              continue: function (parser, container, nextNonspace) {
+                return nextNonspace === parser.currentLine.length ? 1 : 0;
               },
               finalize: function (parser, block) {
                 block._literal = block._string_content.replace(/(\n *)+$/, '');
@@ -7883,14 +7882,14 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
               acceptsLines: true
             },
             Paragraph: {
-              continue: function (parser) {
-                return parser.blank ? 1 : 0;
+              continue: function (parser, container, nextNonspace) {
+                return nextNonspace === parser.currentLine.length ? 1 : 0;
               },
               finalize: function (parser, block) {
                 var pos;
                 var hasReferenceDefs = false;
                 // try parsing the beginning as link reference definitions:
-                while (peek(block._string_content, 0) === C_OPEN_BRACKET && (pos = parser.inlineParser.parseReference(block._string_content, parser.refmap))) {
+                while (block._string_content.charAt(0) === '[' && (pos = parser.inlineParser.parseReference(block._string_content, parser.refmap))) {
                   block._string_content = block._string_content.slice(pos);
                   hasReferenceDefs = true;
                 }
@@ -7904,153 +7903,16 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
               acceptsLines: true
             }
           };
-          // block start functions.  Return values:
-          // 0 = no match
-          // 1 = matched container, keep going
-          // 2 = matched leaf, no more block starts
-          var blockStarts = [
-            // indented code block
-            function (parser) {
-              if (parser.indent >= CODE_INDENT) {
-                if (parser.tip.type !== 'Paragraph' && !parser.blank) {
-                  // indented code
-                  parser.offset += CODE_INDENT;
-                  parser.closeUnmatchedBlocks();
-                  parser.addChild('CodeBlock', parser.offset);
-                } else {
-                  // lazy paragraph continuation
-                  parser.offset = parser.nextNonspace;
-                }
-                return 2;
-              } else {
-                return 0;
-              }
-            },
-            // block quote
-            function (parser) {
-              if (peek(parser.currentLine, parser.nextNonspace) === C_GREATERTHAN) {
-                parser.offset = parser.nextNonspace + 1;
-                // optional following space
-                if (peek(parser.currentLine, parser.offset) === C_SPACE) {
-                  parser.offset++;
-                }
-                parser.closeUnmatchedBlocks();
-                parser.addChild('BlockQuote', parser.nextNonspace);
-                return 1;
-              } else {
-                return 0;
-              }
-            },
-            // ATX header
-            function (parser) {
-              var match;
-              if (match = parser.currentLine.slice(parser.nextNonspace).match(reATXHeaderMarker)) {
-                parser.offset = parser.nextNonspace + match[0].length;
-                parser.closeUnmatchedBlocks();
-                var container = parser.addChild('Header', parser.nextNonspace);
-                container.level = match[0].trim().length;
-                // number of #s
-                // remove trailing ###s:
-                container._string_content = parser.currentLine.slice(parser.offset).replace(/^ *#+ *$/, '').replace(/ +#+ *$/, '');
-                parser.offset = parser.currentLine.length;
-                return 2;
-              } else {
-                return 0;
-              }
-            },
-            // Fenced code block
-            function (parser) {
-              var match;
-              if (match = parser.currentLine.slice(parser.nextNonspace).match(reCodeFence)) {
-                var fenceLength = match[0].length;
-                parser.closeUnmatchedBlocks();
-                var container = parser.addChild('CodeBlock', parser.nextNonspace);
-                container._isFenced = true;
-                container._fenceLength = fenceLength;
-                container._fenceChar = match[0][0];
-                container._fenceOffset = parser.indent;
-                parser.offset = parser.nextNonspace + fenceLength;
-                return 2;
-              } else {
-                return 0;
-              }
-            },
-            // HTML block
-            function (parser) {
-              if (reHtmlBlockOpen.test(parser.currentLine.slice(parser.nextNonspace))) {
-                parser.closeUnmatchedBlocks();
-                parser.addChild('HtmlBlock', parser.offset);
-                // don't adjust parser.offset; spaces are part of block
-                return 2;
-              } else {
-                return 0;
-              }
-            },
-            // Setext header
-            function (parser, container) {
-              var match;
-              if (container.type === 'Paragraph' && container._string_content.indexOf('\n') === container._string_content.length - 1 && (match = parser.currentLine.slice(parser.nextNonspace).match(reSetextHeaderLine))) {
-                parser.closeUnmatchedBlocks();
-                var header = new Node('Header', container.sourcepos);
-                header.level = match[0][0] === '=' ? 1 : 2;
-                header._string_content = container._string_content;
-                container.insertAfter(header);
-                container.unlink();
-                parser.tip = header;
-                parser.offset = parser.currentLine.length;
-                return 2;
-              } else {
-                return 0;
-              }
-            },
-            // hrule
-            function (parser) {
-              if (reHrule.test(parser.currentLine.slice(parser.nextNonspace))) {
-                parser.closeUnmatchedBlocks();
-                parser.addChild('HorizontalRule', parser.nextNonspace);
-                parser.offset = parser.currentLine.length;
-                return 2;
-              } else {
-                return 0;
-              }
-            },
-            // list item
-            function (parser, container) {
-              var data;
-              if (data = parseListMarker(parser.currentLine, parser.nextNonspace, parser.indent)) {
-                parser.closeUnmatchedBlocks();
-                parser.offset = parser.nextNonspace + data.padding;
-                // add the list if needed
-                if (parser.tip.type !== 'List' || !listsMatch(container._listData, data)) {
-                  container = parser.addChild('List', parser.nextNonspace);
-                  container._listData = data;
-                }
-                // add the list item
-                container = parser.addChild('Item', parser.nextNonspace);
-                container._listData = data;
-                return 1;
-              } else {
-                return 0;
-              }
-            }
-          ];
-          var findNextNonspace = function () {
-            var currentLine = this.currentLine;
-            var match = currentLine.slice(this.offset).match(reNonSpace);
-            if (match === null) {
-              this.nextNonspace = currentLine.length;
-              this.blank = true;
-            } else {
-              this.nextNonspace = this.offset + match.index;
-              this.blank = false;
-            }
-            this.indent = this.nextNonspace - this.offset;
-          };
           // Analyze a line of text and update the document appropriately.
           // We parse markdown text by calling this on each line of input,
           // then finalizing the document.
           var incorporateLine = function (ln) {
             var all_matched = true;
+            var nextNonspace;
+            var match;
+            var data;
+            var blank;
+            var indent;
             var t;
             var container = this.doc;
             this.oldtip = this.tip;
@@ -8069,8 +7931,13 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
             var lastChild;
             while ((lastChild = container._lastChild) && lastChild._open) {
               container = lastChild;
-              this.findNextNonspace();
-              switch (this.blocks[container.type].continue(this, container)) {
+              match = matchAt(reNonSpace, ln, this.offset);
+              if (match === -1) {
+                nextNonspace = ln.length;
+              } else {
+                nextNonspace = match;
+              }
+              switch (this.blocks[container.type].continue(this, container, nextNonspace)) {
               case 0:
                 // we've matched, keep going
                 break;
@@ -8091,55 +7958,124 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
                 break;
               }
             }
+            blank = nextNonspace === ln.length;
             this.allClosed = container === this.oldtip;
             this.lastMatchedContainer = container;
             // Check to see if we've hit 2nd blank line; if so break out of list:
-            if (this.blank && container._lastLineBlank) {
+            if (blank && container._lastLineBlank) {
               this.breakOutOfLists(container);
             }
-            var matchedLeaf = container.type !== 'Paragraph' && blocks[container.type].acceptsLines;
-            var starts = this.blockStarts;
-            var startsLen = starts.length;
             // Unless last matched container is a code block, try new container starts,
             // adding children to the last matched container:
-            while (!matchedLeaf) {
-              this.findNextNonspace();
+            while ((t = container.type) && !(t === 'CodeBlock' || t === 'HtmlBlock')) {
+              match = matchAt(reNonSpace, ln, this.offset);
+              if (match === -1) {
+                nextNonspace = ln.length;
+                blank = true;
+                break;
+              } else {
+                nextNonspace = match;
+                blank = false;
+              }
+              indent = nextNonspace - this.offset;
               // this is a little performance optimization:
-              if (this.indent < CODE_INDENT && !reMaybeSpecial.test(ln.slice(this.nextNonspace))) {
-                this.offset = this.nextNonspace;
+              if (indent < CODE_INDENT && !reMaybeSpecial.test(ln.slice(nextNonspace))) {
+                this.offset = nextNonspace;
                 break;
               }
-              var i = 0;
-              while (i < startsLen) {
-                var res = starts[i](this, container);
-                if (res === 1) {
-                  container = this.tip;
-                  break;
-                } else if (res === 2) {
-                  container = this.tip;
-                  matchedLeaf = true;
-                  break;
+              if (indent >= CODE_INDENT) {
+                if (this.tip.type !== 'Paragraph' && !blank) {
+                  // indented code
+                  this.offset += CODE_INDENT;
+                  this.closeUnmatchedBlocks();
+                  container = this.addChild('CodeBlock', this.offset);
                 } else {
-                  i++;
+                  // lazy paragraph continuation
+                  this.offset = nextNonspace;
                 }
-              }
-              if (i === startsLen) {
-                // nothing matched
-                this.offset = this.nextNonspace;
+                break;
+              } else if (ln.charAt(nextNonspace) === '>') {
+                // blockquote
+                this.offset = nextNonspace + 1;
+                // optional following space
+                if (ln.charAt(this.offset) === ' ') {
+                  this.offset++;
+                }
+                this.closeUnmatchedBlocks();
+                container = this.addChild('BlockQuote', nextNonspace);
+              } else if (match = ln.slice(nextNonspace).match(reATXHeaderMarker)) {
+                // ATX header
+                this.offset = nextNonspace + match[0].length;
+                this.closeUnmatchedBlocks();
+                container = this.addChild('Header', nextNonspace);
+                container.level = match[0].trim().length;
+                // number of #s
+                // remove trailing ###s:
+                container._string_content = ln.slice(this.offset).replace(/^ *#+ *$/, '').replace(/ +#+ *$/, '');
+                this.offset = ln.length;
+                break;
+              } else if (match = ln.slice(nextNonspace).match(reCodeFence)) {
+                // fenced code block
+                var fenceLength = match[0].length;
+                this.closeUnmatchedBlocks();
+                container = this.addChild('CodeBlock', nextNonspace);
+                container._isFenced = true;
+                container._fenceLength = fenceLength;
+                container._fenceChar = match[0][0];
+                container._fenceOffset = indent;
+                this.offset = nextNonspace + fenceLength;
+              } else if (matchAt(reHtmlBlockOpen, ln, nextNonspace) !== -1) {
+                // html block
+                this.closeUnmatchedBlocks();
+                container = this.addChild('HtmlBlock', this.offset);
+                // don't adjust this.offset; spaces are part of block
+                break;
+              } else if (t === 'Paragraph' && container._string_content.indexOf('\n') === container._string_content.length - 1 && (match = ln.slice(nextNonspace).match(reSetextHeaderLine))) {
+                // setext header line
+                this.closeUnmatchedBlocks();
+                var header = new Node('Header', container.sourcepos);
+                header.level = match[0][0] === '=' ? 1 : 2;
+                header._string_content = container._string_content;
+                container.insertAfter(header);
+                container.unlink();
+                container = header;
+                this.tip = header;
+                this.offset = ln.length;
+                break;
+              } else if (matchAt(reHrule, ln, nextNonspace) !== -1) {
+                // hrule
+                this.closeUnmatchedBlocks();
+                container = this.addChild('HorizontalRule', nextNonspace);
+                this.offset = ln.length;
+                break;
+              } else if (data = parseListMarker(ln, nextNonspace, indent)) {
+                // list item
+                this.closeUnmatchedBlocks();
+                this.offset = nextNonspace + data.padding;
+                // add the list if needed
+                if (t !== 'List' || !listsMatch(container._listData, data)) {
+                  container = this.addChild('List', nextNonspace);
+                  container._listData = data;
+                }
+                // add the list item
+                container = this.addChild('Item', nextNonspace);
+                container._listData = data;
+              } else {
+                this.offset = nextNonspace;
                 break;
               }
             }
             // What remains at the offset is a text line.  Add the text to the
             // appropriate container.
             // First check for a lazy paragraph continuation:
-            if (!this.allClosed && !this.blank && this.tip.type === 'Paragraph') {
+            if (!this.allClosed && !blank && this.tip.type === 'Paragraph') {
               // lazy paragraph continuation
-              this.addLine();
+              this.addLine(ln);
             } else {
               // not a lazy continuation
               // finalize any blocks not matched
               this.closeUnmatchedBlocks();
-              if (this.blank && container.lastChild) {
+              if (blank && container.lastChild) {
                 container.lastChild._lastLineBlank = true;
               }
               t = container.type;
@@ -8147,7 +8083,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
               // and we don't count blanks in fenced code for purposes of tight/loose
               // lists or breaking out of lists.  We also don't set _lastLineBlank
               // on an empty list item, or if we just closed a fenced block.
-              var lastLineBlank = this.blank && !(t === 'BlockQuote' || t === 'CodeBlock' && container._isFenced || t === 'Item' && !container._firstChild && container.sourcepos[0][0] === this.lineNumber);
+              var lastLineBlank = blank && !(t === 'BlockQuote' || t === 'CodeBlock' && container._isFenced || t === 'Item' && !container._firstChild && container.sourcepos[0][0] === this.lineNumber);
               // propagate lastLineBlank up through parents:
               var cont = container;
               while (cont) {
@@ -8155,12 +8091,12 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
                 cont = cont._parent;
               }
               if (this.blocks[t].acceptsLines) {
-                this.addLine();
-              } else if (this.offset < ln.length && !this.blank) {
+                this.addLine(ln);
+              } else if (this.offset < ln.length && !blank) {
                 // create paragraph container for line
                 container = this.addChild('Paragraph', this.offset);
-                this.offset = this.nextNonspace;
-                this.addLine();
+                this.offset = nextNonspace;
+                this.addLine(ln);
               }
             }
             this.lastLineLength = ln.length;
@@ -8222,7 +8158,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
             }
             var lines = input.split(reLineEnding);
             var len = lines.length;
-            if (input.charCodeAt(input.length - 1) === C_NEWLINE) {
+            if (input.charAt(input.length - 1) === '\n') {
               // ignore last blank line created by final newline
               len -= 1;
             }
@@ -8255,21 +8191,16 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
             return {
               doc: new Document(),
               blocks: blocks,
-              blockStarts: blockStarts,
               tip: this.doc,
               oldtip: this.doc,
               currentLine: '',
               lineNumber: 0,
               offset: 0,
-              nextNonspace: 0,
-              indent: 0,
-              blank: false,
               allClosed: true,
               lastMatchedContainer: this.doc,
               refmap: {},
               lastLineLength: 0,
               inlineParser: new InlineParser(),
-              findNextNonspace: findNextNonspace,
               breakOutOfLists: breakOutOfLists,
               addLine: addLine,
               addChild: addChild,
@@ -8293,7 +8224,6 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
       2: [
         function (require, module, exports) {
           
-          var C_BACKSLASH = 92;
           var entityToChar = html5_entitiesjs.entityToChar;
           var ENTITY = '&(?:#x[a-f0-9]{1,8}|#[0-9]{1,8}|[a-z][a-z0-9]{1,31});';
           var reBackslashOrAmp = /[\\&]/;
@@ -8303,8 +8233,8 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
           var reXmlSpecial = new RegExp(XMLSPECIAL, 'g');
           var reXmlSpecialOrEntity = new RegExp(ENTITY + '|' + XMLSPECIAL, 'gi');
           var unescapeChar = function (s) {
-            if (s.charCodeAt(0) === C_BACKSLASH) {
-              return s.charAt(1);
+            if (s[0] === '\\') {
+              return s[1];
             } else {
               return entityToChar(s);
             }
@@ -8424,7 +8354,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
       4: [
         function (require, module, exports) {
           
-          var escapeXml = _common_.escapeXml;
+          var escapeXml = common.escapeXml;
           // Helper function to produce an HTML tag.
           var tag = function (name, attrs, selfclosing) {
             var result = '<' + name;
@@ -10789,9 +10719,8 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
             zwnj: 8204
           };
           var entityToChar = function (m) {
-            var isNumeric = m.slice(0, 2) === '&#';
-            var c;
-            var isHex = isNumeric && (c = m.slice(2, 3)) && (c === 'X' || c === 'x');
+            var isNumeric = /^&#/.test(m);
+            var isHex = /^&#[Xx]/.test(m);
             var uchar;
             var ucode;
             if (isNumeric) {
@@ -10827,9 +10756,9 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
           // var parser = new commonmark.Parser();
           // var renderer = new commonmark.HtmlRenderer();
           // console.log(renderer.render(parser.parse('Hello *world*')));
-          module.exports.Node = _node_;
-          module.exports.Parser = _blocks_;
-          module.exports.HtmlRenderer = _html_;
+          module.exports.Node = node;
+          module.exports.Parser = blocks;
+          module.exports.HtmlRenderer = html;
           module.exports.XmlRenderer = xml;
           return exports;
         },
@@ -10843,8 +10772,8 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
       7: [
         function (require, module, exports) {
           
-          var Node = _node_;
-          var common = _common_;
+          var Node = node;
+          var common = common;
           var normalizeReference = normalize_reference;
           var normalizeURI = common.normalizeURI;
           var unescapeString = common.unescapeString;
@@ -10862,7 +10791,6 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
           var C_BACKSLASH = 92;
           var C_AMPERSAND = 38;
           var C_OPEN_PAREN = 40;
-          var C_CLOSE_PAREN = 41;
           var C_COLON = 58;
           // Some regexps used in inline parser:
           var ESCAPABLE = '[!"#$%&\'()*+,./:;<=>?@[\\\\\\]^_`{|}~-]';
@@ -10917,11 +10845,11 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
           // position in subject and return the match; otherwise return null.
           var match = function (re) {
             var m = re.exec(this.subject.slice(this.pos));
-            if (m === null) {
-              return null;
-            } else {
+            if (m) {
               this.pos += m.index + m[0].length;
               return m[0];
+            } else {
+              return null;
             }
           };
           // Returns the code for the character at the current subject position, or -1
@@ -10969,17 +10897,17 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
           // or a literal backslash to the block's children.  Assumes current character
           // is a backslash.
           var parseBackslash = function (block) {
-            var subj = this.subject;
+            var subj = this.subject, pos = this.pos;
             var node;
-            this.pos += 1;
-            if (this.peek() === C_NEWLINE) {
-              this.pos += 1;
+            if (subj.charAt(pos + 1) === '\n') {
+              this.pos = this.pos + 2;
               node = new Node('Hardbreak');
               block.appendChild(node);
-            } else if (reEscapable.test(subj.charAt(this.pos))) {
-              block.appendChild(text(subj.charAt(this.pos)));
-              this.pos += 1;
+            } else if (reEscapable.test(subj.charAt(pos + 1))) {
+              this.pos = this.pos + 2;
+              block.appendChild(text(subj.charAt(pos + 1)));
             } else {
+              this.pos++;
               block.appendChild(text('\\'));
             }
             return true;
@@ -11295,7 +11223,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
             // Inline link?
             if (this.peek() === C_OPEN_PAREN) {
               this.pos++;
-              if (this.spnl() && (dest = this.parseLinkDestination()) !== null && this.spnl() && (reWhitespaceChar.test(this.subject.charAt(this.pos - 1)) && (title = this.parseLinkTitle()) || true) && this.spnl() && this.peek() === C_CLOSE_PAREN) {
+              if (this.spnl() && (dest = this.parseLinkDestination()) !== null && this.spnl() && (reWhitespaceChar.test(this.subject.charAt(this.pos - 1)) && (title = this.parseLinkTitle()) || true) && this.spnl() && this.subject.charAt(this.pos) === ')') {
                 this.pos += 1;
                 matched = true;
               }
@@ -11497,7 +11425,9 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
             }
             if (!res) {
               this.pos += 1;
-              block.appendChild(text(fromCodePoint(c)));
+              var textnode = new Node('Text');
+              textnode._literal = fromCodePoint(c);
+              block.appendChild(textnode);
             }
             return true;
           };
@@ -13060,7 +12990,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
       10: [
         function (require, module, exports) {
           
-          var escapeXml = _common_.escapeXml;
+          var escapeXml = common.escapeXml;
           // Helper function to produce an XML tag.
           var tag = function (name, attrs, selfclosing) {
             var result = '<' + name;
@@ -13292,7 +13222,8 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
       lib_transitions_ractive_transitions_slide = function (ractive) {
         return typeof factory === 'function' ? factory(ractive) : factory;
       }(ractive);
-    } else if (global.Ractive) {
+    }  // browser global
+    else if (global.Ractive) {
       factory(global.Ractive);
     } else {
       throw new Error('Could not find Ractive! It must be loaded before the ractive-transitions-slide plugin');
@@ -13395,7 +13326,8 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
       lib_transitions_Ractive_transitions_scale = function (ractive) {
         return typeof factory === 'function' ? factory(ractive) : factory;
       }(ractive);
-    } else if (global.Ractive) {
+    }  // browser global
+    else if (global.Ractive) {
       factory(global.Ractive);
     } else {
       throw new Error('Could not find Ractive! It must be loaded before the Ractive-transitions-scale plugin');
@@ -13472,7 +13404,8 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
       lib_transitions_ractive_transitions_fly = function (ractive) {
         return typeof factory === 'function' ? factory(ractive) : factory;
       }(ractive);
-    } else if (global.Ractive) {
+    }  // browser global
+    else if (global.Ractive) {
       factory(global.Ractive);
     } else {
       throw new Error('Could not find Ractive! It must be loaded before the ractive-transitions-fly plugin');
@@ -13574,7 +13507,8 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
       lib_transitions_ractive_transitions_fade = function (ractive) {
         return typeof factory === 'function' ? factory(ractive) : factory;
       }(ractive);
-    } else if (global.Ractive) {
+    }  // browser global
+    else if (global.Ractive) {
       factory(global.Ractive);
     } else {
       throw new Error('Could not find Ractive! It must be loaded before the ractive-transitions-fade plugin');
@@ -13649,7 +13583,8 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
       lib_transitions_Ractive_transitions_typewriter = function (ractive) {
         return typeof factory === 'function' ? factory(ractive) : factory;
       }(ractive);
-    } else if (global.Ractive) {
+    }  // browser global
+    else if (global.Ractive) {
       factory(global.Ractive);
     } else {
       throw new Error('Could not find Ractive! It must be loaded before the ractive-transitions-typewriter plugin');
@@ -13763,12 +13698,6 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
     };
     Ractive.transitions.typewriter = typewriter;
   }));
-  // Copyright 2014 Tim Shannon. All rights reserved.
-  // Use of this source code is governed by the MIT license
-  // that can be found in the LICENSE file.
-  //
-  //Freehold ractive components 
-  // for things like modals, navbar, file browser, etc
   (function (Modal) {
     Ractive.components.modal = Modal;
   }(rvc_modal));
@@ -13810,7 +13739,6 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
   }(rvc_filebrowse));
   (function (CommonMarkEditor, commonmark) {
     Ractive.components.commonMarkEditor = CommonMarkEditor;
-  }  //Transitions
-(rvc_commonMarkEditor, lib_commonmark));
+  }(rvc_commonMarkEditor, lib_commonmark));
 }(Ractive, $));
 }());
