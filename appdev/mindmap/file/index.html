@@ -4,9 +4,9 @@
     <title>Mind Map - freehold</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 		<link href="/core/v1/file/css/freehold.css" rel="stylesheet" media="screen"> 
-		<link href="/mindmap/v1/file/css/index.css" rel="stylesheet" media="screen"> 
 		<link href="/mindmap/v1/file/css/mapjs-default-styles.css" rel="stylesheet" media="screen"> 
 		<link href="/core/v1/file/css/font-awesome.min.css" rel="stylesheet" media="screen"> 
+		<link href="/mindmap/v1/file/css/index.css" rel="stylesheet" media="screen"> 
 	</head>
 <body>
 <div id="ractives"></div>
@@ -113,7 +113,7 @@
 	
 </navbar>
 <modal id="fileBrowse" title="Select a Mind Map File" customFooter="true">
-	<filebrowse selected.url="{{selected}}" filterRegex="^.*\.(mmap)$"></filebrowse>
+	<filebrowse selected.url="{{selected}}" filterRegex="^.*\.(mmap|mup)$"></filebrowse>
 	<div class="modal-footer">
 		<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
 		<button type="button" class="btn btn-primary" on-click="loadFile">Open</button>
@@ -143,6 +143,15 @@
 		For license and attribution information for MapJS and other software used in freehold, look at <a target="_blank" href="/docs/license">/docs/license</a>.
 	</p>
 
+</modal>
+
+<modal id="attachment" title="Add Attachment" customFooter="true">
+	<commonMarkEditor></commonMarkEditor>	
+
+	<div class="modal-footer">
+		<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+		<button type="button" class="btn btn-primary" on-click="saveAttachment">Save</button>
+	</div>
 </modal>
 
 

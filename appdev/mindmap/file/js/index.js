@@ -62,8 +62,9 @@ $(document).ready(function() {
             }
 
             var newMapName = r.get("newMapName");
-            if (newMapName.slice(newMapName.lastIndexOf(".") + 1) != "mmap") {
-                newMapName += ".mmap";
+            var ext = newMapName.slice(newMapName.lastIndexOf(".") + 1);
+            if (ext != "mup" || ext != "mmap") {
+                newMapName += ".mup";
             }
 
             r.set("file", {
@@ -114,7 +115,10 @@ $(document).ready(function() {
             mapModel.toggleCollapse();
         },
         "addAttachment": function() {
-			//TODO:
+			$("#attachment").modal();
+        },
+        "saveAttachment": function() {
+            //TODO:
             mapModel.setAttachment("freehold", mapModel.getCurrentlySelectedIdeaId(), {
                 content: "<span class='glyphicon glyphicon-folder-open'></span>"
             });

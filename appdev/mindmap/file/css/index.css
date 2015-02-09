@@ -33,3 +33,28 @@ html, body {
 	z-index: -1;
 }
 
+
+.mapjs-node[mapjs-level="1"] {
+	background-color:#5bc0de;
+}
+
+.mapjs-node.selected {
+	outline: 0;
+	border: 3px dashed #337ab7;
+	margin: -2px;
+	box-shadow: 5px 5px 5px black;
+	z-index: 3;
+}
+
+.mapjs-node:focus {
+	outline: 0;
+	border: 3px dashed #5cb85c;
+	margin: -2px;
+	box-shadow: 5px 5px 5px #5cb85c;
+	z-index: 3;
+}
+
+.cm-editor {
+	height: 50vh;
+	margin-bottom: 60px;
+}

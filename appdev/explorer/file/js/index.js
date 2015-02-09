@@ -1537,6 +1537,7 @@ $(document).ready(function() {
             "ods": "webodf",
             "odp": "webodf",
             "mmap": "mindmap",
+            "mup": "mindmap",
         };
     }
 

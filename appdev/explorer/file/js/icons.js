@@ -44,6 +44,7 @@ function buildDefaultIcons() {
         "kf8": "book",
         "torrent": "share-alt",
 		"mmap": "sitemap",
+		"mup": "sitemap",
     };
 }
 
