@@ -4,7 +4,7 @@
 		"ractive": "./lib/ractive",
 		"rvc": "./lib/rvc",
 		"jquery": "./lib/jquery",
-		"amdclean": "./lib/amdclean"
+		"amdclean": "./lib/amdclean",
 	},
 	exclude: ["ractive", "jquery"],
 	out: "../../application/core/file/js/components.js",
@@ -19,10 +19,12 @@
 		amdclean = module.require('amdclean'),
 		outputFile = data.path,
 		cleanedCode = amdclean.clean({
-		  'filePath': outputFile,
+			'filePath': outputFile,
+			ignoreModules: ['commonmark'],
 		});
 
 	  fs.writeFileSync(outputFile, cleanedCode);
 	},
+	cjsTranslate: true,
 	optimize: "none",
 }
