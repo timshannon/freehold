@@ -24,6 +24,10 @@ html, body {
 	padding-top: 3px;
 }
 
+ul.dropdown-menu.has-hotkey > li > a {
+	padding-right: 40px;
+}
+
 #filename {
 	position: absolute;
 	left: 0;
@@ -64,6 +68,10 @@ html, body {
 	height: 100%;
 }
 
+.parsed {
+	overflow: auto;	
+}
+
 #edit>textarea {
 	border-top-left-radius: 0px;
 	border-top-right-radius: 0px;
@@ -76,6 +84,9 @@ li.tab-icon > a {
 	border: 0px;
 }
 
-li.tab-icon > a:hover {
+li.tab-icon > a:hover ,
+li.tab-icon > a:focus {
 	background-color: transparent;
 }
+
+

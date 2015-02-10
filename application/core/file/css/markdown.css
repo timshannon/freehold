@@ -1,3 +1,5 @@
+@import url("bootstrap.min.css");
+
 body {
    font-family: Helvetica, arial, sans-serif;
    font-size: 14px;
@@ -82,6 +84,7 @@ p, blockquote, ul, ol, dl, li, table, pre {
 
 hr {
    border: 0 none;
+   border-bottom: 1px solid #cccccc;
    color: #cccccc;
    height: 4px;
    padding: 0;

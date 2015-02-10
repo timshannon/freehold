@@ -26,7 +26,7 @@
 			role="button" aria-expanded="false">
 				File
 			</a>
-			<ul class="dropdown-menu" role="menu" aria-labelledby="fileMenu">
+			<ul class="dropdown-menu has-hotkey" role="menu" aria-labelledby="fileMenu">
 				<li role="presentation">
 					<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="new">
 					<span class="glyphicon glyphicon-plus"></span> New<span class="hotkey">Ctrl-N</span></a>
@@ -55,7 +55,7 @@
 			role="button" aria-expanded="false">
 				Edit
 			</a>
-			<ul class="dropdown-menu" role="menu" aria-labelledby="editMenu">
+			<ul class="dropdown-menu has-hotkey" role="menu" aria-labelledby="editMenu">
 				<li role="presentation">
 					<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="undo">
 					<span class="fa fa-rotate-left"></span> Undo <span class="hotkey">Ctrl-Z</span></a>
@@ -84,9 +84,12 @@
 				</li>
 				<li role="presentation">
 					<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="addAttachment">
-					<span class="glyphicon glyphicon-paperclip"></span> Add Attachment</a>
+					<span class="glyphicon glyphicon-paperclip"></span> Add Attachment<span class="hotkey">Ctrl-A</span></a>
 				</li>
-
+				<li role="presentation">
+					<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="setColor">
+					<span class="fa fa-eyedropper"></span> Color<span class="hotkey">Ctrl-R</span></a>
+				</li>
 
 			</ul>
 		</li>
@@ -122,7 +125,7 @@
 
 <modal id="newFile" title="{{#if saveAs}}Save Mind Map as{{else}}New Mind Map{{/if}}" customFooter="true">
 	<filebrowse filename="{{newMapName}}" currentFolder.url="{{newMapParent}}" fileExists="{{newFileExists}}"
-		filterRegex="^.*\.(mmap)$" filenamePlaceholder="New Map name..."></filebrowse>
+		filterRegex="^.*\.(mmap|mup)$" filenamePlaceholder="New Map name..."></filebrowse>
 	<div class="modal-footer">
 		<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
 		{{#if saveAs}}	
@@ -145,9 +148,11 @@
 
 </modal>
 
-<modal id="attachment" title="Add Attachment" customFooter="true">
+<modal id="attachment" title="Add Attachment" customFooter="true" large="true">
 	{{>cmEdit}}
 	<div class="modal-footer">
+		<button type="button" class="btn btn-danger pull-left" on-click="deleteAttachment">
+			<span class="glyphicon glyphicon-remove"></span> Delete</button>
 		<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
 		<button type="button" class="btn btn-primary" on-click="saveAttachment">Save</button>
 	</div>
@@ -158,19 +163,19 @@
 <!-- {{>cmEdit}} -->
 <div class="cm-editor">
  <!-- Nav tabs -->
-  <ul class="nav nav-tabs" role="tablist">
-    <li role="presentation" class="{{^viewFirst}}active{{/viewFirst}}" title="Edit markdown">
+  <ul id="cmEditorTabs" class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active" title="Edit markdown">
 			<a href="#edit" aria-controls="edit" role="tab" data-toggle="tab">
 				<span class="glyphicon glyphicon-pencil"></span>
 			</a>
 		</li>
-    <li role="presentation" class="{{#viewFirst}}active{{/viewFirst}}" title="View" on-click="parse">
+    <li role="presentation" title="View" on-click="parse">
 			<a href="#view" aria-controls="view" role="tab" data-toggle="tab">
 				<span class="glyphicon glyphicon-eye-open"></span>
 			</a>
 		</li>
 		<li role="presentation" class="tab-icon pull-right">
-			<a target="_blank" href="/docs/markdown.markdown" title="Markdown Help">
+			<a target="_blank" href="/docs/markdown_reference.markdown" title="Markdown Help">
 				<span class="glyphicon glyphicon-question-sign"></span>
 			</a>
 		</li>
@@ -179,7 +184,7 @@
   <!-- Tab panes -->
   <div class="tab-content">
     <div role="tabpanel" class="tab-pane active" id="edit">
-			<textarea class="form-control" value="{{markdown}}" placeholder="Enter markdown here"></textarea>
+			<textarea id="mdInput" class="form-control" value="{{markdown}}" placeholder="Enter markdown here"></textarea>
 		</div>
     <div role="tabpanel" class="tab-pane" id="view">
 			<div class="parsed">

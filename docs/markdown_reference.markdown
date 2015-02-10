@@ -1,7 +1,8 @@
 CommonMark Quick Reference
 ===============================
 
-CommonMark is a strongly specified, highly compatible implementation of [Markdown](http://en.wikipedia.org/wiki/Markdown). A detailed and complete specification of CommonMarkdown can be found at http://spec.commonmark.org/.
+CommonMark is a strongly specified, highly compatible implementation of [Markdown](http://en.wikipedia.org/wiki/Markdown). A detailed and complete specification of CommonMarkdown can be found at [http://spec.commonmark.org/](http://spec.commonmark.org/).
+
 
 ##### Table of Contents  
 [Headers](#headers)  
@@ -14,7 +15,6 @@ CommonMark is a strongly specified, highly compatible implementation of [Markdow
 [Inline HTML](#html)  
 [Horizontal Rule](#hr)  
 [Line Breaks](#lines)  
-[Youtube videos](#videos)  
 
 <a name="headers"></a>
 ## Headers
@@ -60,8 +60,6 @@ Emphasis, aka italics, with *asterisks* or _underscores_.
 Strong emphasis, aka bold, with **asterisks** or __underscores__.
 
 Combined emphasis with **asterisks and _underscores_**.
-
-Strikethrough uses two tildes. ~~Scratch this.~~
 ```
 
 Emphasis, aka italics, with *asterisks* or _underscores_.
@@ -70,12 +68,8 @@ Strong emphasis, aka bold, with **asterisks** or __underscores__.
 
 Combined emphasis with **asterisks and _underscores_**.
 
-Strikethrough uses two tildes. ~~Scratch this.~~
-
 <a name="lists"></a>
 ## Lists
-
-(In this example, leading and trailing spaces are shown with with dots:  )
 
 ```
 1. First ordered list item
@@ -84,12 +78,6 @@ Strikethrough uses two tildes. ~~Scratch this.~~
 1. Actual numbers don't matter, just that it's a number
   1. Ordered sub-list
 4. And another item.
-
-   You can have properly indented paragraphs within list items. Notice the blank line above, and the leading spaces (at least one, but we'll use three here to also align the raw Markdown).
-
-   To have a line break without a paragraph, you will need to use two trailing spaces.  
-   Note that this line is separate, but within the same paragraph.  
-   (This is contrary to the typical GFM line break behaviour, where trailing spaces are not required.)
 
 * Unordered list can use asterisks
 - Or minuses
@@ -101,13 +89,7 @@ Strikethrough uses two tildes. ~~Scratch this.~~
   * Unordered sub-list. 
 1. Actual numbers don't matter, just that it's a number
   1. Ordered sub-list
-4. And another item.
-
-   You can have properly indented paragraphs within list items. Notice the blank line above, and the leading spaces (at least one, but we'll use three here to also align the raw Markdown).
-
-   To have a line break without a paragraph, you will need to use two trailing spaces.  
-   Note that this line is separate, but within the same paragraph.  
-   (This is contrary to the typical GFM line break behaviour, where trailing spaces are not required.)
+4. And another item. 
 
 * Unordered list can use asterisks
 - Or minuses
@@ -125,7 +107,7 @@ There are two ways to create links.
 
 [I'm a reference-style link][Arbitrary case-insensitive reference text]
 
-[I'm a relative reference to a repository file](../blob/master/LICENSE)
+[I'm a relative reference to a repository file](./index.markdown)
 
 [You can use numbers for reference-style link definitions][1]
 
@@ -144,7 +126,7 @@ Some text to show that the reference links can follow later.
 
 [I'm a reference-style link][Arbitrary case-insensitive reference text]
 
-[I'm a relative reference to a repository file](../blob/master/LICENSE)
+[I'm a relative reference to a repository file](./index.markdown)
 
 [You can use numbers for reference-style link definitions][1]
 
@@ -160,26 +142,26 @@ Some text to show that the reference links can follow later.
 ## Images
 
 ```
-Here's our logo (hover to see the title text):
+Here's an images (hover to see the title text):
 
 Inline-style: 
-![alt text](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "Logo Title Text 1")
+![alt text](/home/v1/file/image/app_icon.png "Logo Title Text 1")
 
 Reference-style: 
 ![alt text][logo]
 
-[logo]: https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "Logo Title Text 2"
+[logo]: /home/v1/file/image/app_icon.png "Logo Title Text 2"
 ```
 
-Here's our logo (hover to see the title text):
+Here's an image (hover to see the title text):
 
 Inline-style: 
-![alt text](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "Logo Title Text 1")
+![alt text](/home/v1/file/image/app_icon.png "Logo Title Text 1")
 
 Reference-style: 
 ![alt text][logo]
 
-[logo]: https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "Logo Title Text 2"
+[logo]: /home/v1/file/image/app_icon.png "Logo Title Text 2"
 
 <a name="code"></a>
 ## Code 
@@ -192,7 +174,7 @@ Inline `code` has `back-ticks around` it.
 
 Blocks of code are either fenced by lines with three back-ticks <code>```</code>, or are indented with four spaces. 
 
-<a name="blockquotes"/>
+<a name="blockquotes"></a>
 ## Blockquotes
 
 ```
@@ -234,7 +216,7 @@ You can also use raw HTML in your Markdown, and it'll mostly work pretty well.
   <dd>Does *not* work **very** well. Use HTML <em>tags</em>.</dd>
 </dl>
 
-<a name="hr"/>
+<a name="hr"></a>
 ## Horizontal Rule
 
 ```
@@ -270,8 +252,6 @@ Underscores
 <a name="lines"></a>
 ## Line Breaks
 
-My basic recommendation for learning how line breaks work is to experiment and discover -- hit &lt;Enter&gt; once (i.e., insert one newline), then hit it twice (i.e., insert two newlines), see what happens. You'll soon learn to get what you want. "Markdown Toggle" is your friend. 
-
 Here are some things to try out:
 
 ```
@@ -289,23 +269,4 @@ This line is separated from the one above by two newlines, so it will be a *sepa
 
 This line is also begins a separate paragraph, but...  
 This line is only separated by a single newline, so it's a separate line in the *same paragraph*.
-
-(Technical note: *Markdown Here* uses GFM line breaks, so there's no need to use MD's two-space line breaks.)
-
-<a name="videos"></a>
-## Youtube videos
-
-They can't be added directly but you can add an image with a link to the video like this:
-
-```
-<a href="http://www.youtube.com/watch?feature=player_embedded&v=YOUTUBE_VIDEO_ID_HERE
-" target="_blank"><img src="http://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg" 
-alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
-```
-
-Or, in pure Markdown, but losing the image sizing and border:
-
-```
-[![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](http://www.youtube.com/watch?v=YOUTUBE_VIDEO_ID_HERE)
-```
 

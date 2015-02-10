@@ -29,6 +29,7 @@ Editing
 *	`Ctrl+C` or `Y`	Copy
 *	`U` or `Ctrl+Z`	Undo
 *	`R or Ctrl+Y` or `Ctrl+Shift+Z`	Redo
+*	`Ctrl+A` Add Attachment
 
 Selection
 ===================

@@ -1,4 +1,4 @@
-License
+License (MIT)
 =========
 
 Copyright (c) 2014 Tim Shannon
@@ -17,7 +17,8 @@ Attribution and Credits
 
 * [Go](http://golang.org) - The Go Authors - (BSD) http://golang.org/LICENSE 
 * [kv](https://github.com/cznic/kv) - Jan Mercl (cznic) - (BSD) https://github.com/cznic/kv/blob/master/LICENSE
-* [blackfriday](https://github.com/russross/blackfriday) - Russ Ross - (BSD) https://github.com/russross/blackfriday/blob/master/README.md
+* [go-commonmark](https://github.com/timshannnon/go-commonmark) - James Adam - (BSD) https://github.com/rhinoman/go-commonmark/blob/master/LICENSE
+*	[cmark](https://github.com/jgm/cmark) - John MacFarlane - (BSD) - https://github.com/jgm/cmark/blob/master/COPYING
 * [jquery](https://jquery.org) - jQuery Foundation - (MIT) https://jquery.org/license/
 * [bootstrap](http://getbootstrap.com) - Twitter - (MIT) https://github.com/twbs/bootstrap/blob/master/LICENSE
 * [Glyphicons](http://glyphicons.com) -  Jan Kovarik - (Creative Commons Attribution 3.0 Unported (CC BY 3.0)) - http://glyphicons.com/license
