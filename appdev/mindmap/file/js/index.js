@@ -4,6 +4,8 @@
 
 $(document).ready(function() {
     var fileUrl = fh.util.urlParm("file");
+    var cmRead = new commonmark.Parser();
+    var cmWrite = new commonmark.HtmlRenderer();
 
     var r = new Ractive({
         el: "#ractives",
@@ -115,13 +117,18 @@ $(document).ready(function() {
             mapModel.toggleCollapse();
         },
         "addAttachment": function() {
-			$("#attachment").modal();
+			r.set("markdown", "");
+			r.set("parsed", "");
+            $("#attachment").modal();
         },
         "saveAttachment": function() {
             //TODO:
             mapModel.setAttachment("freehold", mapModel.getCurrentlySelectedIdeaId(), {
                 content: "<span class='glyphicon glyphicon-folder-open'></span>"
             });
+        },
+        "parse": function(event) {
+            r.set("parsed", cmWrite.render(cmRead.parse(r.get("markdown"))));
         },
     });
 
