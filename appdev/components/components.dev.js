@@ -5,6 +5,7 @@
 //Freehold ractive components 
 // for things like modals, navbar, file browser, etc
 
+
 require(['rvc!modal'], function(Modal) {
     Ractive.components.modal = Modal;
 });
@@ -58,10 +59,9 @@ require(['rvc!filebrowse'], function(FileBrowse) {
     Ractive.components.filebrowse = FileBrowse;
 });
 
-require(['rvc!commonMarkEditor', './lib/commonmark'], function(CommonMarkEditor, commonmark) {
+require(['rvc!commonMarkEditor' ], function(CommonMarkEditor, commonmark) {
     Ractive.components.commonMarkEditor = CommonMarkEditor;
 });
-
 
 
 //Transitions
