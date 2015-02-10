@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -23,7 +24,7 @@ import (
 	"bitbucket.org/tshannon/freehold/setting"
 	"bitbucket.org/tshannon/freehold/user"
 
-	"github.com/russross/blackfriday"
+	"github.com/timshannon/go-commonmark"
 )
 
 var markdownTypes = []string{".markdown", ".md"}
@@ -369,7 +370,7 @@ func serveResource(w http.ResponseWriter, r *http.Request, res *resource.File, a
 		if errHandled(err, w, auth) {
 			return
 		}
-		if strings.TrimRight(child.Name(), path.Ext(child.Name())) == "index" {
+		if isIndex(child.Name()) {
 			serveFile(w, r, child, auth)
 			return
 		}
@@ -381,6 +382,10 @@ func serveResource(w http.ResponseWriter, r *http.Request, res *resource.File, a
 	return
 }
 
+func isIndex(filename string) bool {
+	return strings.ToLower(strings.TrimRight(filepath.Base(filename), filepath.Ext(filename))) == "index"
+}
+
 func serveFile(w http.ResponseWriter, r *http.Request, res *resource.File, auth *Auth) {
 	file, err := os.Open(res.Filepath())
 	if errHandled(err, w, auth) {
@@ -390,7 +395,7 @@ func serveFile(w http.ResponseWriter, r *http.Request, res *resource.File, auth 
 	var rs io.ReadSeeker
 
 	if isMarkDown(file.Name()) {
-		buf, err := writeMarkdown(file)
+		buf, err := writeMarkdown(file, res)
 		if errHandled(err, w, auth) {
 			return
 		}
@@ -429,32 +434,20 @@ func docsGet(w http.ResponseWriter, r *http.Request) {
 	serveResource(w, r, resource.NewFile(r.URL.Path), &Auth{})
 }
 
-func writeMarkdown(file *os.File) ([]byte, error) {
+func writeMarkdown(file *os.File, res *resource.File) ([]byte, error) {
 	buf, err := ioutil.ReadAll(file)
 	if err != nil {
 		return nil, err
 	}
 
-	//blackfriday.MarkdownCommon with custom CSS
-	// set up the HTML renderer
-	htmlFlags := 0
-	htmlFlags |= blackfriday.HTML_USE_XHTML
-	htmlFlags |= blackfriday.HTML_USE_SMARTYPANTS
-	htmlFlags |= blackfriday.HTML_SMARTYPANTS_FRACTIONS
-	htmlFlags |= blackfriday.HTML_SMARTYPANTS_LATEX_DASHES
-	htmlFlags |= blackfriday.HTML_COMPLETE_PAGE
-	renderer := blackfriday.HtmlRenderer(htmlFlags,
-		strings.TrimSuffix(file.Name(), path.Ext(file.Name())), setting.String("MarkdownCSSFile"))
+	title := strings.TrimSuffix(filepath.Base(file.Name()), filepath.Ext(file.Name()))
+	if isIndex(title) {
+		title = filepath.Base(res.Parent().Name())
+	}
 
-	// set up the parser
-	extensions := 0
-	extensions |= blackfriday.EXTENSION_NO_INTRA_EMPHASIS
-	extensions |= blackfriday.EXTENSION_TABLES
-	extensions |= blackfriday.EXTENSION_FENCED_CODE
-	extensions |= blackfriday.EXTENSION_AUTOLINK
-	extensions |= blackfriday.EXTENSION_STRIKETHROUGH
-	extensions |= blackfriday.EXTENSION_SPACE_HEADERS
-	extensions |= blackfriday.EXTENSION_HEADER_IDS
+	htmlHeader := "<html><head><title>" + title + "</title><link href='" + setting.String("MarkdownCSSFile") +
+		"' rel='stylesheet' media='screen'></head><body>"
+	htmlFooter := "</body></html>"
 
-	return blackfriday.Markdown(buf, renderer, extensions), nil
+	return []byte(commonmark.Md2Html(htmlHeader + string(buf) + htmlFooter)), nil
 }

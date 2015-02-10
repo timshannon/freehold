@@ -79,6 +79,11 @@ $(document).ready(function() {
             });
         },
         "save": function() {
+            var filename = r.get("file.name");
+            if (!filename) {
+                r.fire("saveAs");
+                return;
+            }
             save();
         },
         "saveAs": function() {
@@ -117,19 +122,36 @@ $(document).ready(function() {
             mapModel.toggleCollapse();
         },
         "addAttachment": function() {
-			r.set("markdown", "");
-			r.set("parsed", "");
+            r.set("markdown", "");
+            r.set("parsed", "");
+            $('#cmEditorTabs a[href="#edit"]').tab('show');
             $("#attachment").modal();
-        },
-        "saveAttachment": function() {
-            //TODO:
-            mapModel.setAttachment("freehold", mapModel.getCurrentlySelectedIdeaId(), {
-                content: "<span class='glyphicon glyphicon-folder-open'></span>"
+
+$("#attachment").on("shown.bs.modal", function() {
+                $("#mdInput").focus();
             });
         },
-        "parse": function(event) {
+        "deleteAttachment": function() {
+            mapModel.setAttachment("freehold", mapModel.getCurrentlySelectedIdeaId(), {});
+            $("#attachment").modal("hide");
+
+        },
+        "saveAttachment": function() {
+            mapModel.setAttachment("freehold", mapModel.getCurrentlySelectedIdeaId(), {
+                content: r.get("markdown"),
+            });
+            $("#attachment").modal("hide");
+        },
+        "parse": function() {
             r.set("parsed", cmWrite.render(cmRead.parse(r.get("markdown"))));
         },
+    });
+
+    mapModel.addEventListener("attachmentOpened", function(nodeId, attachment) {
+        $('#cmEditorTabs a[href="#view"]').tab('show');
+        r.set("markdown", attachment.content);
+        r.fire("parse");
+        $("#attachment").modal();
     });
 
 
@@ -193,22 +215,27 @@ $(document).ready(function() {
 
 
     //hotkeys
-    $(document).bind("keypress", "ctrl+s", function(e) {
+    $(document).bind("keydown", "ctrl+s", function(e) {
         e.preventDefault();
-        save();
+        r.fire("save");
     });
-    $(document).bind("keypress", "ctrl+n", function(e) {
+    $(document).bind("keydown", "ctrl+n", function(e) {
         e.preventDefault();
         $("#newFile").modal();
     });
-    $(document).bind("keypress", "ctrl+o", function(e) {
+    $(document).bind("keydown", "ctrl+o", function(e) {
         e.preventDefault();
         $("#fileBrowse").modal();
     });
-    $(document).bind("keypress", "ctrl+shift+s", function(e) {
+    $(document).bind("keydown", "ctrl+shift+s", function(e) {
         e.preventDefault();
         r.fire("saveAs");
     });
+    $(document).bind("keydown", "ctrl+a", function(e) {
+        e.preventDefault();
+        r.fire("addAttachment");
+    });
+
 
 
 
