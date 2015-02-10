@@ -146,13 +146,50 @@
 </modal>
 
 <modal id="attachment" title="Add Attachment" customFooter="true">
-	<commonMarkEditor></commonMarkEditor>	
-
+	{{>cmEdit}}
 	<div class="modal-footer">
 		<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
 		<button type="button" class="btn btn-primary" on-click="saveAttachment">Save</button>
 	</div>
 </modal>
+
+
+
+<!-- {{>cmEdit}} -->
+<div class="cm-editor">
+ <!-- Nav tabs -->
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="{{^viewFirst}}active{{/viewFirst}}" title="Edit markdown">
+			<a href="#edit" aria-controls="edit" role="tab" data-toggle="tab">
+				<span class="glyphicon glyphicon-pencil"></span>
+			</a>
+		</li>
+    <li role="presentation" class="{{#viewFirst}}active{{/viewFirst}}" title="View" on-click="parse">
+			<a href="#view" aria-controls="view" role="tab" data-toggle="tab">
+				<span class="glyphicon glyphicon-eye-open"></span>
+			</a>
+		</li>
+		<li role="presentation" class="tab-icon pull-right">
+			<a target="_blank" href="/docs/markdown.markdown" title="Markdown Help">
+				<span class="glyphicon glyphicon-question-sign"></span>
+			</a>
+		</li>
+  </ul>
+
+  <!-- Tab panes -->
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane active" id="edit">
+			<textarea class="form-control" value="{{markdown}}" placeholder="Enter markdown here"></textarea>
+		</div>
+    <div role="tabpanel" class="tab-pane" id="view">
+			<div class="parsed">
+				{{{parsed}}}
+			</div>
+		</div>
+  </div>
+</div>
+
+<!-- {{/cmEdit}} -->
 
 
 
@@ -164,7 +201,6 @@
 <script src="/core/v1/file/js/ractive.min.js"></script>
 <script src="/core/v1/file/js/fh.js"></script>
 <script src="/core/v1/file/js/components.js"></script>
-<script src="/core/v1/file/js/commonmark.js"></script>
 <script src="/mindmap/v1/file/js/lib/jquery.hotkeys.js"></script>
 <script src="/mindmap/v1/file/js/lib/hammer.min.js"></script>
 <script src="/mindmap/v1/file/js/lib/jquery.hammer.min.js"></script>
@@ -183,6 +219,7 @@
 <script type="text/javascript" src="/mindmap/v1/file/js/src/hammer-draggable.js"></script>
 <script type="text/javascript" src="/mindmap/v1/file/js/src/dom-map-view.js"></script>
 <script type="text/javascript" src="/mindmap/v1/file/js/src/dom-map-widget.js"></script>
+<script src="/core/v1/file/js/commonmark.js"></script>
 <script src="/mindmap/v1/file/js/index.js"></script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 ;(function() {
-var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, rvc_tree, rvc_filetree, rvc_jsonviewer, rvc_jquery_ui, rvc_datepicker, lib_jquery_ui_core, lib_jquery_ui_datepicker, rvc_fileinput, rvc_dropzone, lib_jquery_ui_widget, lib_jquery_ui_mouse, lib_jquery_ui_draggable, lib_jquery_ui_droppable, rvc_selectable, lib_jquery_ui_selectable, rvc_filebrowse, rvc_commonMarkEditor, lib_transitions_ractive_transitions_slide, lib_transitions_Ractive_transitions_scale, lib_transitions_ractive_transitions_fly, lib_transitions_ractive_transitions_fade, lib_transitions_Ractive_transitions_typewriter;
+var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, rvc_tree, rvc_filetree, rvc_jsonviewer, rvc_jquery_ui, rvc_datepicker, lib_jquery_ui_core, lib_jquery_ui_datepicker, rvc_fileinput, rvc_dropzone, lib_jquery_ui_widget, lib_jquery_ui_mouse, lib_jquery_ui_draggable, lib_jquery_ui_droppable, rvc_selectable, lib_jquery_ui_selectable, rvc_filebrowse, lib_transitions_ractive_transitions_slide, lib_transitions_Ractive_transitions_scale, lib_transitions_ractive_transitions_fly, lib_transitions_ractive_transitions_fade, lib_transitions_Ractive_transitions_typewriter;
 (function (ractive, jquery) {
   rvc = {
     load: function (id) {
@@ -115,7 +115,7 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
         title: 'Modal Title',
         id: 'modalId',
         customFooter: false
-      }
+      }  //TODO: Help popout
     };
     if (typeof component.exports === 'object') {
       for (var __prop__ in component.exports) {
@@ -2444,7 +2444,6 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
    */
   (function (factory) {
     if (true) {
-      // AMD. Register as an anonymous module.
       lib_jquery_ui_core = function (jquery) {
         return typeof factory === 'function' ? factory(jquery) : factory;
       }(jquery);
@@ -2703,7 +2702,6 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
    */
   (function (factory) {
     if (true) {
-      // AMD. Register as an anonymous module.
       lib_jquery_ui_datepicker = function (jquery, lib_jquery_ui_core) {
         return typeof factory === 'function' ? factory(jquery, lib_jquery_ui_core) : factory;
       }(jquery, lib_jquery_ui_core);
@@ -4831,7 +4829,6 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
    */
   (function (factory) {
     if (true) {
-      // AMD. Register as an anonymous module.
       lib_jquery_ui_widget = function (jquery) {
         return typeof factory === 'function' ? factory(jquery) : factory;
       }(jquery);
@@ -5273,7 +5270,6 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
    */
   (function (factory) {
     if (true) {
-      // AMD. Register as an anonymous module.
       lib_jquery_ui_mouse = function (jquery, lib_jquery_ui_widget) {
         return typeof factory === 'function' ? factory(jquery, lib_jquery_ui_widget) : factory;
       }(jquery, lib_jquery_ui_widget);
@@ -5427,7 +5423,6 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
    */
   (function (factory) {
     if (true) {
-      // AMD. Register as an anonymous module.
       lib_jquery_ui_draggable = function (jquery, lib_jquery_ui_core, lib_jquery_ui_mouse, lib_jquery_ui_widget) {
         return typeof factory === 'function' ? factory(jquery, lib_jquery_ui_core, lib_jquery_ui_mouse, lib_jquery_ui_widget) : factory;
       }(jquery, lib_jquery_ui_core, lib_jquery_ui_mouse, lib_jquery_ui_widget);
@@ -6325,7 +6320,6 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
    */
   (function (factory) {
     if (true) {
-      // AMD. Register as an anonymous module.
       lib_jquery_ui_droppable = function (jquery, lib_jquery_ui_core, lib_jquery_ui_widget, lib_jquery_ui_mouse, lib_jquery_ui_draggable) {
         return typeof factory === 'function' ? factory(jquery, lib_jquery_ui_core, lib_jquery_ui_widget, lib_jquery_ui_mouse, lib_jquery_ui_draggable) : factory;
       }(jquery, lib_jquery_ui_core, lib_jquery_ui_widget, lib_jquery_ui_mouse, lib_jquery_ui_draggable);
@@ -6739,7 +6733,6 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
    */
   (function (factory) {
     if (true) {
-      // AMD. Register as an anonymous module.
       lib_jquery_ui_selectable = function (jquery, lib_jquery_ui_core, lib_jquery_ui_mouse, lib_jquery_ui_widget) {
         return typeof factory === 'function' ? factory(jquery, lib_jquery_ui_core, lib_jquery_ui_mouse, lib_jquery_ui_widget) : factory;
       }(jquery, lib_jquery_ui_core, lib_jquery_ui_mouse, lib_jquery_ui_widget);
@@ -7334,161 +7327,6 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
     }
     return Ractive.extend(__options__);
   }({}, ractive);
-  rvc_commonMarkEditor = function (require, Ractive) {
-    var __options__ = {
-        template: {
-          v: 1,
-          t: [{
-              t: 7,
-              e: 'div',
-              a: { 'class': 'cm-editor' },
-              f: [
-                ' ',
-                {
-                  t: 7,
-                  e: 'ul',
-                  a: {
-                    'class': 'nav nav-tabs',
-                    role: 'tablist'
-                  },
-                  f: [
-                    {
-                      t: 7,
-                      e: 'li',
-                      a: {
-                        role: 'presentation',
-                        'class': [{
-                            t: 4,
-                            r: 'viewFirst',
-                            f: ['active'],
-                            n: 51
-                          }],
-                        title: 'Edit markdown'
-                      },
-                      f: [{
-                          t: 7,
-                          e: 'a',
-                          a: {
-                            href: '#edit',
-                            'aria-controls': 'edit',
-                            role: 'tab',
-                            'data-toggle': 'tab'
-                          },
-                          f: [{
-                              t: 7,
-                              e: 'span',
-                              a: { 'class': 'glyphicon glyphicon-pencil' }
-                            }]
-                        }]
-                    },
-                    ' ',
-                    {
-                      t: 7,
-                      e: 'li',
-                      a: {
-                        role: 'presentation',
-                        'class': [{
-                            t: 4,
-                            r: 'viewFirst',
-                            f: ['active']
-                          }],
-                        title: 'View'
-                      },
-                      v: { click: 'parse' },
-                      f: [{
-                          t: 7,
-                          e: 'a',
-                          a: {
-                            href: '#view',
-                            'aria-controls': 'view',
-                            role: 'tab',
-                            'data-toggle': 'tab'
-                          },
-                          f: [{
-                              t: 7,
-                              e: 'span',
-                              a: { 'class': 'glyphicon glyphicon-eye-open' }
-                            }]
-                        }]
-                    }
-                  ]
-                },
-                ' ',
-                {
-                  t: 7,
-                  e: 'div',
-                  a: { 'class': 'tab-content' },
-                  f: [
-                    {
-                      t: 7,
-                      e: 'div',
-                      a: {
-                        role: 'tabpanel',
-                        'class': 'tab-pane active',
-                        id: 'edit'
-                      },
-                      f: [{
-                          t: 7,
-                          e: 'textarea',
-                          a: {
-                            'class': 'form-control',
-                            value: [{
-                                t: 2,
-                                r: 'markdown'
-                              }],
-                            placeholder: 'Enter markdown here'
-                          }
-                        }]
-                    },
-                    ' ',
-                    {
-                      t: 7,
-                      e: 'div',
-                      a: {
-                        role: 'tabpanel',
-                        'class': 'tab-pane',
-                        id: 'view'
-                      },
-                      f: [{
-                          t: 7,
-                          e: 'div',
-                          a: { 'class': 'parsed' },
-                          f: [{
-                              t: 3,
-                              r: 'parsed'
-                            }]
-                        }]
-                    }
-                  ]
-                }
-              ]
-            }]
-        },
-        css: '.tab-content, #edit, #view, .parsed, #edit>textarea {\nheight: 100%;\n}\n#edit>textarea {\nborder-top-left-radius: 0px;\nborder-top-right-radius: 0px;\nborder-top-width: 0px;\nbox-shadow: 0px 0px 0px; \n}\n.cm-editor {\nmin-height: 100px;\n}\n'
-      }, component = {};
-    component.exports = {
-      data: { viewFirst: false },
-      onrender: function () {
-        var reader = new commonmark.Parser();
-        var writer = new commonmark.HtmlRenderer();
-        var r = this;
-        r.on({
-          'parse': function (event) {
-            var parsed = reader.parse(r.get('markdown'));
-            r.set('parsed', writer.render(parsed));
-          }
-        });
-      }
-    };
-    if (typeof component.exports === 'object') {
-      for (var __prop__ in component.exports) {
-        if (component.exports.hasOwnProperty(__prop__)) {
-          __options__[__prop__] = component.exports[__prop__];
-        }
-      }
-    }
-    return Ractive.extend(__options__);
-  }({}, ractive);
   /*
   
   	ractive-transitions-slide
@@ -7537,7 +7375,8 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
       lib_transitions_ractive_transitions_slide = function (ractive) {
         return typeof factory === 'function' ? factory(ractive) : factory;
       }(ractive);
-    } else if (global.Ractive) {
+    }  // browser global
+    else if (global.Ractive) {
       factory(global.Ractive);
     } else {
       throw new Error('Could not find Ractive! It must be loaded before the ractive-transitions-slide plugin');
@@ -7640,7 +7479,8 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
       lib_transitions_Ractive_transitions_scale = function (ractive) {
         return typeof factory === 'function' ? factory(ractive) : factory;
       }(ractive);
-    } else if (global.Ractive) {
+    }  // browser global
+    else if (global.Ractive) {
       factory(global.Ractive);
     } else {
       throw new Error('Could not find Ractive! It must be loaded before the Ractive-transitions-scale plugin');
@@ -7717,7 +7557,8 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
       lib_transitions_ractive_transitions_fly = function (ractive) {
         return typeof factory === 'function' ? factory(ractive) : factory;
       }(ractive);
-    } else if (global.Ractive) {
+    }  // browser global
+    else if (global.Ractive) {
       factory(global.Ractive);
     } else {
       throw new Error('Could not find Ractive! It must be loaded before the ractive-transitions-fly plugin');
@@ -7819,7 +7660,8 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
       lib_transitions_ractive_transitions_fade = function (ractive) {
         return typeof factory === 'function' ? factory(ractive) : factory;
       }(ractive);
-    } else if (global.Ractive) {
+    }  // browser global
+    else if (global.Ractive) {
       factory(global.Ractive);
     } else {
       throw new Error('Could not find Ractive! It must be loaded before the ractive-transitions-fade plugin');
@@ -7894,7 +7736,8 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
       lib_transitions_Ractive_transitions_typewriter = function (ractive) {
         return typeof factory === 'function' ? factory(ractive) : factory;
       }(ractive);
-    } else if (global.Ractive) {
+    }  // browser global
+    else if (global.Ractive) {
       factory(global.Ractive);
     } else {
       throw new Error('Could not find Ractive! It must be loaded before the ractive-transitions-typewriter plugin');
@@ -8008,12 +7851,6 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
     };
     Ractive.transitions.typewriter = typewriter;
   }));
-  // Copyright 2014 Tim Shannon. All rights reserved.
-  // Use of this source code is governed by the MIT license
-  // that can be found in the LICENSE file.
-  //
-  //Freehold ractive components 
-  // for things like modals, navbar, file browser, etc
   (function (Modal) {
     Ractive.components.modal = Modal;
   }(rvc_modal));
@@ -8053,9 +7890,5 @@ var rvc, rvc_modal, rvc_navbar, rvc_permissions, rvc_droppable, rvc_draggable, r
   (function (FileBrowse) {
     Ractive.components.filebrowse = FileBrowse;
   }(rvc_filebrowse));
-  (function (CommonMarkEditor, commonmark) {
-    Ractive.components.commonMarkEditor = CommonMarkEditor;
-  }  //Transitions
-(rvc_commonMarkEditor));
 }(Ractive, $));
 }());

@@ -59,11 +59,6 @@ require(['rvc!filebrowse'], function(FileBrowse) {
     Ractive.components.filebrowse = FileBrowse;
 });
 
-require(['rvc!commonMarkEditor' ], function(CommonMarkEditor, commonmark) {
-    Ractive.components.commonMarkEditor = CommonMarkEditor;
-});
-
-
 //Transitions
 require(["./lib/transitions/ractive-transitions-slide"]);
 require(["./lib/transitions/Ractive-transitions-scale"]);

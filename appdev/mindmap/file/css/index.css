@@ -58,3 +58,24 @@ html, body {
 	height: 50vh;
 	margin-bottom: 60px;
 }
+
+
+.cm-editor>.tab-content, #edit, #view, .parsed, #edit>textarea {
+	height: 100%;
+}
+
+#edit>textarea {
+	border-top-left-radius: 0px;
+	border-top-right-radius: 0px;
+	border-top-width: 0px;
+	box-shadow: 0px 0px 0px; 
+}
+
+li.tab-icon > a {
+	margin-right: 0px;
+	border: 0px;
+}
+
+li.tab-icon > a:hover {
+	background-color: transparent;
+}
