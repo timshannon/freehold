@@ -279,6 +279,7 @@ a:focus {
 
 .btn-property-rename {
 	max-width: 100%;
+	overflow: hidden;
 }
 
 

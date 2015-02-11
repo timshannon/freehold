@@ -51,3 +51,5 @@ Navigation and screen
 *	`Shift Z`	Zoom out
 *	`Esc`, `Ctrl+0`	Reset map view - select root node and bring it to the center of the screen
 
+
+Images can be added to a map by simply dragging it in from your desktop and dropping it.  URLs in a node will be automatically recognized and turned into links.

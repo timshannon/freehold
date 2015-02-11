@@ -59,6 +59,11 @@ require(['rvc!filebrowse'], function(FileBrowse) {
     Ractive.components.filebrowse = FileBrowse;
 });
 
+require(['rvc!colorpicker', './lib/spectrum.js'], function(ColorPicker) {
+    Ractive.components.colorpicker = ColorPicker;
+});
+
+
 //Transitions
 require(["./lib/transitions/ractive-transitions-slide"]);
 require(["./lib/transitions/Ractive-transitions-scale"]);
