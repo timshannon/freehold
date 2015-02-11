@@ -7,7 +7,6 @@ $(document).ready(function() {
     var timer;
     var defaultIcons = buildDefaultIcons();
     var defaultApps = buildDefaultApps();
-    var iconColors = buildIconColors();
     var settings = new Settings();
     settings.stars = new Stars();
     settings.fileType = new FileTypeSettings();
@@ -28,7 +27,6 @@ $(document).ready(function() {
             stars: {},
             user: fh.auth.user,
             icons: buildIconList(),
-            iconColors: iconColors,
             selection: [],
             domain: location.origin,
         },
@@ -907,7 +905,7 @@ $(document).ready(function() {
         }
         crumbs.reverse();
         rMain.set("breadcrumbs", crumbs);
-            }
+    }
 
     function sortCurrent() {
         var sorting = rMain.get("sorting");
@@ -1391,7 +1389,7 @@ $(document).ready(function() {
                     browser: (!defaultApps[filetype]),
                 },
                 explorerIcon: defaultIcons[filetype.toLowerCase()] || "file-o",
-                iconColor: iconColors["default"],
+                iconColor: "#333",
             };
         }
 

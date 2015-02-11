@@ -28,9 +28,11 @@ $(document).ready(function() {
     };
     var container = $('#container'),
         mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, ["start here"]),
+        imgControl = new MAPJS.ImageInsertController(),
         idea;
 
-    container.domMapWidget(console, mapModel, false);
+
+    container.domMapWidget(console, mapModel, false, imgControl);
     window.mapModel = mapModel;
 
     if (!fileUrl) {
@@ -100,8 +102,7 @@ $(document).ready(function() {
         },
         "about": function() {
             $("#about").modal();
-            console.log(mapModel);
-            console.log(idea);
+
         },
         "undo": function() {
             mapModel.undo();
@@ -118,6 +119,9 @@ $(document).ready(function() {
         "paste": function() {
             mapModel.paste();
         },
+        "pasteStyle": function() {
+            mapModel.pasteStyle();
+        },
         "toggleCollapse": function() {
             mapModel.toggleCollapse();
         },
@@ -127,7 +131,7 @@ $(document).ready(function() {
             $('#cmEditorTabs a[href="#edit"]').tab('show');
             $("#attachment").modal();
 
-$("#attachment").on("shown.bs.modal", function() {
+            $("#attachment").on("shown.bs.modal", function() {
                 $("#mdInput").focus();
             });
         },
@@ -144,6 +148,17 @@ $("#attachment").on("shown.bs.modal", function() {
         },
         "parse": function() {
             r.set("parsed", cmWrite.render(cmRead.parse(r.get("markdown"))));
+        },
+        "setColor": function() {
+			$(".colorpicker").trigger("click");
+        },
+    });
+
+    r.observe({
+        "nodeColor": function(newValue, oldValue, keypath) {
+            if (newValue) {
+                mapModel.updateStyle("freehold", "background", newValue);
+            }
         },
     });
 
@@ -234,6 +249,11 @@ $("#attachment").on("shown.bs.modal", function() {
     $(document).bind("keydown", "ctrl+a", function(e) {
         e.preventDefault();
         r.fire("addAttachment");
+    });
+    $(document).bind("keydown", "ctrl+r", function(e) {
+        e.preventDefault();
+        r.fire("setColor");
+        //FIXME: Can't call click handler?
     });
 
 

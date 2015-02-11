@@ -135,11 +135,7 @@
 						<div class="form-group">
 							<label for="colorSelect" class="col-sm-4 control-label">Color</label>
 							<div class="col-sm-8">
-								<select id="colorSelect" class="form-control" value="{{.iconColor}}">
-									{{#iconColors:i}}
-										<option value="{{.}}">{{i}}</option>
-									{{/iconColors}}
-								</select>
+								<colorpicker value="{{.iconColor}}"></colorpicker>
 							</div>
 						</div>
 						

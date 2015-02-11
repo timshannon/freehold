@@ -602,13 +602,3 @@ function buildIconList() {
 }
 
 
-function buildIconColors() {
-    return {
-        "default": "#333",
-        "blue": "#337ab7",
-        "green": "#5cb85c",
-        "light-blue": "#5bc0de",
-        "orange": "#f0ad4e",
-        "red": "#d9534f",
-    };
-}

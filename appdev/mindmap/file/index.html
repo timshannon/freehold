@@ -77,6 +77,11 @@
 					<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="paste">
 					<span class="glyphicon glyphicon-paste"></span> Paste<span class="hotkey">Ctrl-V</span></a>
 				</li>
+				<li role="presentation">
+					<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="pasteStylel">
+					<span class="glyphicon glyphicon-paste"></span> Paste Style<span class="hotkey">Ctrl+Shift+V</span></a>
+				</li>
+
 				<li role="presentation" class="divider"></li>
 				<li role="presentation">
 					<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="toggleCollapse">
@@ -88,9 +93,9 @@
 				</li>
 				<li role="presentation">
 					<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="setColor">
-					<span class="fa fa-eyedropper"></span> Color<span class="hotkey">Ctrl-R</span></a>
+					<span class="fa fa-eyedropper"></span> Set Color<span class="hotkey">Ctrl-R</span></a>
+					<colorpicker class="hidden" value="{{nodeColor}}"></colorpicker>
 				</li>
-
 			</ul>
 		</li>
 
