@@ -4,10 +4,6 @@
 
 <style>
 .colorpicker {
-	height: 34px;
-	width: 40px;
-	padding-top: 3px;
-	padding-bottom: 3px;
 }
 
 /***
@@ -530,14 +526,40 @@ component.exports = {
 			var r = this;
 			var parent = $(node.parentNode);	
 			r.set("node", node);
-			
-			$(node).spectrum({
+
+			if (r.get("showPalette")) {
+				var palette = r.get("palette");
+				if (!palette) {
+					palette = [
+						["#337ab7", "#5cb85c", "#5bc0de", "#f0ad4e", "#d9534f"],
+						["#222", "#333", "#555", "#777", "#eee"],
+					];
+				}
+
+				$(node).spectrum({
+						color: r.get("value"),
+						appendTo: parent,
+						change: function(color) {
+							r.set("value", color.toHexString());
+						},
+						showPaletteOnly: true,
+						togglePaletteOnly: true,
+						togglePaletteMoreText: 'more',
+						togglePaletteLessText: 'less',
+						hideAfterPaletteSelect: true,
+						palette: palette,
+				});
+			} else {
+				$(node).spectrum({
 					color: r.get("value"),
 					appendTo: parent,
 					change: function(color) {
 						r.set("value", color.toHexString());
 					},
-			});
+				});
+			}
+			
+			
 			return {
 				teardown: function () {
 					$(node).spectrum("destroy");
