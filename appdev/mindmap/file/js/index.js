@@ -13,6 +13,7 @@ $(document).ready(function() {
     });
 
     var nav = r.findComponent("navbar");
+    var colorpicker = r.findComponent("colorpicker");
 
     MAPJS.DOMRender.stageVisibilityMargin = {
         top: 50,
@@ -149,9 +150,7 @@ $(document).ready(function() {
         "parse": function() {
             r.set("parsed", cmWrite.render(cmRead.parse(r.get("markdown"))));
         },
-        "setColor": function() {
-			$(".colorpicker").trigger("click");
-        },
+        "setColor": function() {},
     });
 
     r.observe({
@@ -252,8 +251,7 @@ $(document).ready(function() {
     });
     $(document).bind("keydown", "ctrl+r", function(e) {
         e.preventDefault();
-        r.fire("setColor");
-        //FIXME: Can't call click handler?
+		//TODO:
     });
 
 
