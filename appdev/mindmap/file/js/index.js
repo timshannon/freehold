@@ -181,6 +181,7 @@ $(document).ready(function() {
         r.set("waiting", false);
     });
     mapModel.addEventListener("contextMenuRequested", function(currentlySelectedIdeaId, eventPointX, eventPointY) {
+        $(colorpicker.get("node")).spectrum("hide");
         $("#contextMenu").addClass("open");
         $("#contextMenu").offset({
             left: eventPointX,
@@ -189,19 +190,20 @@ $(document).ready(function() {
     });
 
 
+    $("#editMenuDropDown").on("show.bs.dropdown", function() {
+        $("#contextMenu").removeClass("open");
+});
     $("#editMenuDropDown").on("hidden.bs.dropdown", function() {
         $(colorpicker.get("node")).spectrum("hide");
     });
 
-    $(".mapjs-node.selected").focusout(function() {
-        console.log("blur");
-		//FIXME
+    $(document).bind("click", function(e) {
         $("#contextMenu").removeClass("open");
     });
 
 
 
-    //function
+    //functions
     function loadFile(fileUrl) {
         if (!fileUrl) {
             idea = MAPJS.content({
@@ -209,6 +211,7 @@ $(document).ready(function() {
                 "title": "start here"
             });
             mapModel.setIdea(idea);
+            r.set("waiting", false);
             return;
         }
 
@@ -310,6 +313,7 @@ $(document).ready(function() {
     $(document).bind("keydown", "ctrl+r", function(e) {
         e.preventDefault();
 
+        $("#contextMenu").removeClass("open");
         showColorPicker(selectedNodePos());
     });
 

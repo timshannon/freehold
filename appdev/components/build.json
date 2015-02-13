@@ -26,5 +26,5 @@
 	  fs.writeFileSync(outputFile, cleanedCode);
 	},
 	cjsTranslate: true,
-	optimize: "none",
+	optimize: "uglify",
 }
