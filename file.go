@@ -24,7 +24,7 @@ import (
 	"bitbucket.org/tshannon/freehold/setting"
 	"bitbucket.org/tshannon/freehold/user"
 
-	"github.com/timshannon/go-commonmark"
+	"github.com/rhinoman/go-commonmark"
 )
 
 var markdownTypes = []string{".markdown", ".md"}

@@ -13,17 +13,13 @@ $(document).ready(function() {
     var timer;
 
 
-    var rApps = new Ractive({
-        el: "#appList",
-        template: "#tApps",
+    var r = new Ractive({
+        el: "#ractives",
+        template: "#tMain",
     });
 
-    var rManage = new Ractive({
-        el: "#modalHook",
-        template: "#tManageApps",
-    });
 
-    var nav = rManage.findComponent("navbar");
+    var nav = r.findComponent("navbar");
 
     //Get User's setting DS if exists
     fh.properties.get(usrSettingsDS)
@@ -75,26 +71,22 @@ $(document).ready(function() {
 
 
     //Events
-    rApps.on({
-        openModal: function(event) {
-            rManage.set({
+    r.on({
+        "fetchExternalOpen": function(event) {
+            r.set({
                 "fetchError": false,
                 "url": ""
             });
 
             $("#manageAppsModal").modal();
-            $("#externalAdd").collapse("hide");
-        }
-    });
-
-    rManage.on({
+        },
         install: function(event) {
             fh.application.install(event.context.file)
                 .done(function() {
                     refreshApps();
                 })
                 .fail(function(result) {
-				error(result);
+                    error(result);
                 });
         },
         upgrade: function(event) {
@@ -103,7 +95,7 @@ $(document).ready(function() {
                     refreshApps();
                 })
                 .fail(function() {
-				error(result);
+                    error(result);
                 });
         },
         remove: function(event) {
@@ -112,7 +104,7 @@ $(document).ready(function() {
                     refreshApps();
                 })
                 .fail(function() {
-				error(result);
+                    error(result);
                 });
         },
         star: function(event) {
@@ -126,40 +118,40 @@ $(document).ready(function() {
                     refreshApps();
                 })
                 .fail(function(result) {
-				error(result);
+                    error(result);
                 });
         },
         fetchExternal: function(event) {
             var url = event.context.url;
-            rManage.set("fetchError", false);
+            r.set("fetchError", false);
 
             if (!url.match("https?://+")) {
-                rManage.set("fetchError", {
+                r.set("fetchError", {
                     message: "Invalid url"
                 });
                 return;
             }
 
-            rManage.set("waiting", true);
+            r.set("waiting", true);
             fh.application.postAvailable(url)
                 .done(function(result) {
-                    rManage.set("url", "");
+                    r.set("url", "");
                     $("#externalAdd").collapse("hide");
                     refreshApps();
 
                 })
                 .fail(function(result) {
                     result = result.responseJSON;
-                    rManage.set("fetchError", result);
+                    r.set("fetchError", result);
                 })
                 .always(function() {
-                    rManage.set("waiting", false);
+                    r.set("waiting", false);
                 });
 
         }
     });
 
-    rManage.observe("filterText", function(newValue, oldValue, keypath) {
+    r.observe("filterText", function(newValue, oldValue, keypath) {
         if (timer) {
             window.clearTimeout(timer);
         }
@@ -172,24 +164,25 @@ $(document).ready(function() {
         fh.application.installed()
             .done(function(result) {
                 var installed = result.data;
+                var starsExist = false;
 
                 for (var id in installed) {
                     if (installed.hasOwnProperty(id)) {
                         if (starred[id]) {
                             installed[id].starred = true;
+                            starsExist = true;
                         }
                     }
                 }
-                rApps.set({
-                    apps: installed
-                });
+
+                r.set("starsExist", starsExist);
+                r.set("apps", installed);
 
                 if (!fh.auth.admin) {
-                    rManage.set({
-                        apps: installed,
+                    r.set({
                         admin: fh.auth.admin,
-                        failures: false,
-                        external: false,
+                        failures: {},
+                        external: externalApps
                     });
                     return;
                 }
@@ -215,10 +208,12 @@ $(document).ready(function() {
                                 }
                             }
                         }
+                        //FIXME: Installed app that isn't available?
+                        // Make sure it shows up
 
 
 
-                        rManage.set({
+                        r.set({
                             apps: available,
                             admin: fh.auth.admin,
                             failures: result.failures,
@@ -226,11 +221,11 @@ $(document).ready(function() {
                         });
                     })
                     .fail(function(result) {
-				error(result);
+                        error(result);
                     });
             })
             .fail(function(result) {
-				error(result);
+                error(result);
             });
 
 
@@ -240,11 +235,11 @@ $(document).ready(function() {
     function filterApps() {
         var regEx;
         try {
-            regEx = new RegExp(rManage.get("filterText"), "i");
+            regEx = new RegExp(r.get("filterText"), "i");
         } catch (e) {
             regEx = new RegExp("", "i");
         }
-        var apps = rManage.get("apps");
+        var apps = r.get("apps");
 
 
         for (var i in apps) {
@@ -257,18 +252,22 @@ $(document).ready(function() {
             }
         }
 
-        rManage.set("apps", apps);
+        r.set("apps", apps);
     }
 
     function error(err) {
-        var msg;
         if (typeof err === "string") {
-            msg = err;
+            nav.fire("addAlert", "danger", "", err);
+            return;
         } else {
-            msg = err.responseJSON.message;
+            err = err.responseJSON;
+            if (err.hasOwnProperty("failures")) {
+                for (var i = 0; i < err.failures.length; i++) {
+                    nav.fire("addAlert", "danger", "", err.failures[i].message);
+                }
+            } else {
+                nav.fire("addAlert", "danger", "", err.message);
+            }
         }
-        nav.fire("addAlert", "danger", "", msg);
     }
-
-
 }); //end ready
