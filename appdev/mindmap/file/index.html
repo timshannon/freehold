@@ -50,7 +50,7 @@
 		</li>
 
 		<!--edit-->
-		<li class="dropdown">
+		<li id="editMenuDropDown" class="dropdown">
 			<a id="editMenu" href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" 
 			role="button" aria-expanded="false">
 				Edit
@@ -92,8 +92,8 @@
 					<span class="glyphicon glyphicon-paperclip"></span> Add Attachment<span class="hotkey">Ctrl-A</span></a>
 				</li>
 				<li role="presentation">
-					<a role="menuitem" tabindex="-1" href="javascript:void(0)">
-					<span class="fa fa-eyedropper"></span> <colorpicker value="{{nodeColor}}"></colorpicker><span class="hotkey">Ctrl-R
+					<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="setColor">
+					<span class="fa fa-eyedropper"></span> Set Color<span class="hotkey">Ctrl-R
 						</span>
 					</a>
 				</li>
@@ -105,21 +105,23 @@
 		<li class="dropdown">
 			<a id="aboutMenu" href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" 
 			role="button" aria-expanded="false">
-				About
+				Help
 			</a>
 			<ul class="dropdown-menu" role="menu" aria-labelledby="aboutMenu">
 				<li role="presentation">
-					<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="about">
-					<span class="glyphicon glyphicon-info-sign"></span> About</a>
-				</li>
-				<li role="presentation">
 					<a role="menuitem" tabindex="-1" target="_blank" href="/mindmap/v1/file/docs/" >
 					<span class="glyphicon glyphicon-asterisk"></span> Hotkeys</a>
+				</li>
+
+				<li role="presentation">
+					<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="about">
+					<span class="glyphicon glyphicon-info-sign"></span> About</a>
 				</li>
 			</ul>
 		</li>
 	</ul>
 	
+	{{#waiting}}<span class="spinner nav-spinner"></span>{{/waiting}}
 </navbar>
 <modal id="fileBrowse" title="Select a Mind Map File" customFooter="true">
 	<filebrowse selected.url="{{selected}}" filterRegex="^.*\.(mmap|mup)$"></filebrowse>
@@ -164,7 +166,7 @@
 	</div>
 </modal>
 
-
+<colorpicker showPalette="true" value="{{nodeColor}}"></colorpicker>
 
 <!-- {{>cmEdit}} -->
 <div class="cm-editor">
@@ -202,6 +204,39 @@
 
 <!-- {{/cmEdit}} -->
 
+<div id="contextMenu">
+<ul class="dropdown-menu" role="menu">
+	<li role="presentation">
+		<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="cut">
+		<span class="glyphicon glyphicon-scissors"></span> Cut</a>
+	</li>
+	<li role="presentation">
+		<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="copy">
+		<span class="glyphicon glyphicon-copy"></span> Copy</a>
+	</li>
+	<li role="presentation">
+		<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="paste">
+		<span class="glyphicon glyphicon-paste"></span> Paste</a>
+	</li>
+	<li role="presentation">
+		<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="pasteStylel">
+		<span class="glyphicon glyphicon-paste"></span> Paste Style</a>
+	</li>
+	<li role="presentation" class="divider"></li>
+	<li role="presentation">
+		<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="toggleCollapse">
+		<span class="glyphicon glyphicon-resize-small"></span> Collapse/Expand</a>
+	</li>
+	<li role="presentation">
+		<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="addAttachment">
+		<span class="glyphicon glyphicon-paperclip"></span> Add Attachment</a>
+	</li>
+	<li role="presentation">
+		<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="setColor">
+		<span class="fa fa-eyedropper"></span> Set Color</a>
+	</li>
+</ul>
+</div>
 
 
 </script>

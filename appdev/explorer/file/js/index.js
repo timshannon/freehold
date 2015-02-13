@@ -4,7 +4,6 @@
 
 $(document).ready(function() {
     var urlParm = fh.util.urlParm("url");
-    var timer;
     var defaultIcons = buildDefaultIcons();
     var defaultApps = buildDefaultApps();
     var settings = new Settings();
