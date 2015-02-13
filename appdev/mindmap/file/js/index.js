@@ -32,6 +32,7 @@ $(document).ready(function() {
         imgControl = new MAPJS.ImageInsertController(),
         idea;
 
+    r.set("waiting", true);
 
     container.domMapWidget(console, mapModel, false, imgControl);
     window.mapModel = mapModel;
@@ -103,7 +104,6 @@ $(document).ready(function() {
         },
         "about": function() {
             $("#about").modal();
-
         },
         "undo": function() {
             mapModel.undo();
@@ -150,14 +150,16 @@ $(document).ready(function() {
         "parse": function() {
             r.set("parsed", cmWrite.render(cmRead.parse(r.get("markdown"))));
         },
-        "setColor": function() {},
-    });
-
-    r.observe({
-        "nodeColor": function(newValue, oldValue, keypath) {
-            if (newValue) {
-                mapModel.updateStyle("freehold", "background", newValue);
-            }
+        "setColor": function(event) {
+            event.original.preventDefault();
+            var coor = $(event.node).offset();
+            coor.left += $(event.node.parentNode).width();
+            showColorPicker(coor);
+            return false;
+        },
+        "colorpicker.change": function(color) {
+            mapModel.updateStyle("freehold", "background", color);
+            $("#contextMenu").removeClass("open");
         },
     });
 
@@ -167,6 +169,36 @@ $(document).ready(function() {
         r.fire("parse");
         $("#attachment").modal();
     });
+
+    mapModel.addEventListener("imageLoadStarted", function() {
+        r.set("waiting", true);
+    });
+
+    mapModel.addEventListener("imageInserted", function() {
+        r.set("waiting", false);
+    });
+    mapModel.addEventListener("layoutChangeComplete", function() {
+        r.set("waiting", false);
+    });
+    mapModel.addEventListener("contextMenuRequested", function(currentlySelectedIdeaId, eventPointX, eventPointY) {
+        $("#contextMenu").addClass("open");
+        $("#contextMenu").offset({
+            left: eventPointX,
+            top: eventPointY
+        });
+    });
+
+
+    $("#editMenuDropDown").on("hidden.bs.dropdown", function() {
+        $(colorpicker.get("node")).spectrum("hide");
+    });
+
+    $(".mapjs-node.selected").focusout(function() {
+        console.log("blur");
+		//FIXME
+        $("#contextMenu").removeClass("open");
+    });
+
 
 
     //function
@@ -192,6 +224,7 @@ $(document).ready(function() {
             return;
         }
 
+        r.set("waiting", true);
         var uploadUrl = r.get("file.url").split("/");
         uploadUrl.pop();
         uploadUrl = uploadUrl.join("/");
@@ -208,9 +241,11 @@ $(document).ready(function() {
                     if (post) {
                         post();
                     }
+                    r.set("waiting", false);
                 })
                 .fail(function(result) {
                     error(result);
+                    r.set("waiting", false);
                 });
         } else {
             fh.file.update(uploadUrl, form)
@@ -218,14 +253,37 @@ $(document).ready(function() {
                     if (post) {
                         post();
                     }
+                    r.set("waiting", false);
                 })
                 .fail(function(result) {
                     error(result);
+                    r.set("waiting", false);
                 });
+
         }
 
 
     }
+
+    function showColorPicker(coordinates) {
+        r.set("colorPickerCoordinates", coordinates);
+        var color = mapModel.getSelectedStyle("background");
+        var node = colorpicker.get("node");
+        var container = $(node).spectrum("container");
+        $(node).spectrum("set", color);
+        $(node).spectrum("show");
+        if (coordinates) {
+            $(container).offset(coordinates);
+        }
+    }
+
+    $(colorpicker.get("node")).on("reflow.spectrum", function(e) {
+        var container = $(e.target).spectrum("container");
+        var coordinates = r.get("colorPickerCoordinates");
+        if (coordinates) {
+            $(container).offset(coordinates);
+        }
+    });
 
 
     //hotkeys
@@ -251,10 +309,19 @@ $(document).ready(function() {
     });
     $(document).bind("keydown", "ctrl+r", function(e) {
         e.preventDefault();
-		//TODO:
+
+        showColorPicker(selectedNodePos());
     });
 
 
+    function selectedNodePos() {
+        var node = $(".mapjs-node.selected");
+        var coor = node.offset();
+        coor.left += node.width();
+        coor.top += node.height();
+
+        return coor;
+    }
 
 
     function error(err) {

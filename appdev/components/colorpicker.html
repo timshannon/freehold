@@ -259,11 +259,13 @@ License: MIT
     background-color: #ECECEC;
     padding: 0;
 
-	background-clip: padding-box;
-	border: 1px solid rgba(0, 0, 0, 0.2);
-	border-radius: 6px;
-	outline: 0px none;
-box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.5);
+		background-clip: padding-box;
+		border: 1px solid rgba(0, 0, 0, 0.2);
+		border-radius: 6px;
+		outline: 0px none;
+		box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.5);
+
+		margin-right: -32px;
 }
 .sp-container, .sp-container button, .sp-container input, .sp-color, .sp-hue, .sp-clear {
     font: normal 12px "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Geneva, Verdana, sans-serif;
@@ -531,31 +533,40 @@ component.exports = {
 				var palette = r.get("palette");
 				if (!palette) {
 					palette = [
-						["#337ab7", "#5cb85c", "#5bc0de", "#f0ad4e", "#d9534f"],
-						["#222", "#333", "#555", "#777", "#eee"],
+						["#d9534f","#f0ad4e","#FFD700","#5cb85c"],
+						["#5cb8a2","#5bc0de","#337ab7","#6F5499"],
+						["#222", "#333", "#555", "#777"],
+						[undefined],
 					];
 				}
+				change = function(color) {
+							if(color) {
+								r.set("value", color.toHexString());
+								r.fire("change",color.toHexString()); 
+							} else {
+								r.fire("change"); 
+							}
+						};
 
 				$(node).spectrum({
 						color: r.get("value"),
 						appendTo: parent,
-						change: function(color) {
-							r.set("value", color.toHexString());
-						},
+						change: change,
 						showPaletteOnly: true,
 						togglePaletteOnly: true,
 						togglePaletteMoreText: 'more',
 						togglePaletteLessText: 'less',
+						allowEmpty: true,
 						hideAfterPaletteSelect: true,
+						maxSelectionSize: 4,
 						palette: palette,
 				});
 			} else {
 				$(node).spectrum({
 					color: r.get("value"),
 					appendTo: parent,
-					change: function(color) {
-						r.set("value", color.toHexString());
-					},
+					allowEmpty: true,
+					change: change,
 				});
 			}
 			

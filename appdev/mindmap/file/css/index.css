@@ -90,3 +90,10 @@ li.tab-icon > a:focus {
 }
 
 
+.sp-replacer {
+	display: none;
+}
+
+.nav-spinner {
+	margin-top: 8px;
+}
