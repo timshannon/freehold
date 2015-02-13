@@ -1,0 +1,116 @@
+<div class="dropzone {{class}}" decorator="dropzone">
+	{{#if mode==="dragover"}}
+		<div class="drop-overlay" intro="scale" outro="scale">
+			<p class="text-center drop-text">Drop files here</p>
+		</div>
+	{{/if}}
+	{{yield}}
+</div>
+
+<style>
+	.drop-overlay {
+		z-index: 5000;
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		opacity: .9;
+
+		background-color: #fff;
+		border: 5px dashed #555;
+		border-radius: 4px;
+	}
+
+	.drop-text {
+		font-size: 4em;
+		font-weight: 700;
+		position: relative;
+		top: 50%;
+		transform: translateY(-50%);
+	}
+</style>
+
+<script>
+
+var timer;
+component.exports = {
+	data: {
+		mode: "none",
+		useParent: false,
+	},
+	decorators: {
+		dropzone: function (srcNode) {
+			var r = this;
+
+			if(r.get("useParent")) {
+				node = srcNode.parentNode;	
+			} else {
+				node = srcNode;
+			}
+
+			dragenter = function(e) {
+				e.stopPropagation();
+				e.preventDefault();
+			};
+			node.addEventListener("dragenter", dragenter, false);
+
+			dragover = function(e) {
+					//TODO: Figure out how to only show dropzone on files and not anything else
+					r.set("mode", "dragover");	
+					e.stopPropagation();
+					e.preventDefault();
+					window.clearTimeout(timer);
+			};
+			node.addEventListener("dragover", dragover, false);
+
+			drop = function(e) {
+				e.stopPropagation();
+				e.preventDefault();
+
+				r.set("mode", "drop");	
+				r.set("dataTransfer", e.dataTransfer);
+				var files = e.dataTransfer.files;
+				var goodFiles = [];
+				for(var i=0; i < files.length; i++) {
+					if(files[i].size > 0) {
+						goodFiles.push(files[i]);
+					} 
+				}
+
+				if(goodFiles.length > 0) {
+					r.set("files", goodFiles);
+					r.fire("drop", goodFiles);
+				}
+
+			};
+			node.addEventListener("drop", drop, false);			
+
+			var dragleave = function(e) {
+				e.stopPropagation();
+				e.preventDefault();
+        if (timer) {
+            window.clearTimeout(timer);
+        } 
+        timer = window.setTimeout(function() {
+					r.set("mode", "none");
+					}, 200);
+			};
+			node.addEventListener("dragleave", dragleave, false);
+
+			return {
+				teardown: function () {
+					node.removeEventListener("dragenter", dragenter, false);
+					node.removeEventListener("dragover", dragover, false);
+					node.removeEventListener("drop", drop, false);			
+					node.removeEventListener("dragleave", dragleave, false);
+				}
+			};
+		},
+	},
+
+	onrender: function() {
+	},
+
+};
+</script>

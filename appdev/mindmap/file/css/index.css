@@ -1,0 +1,99 @@
+html, body {
+	height: 100%;
+	width: 100%;
+}
+
+#container {
+	background-color: #FFFFFF;
+	width:100%;
+	margin-top: -21px;
+	height:calc(100% - 51px); 
+	padding:0px;
+}
+
+.filebrowse {
+	margin-bottom: 15px;
+}
+
+.hotkey {
+	position: absolute;
+	color: #777;
+	font-size: 80%;
+	right: 0;
+	padding-right: 10px;
+	padding-top: 3px;
+}
+
+ul.dropdown-menu.has-hotkey > li > a {
+	padding-right: 40px;
+}
+
+#filename {
+	position: absolute;
+	left: 0;
+	right: 0;
+	text-align: center;
+	font-weight: bold;
+	z-index: -1;
+}
+
+
+.mapjs-node[mapjs-level="1"] {
+	background-color:#5bc0de;
+}
+
+.mapjs-node.selected {
+	outline: 0;
+	border: 3px dashed #337ab7;
+	margin: -2px;
+	box-shadow: 5px 5px 5px black;
+	z-index: 3;
+}
+
+.mapjs-node:focus {
+	outline: 0;
+	border: 3px dashed #5cb85c;
+	margin: -2px;
+	box-shadow: 5px 5px 5px #5cb85c;
+	z-index: 3;
+}
+
+.cm-editor {
+	height: 50vh;
+	margin-bottom: 60px;
+}
+
+
+.cm-editor>.tab-content, #edit, #view, .parsed, #edit>textarea {
+	height: 100%;
+}
+
+.parsed {
+	overflow: auto;	
+}
+
+#edit>textarea {
+	border-top-left-radius: 0px;
+	border-top-right-radius: 0px;
+	border-top-width: 0px;
+	box-shadow: 0px 0px 0px; 
+}
+
+li.tab-icon > a {
+	margin-right: 0px;
+	border: 0px;
+}
+
+li.tab-icon > a:hover ,
+li.tab-icon > a:focus {
+	background-color: transparent;
+}
+
+
+.sp-replacer {
+	display: none;
+}
+
+.nav-spinner {
+	margin-top: 8px;
+}

@@ -1,0 +1,54 @@
+<span class="droppable {{class}}" decorator="droppable" {{#.useParent}}style="display:none;"{{/}}>
+	{{yield}}
+</span>
+
+<style>
+</style>
+
+<script>
+
+component.exports = {
+	//defaulted options, can be overridden at component markup
+	// options to be added as needed, and they should match
+	// the jqueryui options
+	data: {
+			useParent: false,
+			addClasses: true,
+			greedy: false,
+			tolerance: "intersect",
+			hoverClass: false,
+			scope: "default",
+			dropData: null,
+	},
+	decorators: {
+		droppable: function (srcNode) {
+			var r = this;
+			var node;
+			if(r.get("useParent")) {
+				node = srcNode.parentNode;	
+			} else {
+				node = srcNode;
+			}
+			$(node).droppable({
+				addClasses: r.get("addClasses"),
+				greedy: r.get("greedy"),
+				hoverClass: r.get("hoverClass"),
+				tolerance: r.get("tolerance"),
+				scope: r.get("scope"),
+				drop: function(event, ui) {
+					r.fire("drop", $(ui.draggable).data("dragData"), r.get("dropData"));
+				},
+			});
+			return {
+				teardown: function () {
+					$(node).droppable("destroy");
+				}
+			};
+		},
+	},
+
+	onrender: function() {
+	},
+
+};
+</script>

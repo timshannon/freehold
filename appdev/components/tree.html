@@ -1,0 +1,223 @@
+<link rel="ractive" href="draggable.html" name="draggable">
+<link rel="ractive" href="droppable.html" name="droppable">
+
+<div class="tree">
+	{{#root}}
+	<div class="{{#.selected}}selected bg-info{{/}} child">
+		{{#if .droppable}}
+			<droppable useParent="true" hoverClass="drop-over" tolerance="pointer" dropData="{{.}}"></droppable>	
+		{{/if}}
+
+		{{#tree.hasChildren(this)}}
+			<a href="javascript:void(0)" on-click="open">
+				<span class="glyphicon glyphicon-{{#if .open}}minus{{else}}plus{{/if}}"></span>
+			</a>
+		{{/this}}
+
+		{{#.iconClass}}
+			<span class="icon {{.iconClass}}"></span> 
+		{{/.iconClass}}
+		{{#.icon}}
+			<img class="icon" src="{{.icon}}">
+		{{/.icon}}
+		{{#if .canSelect}}
+			<a href="javascript:void(0)"  on-click="select">{{.name}}</a>
+		{{else}}
+			 {{#tree.hasChildren(this)}}
+				<a href="javascript:void(0)"  on-click="open">{{.name}}</a>
+			{{/tree}}
+			{{^tree.hasChildren(this)}}
+				{{.name}}
+			{{/tree}}
+		{{/if}}
+	</div>  
+		{{#tree.hasChildren(this)}} 
+			{{#if .open}}
+				{{>children}}
+			{{/if}}
+		{{/this}}
+	{{/root}}
+</div>
+
+<!-- {{>children}} -->
+<ul>
+  {{#.children}}
+		{{^.hide}}
+			{{>child}}
+		{{/.hide}}
+  {{/children}}
+</ul>
+<!-- {{/children}} -->
+
+<!-- {{>child}} -->
+<li>
+	<div class="{{#.selected}}selected{{/}} child" {{^.draggable}}onmousedown="return false"{{/}}>
+		{{#if .draggable}}
+			<draggable useParent="true" opacity="0.7" helper="clone" zIndex="1000" dragData="{{.}}"></draggable>	
+		{{/if}}
+		{{#if .droppable}}
+			<droppable useParent="true" hoverClass="drop-over" tolerance="pointer" dropData="{{.}}"></droppable>	
+		{{/if}}
+
+		{{#tree.hasChildren(this)}}
+			<a href="javascript:void(0)" on-click="open">
+				<span class="glyphicon glyphicon-{{#if .open}}minus{{else}}plus{{/if}}"></span>
+			</a>
+		{{/this}}
+		{{#.iconClass}}
+			<span class="icon {{.iconClass}}"></span> 
+		{{/iconClass}}
+		{{#.icon}}
+			<img class="icon" src="{{.icon}}">
+		{{/.icon}}
+		{{#if .canSelect}}
+			<a href="javascript:void(0)"  on-click="select">{{.name}}</a>
+		{{else}}
+			{{#tree.hasChildren(this)}}
+				<a href="javascript:void(0)"  on-click="open">{{.name}}</a>
+			{{/tree}}
+			{{^tree.hasChildren(this)}}
+				{{.name}}
+			{{/tree}}
+		{{/if}}
+	</div>
+	{{#tree.hasChildren(this)}} 
+		{{#if .open}}
+			{{>children}}
+		{{/if}}
+	{{/this}}
+</li>
+<!-- {{/child}} -->
+
+<style>
+	.child.selected, .child.selected:hover {
+		border-color: #ccc;
+		border-radius: 4px;
+		font-weight:bold;
+		background-color: #D9EDF7;
+	}
+
+	.child.drop-over  {
+		background-color: #D9EDF7;
+		border: 3px solid #337ab7;
+		border-radius: 4px;
+		padding: 4px;
+	}
+
+	.child {
+		padding: 7px;
+	}
+
+	.child:hover {
+		background-color: #f5f5f5;
+		border: 0px solid transparent;
+		border-radius: 4px;
+		padding: 7px;
+	}
+
+	a:hover, a:focus {
+		text-decoration: none;	
+		color: #333;
+	}
+
+	a {
+		color: #333;
+	}
+
+	.tree {
+		cursor: default;
+		overflow: auto;
+	}
+
+	ul {
+		list-style: none;
+	}
+
+	li {
+		margin-left: -22px;
+	}
+
+	.icon {
+		color: #555;
+	}
+
+	.icon {
+		max-width: 14px;
+		max-height: 14px;	
+	}
+
+</style>
+
+<script>
+component.exports = {
+	data: {
+		tree: {
+			hasChildren: function(child) {
+				return (typeof child.children !== "undefined" && child.children.length >= 0);
+			},
+		},
+		root: {
+			name: "Sample data that should be overwritten",canSelect: true,
+			iconClass: "folder-open",	
+			children: [
+				{name: "child1", iconClass: "glyphicon glyphicon-file", canSelect: true, children: []},
+				{name: "child2", iconClass: "glyphicon glyphicon-file", canSelect: true},
+				{name: "child3", iconClass: "glyphicon glyphicon-folder-closed", children: [
+					{name: "subchild1", iconClass: "glyphicon glyphicon-file", canSelect: true},
+					{name: "subchild2", iconClass: "glyphicon glyphicon-file", canSelect: true, hide: true},
+					{name: "subchild3", iconClass: "glyphicon glyphicon-file", canSelect: true},
+					{name: "child3", iconClass: "glyphicon glyphicon-folder-closed", children: [
+						{name: "subchild1", iconClass: "glyphicon glyphicon-file", canSelect: true},
+						{name: "subchild2", iconClass: "glyphicon glyphicon-file", canSelect: true},
+						{name: "subchild3", iconClass: "glyphicon glyphicon-file", canSelect: true},
+					]},
+				]},
+			]
+		},
+	},
+	onrender: function() {
+		var r = this;
+		
+		this.on({
+			"open": function(event) {
+				if (event.context.open) {
+					r.set(event.keypath+".open", false);
+					return;
+				}
+				r.set(event.keypath+".open", true);
+			},
+			"select": function(event) {
+				r.set("selectKeypath", event.keypath);
+			},
+		});
+
+		this.observe({
+			"selectKeypath": function(newvalue, oldvalue, keypath) {
+				select(newvalue);
+			},
+		});
+
+		function select(keypath) {
+			r.set("root.selected", false);
+			clearSelected(r.get("root.children"));
+			r.update("root");
+
+			r.set(keypath+".selected", true);
+			r.set("selected", r.get(keypath));
+		}
+
+		function clearSelected(children) {
+			if (!children) {
+				return;
+			}
+			for (var i = 0; i < children.length; i++) {
+				children[i].selected = false;	
+				if (children[i].hasOwnProperty("children")) {
+					clearSelected(children[i].children);
+				}
+			}
+		}
+	},
+
+};
+</script>

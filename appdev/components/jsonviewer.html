@@ -1,0 +1,157 @@
+<div class="jsonviewer">
+	{{#error}}
+		<div class="alert alert-danger" role="alert">{{error}}</div>
+	{{/error}}
+	<div class="pull-right btn-group">
+		<button type="button" class="btn btn-success btn-xs" on-click="expandAll">
+			<span class="glyphicon glyphicon-plus" title="Expand all"></span>
+		</button>
+		<button type="button" class="btn btn-danger btn-xs" on-click="collapseAll">
+			<span class="glyphicon glyphicon-minus" title="Collapse all"></span>
+		</button>
+	</div>
+	<span class="json-item">
+	{<ul>
+	{{#root:i}}
+			{{>value}}
+	{{/root}}
+	</ul>}
+	</span>
+</div>
+
+
+<!-- {{>child}} -->
+<ul>
+	{{#.children:i}}
+		{{>value}}
+	{{/.children}}
+</ul>
+<!-- {{/child}} -->
+
+<!-- {{>value}} -->
+{{#if !../../collapsed}}
+{{#this}}
+<li>
+	<span class="json-item">
+	{{#if .children}}
+		<a href="javascript:void(0)" on-click="collapse">
+			<span class="collapser glyphicon glyphicon-{{#if .collapsed}}plus{{else}}minus{{/if}}"></span>
+		</a>
+	{{/if}}
+	{{#if ../../type !== "array"}}
+		{{.key}} :
+	{{/if}}
+
+	{{#if .type === "object"}}
+		{ {{>child}} }
+	{{/if}}
+	{{#if .type ==="array"}}
+		[ {{>child}} ]
+	{{/if}}
+	{{#if .type !=="object" && .type !== "array"}}
+		{{.value}}
+	{{/if}}
+		,
+	</span>
+</li>
+{{/this}}
+{{/if}}
+<!-- {{/value}} -->
+
+
+<style>
+	ul {
+		list-style: none;
+	}
+
+	.json-item {
+		padding: 4px;
+	}
+
+	.collapser {
+		color: #555;
+	}
+
+	.json-item:hover {
+		background-color: #f5f5f5;
+		border-radius: 4px;
+		padding: 4px;
+	}
+
+	.jsonviewer {
+		cursor: default;
+	}
+</style>
+<script>
+component.exports = {
+	data: {
+		root: {},
+		object: {},
+		startCollapsed: false,
+	},
+	onrender: function() {
+		var r = this;
+
+		this.on({
+			"collapse": function(event) {
+				if (event.context.collapsed) {
+					r.set(event.keypath+".collapsed", false);
+				} else {
+					r.set(event.keypath+".collapsed", true);
+				}
+
+				r.update(event.keypath);
+			},
+			"expandAll": function(event) {
+				setRoot(r.get("object"), false);
+			},
+			"collapseAll": function(event) {
+				setRoot(r.get("object"), true);
+			},
+		});
+
+		this.observe("object", function(newvalue, oldvalue, keypath) {
+			setRoot(newvalue, r.get("startCollapsed"));
+		});
+
+		function setRoot(object, collapsed) {
+			r.set("error", null);
+			r.set("root", {});
+			if (typeof object === "string") {
+				try {
+					r.set("root", parseObj(JSON.parse(object),collapsed));
+				} catch (e) {
+					r.set("error", "invalid JSON: " + e);
+				}
+			} else {
+				r.set("root", parseObj(object, collapsed));
+			}
+		}
+
+		function parseObj(object, collapsed) {
+			var kv = [];
+			for (var key in object) {
+				var obj = {
+					key: key,
+					collapsed: collapsed,
+				};
+				if (object.hasOwnProperty(key)) {
+					obj.type = typeof object[key];
+					if (object[key] instanceof Array) {
+						obj.type = "array";
+					}
+
+					if (obj.type === "object" || obj.type === "array")  {
+						obj.children = parseObj(object[key], collapsed);
+					} else {
+						obj.value = object[key];
+					}
+					kv.push(obj);	
+				}
+			}
+			return kv;
+		}
+		
+	},
+};
+</script>

@@ -1,0 +1,20 @@
+#dsOpen {
+	margin-bottom: 10px;
+}
+
+.file-label {
+	font-size: 14px;
+
+}
+
+#filterSpinner {
+	position: absolute;
+}
+
+td {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	max-width: 100vh;
+}
+

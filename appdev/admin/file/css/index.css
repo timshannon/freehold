@@ -1,0 +1,42 @@
+.admin-control-group {
+	width: 100%;
+
+}
+
+#filterLabel {
+	margin-right: 10px;
+}
+
+#filterText {
+	margin-left: 10px;
+}
+
+#filterSpinner {
+	width: 28px;
+	height: 28px;
+}
+
+@media (min-width: 768px) {
+	#filterText {
+		width: 470px;
+	}
+
+}
+
+@media (max-width: 768px) {
+	#filterSpinner {
+		display: none;
+	}
+}
+
+
+.tab-pane > .well {
+	border-top-left-radius: 0px;
+	border-top-right-radius: 0px;
+}
+
+.tab-pane > .list-group > .list-group-item:first-child ,
+.tab-pane > .container >.list-group > .list-group-item:first-child {
+	border-top-left-radius: 0px;
+	border-top-right-radius: 0px;
+}

@@ -1,0 +1,227 @@
+<link rel="ractive" href="modal.html" name="modal">
+<div>
+<nav class="navbar navbar-default navbar-static-top" role="navigation"> 
+	<div class="navbar-header"> 
+		<a class="navbar-brand" href="/" title="home">{{brand}}</a> 
+		{{#app}} 
+			<ul class="nav navbar-nav hidden-xs"> 
+				<li class="active"><a href="javascript:void(0)" on-click="refresh">{{app}}</a></li> 
+			</ul>
+		{{/app}} 
+		{{#help}} 
+			<ul class="nav navbar-nav"> 
+				<li><a href="javascript:void(0)" id="navHelp" tabindex="0"  title="{{title}}" role="button"  
+				data-content="{{text}}" decorator="help"><span class="glyphicon glyphicon-question-sign"></span></a></li> 
+			</ul>
+		{{/help}} 
+	</div> 
+	<div class="nav-rightmost"> 
+		{{#authenticated}} 
+			<div class="btn-group navbar-right"> 
+				<button type="button" id="userButton" on-click="openUser" class="btn btn-default btn-primary navbar-btn" title="User Info for {{user.name}}"> 
+				<span class="glyphicon glyphicon-user"></span> {{user.name.split(" ")[0]}}</button> 
+				<button type="button" id="logoutButton" on-click="logout" class="btn btn-default navbar-btn">Log Out</button> 
+			</div> 
+		{{/authenticated}} 
+		{{^authenticated}} 
+			<button type="button" id="loginButton" on-click="loginModal" class="btn btn-default navbar-btn navbar-right">Log in</button>
+		{{/authenticated}} 
+		{{yield}} 
+	</div> 
+</nav> 
+<modal id="loginModal" title="Log in">
+	<form>
+	{{#loginErr}}
+	<span id="err" class="label label-danger">{{loginErr}}</span>
+	{{/loginErr}}
+		<div class="form-group">
+			<label class="sr-only" for="username">Username</label>	
+			<input class="form-control" id="username" name="username" placeholder="Enter username" value="{{username}}">
+		</div>
+		<div class="form-group">
+			<label class="sr-only" for="password">Password</label>
+			<input type="password" class="form-control" id="password" name="password" placeholder="Password" value="{{password}}">
+		</div>
+		<div class="checkbox">
+			<label>
+				<input type="checkbox" id="rememberMe" name="rememberMe" checked="{{rememberMe}}"> Remember me
+			</label>
+		</div>
+		<button on-click="login" class="btn btn-primary{{#.waiting}} disabled{{/waiting}}">Log In</button>
+		{{#.waiting}}
+		<span class="spinnerContainer">
+			<span class="loginSpinner spinner"></span>
+		</span>
+		{{/waiting}}
+	</form>
+</modal>
+</div>
+
+{{#if alerts.length > 0}}
+	<div class="nav-alert-container">
+	{{#alerts:i}}
+	<div class="navbar-alert alert alert-{{.type || 'danger'}} alert-dismissible" role="alert">
+		<button type="button" class="close" on-click="dismissAlert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<strong>{{lead}}</strong>  
+			{{{detail}}} 
+	</div>
+	{{/alerts}}
+	</div>
+	<div class="modal-backdrop fade in">
+	</div>
+
+{{/if}}
+
+        
+<style>
+.nav-rightmost {
+	margin-right: 30px;
+}
+
+.loginSpinner {
+	position: absolute;
+	top: -6px;
+	left: 10px;
+}
+
+.spinnerContainer {
+	position: relative;
+}
+
+.nav-alert-container {
+	position: fixed;
+	z-index: 10500;
+	width: 100%;
+	height: 100%;
+}
+
+.navbar-alert {
+	left: 0;
+	right: 0;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 20px;
+	min-width: 100px;
+	max-width: 50%;
+}
+</style>
+
+<script>
+//TODO: Notifications
+component.exports = {
+	isolated: false,
+	data: {
+			brand: "freehold",
+			authenticated: (fh.auth.type != "none"),
+			app: false,
+			user: {},
+			alerts: [],
+	},
+	decorators: {
+		help: function (node) {
+			$(node).popover({
+							animation: true,
+							placement: "bottom",
+							trigger: "focus",
+							html: true,
+							container: "body",
+				});
+			return {
+				teardown: function () {
+					$(node).popover("destroy");
+				}
+			};
+		},
+	},
+	onrender: function() {
+		var r = this;
+		if (r.get("authenticated")) {
+			fh.user.get(fh.auth.user)
+				.done(function(result) {
+					if (!result.data.name) {
+						result.data.name = fh.auth.user;
+					}
+					result.data.name = result.data.name.trim();
+					r.set("user", result.data);
+				})
+			.fail(function(result) {
+				result = result.responseJSON;
+				r.set("error", result.message);
+			});
+		}
+
+		this.on({
+				logout: function(event) {
+						fh.session.logout()
+								.done(function() {
+										window.location = "/";
+								})
+								.fail(function(result) {
+									result = result.responseJSON;
+									this.set("error", result.message);
+								}.bind(this));
+				},
+				openUser: function(event) {
+						window.location = "/home/v1/file/user/";
+				},
+				refresh: function(event) {
+					window.location.reload();
+				},
+				loginModal: function(event) {
+            this.set({
+                "loginErr": false,
+                "username": "",
+                "password": "",
+                "rememberMe": false
+            });
+
+            $("#loginModal").modal();
+            $("#loginModal").on("shown.bs.modal", function() {
+                $("#username").focus();
+            });
+
+        },
+        login: function(event) {
+					event.original.preventDefault();
+            this.set("waiting", true);
+            this.set("loginErr", null);
+            var data;
+
+            if (event.context.rememberMe) {
+                var today = new Date(Date.now());
+                today.setDate(today.getDate() + 15);
+                data = today;
+            }
+            if (event.context.username === "") {
+                this.set("loginerr", "username is required");
+                this.set("waiting", false);
+                return;
+            }
+
+            fh.session.login(event.context.username, event.context.password, data)
+                .done(function(result) {
+                    location.reload();
+                })
+                .fail(function(result) {
+										result = result.responseJSON;
+                    this.set("loginErr", result.message);
+                    this.set("waiting", false);
+                }.bind(this));
+        },
+				"addAlert": function(type, lead, detail) {
+					if (!type) {
+						type = "danger";
+					}
+
+					if (!lead) {
+						lead = "An error occurred!";
+					}
+					r.push("alerts", {type: type, lead: lead, detail: detail});
+				},
+				"dismissAlert": function(event) {
+					r.splice(event.keypath.split(".")[0], event.index.i, 1);
+				},
+		});
+	}
+};
+</script>

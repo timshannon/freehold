@@ -1,0 +1,9 @@
+{
+	"id": "webodf",
+	"name": "Web ODF",
+	"version": "0.5.4",
+	"description": "Web ODF (Open Document Format) Viewer",
+	"author": "KO GmbH - http://kogmbh.com/",
+	"root": "/webodf/v1/file/index.html",
+	"icon": "/webodf/v1/file/image/webodf_icon.png"
+}
