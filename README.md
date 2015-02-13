@@ -15,11 +15,11 @@ Interacting with the REST API is done through the core applications that come wi
 
 Getting Started
 ==================
-Freehold is made to be easy to setup and get running.  If you have an executable on your system, then you simply need to run it and open up a web browser to http://localhost.  It will then prompt you to setup your first user before taking you to your *Home* screen.  
+Freehold is made to be easy to setup and get running.  If you have the executable on your system, then you simply need to run it and open up a web browser to http://localhost.  It will then prompt you to setup your first user before taking you to your *Home* screen.  
 
 That's it.  
 
-There are a few more steps if you want to customize how you are hosting your instance, however. You may need to run the executable with elevated rights in order to host on the default port 80.  If you want to change which port the freehold instance runs on, you can edit the settings.json file which should get created automatically directory when you first run Freehold.  The location of that settings file will be printed when you run freehold, along with other possible settings file locations. That file should look something like this:
+There are a few more steps if you want to customize how you are hosting your instance, however. You may need to run the executable with elevated rights in order to host on the default port 80.  If you want to change which port the freehold instance runs on, you can edit the settings.json file which should get created automatically when you first run Freehold.  The location of that settings file will be printed when you run freehold, along with other possible settings file locations. That file should look something like this:
 
 ```
 {
@@ -33,7 +33,7 @@ There are a few more steps if you want to customize how you are hosting your ins
 
 Simply update the port to whatever you want and restart the freehold instance.
 
-You'll also notice that you can specify a Certificate and Key file if you want to host your instance on SSL, which is definately a recommended.
+You'll also notice that you can specify a Certificate and Key file if you want to host your instance on SSL, which is definitely recommended.
 
 If you are hosting your freehold instance on a local network and want to take advantage of SSL encryption, you can (hopefully as a last resort) generate a [self-signed certificate](http://en.wikipedia.org/wiki/Self-signed_certificate) and key file and host using that with the *selfsign* flag ```freehold -selfsign```
 
@@ -41,7 +41,7 @@ You can also specify where you want freehold to store your data.  By default it 
 
 Building From Source
 ======================
-If you wish to build freehold from source (which will probabaly be the case until I upload some binaries) you'll need to first install Go.
+If you wish to build freehold from source (which will probably be the case until I upload some binaries) you'll need to first install Go.
 http://golang.org/doc/install
 
 Grab the code
@@ -81,6 +81,8 @@ Types of Data
 ====================
 You can store any type of file you like, which can later be downloaded or viewed in the browser depending on the MIME type.  You can also store data in a Key / Value store called a *datastore*. Usually used by applications, one can GET, PUT, or DELETE any JSON describable data in the datastore.
 
+Markdown files are automatically recognized and displayed as HTML when retrieved.
+
 Applications
 ==============
 Applications are just zip files of HTML, CSS, and javascript.  When you first log into your Freehold instance, you are taken to the Core Home application.  This application isn't any different from any other application, and can be completely replaced with a different Home application.  Each user in the system can choose their own Home application as well.
@@ -94,8 +96,8 @@ In those cases, it's usually not a good idea to be storing your username and pas
 
 What Freehold is and isn't
 ====================================
-Freehold is designed to be a personal server.  There is no server side validation for datastore entries.  If garbage gets put into a datastore, garbage comes back out. A malicious user who had access to update a datastore could insert bad data which could have negative concequences on the application relying on it.  Any applications should be built with this in mind.  For example, a public comments datastore should have it's contents approved before being displayed.  A process which would take two separate datastores.  One which the public can write to, and one which those public comments get copied to for viewing when they've been approved.  
+Freehold is designed to be a personal server.  There is no server side validation for datastore input beyond *is this valid JSON*.  If garbage gets put into a datastore, garbage comes back out. A malicious user who had access to update a datastore could insert bad data which could have negative consequences on the application relying on it.  Any applications should be built with this in mind.  For example, a public comments datastore should have it's contents approved before being displayed / inserted into the public datastore.  A process which would take two separate datastores.  One which the public can write to, and one which those public comments get copied to for viewing when they've been approved.  
 
-In this way Freehold's server side protections lie soley in it's permissions structure, and isn't robust enough for a diverse population of authenticated users who may or may not be trusted.
+In this way Freehold's server side protections lie solely in it's permissions structure, and isn't robust enough for a diverse population of authenticated users who may or may not be trusted.
 
 See the built-in documentation (/docs) for more detailed information.
