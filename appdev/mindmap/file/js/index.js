@@ -192,13 +192,15 @@ $(document).ready(function() {
 
     $("#editMenuDropDown").on("show.bs.dropdown", function() {
         $("#contextMenu").removeClass("open");
-});
+    });
     $("#editMenuDropDown").on("hidden.bs.dropdown", function() {
         $(colorpicker.get("node")).spectrum("hide");
     });
 
     $(document).bind("click", function(e) {
+		if(e.button !== 2) {
         $("#contextMenu").removeClass("open");
+}
     });
 
 

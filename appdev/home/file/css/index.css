@@ -46,16 +46,6 @@
 	font-size: 1.35em;
 }
 
-@media (min-width: 768px) {
-	#appUrl {
-		width: 470px;
-	}
-}
-
-.progress:last-child {
-	margin-bottom: 0px;
-}
-
 
 .footer {
 	width: 100%;
