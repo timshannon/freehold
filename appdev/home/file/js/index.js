@@ -8,7 +8,6 @@ $(document).ready(function() {
     var dsSettings = new fh.Datastore(usrSettingsDS);
     var appList;
     var starred = {};
-    var externalApps = false;
 
     var timer;
 
@@ -16,6 +15,9 @@ $(document).ready(function() {
     var r = new Ractive({
         el: "#ractives",
         template: "#tMain",
+        data: {
+            admin: fh.auth.admin,
+        }
     });
 
 
@@ -62,28 +64,29 @@ $(document).ready(function() {
     //check if external apps can be fetched
     fh.settings.get("AllowWebAppInstall")
         .done(function(result) {
-            externalApps = result.data.value;
+            r.set("externalApps", result.data.value);
         })
         .fail(function() {
-            externalApps = false;
+            r.set("externalApps", false);
         });
 
 
 
     //Events
     r.on({
-        "fetchExternalOpen": function(event) {
+        fetchExternalOpen: function(event) {
             r.set({
                 "fetchError": false,
                 "url": ""
             });
 
-            $("#manageAppsModal").modal();
+            $("#externalApps").modal();
         },
         install: function(event) {
             fh.application.install(event.context.file)
                 .done(function() {
                     refreshApps();
+                    //TODO: Call app install js	
                 })
                 .fail(function(result) {
                     error(result);
@@ -110,13 +113,12 @@ $(document).ready(function() {
         star: function(event) {
             if (event.context.starred) {
                 delete starred[event.context.id];
+                r.set(event.keypath + ".starred", false);
             } else {
                 starred[event.context.id] = true;
+                r.set(event.keypath + ".starred", true);
             }
             dsSettings.put("starredApps", starred)
-                .done(function() {
-                    refreshApps();
-                })
                 .fail(function(result) {
                     error(result);
                 });
@@ -136,7 +138,7 @@ $(document).ready(function() {
             fh.application.postAvailable(url)
                 .done(function(result) {
                     r.set("url", "");
-                    $("#externalAdd").collapse("hide");
+                    $("#externalApps").modal("hide");
                     refreshApps();
 
                 })
@@ -148,7 +150,7 @@ $(document).ready(function() {
                     r.set("waiting", false);
                 });
 
-        }
+        },
     });
 
     r.observe("filterText", function(newValue, oldValue, keypath) {
@@ -156,6 +158,11 @@ $(document).ready(function() {
             window.clearTimeout(timer);
         }
         timer = window.setTimeout(filterApps, 200);
+    });
+
+
+    $("#allTab").on("shown.bs.tab", function() {
+        $("#filterText").focus();
     });
 
     //Functions
@@ -172,17 +179,18 @@ $(document).ready(function() {
                             installed[id].starred = true;
                             starsExist = true;
                         }
+                        installed[id].installed = true;
                     }
                 }
 
-                r.set("starsExist", starsExist);
+                if (!starsExist) {
+                    $('#mainTabs a[href="#all"]').tab('show');
+                }
                 r.set("apps", installed);
 
                 if (!fh.auth.admin) {
                     r.set({
-                        admin: fh.auth.admin,
                         failures: {},
-                        external: externalApps
                     });
                     return;
                 }
@@ -208,20 +216,25 @@ $(document).ready(function() {
                                 }
                             }
                         }
-                        //FIXME: Installed app that isn't available?
-                        // Make sure it shows up
+
+                        for (id in installed) {
+                            if (installed.hasOwnProperty(id)) {
+							if (!available[id]) {
+                                    available[id] = installed[id]; 
+							}
+}
+                        }
+
 
 
 
                         r.set({
                             apps: available,
-                            admin: fh.auth.admin,
                             failures: result.failures,
-                            external: externalApps
                         });
                     })
                     .fail(function(result) {
-                        error(result);
+                        r.set("failures", result.responseJSON.failures);
                     });
             })
             .fail(function(result) {

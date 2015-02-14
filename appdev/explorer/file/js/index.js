@@ -369,6 +369,9 @@ $(document).ready(function() {
         "deleteSelect": function(event) {
             var selected = rMain.get("selection");
             var requests = [];
+			if (selected.length === 0) {
+				return;
+			}
 
             for (var i = 0; i < selected.length; i++) {
                 if (selected[i].isFilePath) {
@@ -1537,6 +1540,13 @@ $(document).ready(function() {
             "mup": "mindmap",
         };
     }
+
+
+    $(document).keypress(function(e) {
+        if (e.key === "Del") {
+            rMain.fire("deleteSelect");
+        }
+    });
 
 
 }); //end ready

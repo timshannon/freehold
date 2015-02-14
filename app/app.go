@@ -10,9 +10,11 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"bitbucket.org/tshannon/freehold/data"
@@ -268,7 +270,7 @@ func appInfoFromZip(file string) (*App, error) {
 	zippath := path.Join(resource.AvailableAppDir, file)
 	r, err := appFileReader(zippath)
 	if err != nil {
-		return nil, err
+		return nil, fail.NewFromErr(err, file)
 	}
 
 	defer r.Close()
@@ -339,37 +341,53 @@ func appFileReader(zippath string) (*zip.ReadCloser, error) {
 	return r, nil
 }
 
-func PostAvailable(url string) (string, error) {
+func PostAvailable(uri string) (string, error) {
 	if !setting.Bool("AllowWebAppInstall") {
-		return "", fail.NewFromErr(FailNoWebInstall, url)
+		return "", fail.NewFromErr(FailNoWebInstall, uri)
+	}
+	u, err := url.Parse(uri)
+	if err != nil {
+		return "", fail.NewFromErr(err, uri)
 	}
 
 	client := &http.Client{
 		Timeout: time.Duration(setting.Int("HttpClientTimeout")) * time.Second,
 	}
-	r, err := client.Get(url)
+	r, err := client.Get(uri)
 
 	if err != nil {
 		return "", err
 	}
 
 	if r.StatusCode != http.StatusOK {
-		return "", fail.New("Unable to retrieve app file from url: "+r.Status, url)
+		return "", fail.New("Unable to retrieve app file from url: "+r.Status, uri)
 	}
 
-	filename := path.Base(url)
-	err = resource.WriteFile(r.Body, path.Join(resource.AvailableAppDir, filename), false)
-	if err != nil {
-		return "", err
+	var filename string
+
+	cd := r.Header.Get("Content-disposition")
+	if cd != "" {
+		filename = strings.Trim(strings.Trim(strings.TrimPrefix(cd, "attachment; filename="), "'"), `"`)
+	} else {
+		filename = path.Base(u.Path)
 	}
 
 	if filepath.Ext(filename) != ".zip" {
-		err = os.Remove(path.Join(resource.AvailableAppDir, filename))
-		if err != nil {
-			return "", err
-		}
-		return "", fail.New("Downloaded file is not a zip file.", filename)
+		filename += ".zip"
 	}
+
+	err = resource.WriteFile(r.Body, path.Join(resource.AvailableAppDir, filename), false)
+	if err != nil {
+		os.Remove(path.Join(resource.AvailableAppDir, filename))
+		return "", err
+	}
+
+	_, err = appInfoFromZip(filename)
+	if err != nil {
+		os.Remove(path.Join(resource.AvailableAppDir, filename))
+		return "", err
+	}
+
 	return filename, nil
 }
 
