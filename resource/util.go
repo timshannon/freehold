@@ -18,6 +18,7 @@ import (
 const (
 	DocsDir         = "docs/"
 	FileDir         = "file/"
+	CoreDSDir       = "core/"
 	DatastoreDir    = "datastore/"
 	AvailableAppDir = AppDir + "available/"
 	AppDir          = "application/"

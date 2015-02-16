@@ -202,28 +202,21 @@
 				</div>
 				{{else}}
 				<div class="row">
-					<div class="col-sm-12">
-						<form class="form-inline" on-submit="generateShareLink">
-							{{#requirePassword}}
-							<div class="form-group {{#.errors.username}}has-error has-feedback{{/.errors.username}}" title="{{.errors.username}}">
-								<label class="sr-only" for="tokenUsername">Username</label>
-								<input type="text" class="form-control" id="tokenUsername" placeholder="Enter Username" value="{{.username}}">
-								{{#errors.username}}
-									<span class="form-control-feedback glyphicon glyphicon-remove"></span>
-								{{/errors.username}}
-							</div>
-							<div class="form-group {{#.errors.password}}has-error has-feedback{{/.errors.password}}" title="{{.errors.password}}">
-								<label class="sr-only" for="tokenPassword">Password</label>
-								<input type="password" class="form-control" id="tokenPassword" placeholder="Enter Password" value="{{.password}}">
-								{{#errors.password}}
-									<span class="form-control-feedback glyphicon glyphicon-remove"></span>
-								{{/errors.password}}
-							</div>
-							{{/requirePassword}}
+					<form class="form" on-submit="generateShareLink">
+						{{#requirePassword}}
+						<div class="col-sm-8 form-group {{#.errors.password}}has-error has-feedback{{/.errors.password}}" title="{{.errors.password}}">
+							<label class="sr-only" for="tokenPassword">Password</label>
+							<input type="password" class="form-control" id="tokenPassword" placeholder="Enter Password" value="{{.password}}">
+							{{#errors.password}}
+								<span class="form-control-feedback glyphicon glyphicon-remove"></span>
+							{{/errors.password}}
+						</div>
+						{{/requirePassword}}
+						<div class="col-sm-4">
 							<button type="submit" class="pull-right btn btn-success"  title="Get unique url for sharing this file">
 								<span class="glyphicon glyphicon-share"></span> New Link</button>
-						</form>
-					</div>
+						</div>
+					</form>
 			</div>
 			{{/if}}
 			<div class="row">

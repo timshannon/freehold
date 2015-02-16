@@ -97,6 +97,10 @@ func setupRoutes() {
 		get: logGet,
 	})
 
+	rootHandler.Handle("/v1/backup/", &methodHandler{
+		get: backupGet,
+	})
+
 	//apps
 	appHandler = treemux.NewServeMux()
 	rootHandler.SetChild(appHandler)

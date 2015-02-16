@@ -320,6 +320,7 @@ $(document).ready(function() {
             }
         },
         "dropzone.drop": function(files) {
+            //TODO: Handle datastore files
             for (var i = 0; i < files.length; i++) {
                 uploadFile(files[i], rMain.get("currentFolder.url"));
             }
@@ -369,9 +370,9 @@ $(document).ready(function() {
         "deleteSelect": function(event) {
             var selected = rMain.get("selection");
             var requests = [];
-			if (selected.length === 0) {
-				return;
-			}
+            if (selected.length === 0) {
+                return;
+            }
 
             for (var i = 0; i < selected.length; i++) {
                 if (selected[i].isFilePath) {
@@ -431,7 +432,6 @@ $(document).ready(function() {
         },
         "loadShareLinks": function(event) {
             rMain.set("shareLinks.errors", {});
-            rMain.set("shareLinks.username", null);
             rMain.set("shareLinks.password", null);
             rMain.set("shareLinks.newUrl", null);
 
@@ -441,11 +441,11 @@ $(document).ready(function() {
             event.original.preventDefault();
             var username, password;
             if (rMain.get("requirePassword")) {
-                if (!event.context.username || !event.context.password) {
-                    rMain.set("shareLinks.errors.username", "A username and password is required to generate a new token");
+                if (!event.context.password) {
+                    rMain.set("shareLinks.errors.password", "A password is required to generate a new token");
                     return;
                 }
-                username = event.context.username;
+                username = fh.auth.user;
                 password = event.context.password;
             }
             var file = rMain.get("currentFile");
