@@ -1321,7 +1321,7 @@ applications, or any paths used by the freehold instance (i.e. /v1 /v2, etc).
 * root - File to which users will be redirected to when accessing the apps root path: `https://host/<app-id>`
 * icon - Image file usually used in the home app for displaying in the link to a given application
 
-While not part of the server side installation, if you include an install.js file at the root of your application, the core home application will dynamically load that file and execute a function named *installApp*.  Usually this script will consist of any pre-setup permissions (as they will be defaulted to private upon install) or any other setup that can't be done by the normal install process (i.e getting a list of active users and creating personal datastores for them, etc).  
+While not part of the server side installation, if you include an `install.js` file at the root of your application, the core home application will dynamically load that file and execute a function named `installApp`.  Usually this script will consist of any pre-setup permissions (as they will be defaulted to private upon install) or any other setup that can't be done by the normal install process (i.e getting a list of active users and creating personal datastores for them, etc).  
 
 *Datastore definition of Applications* - Only stores currently installed applications.  If an application is
 removed, it's deleted from the datastore.
@@ -1574,7 +1574,7 @@ Response (200):
 /v1/com/xmpp
 ------------
 
-TODO: XMPP, client?  Server would be nice too.
+TODO: XMPP, client?  Server would be nice too, but none currently exist for Go.
 
 /v1/com/webrtc
 -------------
@@ -1601,7 +1601,14 @@ TODO: built in calendar functionality, exports to ical would be nice.
 
 <a name="tasks"></a> Tasks
 ========
+/v1/task/
+--------------------
 TODO: Scheduled rest requests, scheduled based on calendar functionality
+/v1/task/<urlpath>
+
+ex. /v1/task/v1/datastore/tshannon/tasktest.ds
+
+Use treemux to alias entire root mux
 
 
 * * *
@@ -1616,5 +1623,51 @@ TODO: User Notifications.  Core notifications get added for communication, tasks
 
 <a name="backup"></a> Backup
 =============
-TODO: Backup entire freehold instance into one zip file, or just backup core datastores.
+Backup core datastores into a zip file.  Downloading a backup can only be done from a Basic Authentication connection.  Sessions or Security Tokens cannot be used.
+
+**GET**
+
+*Download All Core Datastores* - Admins only
+```
+GET /v1/backup/
+{
+	
+}
+
+Response (200):
+	freehold_backup-2015-04-23T18:25:43.511Z.zip
+
+```
+
+*Download a specific set of Core Datastores* - Admins only
+```
+GET /v1/backup/
+{
+	datastores:	[
+		"user",
+		"log",
+	]
+}
+
+Response (200):
+	freehold_backup-2015-04-23T18:25:43.511Z.zip
+
+```
+
+*Download a specific set of Core Datastores with a specific file name* - Admins only
+```
+GET /v1/backup/
+{
+	datastores:	[
+		"session",
+		"token",
+	],
+	filename: "sessions and tokens",
+}
+
+Response (200):
+	sessions and tokens.zip
+
+```
+
 

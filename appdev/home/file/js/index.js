@@ -84,9 +84,18 @@ $(document).ready(function() {
         },
         install: function(event) {
             fh.application.install(event.context.file)
-                .done(function() {
-                    refreshApps();
-                    //TODO: Call app install js	
+                .done(function(result) {
+                    var installScript = fh.util.urlJoin(result.data.id, "/v1/file/install.js");
+                    $.getScript(installScript)
+                        .done(function(script, textStatus) {
+                            if (installApp) {
+                                installApp();
+                                installApp = undefined;
+                            }
+                        })
+                        .always(function() {
+                            refreshApps();
+                        });
                 })
                 .fail(function(result) {
                     error(result);
@@ -219,10 +228,10 @@ $(document).ready(function() {
 
                         for (id in installed) {
                             if (installed.hasOwnProperty(id)) {
-							if (!available[id]) {
-                                    available[id] = installed[id]; 
-							}
-}
+                                if (!available[id]) {
+                                    available[id] = installed[id];
+                                }
+                            }
                         }
 
 

@@ -57,6 +57,45 @@ $(document).ready(function() {
         }
     });
 
+    var rBackups = new Ractive({
+        el: "#backups",
+        template: "#tBackups",
+        data: {
+            backupAll: true,
+            coreDS: {
+                "app": {
+                    description: "Stores which applications are currently installed in the freehold instance.",
+                    include: true
+                },
+                "log": {
+                    description: "Contains error logs, failures, and any other types of logs recorded by freehold.",
+                    include: true
+                },
+                "permission": {
+                    description: "Stores the permissions of files and datastores in freehold.",
+                    include: true
+                },
+                "ratelimit": {
+                    description: "Datastore for tracking rate limiting for freehold",
+                    include: true
+                },
+                "session": {
+                    description: "Contains user session data",
+                    include: true
+                },
+                "token": {
+                    description: "Stores security tokens, what access they give, and when they expire.",
+                    include: true
+                },
+                "user": {
+                    description: "Stores user information including, user password hashes used for authenticating a user.",
+                    include: true
+                },
+            },
+        }
+
+    });
+
     fh.settings.get("DefaultHomeApp")
         .done(function(result) {
             defaultHome = result.data.value;
@@ -339,6 +378,46 @@ $(document).ready(function() {
     });
 
 
+    //backups
+    rBackups.on({
+        "selectBackup": function(event) {
+            rBackups.toggle(event.keypath + ".include");
+        },
+        "downloadBackupModal": function() {
+            $("#backupsModal").modal();
+
+            rBackups.set("backupPasswordError", null);
+            rBackups.set("backupPassword", null);
+            $("#backupsModal").on("shown.bs.modal", function() {
+                $("#backupPassword").focus();
+            });
+        },
+        "downloadBackup": function(event) {
+            event.original.preventDefault();
+            var coreDS = rBackups.get("coreDS");
+            var dsList = [];
+
+            if (!rBackups.get("backupAll")) {
+                for (var app in coreDS) {
+                    if (coreDS.hasOwnProperty(app) && coreDS[app].include) {
+                        dsList.push(app);
+                    }
+                }
+            }
+
+            fh.backup(fh.auth.user, rBackups.get("backupPassword"), dsList)
+                .done(function() {
+                    $("#backupsModal").modal("hide");
+                })
+                .fail(function(result) {
+                    console.log(result);
+
+                    rBackups.set("backupPasswordError", result.responseJSON.message);
+                });
+        },
+    });
+
+
     //functions
 
     //logs
@@ -570,8 +649,8 @@ $(document).ready(function() {
 
     function setError(error) {
         if (!fh.auth.admin) {
-            nav.fire("addAlert", "danger", "You do not have admin rights and cannot use this tool: ", 
-				'<a href="/" class="alert-link">Return to your home page</a>');
+            nav.fire("addAlert", "danger", "You do not have admin rights and cannot use this tool: ",
+                '<a href="/" class="alert-link">Return to your home page</a>');
             return;
         }
 

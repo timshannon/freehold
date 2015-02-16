@@ -15,6 +15,7 @@
 		<li class="active"><a href="#logs" role="tab" data-toggle="tab">Logs</a></li>
 		<li><a href="#users" role="tab" data-toggle="tab">Users</a></li>
 		<li><a href="#settings" role="tab" data-toggle="tab">Settings</a></li>
+		<li><a href="#backups" role="tab" data-toggle="tab">Backups</a></li>
 	</ul>
 
 	<!--tab contents-->
@@ -25,6 +26,9 @@
 		</div>
 		<div class="tab-pane" id="settings">
 		</div>
+		<div class="tab-pane" id="backups">
+		</div>
+
 	</div>
 	
 </div><!--container-->
@@ -197,7 +201,7 @@
 </modal>
 
 <ul class="list-group">
-	<li class="list-group-item disabled">
+	<li class="list-group-item well">
 		<button class="btn btn-success" on-click="addUser" type="button">
 		<span class="glyphicon glyphicon-plus"></span> New User</button>
 	</li>
@@ -219,7 +223,7 @@
 <script id="tSettings" type="text/ractive">
 <div class="container">
 <ul class="list-group">
-	<li class="list-group-item row disabled">
+	<li class="list-group-item row well">
 		<p>Note: Settings take effect immediately.</p>
 		<input type="text" class="form-control" placeholder="filter settings" value="{{settingsFilter}}">
 	</li>
@@ -238,8 +242,7 @@
 		<div class="input-group">
 			{{#type=="string"}}
 			<input type="text" class="form-control" disabled="{{^change}}disabled{{/change}}" value="{{value}}">
-			{{/type}}
-			{{#type=="number"}}
+			{{/type}} {{#type=="number"}}
 			<input type="number" class="form-control" disabled="{{^change}}disabled{{/change}}" value="{{value}}">
 			{{/type}}
 			{{#type=="boolean"}}
@@ -266,6 +269,61 @@
 	{{/filtered}}
 	{{/settings}}
 </ul>
+</div>
+</script>
+
+<script id="tBackups" type="text/ractive">
+<modal id="backupsModal" title="Enter Password" customFooter="true">
+	<form on-submit="downloadBackup">
+		<div class="form-group {{#backupPasswordError}}has-error has-feedback{{/}}" title="{{backupPasswordError}}">
+			<label for="backupPassword">Enter Password</label>
+			<input type="password" class="form-control" id="backupPassword" placeholder="Enter password" value="{{backupPassword}}">
+			{{#backupPasswordError}}
+				<span class="form-control-feedback glyphicon glyphicon-remove"></span>
+			{{/}}
+		</div>
+	</form>
+
+	<div class="modal-footer">
+		<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+		<button type="submit" class="btn btn-primary" on-click="downloadBackup">Submit</button>
+	</div>
+</modal>
+
+<div class="container">
+	<ul class="list-group">
+		<li class="list-group-item row well">
+			<div class="col-md-8">
+				<dl>
+					<dt>Backups</dt><dd>Choose which Core datastores you which to include in the backup file.</dd>
+				</dl>
+				<button type="button" on-click="downloadBackupModal"	class="btn btn-success">
+					<span class="glyphicon glyphicon-download-alt"></span> Download Backup File
+				</button>
+
+			</div>
+			<div class="col-md-4">
+				<button type="button" on-click="toggle('backupAll')"	class="pull-right btn btn-default {{#backupAll}}btn-primary active{{/}}">
+					Include All
+				</button>
+			</div>
+		</li>
+		{{#coreDS:i}}
+		<li class="list-group-item row">
+			<div class="col-md-8">
+				<dl>
+					<dt>{{i}}</dt><dd>{{.description}}</dd>
+				</dl>
+			</div>
+			<div class="col-md-4">
+				<button type="button" on-click="selectBackup"
+					class="pull-right btn btn-default {{#backupAll}}btn-primary active disabled{{/}}{{#include}} btn-primary active{{/}}">
+					Include
+				</button>
+			</div>
+		</li>
+		{{/coreDS}}
+	</ul>
 </div>
 </script>
 
