@@ -151,6 +151,6 @@ func Log() *Permission {
 
 func Backup() *Permission {
 	return &Permission{
-		admin: Read,
+		admin: Read + Write,
 	}
 }

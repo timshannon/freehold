@@ -23,6 +23,7 @@ type File struct {
 }
 
 func NewFile(url string) *File {
+	//TODO: validate url path
 
 	r := &File{
 		url:      url,
@@ -35,7 +36,7 @@ func NewFile(url string) *File {
 		if os.IsNotExist(err) {
 			r.exists = false
 		} else {
-			//shouldn't happen unless there's something wrong with the OS
+			//shouldn't happen
 			panic(err)
 		}
 	} else {

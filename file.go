@@ -82,23 +82,7 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//New Folder
-
-	if errHandled(auth.tryWrite(res.Parent()), w, auth) {
-		return
-	}
-
-	err = os.Mkdir(res.Filepath(), 0777)
-	if os.IsExist(err) {
-		err = fail.New("Folder already exists!", res.Url())
-	} else if os.IsNotExist(err) {
-		err = fail.New("Invalid Folder path specified!", res.Url())
-	}
-	if errHandled(err, w, auth) {
-		return
-	}
-
-	err = permission.Set(res, permission.FileNewDefault(auth.Username))
-	if errHandled(err, w, auth) {
+	if errHandled(createFolder(res, auth), w, auth) {
 		return
 	}
 
@@ -108,6 +92,29 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 		Data:   res.Url(),
 	})
 
+}
+
+func createFolder(res *resource.File, auth *Auth) error {
+	err := auth.tryWrite(res.Parent())
+	if err != nil {
+		return err
+	}
+
+	err = os.Mkdir(res.Filepath(), 0777)
+	if os.IsExist(err) {
+		err = fail.New("Folder already exists!", res.Url())
+	} else if os.IsNotExist(err) {
+		err = fail.New("Invalid Folder path specified!", res.Url())
+	}
+	if err != nil {
+		return err
+	}
+
+	err = permission.Set(res, permission.FileNewDefault(auth.Username))
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func uploadFile(w http.ResponseWriter, parent *resource.File, owner *user.User, mp *multipart.Form) ([]Properties, []error) {
