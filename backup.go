@@ -5,17 +5,13 @@
 package main
 
 import (
-	"archive/zip"
-	"io"
 	"net/http"
-	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"time"
 
-	"bytes"
-
-	"bitbucket.org/tshannon/freehold/data"
+	"bitbucket.org/tshannon/freehold/backup"
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/permission"
 	"bitbucket.org/tshannon/freehold/resource"
@@ -23,19 +19,14 @@ import (
 
 type BackupInput struct {
 	Datastores []string `json:"datastores,omitempty"`
-	Filename   *string  `json:"filename,omitempty"`
+	File       *string  `json:"file,omitempty"`
+	From       *string  `json:"from,omitempty"`
+	To         *string  `json:"to,omitempty"`
 }
-
-//TODO: Can't dynamically download a file, so instead change backup to generate a file in the instance
 
 func backupGet(w http.ResponseWriter, r *http.Request) {
 	auth, err := authenticate(w, r)
 	if errHandled(err, w, auth) {
-		return
-	}
-
-	if auth.AuthType != authTypeBasic {
-		errHandled(fail.New("Backups cannot be taken from a Session or Token.", nil), w, auth)
 		return
 	}
 
@@ -51,84 +42,90 @@ func backupGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if input.Datastores == nil || len(input.Datastores) == 0 {
-		input.Datastores, err = allCoreDSFiles()
-		if errHandled(err, w, auth) {
-			return
-		}
-	} else {
-		for i := range input.Datastores {
-			if strings.ToLower(filepath.Ext(input.Datastores[i])) != ".ds" {
-				input.Datastores[i] += ".ds"
-			}
-		}
+	if input.From == nil {
+		errHandled(fail.New("Invalid input.  From is required to retrieve backups", input), w, auth)
+		return
 	}
 
-	filename := ""
-	if input.Filename == nil {
-		filename = "freehold_backup" + time.Now().Format(time.RFC3339) + ".zip"
-	} else {
-		filename = *input.Filename
-		if strings.ToLower(filepath.Ext(filename)) != ".zip" {
-			filename += ".zip"
-		}
+	if input.To == nil {
+		input.To = new(string)
 	}
 
-	buf := new(bytes.Buffer)
-
-	writer := zip.NewWriter(buf)
-
-	for i := range input.Datastores {
-		f, err := writer.Create(input.Datastores[i])
-		if errHandled(err, w, auth) {
-			return
-		}
-
-		dsPath := filepath.Join(resource.CoreDSDir, input.Datastores[i])
-		data.Close(dsPath)
-
-		dsFile, err := os.Open(dsPath)
-		if errHandled(err, w, auth) {
-			return
-		}
-
-		_, err = io.Copy(f, dsFile)
-		dsFile.Close()
-		if errHandled(err, w, auth) {
-			return
-		}
-	}
-
-	writer.Flush()
-	err = writer.Close()
+	backups, err := backup.Get(*input.From, *input.To)
 	if errHandled(err, w, auth) {
 		return
 	}
 
-	reader := bytes.NewReader(buf.Bytes())
+	respondJsend(w, &JSend{
+		Status: statusSuccess,
+		Data:   backups,
+	})
 
-	http.ServeContent(w, r, filename, time.Time{}, reader)
-	return
 }
 
-func allCoreDSFiles() ([]string, error) {
-	coreDir, err := os.Open(resource.CoreDSDir)
-	defer coreDir.Close()
-	if err != nil {
-		return nil, err
+func backupPost(w http.ResponseWriter, r *http.Request) {
+	auth, err := authenticate(w, r)
+	if errHandled(err, w, auth) {
+		return
 	}
 
-	dsFiles := make([]string, 0)
-	files, err := coreDir.Readdirnames(0)
-	if err != nil {
-		return nil, err
+	if auth.AuthType != authTypeBasic {
+		errHandled(fail.New("Backups cannot be taken from a Session or Token.", nil), w, auth)
+		return
+	}
+	if !permission.Backup().CanWrite(auth.User) {
+		four04(w, r)
+		return
 	}
 
-	for i := range files {
-		if filepath.Ext(files[i]) == ".ds" {
-			dsFiles = append(dsFiles, files[i])
+	input := &BackupInput{}
+
+	err = parseJson(r, input)
+	if errHandled(err, w, auth) {
+		return
+	}
+
+	if input.File == nil {
+		errHandled(fail.New("Invalid input. File is required to take a new backup.", input), w, auth)
+		return
+
+	}
+
+	if strings.ToLower(filepath.Ext(*input.File)) != ".zip" {
+		*input.File += ".zip"
+	}
+
+	res := resource.NewFile(*input.File)
+	if res.IsDatastore() {
+		errHandled(fail.New("Invalid file path!", res.Url()), w, auth)
+		return
+	}
+
+	if res.IsDir() {
+		if !res.Exists() {
+			//create folder
+			if errHandled(createFolder(res, auth), w, auth) {
+				return
+			}
 		}
+		res = resource.NewFile(path.Join(res.Url(), "freehold_backup-"+time.Now().Format(time.RFC3339)+".zip"))
 	}
 
-	return dsFiles, nil
+	if res.Exists() {
+		errHandled(fail.New("Backup file already exists!", res.Url()), w, auth)
+		return
+	}
+
+	err = backup.New(res, input.Datastores)
+	if errHandled(err, w, auth) {
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+
+	respondJsend(w, &JSend{
+		Status: statusSuccess,
+		Data:   res.Url(),
+	})
+
 }

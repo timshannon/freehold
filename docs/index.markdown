@@ -1623,51 +1623,103 @@ TODO: User Notifications.  Core notifications get added for communication, tasks
 
 <a name="backup"></a> Backup
 =============
-Backup core datastores into a zip file.  Downloading a backup can only be done from a Basic Authentication connection.  Sessions or Security Tokens cannot be used.
+Backup core datastores into a zip file stored in the freehold instance.  Generating a backup can only be done from a Basic Authentication connection.  Sessions or Security Tokens cannot be used.  The location of the backup file can be set in the request.  It is recommended to download those generated backup files and store them elsewhere for a true backup.
+
+```
+core/backup.ds
+{
+	key: <timestamp>,
+	value: {
+		when:	<When the backup was taken>,
+		file: <Filename of the backup>,
+		who: <Who generated the backup file>,
+		datastores: [<list of datastores in the backupfile>],
+	}
+}
+```
 
 **GET**
 
-*Download All Core Datastores* - Admins only
+*View previous generated backups* - Admins only, `to` is optional
 ```
 GET /v1/backup/
 {
-	
+	from: "2015-04-23T18:25:43.511Z",
+	to: "2015-05-01T18:25:43.511Z",
 }
 
 Response (200):
-	freehold_backup-2015-04-23T18:25:43.511Z.zip
+data: [
+		{
+			when: "2014-04-23T18:25:43.511Z",
+			file: "/v1/file/freehold_backup-2015-04-23T18:25:43.511Z.zip",
+			who: "tshannon",
+			datastores: [
+				"user",
+				"log",
+				"app",               
+				"log"
+				"permission",
+				"ratelimit",
+				"session",
+				"token",
+				"user"
+			],
+		},
+		{
+			when: "2014-04-30T18:25:43.511Z",
+			file: "/v1/file/freehold_backup-2015-04-30T18:25:43.511Z.zip",
+			who: "tshannon",
+			datastores: [
+				"user",
+				"log",
+				"app",               
+				"log"
+				"permission",
+				"ratelimit",
+				"session",
+				"token",
+				"user"
+			],
+		},
+]
+
 
 ```
 
-*Download a specific set of Core Datastores* - Admins only
+*Generate a new backup file* - Admins only, file is required.  You can specify a folder instead of a file, and if the folder doesn't exist, it will be created, and the filename will be defaulted to `freehold_backup-<timestamp>`
+ 
 ```
-GET /v1/backup/
+POST /v1/backup/
 {
+	file: "/v1/file/backups/freehold_backup-2015-04-01T18:25:43.511Z.zip"
+}
+
+Response (201):
+{
+	status: "success",
+	data: "/v1/file/backups/freehold_backup-2015-04-01T18:25:43.511Z.zip"
+}
+
+```
+
+
+*Generate a backup file a specific set of Core Datastores* - Admins only
+```
+POST /v1/backup/
+{
+	file: "/v1/file/backups/freehold_backup-2015-04-01T18:25:43.511Z.zip",
 	datastores:	[
 		"user",
 		"log",
 	]
 }
 
-Response (200):
-	freehold_backup-2015-04-23T18:25:43.511Z.zip
-
-```
-
-*Download a specific set of Core Datastores with a specific file name* - Admins only
-```
-GET /v1/backup/
+Response (201):
 {
-	datastores:	[
-		"session",
-		"token",
-	],
-	filename: "sessions and tokens",
+	status: "success",
+	data: "/v1/file/backups/freehold_backup-2015-04-01T18:25:43.511Z.zip"
 }
 
-Response (200):
-	sessions and tokens.zip
-
 ```
-
 

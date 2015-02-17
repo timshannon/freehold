@@ -98,7 +98,8 @@ func setupRoutes() {
 	})
 
 	rootHandler.Handle("/v1/backup/", &methodHandler{
-		get: backupGet,
+		get:  backupGet,
+		post: backupPost,
 	})
 
 	//apps
