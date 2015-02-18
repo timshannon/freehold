@@ -13,17 +13,16 @@ import (
 	"strings"
 	"time"
 
-	"bytes"
-
 	"bitbucket.org/tshannon/freehold/data"
+	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/resource"
 )
 
-const DS = "core/backup.ds"
+const DS = resource.CoreDSDir + "backup.ds"
 
 type Backup struct {
 	When       string   `json:"when"`
-	Filename   string   `json:"filename"`
+	File       string   `json:"file"`
 	Who        string   `json:"Who"`
 	Datastores []string `json:"datastores"`
 }
@@ -84,48 +83,93 @@ func New(backupFile *resource.File, datastores []string, who string) error {
 		}
 	}
 
-	buf := new(bytes.Buffer)
+	newFile, err := os.OpenFile(backupFile.Filepath(), os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
 
-	writer := zip.NewWriter(buf)
+	if os.IsExist(err) {
+		return fail.New("Backup file already exists", backupFile.Name())
+	}
 
-	for i := range input.Datastores {
-		f, err := writer.Create(input.Datastores[i])
-		if errHandled(err, w, auth) {
-			return
+	if err != nil {
+		return err
+	}
+
+	writer := zip.NewWriter(newFile)
+
+	cleanUp := func() {
+		writer.Flush()
+		writer.Close()
+		newFile.Close()
+		os.Remove(backupFile.Filepath())
+	}
+
+	for i := range datastores {
+		f, err := writer.Create(datastores[i])
+		if err != nil {
+			cleanUp()
+			return err
 		}
 
-		dsPath := filepath.Join(resource.CoreDSDir, input.Datastores[i])
+		dsPath := filepath.Join(resource.CoreDSDir, datastores[i])
 		data.Close(dsPath)
 
 		dsFile, err := os.Open(dsPath)
-		if errHandled(err, w, auth) {
-			return
+		if os.IsNotExist(err) {
+			cleanUp()
+			return fail.New("Invalid Datastore for backup.", datastores[i])
+		}
+		if err != nil {
+			cleanUp()
+			return err
 		}
 
 		_, err = io.Copy(f, dsFile)
 		dsFile.Close()
-		if errHandled(err, w, auth) {
-			return
+		if err != nil {
+			cleanUp()
+			return err
 		}
 	}
 
 	writer.Flush()
+	newFile.Close()
 	err = writer.Close()
-	if errHandled(err, w, auth) {
-		return
+	if err != nil {
+		cleanUp()
+		return err
 	}
 
-	//set permissions on new file
 	// insert backup record
-	return nil
+	b := &Backup{
+		When:       time.Now().Format(time.RFC3339),
+		File:       backupFile.Url(),
+		Who:        who,
+		Datastores: datastores,
+	}
+
+	return b.insert()
 }
 
 func (b *Backup) insert() error {
-	ds, err := data.OpenCoreDS(DS)
-	if err != nil {
-		return nil, err
+	if b.When == "" {
+		b.When = time.Now().Format(time.RFC3339)
 	}
 
+	ds, err := data.OpenCoreDS(DS)
+	if err != nil {
+		return err
+	}
+
+	val, err := json.Marshal(b)
+	if err != nil {
+		return err
+	}
+
+	key, err := json.Marshal(b.When)
+	if err != nil {
+		return err
+	}
+
+	return ds.Put(key, val)
 }
 
 func allCoreDSFiles() ([]string, error) {

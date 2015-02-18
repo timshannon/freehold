@@ -542,9 +542,9 @@ component.exports = {
 				change = function(color) {
 							if(color) {
 								r.set("value", color.toHexString());
-								r.fire("change",color.toHexString()); 
+								r.fire("select",color.toHexString()); 
 							} else {
-								r.fire("change"); 
+								r.fire("select"); 
 							}
 						};
 

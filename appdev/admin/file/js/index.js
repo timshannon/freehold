@@ -18,7 +18,8 @@ $(document).ready(function() {
                 title: "Admin Console",
                 text: "This is where admins can manage <a href='/docs/#user'>users</a>, " +
                     "global freehold <a href='/docs/#settings'>settings</a> and monitor the " +
-                    "<a href='/docs/#logs'>logs</a> for errors."
+                    "<a href='/docs/#logs'>logs</a> for errors.  <a href='/docs/#backup'>Backups</a> " +
+                    "of the core Datastores can also be taken here."
             }
         }
     });
@@ -61,35 +62,40 @@ $(document).ready(function() {
         el: "#backups",
         template: "#tBackups",
         data: {
+            from: function() {
+                var d = new Date(Date.now());
+                d.setDate(d.getDate() - 30);
+                return d.toLocaleDateString();
+            }(),
             backupAll: true,
             coreDS: {
                 "app": {
                     description: "Stores which applications are currently installed in the freehold instance.",
-                    include: true
+                    include: false
                 },
                 "log": {
                     description: "Contains error logs, failures, and any other types of logs recorded by freehold.",
-                    include: true
+                    include: false
                 },
                 "permission": {
                     description: "Stores the permissions of files and datastores in freehold.",
-                    include: true
+                    include: false
                 },
                 "ratelimit": {
                     description: "Datastore for tracking rate limiting for freehold",
-                    include: true
+                    include: false
                 },
                 "session": {
                     description: "Contains user session data",
-                    include: true
+                    include: false
                 },
                 "token": {
                     description: "Stores security tokens, what access they give, and when they expire.",
-                    include: true
+                    include: false
                 },
                 "user": {
                     description: "Stores user information including, user password hashes used for authenticating a user.",
-                    include: true
+                    include: false
                 },
             },
         }
@@ -126,6 +132,7 @@ $(document).ready(function() {
     loadLogs();
     loadUsers();
     loadSettings();
+    loadBackups();
 
     //events
     var timer;
@@ -388,6 +395,8 @@ $(document).ready(function() {
 
             rBackups.set("backupPasswordError", null);
             rBackups.set("backupPassword", null);
+            rBackups.set("backupAll", true);
+            rBackups.set("step", 1);
             $("#backupsModal").on("shown.bs.modal", function() {
                 $("#backupPassword").focus();
             });
@@ -404,16 +413,20 @@ $(document).ready(function() {
                     }
                 }
             }
-
-            fh.backup(fh.auth.user, rBackups.get("backupPassword"), dsList)
-                .done(function() {
-                    $("#backupsModal").modal("hide");
+            rBackups.set("waiting", true);
+            //TODO: Let user specify a name?
+            fh.backup(fh.auth.user, rBackups.get("backupPassword"), dsList, filename)
+                .done(function(result) {
+                    rBackups.set("url", result.data);
+                    rBackups.add("step");
+                    rBackups.set("waiting", false);
                 })
                 .fail(function(result) {
-                    console.log(result);
-
                     rBackups.set("backupPasswordError", result.responseJSON.message);
                 });
+        },
+        "datepicker.change": function(value) {
+            loadBackups();
         },
     });
 
@@ -645,6 +658,17 @@ $(document).ready(function() {
                 setError(result.message);
             });
 
+    }
+
+    function loadBackups() {
+        fh.backup.get(rBackups.get("from"))
+            .done(function(result) {
+                rBackups.set("backups", result.data);
+            })
+            .fail(function(result) {
+                result = result.responseJSON;
+                setError(result.message);
+            });
     }
 
     function setError(error) {

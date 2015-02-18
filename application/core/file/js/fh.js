@@ -383,19 +383,29 @@ window.fh = (function() {
                 }),
             });
         },
-        backup: function(username, password, datastores, filename) {
-			var options = {
-                data: JSON.stringify({
-                    datastores: datastores,
-                    filename: filename,
-                }),
-};
-if (username && password) {
+        backup: {
+            get: function(from, to) {
+                return stdAjax("GET", "/v1/backup/", {
+                    data: JSON.stringify({
+                        from: from,
+                        to: to,
+                    }),
+                });
+            },
+            new: function(username, password, filename, datastores) {
+                var options = {
+                    data: JSON.stringify({
+                        datastores: datastores,
+                        filename: filename,
+                    }),
+                };
+                if (username && password) {
                     options.beforeSend = function(xhr) {
                         xhr.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
                     };
                 }
-            return stdAjax("GET", "/v1/backup/", options);
+                return stdAjax("POST", "/v1/backup/", options);
+            },
         },
         util: {
             versions: function() {

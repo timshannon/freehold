@@ -157,7 +157,7 @@ $(document).ready(function() {
             showColorPicker(coor);
             return false;
         },
-        "colorpicker.change": function(color) {
+        "colorpicker.select": function(color) {
             mapModel.updateStyle("freehold", "background", color);
             $("#contextMenu").removeClass("open");
         },
