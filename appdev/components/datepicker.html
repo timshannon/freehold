@@ -196,6 +196,7 @@
 				$(node).datepicker({
 						onSelect: function(value) {
 							r.updateModel();
+							r.fire("select", value);
 						}
 					}
 				);

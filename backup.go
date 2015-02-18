@@ -116,8 +116,13 @@ func backupPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = backup.New(res, input.Datastores)
+	err = backup.New(res, input.Datastores, auth.Username)
 	if errHandled(err, w, auth) {
+		return
+	}
+
+	//set permissions on backup file
+	if errHandled(permission.Set(res, permission.FileNewDefault(auth.Username)), w, auth) {
 		return
 	}
 
