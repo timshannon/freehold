@@ -8,7 +8,9 @@ def package(app):
 
     if app == "components":
         print "packaging components file" 
-        subprocess.call(["r.js", "-o", "components/build.json"])
+        os.chdir("./"+app)
+        subprocess.call(["make"])
+        os.chdir("..")
         return
 
     print "packaging " + app
@@ -18,6 +20,7 @@ def package(app):
     shutil.copytree(app, tmpDir)
 
     os.chdir(tmpDir)
+    makeFolder("./")
     #minify
     minifyFolder("./")
     #zip
@@ -25,6 +28,12 @@ def package(app):
     os.chdir("..")
     #cleanup temp folder
     shutil.rmtree(tmpDir)
+
+def makeFolder(folder):
+    for path, _, files in os.walk(folder):
+        for f in files:
+            if f == "makefile":
+                subprocess.call(["make"])
 
 def minifyFolder(folder):
     for path, _, files in os.walk(folder):

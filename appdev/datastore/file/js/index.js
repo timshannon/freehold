@@ -14,9 +14,6 @@ $(document).ready(function() {
 
     var nav = rMain.findComponent("navbar");
 
-    //TODO: Import and Export JSON
-
-
     //Setup DS
     if (!urlDS) {
         setEmpty();

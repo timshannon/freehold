@@ -20,7 +20,6 @@
 		outputFile = data.path,
 		cleanedCode = amdclean.clean({
 			'filePath': outputFile,
-			ignoreModules: ['commonmark'],
 		});
 
 	  fs.writeFileSync(outputFile, cleanedCode);

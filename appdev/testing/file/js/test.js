@@ -927,3 +927,76 @@ QUnit.test("Log Type", function(assert) {
         });
 
 });
+
+QUnit.module("Backups", {
+    beforeEach: function(assert) {
+        this.admin = {
+            user: "quinitTestUserAdmin",
+            password: "qunitTestPassword",
+            name: "QUnit Test User Admin",
+            admin: true,
+        };
+
+        var done1 = assert.async();
+
+        //Create admin
+        fh.user.new(this.admin)
+            .always(function(result) {
+                assert.equal(result.status, "success", result.responseText);
+                done1();
+            });
+
+    },
+    afterEach: function(assert) {
+        var done1 = assert.async();
+        var done2 = assert.async();
+
+
+        //cleanup test backup
+        fh.file.delete(this.backupFile)
+            .always(function(result) {
+                assert.equal(result.status, "success", result.responseText);
+                done1();
+            });
+
+
+        //delete test admin
+        fh.user.delete(this.admin.user)
+            .always(function(result) {
+                assert.equal(result.status, "success", result.responseText);
+                done2();
+            });
+
+    }
+});
+
+
+QUnit.test("Backups", function(assert) {
+    assert.expect(5);
+    var done = assert.async();
+    var done2 = assert.async();
+
+    this.backupFile = "/v1/file/backup_test-" + fh.util.uuid() + ".zip";
+
+    fh.backup.new(this.admin.user, this.admin.password, this.backupFile)
+        .always(function(result) {
+            assert.equal(result.status, "success", result.responseText);
+            done();
+            var d = new Date(Date.now());
+            d.setDate(d.getDate() - 1);
+            fh.backup.get(d.toJSON())
+                .always(function(result) {
+                    var match = false;
+                    for (var i = 0; i < result.data.length; i++) {
+                        if (result.data[i].file === this.backupFile) {
+                            match = true;
+                            break;
+                        }
+                    }
+
+                    assert.ok(match, "Found matching backup file");
+                    done2();
+                }.bind(this));
+        }.bind(this));
+
+});

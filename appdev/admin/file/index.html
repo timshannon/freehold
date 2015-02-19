@@ -273,6 +273,10 @@
 </script>
 
 <script id="tBackups" type="text/ractive">
+<modal id="viewDS" title="Datastores">
+	<jsonviewer object="{{currentDatastores}}"></jsonviewer>
+</modal>
+
 <modal id="backupsModal" title="Generate Backup File" customFooter="true">
 {{#if step == 1}}
 	<h4>Which datastores you which to include in the backup file?
@@ -303,6 +307,11 @@
 </div>
 {{/if}}
 {{#if step == 2}}
+	{{#if backupError}}
+	<div class="alert alert-danger">
+		{{backupError}}	
+	</div>
+	{{/if}}
 	{{#if waiting}}
 		<div class="progress">
 			<div class="progress-bar progress-bar-striped active"  role="progressbar" 
@@ -311,7 +320,17 @@
 			</div>
 		</div>
 	{{else}}
-			<filetree folderOnly="true"></filetree>
+		<h4>Backups will be written to: </h4>
+		<ul>
+		{{#if chooseFolder}}
+			<li><filetree selected.url="{{file}}" folderOnly="true"></filetree></li>
+		{{else}}
+			<li>
+				<a target="_blank" href="/explorer/?url={{file}}">{{file}}</a>
+				<button type="button" class="btn btn-sm btn-default pull-right" on-click="toggle('chooseFolder')">Choose a different folder</button>
+			</li>
+		{{/if}}
+		</ul>
 		<form on-submit="generateBackup">
 			<div class="form-group {{#backupPasswordError}}has-error has-feedback{{/}}" title="{{backupPasswordError}}">
 				<label for="backupPassword">Enter Password</label>
@@ -332,8 +351,14 @@
 	</div>
 {{/if}}
 {{#if step == 3}}
-	<h4>The backup file has been generated.</h4>
-	<a href="{{url}}" class="btn btn-success"><span class="glyphicon glyphicon-download-alt"></span> Download Backup</a>
+	<div class="row">
+		<div class="col-sm-8">
+			<h4>The backup file has been generated.</h4>
+		</div>
+		<div class="col-sm-4">
+			<a href="{{url}}" class=" pull-right btn btn-success"><span class="glyphicon glyphicon-download-alt"></span> Download Backup</a>
+		</div>
+	</div>
 	<div class="modal-footer">
 		<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 	</div>
@@ -362,9 +387,9 @@
 			{{#backups:i }}
 			<tr>
 				<td>{{when}}</td>
-				<td>{{file}}</td>
+				<td><a href="{{file}}" title="{{file}}">{{fileName}}</a></td>
 				<td>{{who}}</td>
-				<td>{{datastores}}</td>
+				<td class="ds-link"><a href="javascript:void(0)" on-click="viewDatastores">{{datastores}}</a></td>
 			</tr>
 			{{/backups}}
 		</tbody>

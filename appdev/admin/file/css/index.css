@@ -43,3 +43,13 @@
 	border-top-right-radius: 0px;
 }
 
+.filetree {
+	max-height: 50vh;
+	overflow-x: auto;
+}
+
+.ds-link {
+	max-width: 200px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}

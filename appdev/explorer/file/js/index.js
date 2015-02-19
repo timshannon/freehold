@@ -746,14 +746,19 @@ $(document).ready(function() {
                 for (var i = 0; i < result.data.length; i++) {
                     if (nextUrl == result.data[i].url) {
                         updateFilesTo(newKeypath + "." + i, to);
+                        return;
                     }
                 }
+                //no matching url found
+                rMain.set("loading", false);
+                selectFolder(fromKeypath);
+
             })
             .fail(function(result) {
                 error("Invalid or inaccessible URL: " + result.responseJSON.message);
                 //select last valid keypath and stop loading
-                selectFolder(fromKeypath);
                 rMain.set("loading", false);
+                selectFolder(fromKeypath);
             });
     }
 
@@ -840,7 +845,7 @@ $(document).ready(function() {
             file.behavior = settings.fileType.behavior(ext);
             file.iconColor = settings.fileType.iconColor(ext);
             if (file.behavior.app) {
-                file.explorerUrl = fh.util.urlJoin(file.behavior.appID, "?file=", file.url);
+                file.explorerUrl = fh.util.urlJoin("/", file.behavior.appID, "?file=", file.url);
             } else {
                 file.explorerUrl = file.url;
             }
@@ -935,6 +940,14 @@ $(document).ready(function() {
             } else {
                 sa = a[sorting.by];
                 sb = b[sorting.by];
+            }
+
+            if (typeof sa === "string") {
+                sa = sa.toLowerCase();
+            }
+
+            if (typeof sb === "string") {
+                sb = sb.toLowerCase();
             }
 
             if (!sorting.asc) {
@@ -1542,8 +1555,8 @@ $(document).ready(function() {
     }
 
 
-    $(document).keypress(function(e) {
-        if (e.key === "Del") {
+    $(document).keydown(function(e) {
+        if (e.keyCode === 46) { //del
             rMain.fire("deleteSelect");
         }
     });

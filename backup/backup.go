@@ -23,7 +23,7 @@ const DS = resource.CoreDSDir + "backup.ds"
 type Backup struct {
 	When       string   `json:"when"`
 	File       string   `json:"file"`
-	Who        string   `json:"Who"`
+	Who        string   `json:"who"`
 	Datastores []string `json:"datastores"`
 }
 
@@ -37,7 +37,16 @@ func Get(from, to string) ([]*Backup, error) {
 		to = time.Now().Format(time.RFC3339)
 	}
 
-	iter, err := ds.Iter([]byte(from), []byte(to))
+	fromKey, err := json.Marshal(from)
+	if err != nil {
+		return nil, err
+	}
+	toKey, err := json.Marshal(to)
+	if err != nil {
+		return nil, err
+	}
+
+	iter, err := ds.Iter(fromKey, toKey)
 	if err != nil {
 		return nil, err
 	}
@@ -131,12 +140,12 @@ func New(backupFile *resource.File, datastores []string, who string) error {
 	}
 
 	writer.Flush()
-	newFile.Close()
 	err = writer.Close()
 	if err != nil {
 		cleanUp()
 		return err
 	}
+	newFile.Close()
 
 	// insert backup record
 	b := &Backup{
@@ -158,18 +167,7 @@ func (b *Backup) insert() error {
 	if err != nil {
 		return err
 	}
-
-	val, err := json.Marshal(b)
-	if err != nil {
-		return err
-	}
-
-	key, err := json.Marshal(b.When)
-	if err != nil {
-		return err
-	}
-
-	return ds.Put(key, val)
+	return ds.Put(b.When, b)
 }
 
 func allCoreDSFiles() ([]string, error) {
