@@ -401,7 +401,7 @@ $(document).ready(function() {
                 $("#backupPassword").focus();
             });
         },
-        "downloadBackup": function(event) {
+        "generateBackup": function(event) {
             event.original.preventDefault();
             var coreDS = rBackups.get("coreDS");
             var dsList = [];
