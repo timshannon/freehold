@@ -91,24 +91,24 @@ func backupPost(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	if strings.ToLower(filepath.Ext(*input.File)) != ".zip" {
-		*input.File += ".zip"
-	}
-
 	res := resource.NewFile(*input.File)
 	if res.IsDatastore() {
 		errHandled(fail.New("Invalid file path!", res.Url()), w, auth)
 		return
 	}
 
-	if res.IsDir() {
-		if !res.Exists() {
-			//create folder
-			if errHandled(createFolder(res, auth), w, auth) {
-				return
-			}
+	if !res.Exists() && strings.HasSuffix(res.Url(), "/") {
+		//create folder
+		if errHandled(createFolder(res, auth), w, auth) {
+			return
 		}
+		res = resource.NewFile(res.Url())
+	}
+	if res.IsDir() {
 		res = resource.NewFile(path.Join(res.Url(), "freehold_backup-"+time.Now().Format(time.RFC3339)+".zip"))
+	}
+	if strings.ToLower(filepath.Ext(res.Name())) != ".zip" {
+		res = resource.NewFile(res.Url() + ".zip")
 	}
 
 	if res.Exists() {

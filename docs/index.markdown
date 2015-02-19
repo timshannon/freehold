@@ -723,6 +723,7 @@ Response (200):
 
 * * *
 
+
 <a name="core"></a>Core Datastores
 ==============
 Data used for the running of the freehold instance are stored in the *core* datastore. The core datastore is designed to only be 
@@ -736,7 +737,6 @@ The first user created in the system is automatically an administrator.  Only ot
 administrator.  Once a user is made an administrator it cannot be removed by other administrators, but it can be reliquished by
 the user themself.
 
-* * *
 
 <a name="auth"></a>Authentication
 --------------

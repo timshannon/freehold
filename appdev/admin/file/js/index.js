@@ -97,6 +97,10 @@ $(document).ready(function() {
                     description: "Stores user information including, user password hashes used for authenticating a user.",
                     include: false
                 },
+                "backup": {
+                    description: "Stores previous backups taken.",
+                    include: false
+                },
             },
         }
 
@@ -394,9 +398,12 @@ $(document).ready(function() {
             $("#backupsModal").modal();
 
             rBackups.set("backupPasswordError", null);
+            rBackups.set("backupError", null);
             rBackups.set("backupPassword", null);
             rBackups.set("backupAll", true);
             rBackups.set("step", 1);
+            rBackups.set("file", "/v1/file/backups/");
+            rBackups.set("chooseFolder", false);
             $("#backupsModal").on("shown.bs.modal", function() {
                 $("#backupPassword").focus();
             });
@@ -406,6 +413,12 @@ $(document).ready(function() {
             var coreDS = rBackups.get("coreDS");
             var dsList = [];
 
+
+            if (!event.context.backupPassword) {
+                rBackups.set("backupPasswordError", "A password is required to generate a new backup");
+                return;
+            }
+
             if (!rBackups.get("backupAll")) {
                 for (var app in coreDS) {
                     if (coreDS.hasOwnProperty(app) && coreDS[app].include) {
@@ -414,19 +427,32 @@ $(document).ready(function() {
                 }
             }
             rBackups.set("waiting", true);
-            //TODO: Let user specify a name?
-            fh.backup(fh.auth.user, rBackups.get("backupPassword"), dsList, filename)
+            fh.backup.new(fh.auth.user, rBackups.get("backupPassword"), rBackups.get("file"), dsList)
                 .done(function(result) {
                     rBackups.set("url", result.data);
                     rBackups.add("step");
                     rBackups.set("waiting", false);
+                    loadBackups();
                 })
                 .fail(function(result) {
-                    rBackups.set("backupPasswordError", result.responseJSON.message);
+                    rBackups.set("waiting", false);
+                    if (result.responseJSON.message == "Invalid user and / or password") {
+                        rBackups.set("backupPasswordError", result.responseJSON.message);
+                        rBackups.set("backupError", null);
+                    } else {
+                        rBackups.set("backupError", result.responseJSON.message);
+                        rBackups.set("backupPasswordError", null);
+                    }
                 });
         },
-        "datepicker.change": function(value) {
+        "datepicker.select": function(value) {
             loadBackups();
+        },
+        "viewDatastores": function(event) {
+            event.original.preventDefault();
+            rBackups.set("currentDatastores", event.context.datastores);
+            $("#viewDS").modal();
+
         },
     });
 
@@ -661,9 +687,25 @@ $(document).ready(function() {
     }
 
     function loadBackups() {
-        fh.backup.get(rBackups.get("from"))
+        var from = new Date(rBackups.get("from"));
+        fh.backup.get(from.toJSON())
             .done(function(result) {
-                rBackups.set("backups", result.data);
+                var backups = result.data;
+                for (var i = 0; i < backups.length; i++) {
+                    backups[i].when = new Date(backups[i].when).toLocaleString();
+                    backups[i].fileName = backups[i].file.split("/").pop();
+                }
+                backups.sort(function(a, b) {
+                    if (a.when > b.when) {
+                        return -1;
+                    }
+                    if (a.when < b.when) {
+                        return 1;
+                    }
+                    return 0;
+                });
+
+                rBackups.set("backups", backups);
             })
             .fail(function(result) {
                 result = result.responseJSON;

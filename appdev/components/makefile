@@ -1,2 +1,2 @@
 all:
-	cd ../ && python package.py components
+	r.js -o build.json

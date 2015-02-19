@@ -392,19 +392,16 @@ window.fh = (function() {
                     }),
                 });
             },
-            new: function(username, password, filename, datastores) {
-                var options = {
+            new: function(username, password, file, datastores) {
+                return stdAjax("POST", "/v1/backup/", {
                     data: JSON.stringify({
                         datastores: datastores,
-                        filename: filename,
+                        file: file,
                     }),
-                };
-                if (username && password) {
-                    options.beforeSend = function(xhr) {
+                    beforeSend: function(xhr) {
                         xhr.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
-                    };
-                }
-                return stdAjax("POST", "/v1/backup/", options);
+                    },
+                });
             },
         },
         util: {
