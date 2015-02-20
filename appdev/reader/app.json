@@ -1,0 +1,9 @@
+{
+	"id": "reader",
+	"name": "Reader",
+	"version": "0.1",
+	"description": "RSS Feed Reader",
+	"author": "Tim Shannon",
+	"root": "/v1/file/index.html",
+	"icon": "/reader/v1/file/image/reader_icon.png"
+}

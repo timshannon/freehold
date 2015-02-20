@@ -20,9 +20,9 @@ def package(app):
     shutil.copytree(app, tmpDir)
 
     os.chdir(tmpDir)
-    makeFolder("./")
-    #minify
-    minifyFolder("./")
+    if not makeFolder("./"):
+        #minify
+        minifyFolder("./")
     #zip
     subprocess.call(["zip", "-r", "../../application/available/"+app+".zip", ".", "-x", ".*"])
     os.chdir("..")
@@ -34,6 +34,7 @@ def makeFolder(folder):
         for f in files:
             if f == "makefile":
                 subprocess.call(["make"])
+                return True
 
 def minifyFolder(folder):
     for path, _, files in os.walk(folder):
