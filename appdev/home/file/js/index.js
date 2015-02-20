@@ -201,6 +201,7 @@ $(document).ready(function() {
                     r.set({
                         failures: {},
                     });
+                    filterApps();
                     return;
                 }
 
@@ -241,6 +242,7 @@ $(document).ready(function() {
                             apps: available,
                             failures: result.failures,
                         });
+                        filterApps();
                     })
                     .fail(function(result) {
                         r.set("failures", result.responseJSON.failures);
