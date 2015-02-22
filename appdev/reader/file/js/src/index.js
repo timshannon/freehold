@@ -4,7 +4,10 @@
 
 // jshint esnext:true
 
-import {test} from "./subscription.js";
+import {
+    url
+}
+from "./subscription.js";
 
 var r = new Ractive({
     el: "#ractives",
@@ -13,4 +16,12 @@ var r = new Ractive({
 
 var nav = r.findComponent("navbar");
 
-console.log(test);
+
+$.ajax({
+    url: url,
+    jsonp: "callback",
+    dataType: "jsonp xml",
+    success: function(response) {
+        console.log(response); // server response
+    }
+});
