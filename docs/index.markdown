@@ -1481,7 +1481,7 @@ Response (200):
 	status: "success",
 	data: {
 			id: "blog",
-			name: "Blog V2",
+			name: "Blog",
 			version: "0.01",
 			description: "Software for writing and publish a blog to the public",
 			author: "Tim Shannon - shannon.timothy@gmail.com",
@@ -1586,11 +1586,11 @@ TODO: WebRTC backend
 
 TODO: IRC client
 
-/v1/com/email
+/v1/com/rss
 ------------
 
-TODO: email client
-
+TODO: Retrieving RSS feeds
+TODO: Generate an RSS feed from a Datastore
 
 * * *
 
