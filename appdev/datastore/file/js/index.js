@@ -78,7 +78,7 @@ $(document).ready(function() {
         },
         "selectFile": function(event) {
 			if(rMain.get("selected")) {
-            window.location = "/datastore?file=" + rMain.get("selected");
+				window.location = "/datastore?file=" + rMain.get("selected.url");
 			}
         },
         "viewValue": function(event) {

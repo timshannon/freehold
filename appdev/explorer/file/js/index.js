@@ -95,7 +95,7 @@ $(document).ready(function() {
             updateFolder(event.context.url, keypath);
         },
         "tree.open": function(event) {
-            var keypath = keypathFromTree(event.keypath, event.component.data.dsTree);
+            var keypath = keypathFromTree(event.keypath, event.component.get("dsTree"));
             updateFolder(event.context.url, keypath);
             if (event.keypath !== "root") {
                 rMain.set(keypath, setFileType(rMain.get(keypath)));
@@ -585,6 +585,9 @@ $(document).ready(function() {
         var prevKeypath = rMain.get("currentKeypath");
 
         rMain.set("currentKeypath", keypath);
+        rMain.set("currentDSKeypath", keypath.replace('datastores', 'root'));
+        rMain.set("currentFileKeypath", keypath.replace('files', 'root'));
+        rMain.set("currentStarKeypath", keypath.replace('stars', 'root'));
         if (keypath === "stars") {
             updateStarFolder();
             return;

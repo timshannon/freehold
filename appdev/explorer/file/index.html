@@ -264,7 +264,7 @@
 <modal id="settings" title="Explorer Settings">
 	<form role="form" class="form-horizontal" onsubmit="return false">
 		<div class="form-group">
-			<label for="shareLinkExpireDays" class="col-sm-4 control-label">Days until share-links expire</lable>
+			<label for="shareLinkExpireDays" class="col-sm-4 control-label">Days until share-links expire</label>
 			<div class="col-sm-8">
 				<input type="number" input="shareLinkExpireDays" class="form-control" placeholder="Number of Days"
 					value="{{tokenExpireDays}}">
@@ -478,11 +478,11 @@
 			<a href="javascript:void(0)" class="sidebar-hide-btn" on-click="toggle('hideSidebar')" title="Hide Sidebar">
 				<span class="glyphicon glyphicon-chevron-left"></span></a>
 			<div class="trees">
-				<tree root="{{files}}" on-select="fileTreeSelect" selectKeypath="{{currentKeypath.replace('files', 'root')}}">
+				<tree root="{{files}}" on-select="fileTreeSelect" selectKeypath="{{currentFileKeypath}}">
 				</tree>
-				<tree root="{{datastores}}" on-select="dsTreeSelect" selectKeypath="{{currentKeypath.replace('datastores', 'root')}}" dsTree="true">
+				<tree root="{{datastores}}" on-select="dsTreeSelect" selectKeypath="{{currentDSKeypath}}" dsTree="true">
 				</tree>
-				<tree root="{{stars}}" on-select="viewStarred" selectKeypath="{{currentKeypath.replace('stars', 'root')}}">
+				<tree root="{{stars}}" on-select="viewStarred" selectKeypath="{{currentStarKeypath}}">
 				</tree>
 			</div>
 		{{/if}}
