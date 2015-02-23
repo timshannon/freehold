@@ -124,7 +124,7 @@
 	{{#waiting}}<span class="spinner nav-spinner"></span>{{/waiting}}
 </navbar>
 <modal id="fileBrowse" title="Select a Mind Map File" customFooter="true">
-	<filebrowse selected.url="{{selected}}" filterRegex="^.*\.(mmap|mup)$"></filebrowse>
+	<filebrowse selected="{{selected}}" filterRegex="^.*\.(mmap|mup)$"></filebrowse>
 	<div class="modal-footer">
 		<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
 		<button type="button" class="btn btn-primary" on-click="loadFile">Open</button>
@@ -132,7 +132,7 @@
 </modal>
 
 <modal id="newFile" title="{{#if saveAs}}Save Mind Map as{{else}}New Mind Map{{/if}}" customFooter="true">
-	<filebrowse filename="{{newMapName}}" currentFolder.url="{{newMapParent}}" fileExists="{{newFileExists}}"
+	<filebrowse filename="{{newMapName}}" currentFolder="{{newMapParent}}" fileExists="{{newFileExists}}"
 		filterRegex="^.*\.(mmap|mup)$" filenamePlaceholder="New Map name..."></filebrowse>
 	<div class="modal-footer">
 		<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>

@@ -14,13 +14,13 @@
 <script id="tMain" type="text/ractive">
 <navbar app="Datastore Viewer"></navbar>
 <modal id="fileBrowse" title="Open a Datastore" customFooter="true">
-	<filebrowse rootDir="/v1/datastore/" selected.url="{{selected}}"></filebrowse>
+	<filebrowse rootDir="/v1/datastore/" selected="{{selected}}"></filebrowse>
 	<div class="modal-footer">
 		<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
 		<button type="button" class="btn btn-primary" on-click="selectFile">Select</button>
 	</div>
 </modal>
-<modal id="viewValue" title="Value for key: {{currentKey}}">
+<modal id="viewValue" title="Value for key: {{currentKey}}" large="true">
 	<jsonviewer object="{{currentValue}}"></jsonviewer>
 </modal>
 <div class="container">

@@ -196,7 +196,7 @@
 					<tr class="active">
 						<td>
 						<button type="button"  class="btn btn-xs btn-success" on-click="addToken">
-						 <span class="glyphicon glyphicon-plus"></span> Add new token</a>
+						 <span class="glyphicon glyphicon-plus"></span> Add new token</button>
 						</td>
 						<td></td>
 						<td></td>
@@ -233,7 +233,7 @@
 	<div class="form-group {{#errors.name}}has-error has-feedback{{/errors.name}}" title="{{errors.name}}">
 		<label for="tokenName" class="col-sm-3 control-label">Name</label>
 		<div class="col-sm-9">
-			<input type="text" class="form-control" id="tokenName" placeholder="Enter a name i.e Desktop Sync" value="{{name}}">
+			<input type="text" class="form-control" id="tokenName" placeholder="Enter a name i.e Desktop Sync" value="{{tokenName}}">
 		{{#errors.name}}
 			<span class="glyphicon glyphicon-remove form-control-feedback"></span>
 		{{/errors.name}}
@@ -289,7 +289,7 @@
 <div class="row">
 	<div class="col-sm-12">
 		<strong>Choose a file</strong>
-		<filetree selected.url="{{.selected}}"></filetree>
+		<filetree selected="{{.selected}}"></filetree>
 	</div>
 </div>
 {{#.errNoFile}}

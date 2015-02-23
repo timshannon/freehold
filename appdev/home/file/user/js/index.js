@@ -146,7 +146,7 @@ $(document).ready(function() {
         "tokenStep1": function(event) {
             var errors = {};
 
-            if (!event.context.name) {
+            if (!rMain.get("tokenName")) {
                 errors.name = "A name is required";
             }
 
@@ -177,11 +177,11 @@ $(document).ready(function() {
         },
         "tokenStep2": function(event) {
             if (event.context.type == "file") {
-                if (!event.context.selected) {
+                if (!event.context.selected.url) {
                     rMain.set(event.keypath + ".errNoFile", true);
                     return;
                 }
-                rMain.set("token.resource", event.context.selected);
+                rMain.set("token.resource", event.context.selected.url);
                 if (!event.context.permission) {
                     rMain.set("token.permission", "r");
                 }
@@ -210,7 +210,7 @@ $(document).ready(function() {
             }
 
             fh.token.new({
-                    name: event.context.name,
+                    name: rMain.get("tokenName"),
                     expires: event.context.expires,
                     resource: event.context.resource,
                     permission: event.context.permission,

@@ -75,13 +75,13 @@ component.exports = {
 				helper = function() {
 					//Ractive is so freaking fast
 					var helpNode = new Ractive({
-						template: "<div data-rvcguid='{{guid}}' class='drag-nametag'><span class='{{iconClass}}'></span>  {{name}}" +
+						template: "<div data-ractive-css='{{cssId}}' class='drag-nametag'><span class='{{iconClass}}'></span>  {{name}}" +
 											"{{#count}}<span class='badge'>{{count}}</span>{{/}}</div>",
 						data: {
 							name: r.get("name"),
 							count: r.get("count"),
 							iconClass: r.get("iconClass"),
-							guid: $(srcNode).attr("data-rvcguid")
+							cssId: $(srcNode).attr("data-ractive-css"),
 						},
 					});
 

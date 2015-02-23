@@ -122,7 +122,7 @@ component.exports = {
 
 		r.on({
 			"openParent": function(event) {
-				loadDir(event.context.currentFolder.parent.url);
+				loadDir(r.get("currentFolder.parent.url"));
 			},
 			"openFolder": function(event) {
 				loadDir(event.context.url);

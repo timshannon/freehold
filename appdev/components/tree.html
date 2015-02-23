@@ -156,24 +156,6 @@ component.exports = {
 				return (typeof child.children !== "undefined" && child.children.length >= 0);
 			},
 		},
-		root: {
-			name: "Sample data that should be overwritten",canSelect: true,
-			iconClass: "folder-open",	
-			children: [
-				{name: "child1", iconClass: "glyphicon glyphicon-file", canSelect: true, children: []},
-				{name: "child2", iconClass: "glyphicon glyphicon-file", canSelect: true},
-				{name: "child3", iconClass: "glyphicon glyphicon-folder-closed", children: [
-					{name: "subchild1", iconClass: "glyphicon glyphicon-file", canSelect: true},
-					{name: "subchild2", iconClass: "glyphicon glyphicon-file", canSelect: true, hide: true},
-					{name: "subchild3", iconClass: "glyphicon glyphicon-file", canSelect: true},
-					{name: "child3", iconClass: "glyphicon glyphicon-folder-closed", children: [
-						{name: "subchild1", iconClass: "glyphicon glyphicon-file", canSelect: true},
-						{name: "subchild2", iconClass: "glyphicon glyphicon-file", canSelect: true},
-						{name: "subchild3", iconClass: "glyphicon glyphicon-file", canSelect: true},
-					]},
-				]},
-			]
-		},
 	},
 	onrender: function() {
 		var r = this;
@@ -199,21 +181,23 @@ component.exports = {
 
 		function select(keypath) {
 			r.set("root.selected", false);
-			clearSelected(r.get("root.children"));
-			r.update("root");
-
-			r.set(keypath+".selected", true);
-			r.set("selected", r.get(keypath));
+			clearSelected(r.get("root.children"), "root");
+			if (r.get(keypath)) {
+				r.set(keypath+".selected", true);
+				r.set("selected", r.get(keypath));
+			}
 		}
 
-		function clearSelected(children) {
+		function clearSelected(children, parentKeypath) {
 			if (!children) {
 				return;
 			}
 			for (var i = 0; i < children.length; i++) {
-				children[i].selected = false;	
+				var kp = parentKeypath+".children."+i;
+				r.set(kp+".selected", false);
+				//children[i].selected = false;	
 				if (children[i].hasOwnProperty("children")) {
-					clearSelected(children[i].children);
+					clearSelected(children[i].children, kp);
 				}
 			}
 		}

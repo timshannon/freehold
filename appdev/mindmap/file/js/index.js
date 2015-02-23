@@ -69,13 +69,14 @@ $(document).ready(function() {
 
             var newMapName = r.get("newMapName");
             var ext = newMapName.slice(newMapName.lastIndexOf(".") + 1);
-            if (ext != "mup" || ext != "mmap") {
+
+            if (ext != "mup" && ext != "mmap") {
                 newMapName += ".mup";
             }
 
             r.set("file", {
                 name: newMapName,
-                url: fh.util.urlJoin(r.get("newMapParent"), newMapName),
+                url: fh.util.urlJoin(r.get("newMapParent.url"), newMapName),
             });
 
             save(!r.get("newFileExists"), function() {
@@ -99,7 +100,7 @@ $(document).ready(function() {
         },
         "loadFile": function() {
             if (r.get("selected")) {
-                window.location = "/mindmap?file=" + r.get("selected");
+                window.location = "/mindmap?file=" + r.get("selected.url");
             }
         },
         "about": function() {
@@ -198,9 +199,9 @@ $(document).ready(function() {
     });
 
     $(document).bind("click", function(e) {
-		if(e.button !== 2) {
-        $("#contextMenu").removeClass("open");
-}
+        if (e.button !== 2) {
+            $("#contextMenu").removeClass("open");
+        }
     });
 
 
@@ -233,6 +234,7 @@ $(document).ready(function() {
         var uploadUrl = r.get("file.url").split("/");
         uploadUrl.pop();
         uploadUrl = uploadUrl.join("/");
+
         var form = new FormData();
 
         form.append(filename,
