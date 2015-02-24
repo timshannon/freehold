@@ -97,6 +97,8 @@ Files folders have permissions at the folder level which determine if a folder c
 
 If a user doesn't have permissions to read a file they will get a 404.
 
+For more information on permissions see [permissions.markdown](/docs/permissions.markdown).
+
 Authenticated access is granted either by having an active cookie with proper session credentials
 or including an AuthToken field with the proper token in the request
 
@@ -757,7 +759,7 @@ More info on this under Sessions.
 Authentication and Session data are stored in the core datastore, and accessed via the path
 */v1/auth/*.
 
-
+//TODO: Two Factor Authentication ala Google Authenticator / Authy, etc.
 
 ### /v1/auth/
 
@@ -1722,4 +1724,5 @@ Response (201):
 }
 
 ```
+
 
