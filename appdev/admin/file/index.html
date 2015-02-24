@@ -228,7 +228,7 @@
 		<input type="text" class="form-control" placeholder="filter settings" value="{{settingsFilter}}">
 	</li>
 	{{#settings:i}}
-	{{^filtered}}
+	{{#if !filtered}}
 	<li class="list-group-item row{{#change}} list-group-item-info{{/change}}">
 		<div class="col-md-8">
 		<dl>
@@ -240,21 +240,22 @@
 		<span class="label label-danger">{{error}}</span>
 		{{/error}}
 		<div class="input-group">
-			{{#type=="string"}}
+			{{#if type=="string"}}
 			<input type="text" class="form-control" disabled="{{^change}}disabled{{/change}}" value="{{value}}">
-			{{/type}} {{#type=="number"}}
+			{{/if}} 
+			{{#if type=="number"}}
 			<input type="number" class="form-control" disabled="{{^change}}disabled{{/change}}" value="{{value}}">
-			{{/type}}
-			{{#type=="boolean"}}
-			<button type="button" disabled="{{^change}}disabled{{/change}}"  on-click="changeBoolean"
-				class="btn btn-default {{#value}}btn-primary active{{/value}}">
-			{{#value}}
-				True
-			{{else}}
-				False
-			{{/value}}
-			</button>
-			{{/type}}
+			{{/if}}
+			{{#if type=="boolean"}}
+				<button type="button" disabled="{{^change}}disabled{{/change}}"  on-click="changeBoolean"
+					class="btn btn-default {{#value}}btn-primary active{{/value}}">
+				{{#if value}}
+					True
+				{{else}}
+					False
+				{{/if}}
+				</button>
+			{{/if}}
 
       <span class="input-group-btn">
         <button class="btn btn-default" on-click="changeMode" type="button">{{#change}}Save{{else}}Change{{/change}}</button>
@@ -266,7 +267,7 @@
     </div>
 		</div>
 	</li>
-	{{/filtered}}
+	{{/if}}
 	{{/settings}}
 </ul>
 </div>
@@ -323,7 +324,7 @@
 		<h4>Backups will be written to: </h4>
 		<ul class="list-unstyled">
 		{{#if chooseFolder}}
-			<li><filetree selected.url="{{file}}" folderOnly="true"></filetree></li>
+			<li><filetree selected="{{file}}" folderOnly="true"></filetree></li>
 		{{else}}
 			<li>
 				<a target="_blank" href="/explorer/?url={{file}}">{{file}}</a>

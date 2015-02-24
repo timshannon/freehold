@@ -3,7 +3,7 @@
 
 <div class="tree">
 	{{#root}}
-	<div class="{{#.selected}}selected bg-info{{/}} child">
+	<div class="{{#if selectKeypath == @keypath}}selected bg-info{{/if}} child">
 		{{#if .droppable}}
 			<droppable useParent="true" hoverClass="drop-over" tolerance="pointer" dropData="{{.}}"></droppable>	
 		{{/if}}
@@ -51,7 +51,7 @@
 
 <!-- {{>child}} -->
 <li>
-	<div class="{{#.selected}}selected{{/}} child" {{^.draggable}}onmousedown="return false"{{/}}>
+	<div class="{{#if selectKeypath == @keypath}}selected{{/if}} child" {{^.draggable}}onmousedown="return false"{{/}}>
 		{{#if .draggable}}
 			<draggable useParent="true" opacity="0.7" helper="clone" zIndex="1000" dragData="{{.}}"></draggable>	
 		{{/if}}
@@ -172,36 +172,10 @@ component.exports = {
 				r.set("selectKeypath", event.keypath);
 			},
 		});
-
-		this.observe({
-			"selectKeypath": function(newvalue, oldvalue, keypath) {
-				select(newvalue);
-			},
+		this.observe("selectKeypath", function(newvalue) {
+			r.set("selected", r.get(newvalue));
 		});
-
-		function select(keypath) {
-			r.set("root.selected", false);
-			clearSelected(r.get("root.children"), "root");
-			if (r.get(keypath)) {
-				r.set(keypath+".selected", true);
-				r.set("selected", r.get(keypath));
-			}
-		}
-
-		function clearSelected(children, parentKeypath) {
-			if (!children) {
-				return;
-			}
-			for (var i = 0; i < children.length; i++) {
-				var kp = parentKeypath+".children."+i;
-				r.set(kp+".selected", false);
-				//children[i].selected = false;	
-				if (children[i].hasOwnProperty("children")) {
-					clearSelected(children[i].children, kp);
-				}
-			}
-		}
 	},
-
+		
 };
 </script>

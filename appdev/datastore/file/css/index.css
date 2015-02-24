@@ -11,10 +11,8 @@
 	position: absolute;
 }
 
-td {
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	max-width: 100vh;
+table {
+    table-layout: fixed;
+    word-wrap: break-word;
 }
 

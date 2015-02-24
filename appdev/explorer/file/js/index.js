@@ -395,6 +395,9 @@ $(document).ready(function() {
             fh.properties.set(rMain.get("currentFile.url"), {
                     permissions: event,
                 })
+                .done(function() {
+                    refresh();
+                })
                 .fail(function(result) {
                     error(result);
                 });
@@ -784,7 +787,7 @@ $(document).ready(function() {
                         break;
                     }
                 }
-                if (index >= 0) {
+                if (index >= 0 && current[index].isDir) {
                     mergeAttributes(current[index], newFiles[i]);
                 }
             }

@@ -111,11 +111,11 @@ $(document).ready(function() {
                 });
         },
         remove: function(event) {
-            fh.application.uninstall(event.context.id)
+            fh.application.uninstall(event.index.i)
                 .done(function() {
                     refreshApps();
                 })
-                .fail(function() {
+                .fail(function(result) {
                     error(result);
                 });
         },
