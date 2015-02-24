@@ -31,7 +31,7 @@
 	</navbar>
 
 	<modal id="fileBrowse" title="Select an Open Office Document" customFooter="true">
-		<filebrowse selected.url="{{selected}}" filterRegex="^.*\.(odf|odt|ods|odp)$"></filebrowse>
+		<filebrowse selected="{{selected}}" filterRegex="^.*\.(odf|odt|ods|odp)$"></filebrowse>
 		<div class="modal-footer">
 			<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
 			<button type="button" class="btn btn-primary" on-click="selectFile">Open</button>

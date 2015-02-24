@@ -84,7 +84,7 @@ $(document).ready(function() {
     r.on({
         "selectFile": function(event) {
             if (r.get("selected")) {
-                window.location = "/webodf?file=" + r.get("selected");
+                window.location = "/webodf?file=" + r.get("selected.url");
             }
         },
         "showFileBrowse": function(event) {

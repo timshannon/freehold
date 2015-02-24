@@ -383,8 +383,7 @@ $(document).ready(function() {
 
         },
         "changeBoolean": function(event) {
-            event.context.value = !event.context.value;
-            rSettings.set(event.keypath, event.context);
+            rSettings.toggle("settings." + event.index.i + ".value");
         }
     });
 
@@ -427,7 +426,7 @@ $(document).ready(function() {
                 }
             }
             rBackups.set("waiting", true);
-            fh.backup.new(fh.auth.user, rBackups.get("backupPassword"), rBackups.get("file"), dsList)
+            fh.backup.new(fh.auth.user, rBackups.get("backupPassword"), rBackups.get("file.url"), dsList)
                 .done(function(result) {
                     rBackups.set("url", result.data);
                     rBackups.add("step");

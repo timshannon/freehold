@@ -59,17 +59,18 @@
 
 {{#if alerts.length > 0}}
 	<div class="nav-alert-container">
-	{{#alerts:i}}
-	<div class="navbar-alert alert alert-{{.type || 'danger'}} alert-dismissible" role="alert">
-		<button type="button" class="close" on-click="dismissAlert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-			<strong>{{lead}}</strong>  
-			{{{detail}}} 
+		{{#alerts:i}}
+		<div class="navbar-alert alert alert-{{.type || 'danger'}} alert-dismissible" role="alert">
+			<button type="button" class="close" on-click="dismissAlert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<strong>{{lead}}</strong>  
+				{{{detail}}} 
+		</div>
+		{{/alerts}}
 	</div>
-	{{/alerts}}
-	</div>
-	<div class="modal-backdrop fade in">
+	<div class="navbar-alert-backdrop modal-backdrop fade in">
 	</div>
 
+	
 {{/if}}
 
         
@@ -93,6 +94,8 @@
 	z-index: 10500;
 	width: 100%;
 	height: 100%;
+	overflow-y: auto;
+	overflow-x: hidden;
 }
 
 .navbar-alert {
@@ -103,6 +106,15 @@
 	margin-top: 20px;
 	min-width: 100px;
 	max-width: 50%;
+}
+
+.navbar-alert-backdrop {
+	z-index: 10000;
+	position: absolute;
+	top:0;
+	bottom: 0;
+	left: 0;
+	right: 0;
 }
 </style>
 
@@ -217,9 +229,14 @@ component.exports = {
 						lead = "An error occurred!";
 					}
 					r.push("alerts", {type: type, lead: lead, detail: detail});
+					$("body").addClass("modal-open");
 				},
 				"dismissAlert": function(event) {
 					r.splice(event.keypath.split(".")[0], event.index.i, 1);
+					var alerts = r.get("alerts");
+					if (alerts.length === 0) {
+						$("body").removeClass("modal-open");
+					}
 				},
 		});
 	}
