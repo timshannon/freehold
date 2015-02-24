@@ -94,10 +94,4 @@ Freehold is designed to work well with more than just browser based applications
 In those cases, it's usually not a good idea to be storing your username and passwords on your phone or your desktop.  Instead you can generate *Security Tokens* that can be limited in their scope of permissions, and be set to expire. You can use these Tokens to run external applications such as might be found on your phone or your desktop.
 
 
-What Freehold is and isn't
-====================================
-Freehold is designed to be a personal server.  There is no server side validation for datastore input beyond *is this valid JSON*.  If garbage gets put into a datastore, garbage comes back out. A malicious user who had access to update a datastore could insert bad data which could have negative consequences on the application relying on it.  Any applications should be built with this in mind.  For example, a public comments datastore should have it's contents approved before being displayed / inserted into the public datastore.  A process which would take two separate datastores.  One which the public can write to, and one which those public comments get copied to for viewing when they've been approved.  
-
-In this way Freehold's server side protections lie solely in it's permissions structure, and isn't robust enough for a diverse population of authenticated users who may or may not be trusted.
-
 See the built-in documentation (/docs) for more detailed information.
