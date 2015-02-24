@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>User - freehold</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+		<link href="/core/v1/file/css/freehold.css" rel="stylesheet" media="screen">
+		<link href="/home/v1/file/user/css/index.css" rel="stylesheet" media="screen">
+	</head>
+<body>
+<main>
+
+</main>
+
+</body>
+
+
+<!--templates-->
+<script id="tMain" type="text/ractive">
+<navbar app="User Info"></navbar>
+
+<modal id="userModal" title="Modify User {{current.user}}" customFooter="true">
+	<div>
+		{{#errors.save}}
+		<div class="alert alert-danger center-block">{{errors.save}}</div>
+		{{/errors.save}}
+	</div>
+
+	<form class="form-horizontal" role="form" on-submit="save">
+
+	<div class="form-group">
+    <label for="username" class="col-sm-3 control-label">Username</label>
+		<div class="col-sm-6">
+      <p class="form-control-static">{{current.user}}</p>
+    </div>
+		<div class="col-sm-3">
+			<button type="button" on-click="changePassword" class="form-control btn btn-default btn-xs">Change Password</button>
+    </div>
+  </div>
+
+	{{#changePassword}}
+	<div class="form-group {{#errors.password}}has-error has-feedback{{/errors.password}}" title="{{errors.password}}">
+    <label for="password" class="col-sm-3 control-label">Password</label>
+		<div class="col-sm-9">
+			<input type="password" class="form-control" id="password" placeholder="Enter a password" value="{{current.password}}">
+		{{#errors.password}}
+			<span class="form-control-feedback glyphicon glyphicon-remove"></span>
+		{{/errors.password}}
+		</div>
+	</div>
+	<div class="form-group {{#errors.password2}}has-error has-feedback{{/errors.password2}}" title="{{errors.password2}}">
+		<label for="password2" class="col-sm-3 control-label">Confirm</label>
+		<div class="col-sm-9">
+			<input type="password" class="form-control" id="password2" placeholder="Enter the password again" value="{{current.password2}}">
+		{{#errors.password2}}
+			<span class="form-control-feedback glyphicon glyphicon-remove"></span>
+		{{/errors.password2}}
+		</div>
+  </div>
+	{{/changePassword}}
+
+	<div class="form-group">
+    <label for="name" class="col-sm-3 control-label">Name</label>
+		<div class="col-sm-9">
+			<input type="text" class="form-control" id="name" placeholder="Enter user's name" value="{{current.name}}">
+		</div>
+  </div>
+	<div class="form-group">
+		<label for="homeApp" class="col-sm-3 control-label">User Home App</label>
+		<div class="col-sm-9">
+			<select class="form-control" name="homeApp" value="{{current.homeApp}}">
+				{{#apps:i}}
+				<option value="{{i}}">{{name}}</option>
+				{{/apps}}
+			</select>
+		</div>
+	</div>
+
+	{{#admin}}
+	<div class="form-group">
+		<div class="col-sm-offset-3 col-sm-9">
+			<button type="button" class="btn btn-danger" on-click="removeAdmin">Remove Admin Rights</button>
+		</div>
+	</div>
+	{{/admin}}
+
+	</form>
+	
+	<div class="modal-footer">
+		<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+		<button type="button" class="btn btn-primary" on-click="save">Save</button>
+	</div>
+</modal>
+
+
+{{#token}}
+<modal id="tokenModal" title="Add New Security Token" customFooter="true">
+	{{#errors.save}}
+		<div>
+			<div class="alert alert-danger center-block">{{errors.save}}</div>
+		</div>
+	{{/errors.save}}
+
+	{{#if tokenStep == 1}}
+		{{>tokenStep1}}
+	{{/if}}
+	{{#if tokenStep == 2}}
+		{{>tokenStep2}}
+	{{/if}}
+	{{#if tokenStep == 3}}
+		{{>tokenStep3}}
+	{{/if}}
+	{{#if tokenStep == 4}}
+		{{>tokenResult}}
+	{{/if}}
+
+
+</modal>
+{{/token}}
+
+<div class="container">
+	<div class="row">
+		<div class="col-md-4">
+			{{#user}}
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h3 class="panel-title">{{user}}{{#admin}} <small>(admin)</small>{{/admin}}</h3>
+
+				</div>
+				<div class="panel-body">
+					<button type="button" on-click="changeUser" class="pull-right btn btn-default btn-sm" title="Modify User">
+						<span class="glyphicon glyphicon-cog"></span> Modify User</button>
+					
+					<p><b>Name: </b>{{name}}</p>
+					<p><b>Home App: </b>{{homeApp}}</p>
+
+				</div>
+			</div>
+			{{/user}}
+		</div>
+		</div> <!--row-->
+	<div class="row">
+	<div class="container">
+	<ul class="nav nav-tabs" role="tablist">
+		<li class="active"><a href="#sessions" on-click="clearHelp" role="tab" data-toggle="tab">Sessions</a></li>
+		<li><a href="#tokens" role="tab" on-click="setHelp" data-toggle="tab">Tokens</a></li>
+	</ul>
+
+	<!--tab contents-->
+	<div class="tab-content">
+		<div class="tab-pane active" id="sessions">
+		<div class="col-md-12">
+			<table class="table table-condensed table-striped table-hover">
+				<thead>
+					<tr>
+						<th>
+							Created Date
+						</th>
+						<th>Expires</th>
+						<th>Ip Address</th>
+						<th>User Agent</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					{{#sessions}}
+					<tr class="">
+						<td>{{created}}</td>
+						<td>{{expires}}</td>
+						<td>{{ipAddress}}</td>
+						<td>{{userAgent}}</td>
+						<td>
+							<button type="button" class="btn btn-danger btn-sm" on-click="logout" title="Log Out Session">
+							<span class="glyphicon glyphicon-remove"></span></button>
+						</td>
+					</tr>
+					{{/sessions}}
+				</tbody>
+			</table>
+		</div> <!-- sessions -->
+		</div>
+		<div class="tab-pane" id="tokens">
+		<div class="col-md-12e">
+			<table class="table table-condensed table-striped table-hover">
+				<thead>
+					<tr>
+						<th class="col-md-3">Name</th>
+						<th class="col-md-2">Created</th>
+						<th class="col-md-2">Expires</th>
+						<th class="col-md-3">Resource</th>
+						<th class="col-md-1">Permission</th>
+						<th class="col-md-1"></th> <!-- delete button-->
+					</tr>
+				</thead>
+				<tbody>
+					<tr class="active">
+						<td>
+						<button type="button"  class="btn btn-xs btn-success" on-click="addToken">
+						 <span class="glyphicon glyphicon-plus"></span> Add new token</button>
+						</td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+					</tr>
+					{{#tokens}}
+					<tr>
+						<td>{{name}}</td>
+						<td>{{created}}</td>
+						<td>{{expires}}</td>
+						<td>{{resource}}</td>
+						<td>{{permissionString}}</td>
+						<td>
+							<button type="button" class="pull-right btn btn-danger btn-sm" on-click="delete" title="Delete Token">
+							<span class="glyphicon glyphicon-remove"></span></button>
+						</td>
+					</tr>
+					{{/tokens}}
+				</tbody>
+			</table>		
+			</div>
+	</div> 	<!--tokens-->
+	</div>
+	</div>
+
+</div>
+</div>
+
+
+<!-- {{>tokenStep1}} -->
+<form class="form-horizontal" role="form">
+	<div class="form-group {{#errors.name}}has-error has-feedback{{/errors.name}}" title="{{errors.name}}">
+		<label for="tokenName" class="col-sm-3 control-label">Name</label>
+		<div class="col-sm-9">
+			<input type="text" class="form-control" id="tokenName" placeholder="Enter a name i.e Desktop Sync" value="{{tokenName}}">
+		{{#errors.name}}
+			<span class="glyphicon glyphicon-remove form-control-feedback"></span>
+		{{/errors.name}}
+		</div>
+	</div>
+	<div class="form-group {{#errors.expires}}has-error has-feedback{{/errors.expires}}" title="{{errors.expires}}">
+		<label for="tokenExpire" class="col-sm-3 control-label">Expiration</label>
+		<div class="col-sm-9">
+			<datepicker id="tokenExpire" class="form-control" placeholder="Enter an expiration date" value="{{expires}}"></datepicker>
+		{{#errors.expires}}
+			<span class="form-control-feedback glyphicon glyphicon-remove"></span>
+		{{/errors.expires}}
+		</div>
+
+	</div>
+
+	</form>
+<div class="modal-footer">
+	<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+	<button type="button" class="btn btn-default" on-click="tokenStep1">Next
+		<span class="glyphicon glyphicon-chevron-right"></span></button>
+
+</div>
+
+<!-- {{/tokenStep1}} -->
+
+<!-- {{>tokenStep2}} -->
+<div class="row">
+	<div class="col-sm-12">
+		<strong>Do you want the token to grant access to:</strong>
+	</div>
+</div>
+<div class="row">
+	<fieldset>
+	<div class="col-sm-offset-1 col-sm-5">
+		<div class="radio">
+			<label><input type="radio" name="{{.type}}" value="user" checked> Everything you can access?</label>
+		</div>
+	</div>
+	<div class="col-sm-1">
+		<label class="inline-label">
+			<strong>Or</strong>
+		</label>
+	</div>
+	<div class="col-sm-4">
+		<div class="radio">
+			<label><input type="radio" name="{{.type}}" value="file"> A specific file?</label>
+		</div>
+	</div>
+	</fieldset>
+</div> <!-- row -->
+{{#if .type === "file"}}
+<div class="row">
+	<div class="col-sm-12">
+		<strong>Choose a file</strong>
+		<filetree selected="{{.selected}}"></filetree>
+	</div>
+</div>
+{{#.errNoFile}}
+<div>
+	<div class="alert alert-danger center-block">You must select a file!</div>
+</div>
+{{/.errNoFile}}
+
+{{/if}}
+
+<div class="modal-footer">
+	<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+
+	<button type="button" class="btn btn-default" on-click="tokenStepPrevious">
+		<span class="glyphicon glyphicon-chevron-left"></span> Previous</button>
+	{{#if requirePassword || .type === "file"}}
+	<button type="button" class="btn btn-default" on-click="tokenStep2">Next 
+		<span class="glyphicon glyphicon-chevron-right"></span></button>
+	{{else}}
+	<button type="button" class="btn btn-success" on-click="generateToken">Generate Token</button>
+	{{/if}}
+
+</div>
+
+<!-- {{/tokenStep2}} -->
+
+<!-- {{>tokenStep3}} -->
+<form class="form-horizontal" role="form">
+
+{{#if .type === "file"}}
+	<div class="form-group">
+		<div class="col-md-offset-1 col-sm-4">
+			<label class="control-label">Permission Level:</label>
+		</div>
+		<div class="col-sm-7">
+			<div class="btn-group">
+				<button type="button" class="btn btn-sm {{permission=='r' || permission =='rw' ? 'active btn-primary' : 'btn-default'}}"
+					on-click="toggleRead:">Read</button>
+				<button type="button" class="btn btn-sm {{permission=='w' || permission =='rw' ? 'active btn-primary' : 'btn-default'}}"
+					on-click="toggleWrite:">Write</button>
+			</div>
+		</div>
+		{{^permission}}
+		<p class="col-md-offset-1 col-sm-11"><small>If no permission is set, then the same access you have to the file is granted via the token.</small></p>
+		{{/permission}}
+	</div>
+{{/if}}
+
+	{{#if requirePassword}}
+		<div class="form-group">
+			<div class="col-sm-offset-1 col-sm-11">
+				<p class="help-block">Generating a token requires you to resubmit your Username and Password</p>
+			</div>
+		</div>
+
+		<div class="form-group {{#errors.username}}has-error has-feedback{{/errors.username}}" title="{{errors.username}}">
+			<label for="username" class="col-sm-3 control-label">User Name</label>
+			<div class="col-sm-9">
+				<input type="text" class="form-control" id="username" placeholder="Enter your username" value="{{username}}">
+			{{#errors.username}}
+				<span class="form-control-feedback glyphicon glyphicon-remove"></span>
+			{{/errors.username}}
+			</div>
+		</div>
+		<div class="form-group {{#errors.password}}has-error has-feedback{{/errors.password}}" title="{{errors.password}}">
+			<label for="tokenPassword" class="col-sm-3 control-label">Password</label>
+			<div class="col-sm-9">
+				<input type="password" class="form-control" id="tokenPassword" placeholder="Enter your password" value="{{password}}">
+			{{#errors.password}}
+				<span class="form-control-feedback glyphicon glyphicon-remove"></span>
+			{{/errors.password}}
+			</div>
+		</div>
+	{{/if}}
+
+</form>
+<div class="modal-footer">
+	<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+
+	<button type="button" class="btn btn-default" on-click="tokenStepPrevious">
+		<span class="glyphicon glyphicon-chevron-left"></span> Previous</button>
+	<button type="button" class="btn btn-success" on-click="generateToken">Generate Token</button>
+</div>
+
+<!-- {{/tokenStep3}} -->
+
+<!-- {{>tokenResult}} -->
+<input type="text" id="tokenSelect" class="form-control input-lg" value="{{.token}}" readonly>
+<p>
+This unique token will <em>not</em> be retrievable after you close this window.
+Be sure to copy it to where you need to before continuing.
+</p>
+
+{{#if .type === "file"}}
+	<label for="tokenURL">Url to access this file</label>
+	<input type="text" id="tokenUrl" class="form-control input-lg" value="{{.url}}" readonly>
+{{/if}}
+
+<div class="modal-footer">
+	<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+</div>
+
+<!-- {{/tokenResult}} -->
+
+
+</script>
+<!--end templates-->
+
+<script src="/core/v1/file/js/jquery-2.1.1.min.js"></script>
+<script src="/core/v1/file/js/bootstrap.min.js"></script>
+<script src="/core/v1/file/js/ractive.min.js"></script>
+<script src="/core/v1/file/js/fh.js"></script>
+<script src="/core/v1/file/js/components.js"></script>
+<script src="/home/v1/file/user/js/index.js"></script>
+</body>
+</html>

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Mind Map - freehold</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<link href="/core/v1/file/css/freehold.css" rel="stylesheet" media="screen"> 
+		<link href="/mindmap/v1/file/css/mapjs-default-styles.css" rel="stylesheet" media="screen"> 
+		<link href="/core/v1/file/css/font-awesome.min.css" rel="stylesheet" media="screen"> 
+		<link href="/mindmap/v1/file/css/index.css" rel="stylesheet" media="screen"> 
+	</head>
+<body>
+<div id="ractives"></div>
+<div id="container"></div>			
+<!--templates-->
+
+<script id="tMain" type="text/ractive">
+<navbar app="Mind Map">
+	<p id="filename" class="navbar-text">
+		{{file.name}}
+	</p>
+
+	<ul class="nav navbar-nav">
+	<!--file-->
+		<li class="dropdown">
+			<a id="fileMenu" href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" 
+			role="button" aria-expanded="false">
+				File
+			</a>
+			<ul class="dropdown-menu has-hotkey" role="menu" aria-labelledby="fileMenu">
+				<li role="presentation">
+					<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="new">
+					<span class="glyphicon glyphicon-plus"></span> New<span class="hotkey">Ctrl-N</span></a>
+				</li>
+				<li role="presentation">
+					<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="load">
+					<span class="glyphicon glyphicon-folder-open"></span> Open<span class="hotkey">Ctrl-O</span></a>
+				</li>
+
+				<li role="presentation" class="divider"></li>
+				<li role="presentation">
+					<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="save">
+					<span class="glyphicon glyphicon-floppy-disk"></span> Save<span class="hotkey">Ctrl-S</span></a>
+				</li>
+				<li role="presentation">
+					<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="saveAs">
+					<span class="glyphicon glyphicon-floppy-disk"></span> Save As<span class="hotkey">Shift-Ctrl-S</span></a>
+				</li>
+
+			</ul>
+		</li>
+
+		<!--edit-->
+		<li id="editMenuDropDown" class="dropdown">
+			<a id="editMenu" href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" 
+			role="button" aria-expanded="false">
+				Edit
+			</a>
+			<ul class="dropdown-menu has-hotkey" role="menu" aria-labelledby="editMenu">
+				<li role="presentation">
+					<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="undo">
+					<span class="fa fa-rotate-left"></span> Undo <span class="hotkey">Ctrl-Z</span></a>
+				</li>
+				<li role="presentation">
+					<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="redo">
+					<span class="fa fa-rotate-right"></span> Redo<span class="hotkey">Ctrl-Y</span></a>
+				</li>
+				<li role="presentation" class="divider"></li>
+				<li role="presentation">
+					<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="cut">
+					<span class="glyphicon glyphicon-scissors"></span> Cut<span class="hotkey">Ctrl-X</span></a>
+				</li>
+				<li role="presentation">
+					<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="copy">
+					<span class="glyphicon glyphicon-copy"></span> Copy<span class="hotkey">Ctrl-C</span></a>
+				</li>
+				<li role="presentation">
+					<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="paste">
+					<span class="glyphicon glyphicon-paste"></span> Paste<span class="hotkey">Ctrl-V</span></a>
+				</li>
+				<li role="presentation">
+					<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="pasteStyle">
+					<span class="glyphicon glyphicon-paste"></span> Paste Style<span class="hotkey">Ctrl+Shift+V</span></a>
+				</li>
+
+				<li role="presentation" class="divider"></li>
+				<li role="presentation">
+					<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="toggleCollapse">
+					<span class="glyphicon glyphicon-resize-small"></span> Collapse/Expand<span class="hotkey">F</span></a>
+				</li>
+				<li role="presentation">
+					<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="addAttachment">
+					<span class="glyphicon glyphicon-paperclip"></span> Add Attachment<span class="hotkey">Ctrl-A</span></a>
+				</li>
+				<li role="presentation">
+					<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="setColor">
+					<span class="fa fa-eyedropper"></span> Set Color<span class="hotkey">Ctrl-R
+						</span>
+					</a>
+				</li>
+			</ul>
+		</li>
+
+
+
+		<li class="dropdown">
+			<a id="aboutMenu" href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" 
+			role="button" aria-expanded="false">
+				Help
+			</a>
+			<ul class="dropdown-menu" role="menu" aria-labelledby="aboutMenu">
+				<li role="presentation">
+					<a role="menuitem" tabindex="-1" target="_blank" href="/mindmap/v1/file/docs/" >
+					<span class="glyphicon glyphicon-asterisk"></span> Hotkeys</a>
+				</li>
+
+				<li role="presentation">
+					<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="about">
+					<span class="glyphicon glyphicon-info-sign"></span> About</a>
+				</li>
+			</ul>
+		</li>
+	</ul>
+	
+	{{#waiting}}<span class="spinner nav-spinner"></span>{{/waiting}}
+</navbar>
+<modal id="fileBrowse" title="Select a Mind Map File" customFooter="true">
+	<filebrowse selected="{{selected}}" filterRegex="^.*\.(mmap|mup)$"></filebrowse>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+		<button type="button" class="btn btn-primary" on-click="loadFile">Open</button>
+	</div>
+</modal>
+
+<modal id="newFile" title="{{#if saveAs}}Save Mind Map as{{else}}New Mind Map{{/if}}" customFooter="true">
+	<filebrowse filename="{{newMapName}}" currentFolder="{{newMapParent}}" fileExists="{{newFileExists}}"
+		filterRegex="^.*\.(mmap|mup)$" filenamePlaceholder="New Map name..."></filebrowse>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+		{{#if saveAs}}	
+			<button type="button" class="btn btn-primary" on-click="newMap">Save As</button>
+		{{else}}
+			<button type="button" class="btn btn-success" on-click="newMap">New</button>
+		{{/if}}
+	</div>
+</modal>
+
+<modal id="about" title="About">
+	<p>
+		This mind mapping software is built on <a target="_blank" href="https://github.com/mindmup/mapjs">mapjs</a> and is a
+		limited implementation of of the <a target="_blank" href="https://www.mindmup.com">MindMup</a> software that saves to this freehold instance.
+		If you like this software, you should check out, and support Mind Mup at <a target="_blank" href="https://www.mindmup.com">https://www.mindmup.com</a>.
+	</p>
+	<p>
+		For license and attribution information for MapJS and other software used in freehold, look at <a target="_blank" href="/docs/license">/docs/license</a>.
+	</p>
+
+</modal>
+
+<modal id="attachment" title="Add Attachment" customFooter="true" large="true">
+	{{>cmEdit}}
+	<div class="modal-footer">
+		<button type="button" class="btn btn-danger pull-left" on-click="deleteAttachment">
+			<span class="glyphicon glyphicon-remove"></span> Delete</button>
+		<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+		<button type="button" class="btn btn-primary" on-click="saveAttachment">Save</button>
+	</div>
+</modal>
+
+<colorpicker showPalette="true" value="{{nodeColor}}"></colorpicker>
+
+<!-- {{>cmEdit}} -->
+<div class="cm-editor">
+ <!-- Nav tabs -->
+  <ul id="cmEditorTabs" class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active" title="Edit markdown">
+			<a href="#edit" aria-controls="edit" role="tab" data-toggle="tab">
+				<span class="glyphicon glyphicon-pencil"></span>
+			</a>
+		</li>
+    <li role="presentation" title="View" on-click="parse">
+			<a href="#view" aria-controls="view" role="tab" data-toggle="tab">
+				<span class="glyphicon glyphicon-eye-open"></span>
+			</a>
+		</li>
+		<li role="presentation" class="tab-icon pull-right">
+			<a target="_blank" href="/docs/markdown_reference.markdown" title="Markdown Help">
+				<span class="glyphicon glyphicon-question-sign"></span>
+			</a>
+		</li>
+  </ul>
+
+  <!-- Tab panes -->
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane active" id="edit">
+			<textarea id="mdInput" class="form-control" value="{{markdown}}" placeholder="Enter markdown here"></textarea>
+		</div>
+    <div role="tabpanel" class="tab-pane" id="view">
+			<div class="parsed">
+				{{{parsed}}}
+			</div>
+		</div>
+  </div>
+</div>
+
+<!-- {{/cmEdit}} -->
+
+<div id="contextMenu">
+<ul class="dropdown-menu" role="menu">
+	<li role="presentation">
+		<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="cut">
+		<span class="glyphicon glyphicon-scissors"></span> Cut</a>
+	</li>
+	<li role="presentation">
+		<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="copy">
+		<span class="glyphicon glyphicon-copy"></span> Copy</a>
+	</li>
+	<li role="presentation">
+		<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="paste">
+		<span class="glyphicon glyphicon-paste"></span> Paste</a>
+	</li>
+	<li role="presentation">
+		<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="pasteStyle">
+		<span class="glyphicon glyphicon-paste"></span> Paste Style</a>
+	</li>
+	<li role="presentation" class="divider"></li>
+	<li role="presentation">
+		<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="toggleCollapse">
+		<span class="glyphicon glyphicon-resize-small"></span> Collapse/Expand</a>
+	</li>
+	<li role="presentation">
+		<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="addAttachment">
+		<span class="glyphicon glyphicon-paperclip"></span> Add Attachment</a>
+	</li>
+	<li role="presentation">
+		<a role="menuitem" tabindex="-1" href="javascript:void(0)" on-click="setColor">
+		<span class="fa fa-eyedropper"></span> Set Color</a>
+	</li>
+</ul>
+</div>
+
+
+</script>
+<!--end templates-->
+
+<script src="/core/v1/file/js/jquery-2.1.1.min.js"></script>
+<script src="/core/v1/file/js/bootstrap.min.js"></script>
+<script src="/core/v1/file/js/ractive.min.js"></script>
+<script src="/core/v1/file/js/fh.js"></script>
+<script src="/core/v1/file/js/components.js"></script>
+<script src="/mindmap/v1/file/js/lib/jquery.hotkeys.js"></script>
+<script src="/mindmap/v1/file/js/lib/hammer.min.js"></script>
+<script src="/mindmap/v1/file/js/lib/jquery.hammer.min.js"></script>
+<script type="text/javascript" src="/mindmap/v1/file/js/lib/underscore-1.4.4.js"></script>
+<script src="/mindmap/v1/file/js/lib/color-0.7.1.min.js"></script>
+<script type="text/javascript" src="/mindmap/v1/file/js/src/observable.js"></script>
+<script type="text/javascript" src="/mindmap/v1/file/js/src/mapjs.js"></script>
+<script type="text/javascript" src="/mindmap/v1/file/js/src/url-helper.js"></script>
+<script type="text/javascript" src="/mindmap/v1/file/js/src/content.js"></script>
+<script type="text/javascript" src="/mindmap/v1/file/js/src/layout.js"></script>
+<script type="text/javascript" src="/mindmap/v1/file/js/src/clipboard.js"></script>
+<script type="text/javascript" src="/mindmap/v1/file/js/src/map-model.js"></script>
+<script type="text/javascript" src="/mindmap/v1/file/js/src/map-toolbar-widget.js"></script>
+<script type="text/javascript" src="/mindmap/v1/file/js/src/link-edit-widget.js"></script>
+<script type="text/javascript" src="/mindmap/v1/file/js/src/image-drop-widget.js"></script>
+<script type="text/javascript" src="/mindmap/v1/file/js/src/hammer-draggable.js"></script>
+<script type="text/javascript" src="/mindmap/v1/file/js/src/dom-map-view.js"></script>
+<script type="text/javascript" src="/mindmap/v1/file/js/src/dom-map-widget.js"></script>
+<script src="/core/v1/file/js/commonmark.js"></script>
+<script src="/mindmap/v1/file/js/index.js"></script>
+</body>
+</html>

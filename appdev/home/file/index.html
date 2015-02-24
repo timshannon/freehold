@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Home - freehold</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+		<link href="/core/v1/file/css/freehold.css" rel="stylesheet" media="screen">
+		<link href="/home/v1/file/css/index.css" rel="stylesheet" media="screen">
+	</head>
+<body>
+<div id="ractives">
+			
+</div>
+
+<div class="footer">
+	<div class="text-center">
+		Freehold is a free and open source project released under the MIT license.  License and attribution info can be found at <a target="_blank" href="/docs/license">/docs/license</a>.
+	</div>
+</div>
+
+<!--templates-->
+<script id="tMain" type="text/ractive">
+<navbar></navbar>
+
+<modal id="externalApps" title="Fetch External Applications" customFooter="true">
+	{{#if waiting}}
+		<div class="progress">
+			<div class="progress-bar progress-bar-striped active"  role="progressbar" 
+				aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+				<span>Loading...</span>
+			</div>
+		</div>
+	{{else}}
+		{{#if fetchError}}
+		<div class="alert alert-danger alert-dismissible" role="alert">
+			<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			{{fetchError.message}}
+		</div>	
+		{{/if}}
+		<form on-submit="fetchExternal">
+			<div class="form-group">
+				<label for="appUrl">Application File URL</label>
+				<input type="text" class="form-control" id="appUrl" value="{{url}}" placeholder="Enter URL">
+			</div>
+		</form>
+	{{/if}}	
+
+	<div class="modal-footer">
+		<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+		<button type="button" class="btn btn-primary" on-click="fetchExternal">Save</button>
+	</div>
+</modal>
+
+
+<div class="container">
+	<ul id="mainTabs" class="nav nav-tabs" role="tablist">
+		<li class="active"><a href="#starred" role="tab" data-toggle="tab">
+		<span class="glyphicon glyphicon-star"></span></a></li>
+		<li id="allTab" class=""><a href="#all" role="tab" data-toggle="tab">All</a></li>
+	</ul>
+	<!-- Tab panes -->
+
+	<div class="tab-content">
+		<div class="tab-pane active" id="starred">
+			{{#apps:i}}
+				{{#if starred && .installed}}
+					{{>appTile}}
+				{{/if}}
+			{{/apps}}
+		</div>
+		<div class="tab-pane" id="all">
+			<input type="text" id="filterText" class="form-control" placeholder="filter applications" value="{{filterText}}">
+			{{#apps:i}}
+				{{#if !filtered && .installed}}
+					{{>appPanel}}
+				{{/if}}
+			{{/apps}}
+
+			{{#admin}}
+				<h3>Available to Install</h3>
+				<hr>
+				<!--available-->
+				{{#apps:i}}
+					{{#if !filtered && !.installed}}
+						{{>appPanel}}
+					{{/if}}
+				{{/apps}}
+			{{/admin}}
+
+			{{#if admin && externalApps}}
+			<span class="app-panel available">
+				<div class="row">
+					<div class="col-sm-4">
+						<span class="thumbnail app-tile">
+							<img class="app-icon img-responsive" src="/home/v1/file/image/external_install.png">	
+							<h3><div class="app-id">Fetch External Application</div></h3>
+						</span>
+					</div>
+					<div class="col-sm-8">
+						<div class="app-description">
+							Download an application zip file from an external url, and make it available for install here.	
+						</div>
+						<div class="admin-btns">
+								<div class="btn-group pull-right">
+									<button type="button" on-click="fetchExternalOpen" class="btn btn-warning btn-sm">
+										<span class="glyphicon glyphicon-cloud-download"></span> Fetch External</button>
+								</div>	
+						</div>
+					</div>
+				</div>	
+			</span>
+		{{/if}}
+
+		<!--failures-->
+		{{#if failures.length > 0}}
+			<h3 class="text-danger">Failures</h3>
+			<hr>
+		{{/if}}
+		{{#failures:i}}
+			<span class="app-panel bg-warning">
+				<div class="row">
+					<div class="col-sm-4">
+						<span class="thumbnail app-tile">
+							<img class="app-icon img-responsive" src="/home/v1/file/image/app_icon.png">	
+							<h3><div class="app-id">Error!</div></h3>
+						</span>
+					</div>
+					<div class="col-sm-8">
+						<div class="app-description">
+							<p><strong>{{data}}</strong></p>
+							{{message}}
+						</div>
+					</div>
+				</div>	
+			</span>
+		{{/failures}}
+
+		</div>
+	</div>
+</div>
+
+<!-- {{>appPanel}} -->
+<span class="app-panel{{^installed}} available{{/}}">
+	<a class="star-btn" href="javascript:void(0)" on-click="star" title="Star App">
+		<span class="glyphicon glyphicon-star star {{#starred}}starred{{/starred}}"></span>
+	</a>
+	<div class="row">
+		<div class="col-sm-4">
+			{{>appTile}}	
+		</div>
+		<div class="col-sm-8">
+			<div class="app-description">
+				{{description}}
+			</div>
+			<div class="admin-btns">
+				{{#admin}}
+					<div class="btn-group pull-right">
+						{{^installed}}
+							<button type="button" on-click="install" class="btn btn-success btn-sm">
+								<span class="glyphicon glyphicon-plus"></span> Install</button>
+						{{/installed}}
+						{{#upgrade}}
+							<button type="button" on-click="upgrade" class="btn btn-info btn-sm" title="Upgrade to version {{version}}">
+								<span class="glyphicon glyphicon-refresh"></span> Upgrade</button>
+						{{/upgrade}}
+						{{#remove}}
+							<button type="button" on-click="remove" class="btn btn-danger btn-sm">
+								<span class="glyphicon glyphicon-remove"></span> Remove</button>
+						{{/remove}}
+					</div>	
+				{{/admin}}
+			</div>
+		</div>
+	</div>	
+</span>
+<!-- {{/appPanel}} -->
+
+<!-- {{>appTile}} -->
+		{{#if !installed}}
+			<span class="thumbnail app-tile">
+				<img class="app-icon img-responsive" src="/home/v1/file/image/available_icon.png">	
+				<h3><div class="app-id">{{name}}</div></h3>
+			</span>
+		{{else}}
+			<a href="{{id}}" class="thumbnail app-tile">
+				{{#if !icon}}
+					<img class="app-icon img-responsive" src="/home/v1/file/image/app_icon.png">	
+				{{else}}
+					<img class="app-icon img-responsive" src="{{icon}}">	
+				{{/if}}
+				<h3><div class="app-id">{{name}}</div></h3>
+			</a>
+		{{/if}}
+		<!-- {{/appTile}} -->
+
+</script>
+<!--end templates-->
+<script src="/core/v1/file/js/jquery-2.1.1.min.js"></script>
+<script src="/core/v1/file/js/bootstrap.min.js"></script>
+<script src="/core/v1/file/js/ractive.min.js"></script>
+<script src="/core/v1/file/js/fh.js"></script>
+<script src="/core/v1/file/js/components.js"></script>
+<script src="/home/v1/file/js/index.js"></script>
+</body>
+</html>

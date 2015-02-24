@@ -1,0 +1,9 @@
+{
+	"id": "mindmap",
+	"name": "Mind Map",
+	"version": "0.1",
+	"description": "Mind Map - Built on MindMup's mapjs - Zero-friction free online mind mapping",
+	"author": "Damjan Vujnovic, David de Florinier, Gojko Adzic",
+	"root": "/v1/file/index.html",
+	"icon": "/mindmap/v1/file/image/mindmup_icon.png"
+}

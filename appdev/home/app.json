@@ -1,0 +1,9 @@
+{
+	"id": "home",
+	"name": "Home",
+	"version": "0.1",
+	"description": "Home Page that links to all installed applications, and where applications can be managed.",
+	"author": "Tim Shannon - shannon.timothy@gmail.com",
+	"root": "/v1/file/index.html",
+	"icon": "/home/v1/file/image/home_icon.png"
+}

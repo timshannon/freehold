@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Explorer - freehold</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<link href="/core/v1/file/css/freehold.css" rel="stylesheet" media="screen"> 
+		<link href="/core/v1/file/css/font-awesome.min.css" rel="stylesheet" media="screen"> 
+		<link href="/explorer/v1/file/css/index.css" rel="stylesheet" media="screen"> 
+	</head>
+<body>
+<div id="nb"></div>
+<div id="pageContainer">
+</div>
+	
+<!--templates-->
+<script id="tNav" type="text/ractive">
+<navbar app="Explorer"></navbar>
+</script>
+
+<script id="tMain" type="text/ractive">
+<!--properties-->
+<modal id="properties" title="Properties for: {{currentFile.name}}" customFooter="true">
+{{#currentFile}}
+{{#if currentFile.propError}}
+<div class="alert alert-danger">
+	{{propError}}	
+</div>
+	<form class="form-horizontal" role="form">
+		<span class="property-icon fa fa-5x fa-warning"></span>
+			<label for="currentFileName" class="col-sm-4 control-label">Name</label>
+			<div class="col-sm-8">
+				<p class="form-control-static">{{name}}</p>
+			</div>
+		<div class="property-form form-group">
+			<label for="currentFileUrl" class="col-sm-4 control-label">Url</label>
+			<div class="col-sm-8">
+				<p class="form-control-static">{{url}}</p>
+			</div>
+		</div>
+		<div class="property-form form-group">
+			<label for="currentFileSize" class="col-sm-4 control-label">Size</label>
+			<div class="col-sm-8">
+				<p class="form-control-static">{{humanSize}}</p>
+			</div>
+		</div>
+		<div class="property-form form-group">
+			<label for="currentFileModified" class="col-sm-4 control-label">Last Modified</label>
+			<div class="col-sm-8">
+				<p class="form-control-static">{{modifiedDate}}</p>
+			</div>
+		</div>
+
+		</form>
+<div class="modal-footer">
+	<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+</div>
+
+{{else}}
+	<a href="javascript:void(0)" class="pull-right" on-click="star" title="{{#if .starred}}Remove{{else}}Add{{/if}} Star">
+		<span class="glyphicon glyphicon-star star{{#starred}} starred{{/starred}}"></span></a>
+	<ul id="propTabs" class="nav nav-tabs" role="tablist">
+		<li class="active"><a href="#details" role="tab" data-toggle="tab">Details</a></li>
+		<li><a href="#permissions" role="tab" data-toggle="tab">Permissions</a></li>
+		{{#if !isDir}}
+			<li><a href="#behavior" role="tab" data-toggle="tab">Behavior</a></li>
+			<li><a href="#share" role="tab" data-toggle="tab" on-click="loadShareLinks">Share</a></li>
+		{{/if}}
+	</ul>
+
+	<!-- Tab panes -->
+	<div class="tab-content property-content">
+		<div class="tab-pane active" id="details">
+			<form class="form-horizontal" role="form" on-submit="renameFile">
+				<div class="row">
+					<div class="col-sm-1">
+						<span class="property-icon fa fa-5x fa-{{explorerIcon}}" style="color:{{.iconColor}};"></span>
+					</div>
+					<div class="col-sm-10">
+						<div class="property-form form-group {{#renameError}}has-error has-feedback{{/}}" title="{{renameError}}">
+							<label for="currentFileName" class="col-sm-4 control-label">Name</label>
+							<div class="col-sm-8">
+								{{#if rename}}
+								<div class="input-group">
+									<input type="text" class="form-control" id="currentFileName" placeholder="Enter a new name" value="{{name}}">
+									<span class="input-group-btn">
+									<button class="btn btn-primary" type="submit">Save</button>
+									</span>
+								</div> <!-- /input-group -->
+								{{else}}
+								<button type="button" on-click="toggle('currentFile.rename')" class="btn-property-rename btn btn-default" title="Rename File">
+									{{name}}
+								</button>
+								{{/if}}
+							</div>
+						</div>
+						<div class="property-form form-group">
+							<label for="currentFileUrl" class="col-sm-4 control-label">Url</label>
+							<div class="col-sm-8">
+								<p id="currentFileUrl" class="form-control-static">{{domain + url}}</p>
+							</div>
+						</div>
+						<div class="property-form form-group">
+							<label for="currentFileSize" class="col-sm-4 control-label">Size</label>
+							<div class="col-sm-8">
+								<p class="form-control-static">{{humanSize}}</p>
+							</div>
+						</div>
+						<div class="property-form form-group">
+							<label for="currentFileModified" class="col-sm-4 control-label">Last Modified</label>
+							<div class="col-sm-8">
+								<p class="form-control-static">{{modifiedDate}}</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div> <!-- details -->
+		<div class="tab-pane" id="permissions">
+			<permissions readOnly="{{user !== permissions.owner}}" permissions="{{permissions}}" showOwner="{{.showOwner}}"></permissions>
+		</div> <!-- permissions -->
+		<div class="tab-pane" id="behavior">
+			<div class="row">
+				<div class="col-sm-9">
+					<form class="form-horizontal" role="form">
+						<div class="form-group">
+							<label for="iconSelect" class="col-sm-4 control-label">Icon</label>
+							<div class="col-sm-8">
+								<select id="iconSelect" class="form-control" value="{{.explorerIcon}}">
+									{{#icons:i}}
+										<option>{{.}}</option>
+									{{/icons}}
+								</select>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="colorSelect" class="col-sm-4 control-label">Color</label>
+							<div class="col-sm-8">
+								<colorpicker value="{{.iconColor}}" showPalette="true"></colorpicker>
+							</div>
+						</div>
+						
+					{{#behavior}}
+					<div class="form-group property-form">	
+						<label class="col-sm-4 control-label">File Handling: </label>
+					</div>
+					<div class="row">	
+						<div class="col-sm-offset-2 col-sm-6">
+							<div class="radio">
+								<label>
+									<input type="radio" name="radioBehavior" value="download" checked="{{.download}}" on-click="setFileBehavior">
+									Download File
+								</label>
+							</div>
+							<div class="radio">
+								<label>
+									<input type="radio" name="radioBehavior" value="browser" checked="{{.browser}}" on-click="setFileBehavior">
+									Open File in Browser
+								</label>
+							</div>
+							<div class="radio">
+								<label>
+									<input type="radio" name="radioBehavior" value="app" checked="{{.app}}" on-click="setFileBehavior">
+									Open File with Application
+								</label>
+							</div>
+						</div>
+					</div>
+					<div class="row property-form">
+						<div class="col-sm-offset-4 col-sm-8"> 
+							<select class="form-control" value="{{.appID}}" {{#if !.app}}disabled{{/if}}>
+							{{#apps:i}}
+								<option value="{{i}}">{{.name}}</option>
+							{{/apps}}
+							</select>
+						</div>	
+					</div>
+					{{/behavior}}
+					<div class="row">
+						<div class="col-sm-3">
+							<button type="button" class="btn btn-sm btn-default" on-click="defaultFileBehavior">Use Defaults</button>
+						</div>
+					</div>
+					</form>
+				</div>
+				<div class="col-sm-2">
+					<span class="property-icon fa fa-5x fa-{{explorerIcon}}" style="color:{{.iconColor}};"></span>
+				</div>
+			</div> <!-- row -->	
+		</div> <!-- behavior -->
+		<div class="tab-pane" id="share">
+			{{#shareLinks}}
+				{{#if .newUrl}}
+				<div class="row">
+					<div class="col-sm-12">
+						<input type="text" id="shareLinkUrl" class="form-control" value="{{.newUrl}}" readonly>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-sm-12">
+						<small>Send this url to someone to share this file with them.  The url will <strong>not</strong> be retrievable after leaving this screen.</small>
+					</div>
+				</div>
+				{{else}}
+				<div class="row">
+					<form class="form" on-submit="generateShareLink">
+						{{#requirePassword}}
+						<div class="col-sm-8 form-group {{#.errors.password}}has-error has-feedback{{/.errors.password}}" title="{{.errors.password}}">
+							<label class="sr-only" for="tokenPassword">Password</label>
+							<input type="password" class="form-control" id="tokenPassword" placeholder="Enter Password" value="{{.password}}">
+							{{#errors.password}}
+								<span class="form-control-feedback glyphicon glyphicon-remove"></span>
+							{{/errors.password}}
+						</div>
+						{{/requirePassword}}
+						<div class="col-sm-4">
+							<button type="submit" class="pull-right btn btn-success"  title="Get unique url for sharing this file">
+								<span class="glyphicon glyphicon-share"></span> New Link</button>
+						</div>
+					</form>
+			</div>
+			{{/if}}
+			<div class="row">
+				<div class="col-sm-12">
+				{{#if .links.length > 0}}
+					<table class="table">
+						<thead>
+							<tr>
+								<th>Created</th>
+								<th>Expires</th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody>
+							{{#.links:i}}
+							<tr>
+								<td>{{.createdDate}}</td>
+								<td>{{.expiresDate}}</td>
+								<td>
+									<button type="button" class="btn btn-danger btn-sm pull-right" on-click="removeLink" title="Remove Link">
+										<span class="glyphicon glyphicon-remove"></span></button>
+								</td>
+							</tr>
+							{{/.links}}
+						</tbody>
+					</table>
+				{{/if}}
+				</div>
+			</div>
+			{{/shareLinks}}
+		</div> <!-- share -->
+
+	</div>
+
+<div class="modal-footer">
+	<button type="button" class="btn btn-danger pull-left" on-click="deleteFromProperties">
+		<span class="glyphicon glyphicon-remove"></span> Delete</button>
+	<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+</div>
+{{/if}}
+{{/currentFile}}
+</modal>
+
+<!--settings-->
+<modal id="settings" title="Explorer Settings">
+	<form role="form" class="form-horizontal" onsubmit="return false">
+		<div class="form-group">
+			<label for="shareLinkExpireDays" class="col-sm-4 control-label">Days until share-links expire</label>
+			<div class="col-sm-8">
+				<input type="number" input="shareLinkExpireDays" class="form-control" placeholder="Number of Days"
+					value="{{tokenExpireDays}}">
+			</div>
+		</div>
+
+		<div class="form-group">
+			<div class="col-sm-offset-4 col-sm-8">
+				<div class="checkbox ">
+					<label><input type="checkbox" checked="{{newWindow}}"> Open files in new window.</label>
+				</div>
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="col-sm-offset-4 col-sm-8">
+				<div class="checkbox ">
+					<label><input type="checkbox" checked="{{folderSort}}"> Sort by folder first.</label>
+				</div>
+			</div>
+		</div>
+	</form>
+</modal>
+
+<!--new folder-->
+<modal id="newFolder" title="New Folder" customFooter="true">
+	<form class="form-horizontal" role="form" on-submit="newFolderSave">
+		<div class="form-group {{#newFolderError}}has-error has-feedback{{/}}" title="{{newFolderError}}">
+			<label for="folderName" class="col-sm-3 control-label">Folder</label>
+			<div class="col-sm-9">
+				<input type="text" class="form-control" id="folderName" placeholder="Enter a folder name" value="{{newFolderName}}">
+			{{#newFolderError}}
+				<span class="form-control-feedback glyphicon glyphicon-remove"></span>
+			{{/newFolderError}}
+			</div>
+		</div>
+
+	</form>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+		<button type="button" class="btn btn-primary" on-click="newFolderSave">Save</button>
+	</div>
+</modal>
+
+<!--rename folder-->
+<modal id="renameFolder" title="Rename Folder {{currentFolder.name}}" customFooter="true">
+	<form class="form-horizontal" role="form" on-submit="renameFolderSave">
+		<div class="form-group {{#renameFolderError}}has-error has-feedback{{/}}" title="{{renameFolderError}}">
+			<label for="folderRename" class="col-sm-3 control-label">New Name</label>
+			<div class="col-sm-9">
+				<input type="text" class="form-control" id="folderRename" placeholder="Enter the new folder name" value="{{folderRename}}">
+			{{#renameFolderError}}
+				<span class="form-control-feedback glyphicon glyphicon-remove"></span>
+			{{/renameFolderError}}
+			</div>
+		</div>
+
+	</form>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+		<button type="button" class="btn btn-primary" on-click="renameFolderSave">Save</button>
+	</div>
+</modal>
+
+
+<div class="row page-nav">
+	<div id="rootNav" class="col-sm-3">
+		<div class="btn-group hidden-xs hidden-sm">
+			<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+				{{#if app}}
+					{{app}}
+				{{else}} 
+					<span class="glyphicon glyphicon-hdd"></span> Root
+				{{/if}}
+				<span class="caret"></span>
+			</button>
+			<ul class="dropdown-menu" role="menu">
+				<li><a href="javascript:void(0)" on-click="selectApp"><span class="glyphicon glyphicon-hdd"></span> Root</a></li>
+				<li class="divider"></li>
+				{{#apps:i}}
+					<li><a href="javascript:void(0)" on-click="selectApp">{{name}}</a></li>
+				{{/apps}}
+			</ul>
+		</div>
+		<fileinput multiple="true">
+			<button type="button" class="btn btn-success pull-right">
+			<span class="glyphicon glyphicon-upload"></span> Upload Files</button>
+		</fileinput>
+	</div>
+	<div id="folderNav" class="col-sm-7">
+		{{#if currentKeypath !== "stars" && !searchMode}}
+		<ol class="breadcrumb">
+			{{#breadcrumbs:i}}
+				<li><a href="javascript:void(0)" on-click="crumbSelect">{{file.name}}</a></li>
+			{{/breadcrumbs}}
+			{{#currentFolder}}
+			<li class="active">
+				<span class="breadcrumb-menu dropdown">
+				<a id="folderDrop" href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false">
+				{{name}} <span class="caret"></span>
+				</a>
+				<ul class="dropdown-menu" role="menu" aria-labelledby="folderDrop">
+					{{#if .isFilePath}}
+					<li>
+						<a href="javascript:void(0)" on-click="newFolder"><span class="glyphicon glyphicon-plus"></span> New Folder</a> 
+					</li>
+					<li class="divider"></li>
+					{{/if}}
+					<li>
+						<a href="javascript:void(0)" on-click="star">
+							<span class="glyphicon glyphicon-star"></span> {{#if currentFolder.starred}}Remove{{else}}Add{{/if}} Star
+						</a> 
+					</li>
+					{{#if .isFilePath}}
+						{{#if user === currentFolder.permissions.owner}}
+						<li><a href="javascript:void(0)" on-click="renameFolder"><span class="glyphicon glyphicon-repeat"></span> Rename</a></li>
+						<li><a href="javascript:void(0)" on-click="deleteFolder"><span class="glyphicon glyphicon-trash"></span> Delete</a></li>
+						{{/if}}
+						<li class="divider"></li>
+						<li><a href="javascript:void(0)" on-click="properties:{{currentFolder.url}}"><span class="glyphicon glyphicon-cog"></span> Folder Properties</a></li>
+					{{/if}}
+				</ul>
+				</span>
+			</li>
+			{{/currentFolder}}
+		</ol>
+		{{/if}}
+		{{#if searchMode}}
+		<div class="row">
+			<div class="col-sm-11">
+				<form on-submit="search">
+					<div class="input-group">
+						<input type="text" id="searchInput" class="form-control" value="{{searchValue}}" placeholder="Search for files in {{currentFolder.name}} ...">
+						<span class="input-group-btn">
+							<button type="submit" class="btn btn-primary">Search</button>
+						</span>
+					</div>
+				</form>
+			</div>
+			<div class="col-sm-1">
+				{{#searching}}<span class="pull-left spinner search-spinner"></span>{{/searching}}
+			</div>
+		</div>
+		{{/if}}
+	</div> <!-- folderNav -->
+	<div class="folder-nav-btns">
+		{{#if selection.length > 0}}
+				<span>
+			{{#if currentKeypath === "stars"}}
+					<button type="button" class="btn btn-danger" on-click="deleteSelectStars" title="Delete Stars"><span class="glyphicon glyphicon-trash"></span></button>
+			{{else}}
+					<button type="button" class="btn btn-danger" on-click="deleteSelect" title="Delete Selection"><span class="glyphicon glyphicon-trash"></span></button>
+			{{/if}}
+				</span>
+		{{/if}}
+
+		<div class="btn-group">
+		{{#if currentKeypath !== "stars"}}
+			<button type="button" class="btn btn-{{#if searchMode}}primary active{{else}}default{{/if}}" on-click="toggleSearch" title="Search Files">
+				<span class="fa fa-2 fa-search"></span>
+			</button>
+		{{/if}}
+		{{#if !listView}}
+			<button type="button" class="btn btn-default" on-click="changeView" title="List View"><span class="fa fa-2 fa-list"></span></button>
+		{{else}}
+			<button type="button" class="btn btn-default" on-click="changeView" title="Grid View"><span class="fa fa-th"></span></button>
+		{{/if}}
+			<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false" title="Sorting">
+				<span class="glyphicon glyphicon-sort"></span> <span class="caret"></span>
+			</button>
+			<ul class="dropdown-menu dropdown-menu-right" role="menu">
+				<li>
+					<a href="javascript:void(0)" on-click="sortBy:name">Name {{#if sorting.by === "name"}}
+					<span class="pull-right glyphicon glyphicon-{{#if sorting.asc}}chevron-up{{else}}chevron-down{{/if}}"></span>
+					{{/if}}
+					</a>
+				</li>
+				<li>
+					<a href="javascript:void(0)" on-click="sortBy:owner">Owner 
+					{{#if sorting.by === "owner"}}
+					<span class="pull-right glyphicon glyphicon-{{#if sorting.asc}}chevron-up{{else}}chevron-down{{/if}}"></span>
+					{{/if}}
+					</a>
+				</li>
+				<li>
+					<a href="javascript:void(0)" on-click="sortBy:modified">Last Modified 
+					{{#if sorting.by === "modified"}}
+					<span class="pull-right glyphicon glyphicon-{{#if sorting.asc}}chevron-up{{else}}chevron-down{{/if}}"></span>
+					{{/if}}
+					</a>
+				</li>
+				<li>
+					<a href="javascript:void(0)" on-click="sortBy:size">Size 
+					{{#if sorting.by === "size"}}
+					<span class="pull-right glyphicon glyphicon-{{#if sorting.asc}}chevron-up{{else}}chevron-down{{/if}}"></span>
+					{{/if}}
+					</a>
+				</li>
+			</ul>
+		</div>
+		<button type="button" class="btn btn-default" on-click="openSettings" title="Settings"><span class="fa fa-2 fa-cogs"></span></button>
+	</div>
+
+</div> <!-- row -->
+
+<div class="file-nav row">
+	<div id="sidebar" class="{{#if hideSidebar}}hidden-sidebar{{else}}col-sm-3{{/if}}">
+		{{#if hideSidebar}}
+			<a href="javascript:void(0)" class="sidebar-hide-btn" on-click="toggle('hideSidebar')" title="Show Sidebar">
+				<span class="glyphicon glyphicon-chevron-right"></span></a>
+		{{else}}
+			<a href="javascript:void(0)" class="sidebar-hide-btn" on-click="toggle('hideSidebar')" title="Hide Sidebar">
+				<span class="glyphicon glyphicon-chevron-left"></span></a>
+			<div class="trees">
+				<tree root="{{files}}" on-select="fileTreeSelect" selectKeypath="{{currentFileKeypath}}">
+				</tree>
+				<tree root="{{datastores}}" on-select="dsTreeSelect" selectKeypath="{{currentDSKeypath}}" dsTree="true">
+				</tree>
+				<tree root="{{stars}}" on-select="viewStarred" selectKeypath="{{currentStarKeypath}}">
+				</tree>
+			</div>
+		{{/if}}
+	</div> <!-- sidebar -->
+
+	<div id="explorer" class="{{#if hideSidebar}}col-sm-12{{else}}col-sm-9{{/if}}">
+	{{#if currentKeypath !== "stars"}}
+		<dropzone useParent="true"></dropzone>
+	{{/if}}
+	{{#loading}}
+		<div class="overlay"></div>
+		<div class="loading">
+			<div class="progress">
+				<div class="progress-bar progress-bar-striped active" role="progressbar" 
+					aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+					<span>Loading...</span>
+				</div>
+			</div>
+		</div>
+	{{/loading}}
+	<selectable useParent="true" disabled="" filter=".selectable" cancel="a,button" delay="10"> 
+	</selectable>
+	{{#if !listView}}
+		<div class="file-area">
+		{{#currentFolder.files:i}}
+			{{>fileTile}}
+		{{/currentFolder.files}}
+		</div>
+	<!--gridview-->
+	{{else}}
+	<!--listview-->
+	<div class="file-area">
+	<table class="table table-condensed table-hover">
+		<thead>
+			<tr>
+				<th>
+					<a href="javascript:void(0)" on-click="sortBy:name">Name 
+					{{#if sorting.by === "name"}}
+					<span class="caret{{#if sorting.asc}} caret-up{{/if}}"></span> 
+					{{/if}}
+					</a>
+				</th>
+				<th>
+					<a href="javascript:void(0)" on-click="sortBy:owner">Owner  
+					{{#if sorting.by === "owner"}}
+					<span class="caret{{#if sorting.asc}} caret-up{{/if}}"></span> 
+					{{/if}}
+					</a>
+				</th>
+				<th>
+					<a href="javascript:void(0)" on-click="sortBy:modified">Last Modified   
+					{{#if sorting.by === "modified"}}
+					<span class="caret{{#if sorting.asc}} caret-up{{/if}}"></span> 
+					{{/if}}
+					</a>
+				</th>
+				<th>
+					<a href="javascript:void(0)" on-click="sortBy:size">Size 
+					{{#if sorting.by === "size"}}
+					<span class="caret{{#if sorting.asc}} caret-up{{/if}}"></span> 
+					{{/if}}
+					</a>
+				</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			{{#currentFolder.files:i}}
+			<tr class="{{#if .selectable}}selectable{{/if}}" data-select="{{i}}">
+				{{#if .canRead}}
+					{{#if .isDir}}
+						<td>
+							{{>droppable}}
+							<a href="javascript:void(0)" on-click="explorerSelect" onmousedown="return false">
+								{{>draggable}}
+								<span class="fa fa-{{explorerIcon}}" style="color:{{.iconColor}};"></span>  {{name}}
+							</a>
+						</td>
+					{{else}}
+						<td>
+							<a href="{{explorerUrl}}" target="{{#newWindow}}_blank{{/newWindow}}" 
+								{{#.behavior.download}}download=""{{/download}} onmousedown="return false">
+								{{>draggable}}
+								<span class="fa fa-{{explorerIcon}}" style="color:{{.iconColor}};"></span>  {{name}}
+							</a>
+						</td>
+					{{/if}}
+				{{else}}
+					<td>
+						<a href="javascript:void(0)" onmousedown="return false">
+							<span class="fa fa-{{explorerIcon}}" style="color:{{.iconColor}};"></span>  {{name}}
+						</a>
+					</td>
+				{{/if}}
+				<td>{{permissions.owner}}</td>
+				<td>{{modifiedDate}}</td>
+				<td>{{humanSize}}</td>
+				<td>
+				{{#if currentKeypath !== "stars"}}
+					{{#if !.isDir && .canRead}}
+					<button type="button" class="btn btn-default btn-xs pull-right" on-click="properties:{{.url}}" title="Properties">
+						<span class="glyphicon glyphicon-cog"></span></button>
+					{{/if}}
+				{{else}}
+					<button type="button" class="btn btn-xs btn-danger pull-right" on-click="removeStar" title="Remove Star">
+						<span class="glyphicon glyphicon-remove"></span></button>
+				{{/if}}
+				</td>
+			</tr>
+			{{/currentFolder.files}}
+		</tbody>
+	</table>		
+	</div>
+	{{/if}}
+	</div>	<!-- explorer -->
+</div> 
+
+<!-- {{>draggable}} -->
+{{#if .exDraggable && currentKeypath !== 'stars'}}
+	<draggable useParent="true" helper="nametag" zIndex="1000" 	dragData="{{ inSelection ? selection : .}}" 
+		name="{{ inSelection && selection.length > 1 ? 'multiple files' : name}}" 
+		iconClass="fa fa-{{inSelection && selection.length > 1 ? 'files-o' : explorerIcon}}" 
+		count="{{inSelection && selection.length > 1 ? selection.length : false}}"
+		containment="window" appendTo="body">
+	</draggable>
+{{/if}}
+<!-- {{/draggable}} -->
+
+<!-- {{>droppable}} -->
+{{#if .droppable && currentKeypath !== 'stars' && !.inSelection}}
+	<droppable useParent="true" hoverClass="drop-over" dropData="{{.}}" greedy="true" tolerance="pointer" addClasses="false">
+	</droppable>
+{{/if}}
+<!-- {{/droppable}} -->
+
+<!-- {{>fileTile}} -->
+{{#if .isDir}}
+	<a href="javascript:void(0)" on-click="explorerSelect" class="file-tile {{#if .selectable}}selectable{{/if}}"
+		 onmousedown="return false" data-select="{{i}}">
+	{{#if currentKeypath === "stars"}}
+		<a href="javascript:void(0)" class="btn btn-file-grid" on-click="removeStar" title="Remove Star">
+			<span class="glyphicon glyphicon-remove"></span></a>
+	{{/if}}
+		{{>droppable}}
+		{{>draggable}}
+		<span class="grid-icon fa fa-5x fa-{{explorerIcon}}" style="color:{{.iconColor}};"></span>
+		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
+	</a>
+{{else}}
+	{{#if .canRead}}
+	<a href="{{explorerUrl}}" target="{{#newWindow}}_blank{{/newWindow}}" {{#.download}}download=""{{/download}} 
+		class="file-tile selectable" data-select="{{i}}" onmousedown="return false">
+		{{>draggable}}
+		{{#if currentKeypath !== "stars"}}
+			<a href="javascript:void(0)" class="btn btn-file-grid" on-click="properties:{{.url}}" title="Properties">
+				<span class="glyphicon glyphicon-cog"></span></a>
+		{{else}}
+			<a href="javascript:void(0)" class="btn btn-file-grid" on-click="removeStar" title="Remove Star">
+				<span class="glyphicon glyphicon-remove"></span></a>
+		{{/if}}
+		<span class="grid-icon fa fa-5x fa-{{explorerIcon}}" style="color:{{.iconColor}};"></span>
+		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
+	</a>
+	{{else}}
+	<a href="javascript:void(0)"  class="file-tile" onmousedown="return false">
+		{{#if currentKeypath === "stars"}}
+			<a href="javascript:void(0)" class="btn btn-file-grid" on-click="removeStar" title="Remove Star">
+				<span class="glyphicon glyphicon-remove"></span></a>
+		{{/if}}
+		<span class="grid-icon fa fa-5x fa-{{explorerIcon}}" style="color:{{.iconColor}};"></span>
+		<span class="filename" title="{{#if name.length > 16}}{{name}}{{/if}}">{{name}}</span>
+	</a>
+
+	{{/if}}
+{{/if}}
+<!-- {{/fileTile}} -->
+
+{{#uploads}}
+<div class="upload-list modal-content" intro="slide" outro="slide">
+	<div class="modal-body">
+		{{#uploads:i}}
+		<div class="row"> 
+			<div class="col-xs-5 upload-filename" title="{{.name}}">
+				<span class="fa fa-{{.explorerIcon}}" style="color:{{.iconColor}};"></span> {{.name}}
+			</div>
+			<div class="col-xs-6">
+				{{#if .error}}
+					<span class="label label-danger upload-error" title="{{#if !.exists}}{{.error}}{{/if}}">
+						{{.error}}
+					</span>
+					{{#exists}}
+						 <a href="javascript:void(0)" class="btn btn-xs btn-success" on-click="replaceUpload">Replace?</a> 
+					{{/exists}}
+				{{else}}
+					<div class="progress upload-progress">
+						<div class="progress-bar progress-bar-striped active" role="progressbar" 
+							aria-valuenow="{{progress}}" aria-valuemin="0" aria-valuemax="100" style="width: {{progress}}%;">
+							{{progress}}%
+						</div>
+					</div>
+				{{/if}}
+			</div>
+			<div class="col-xs-1">
+				<button type="button" class="upload-cancel pull-right btn btn-danger btn-xs" title="Cancel Upload" on-click="cancelUpload">
+					<span class="glyphicon glyphicon-remove"></span>
+				</button>
+			</div>
+		</div>
+		{{/uploads}}
+	</div>
+</div>
+{{/uploads}}
+
+{{#if fileAlerts.length > 0}}
+	<div class="file-alert-container">
+	{{#fileAlerts:i}}
+	<div class="file-alert alert alert-info alert-dismissible" role="alert" intro="slide" outro="slide">
+		<button type="button" class="close" on-click="dismissFileAlert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<div>
+				<span class="fa fa-2x fa-{{.source.explorerIcon}}"></span> <strong>{{.source.name}}</strong>
+			</div>
+			<div class="file-alert-option">
+				<button type="button" class="file-alert-btn btn btn-danger" on-click="fileAlertReplace">
+					<strong>Replace</strong> the destination file:
+					<div><strong>Last Modified:</strong> {{.dest.modifiedDate}}</div>
+					<div><strong>Size:</strong> {{.dest.humanSize}}</div>
+				</button>
+			</div>
+			<div class="file-alert-option">
+				<button type="button" class="file-alert-btn btn btn-warning" on-click="fileAlertRename">
+					<strong>Rename</strong> the destination file to
+					<div>
+						<strong>{{.dest.rename}}</strong>
+					</div>
+				</button>
+			</div>
+			<div class="file-alert-option">
+				<button type="button" class="pull-right btn btn-sm btn-default" on-click="dismissFileAlert">Cancel</button>
+			</div>
+	</div>
+	{{/fileAlerts}}
+	</div>
+	<div class="modal-backdrop fade in">
+	</div>
+{{/if}}
+
+</script>
+<!--end templates-->
+
+<script src="/core/v1/file/js/jquery-2.1.1.min.js"></script>
+<script src="/core/v1/file/js/bootstrap.min.js"></script>
+<script src="/core/v1/file/js/ractive.min.js"></script>
+<script src="/core/v1/file/js/fh.js"></script>
+<script src="/core/v1/file/js/components.js"></script>
+<script src="/explorer/v1/file/js/icons.js"></script>
+<script src="/explorer/v1/file/js/index.js"></script>
+<script src="/explorer/v1/file/js/filesize.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+#odfContainer {
+	width:100%;
+	min-height:calc(100% - 51px); 
+	margin:0px; 
+	padding:0px;
+	margin-top: -21px;
+	background-color: #777;
+}

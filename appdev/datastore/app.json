@@ -1,0 +1,9 @@
+{
+	"id": "datastore",
+	"name": "Datastore Viewer",
+	"version": "0.1",
+	"description": "Datastore Viewer - Views datastore files",
+	"author": "Tim Shannon - shannon.timothy@gmail.com",
+	"root": "/v1/file/index.html",
+	"icon": "/datastore/v1/file/image/datastore_icon.png"
+}

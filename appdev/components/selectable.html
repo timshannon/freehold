@@ -1,0 +1,79 @@
+<div class="{{class}}" decorator="selectable" {{#.useParent}}style="display:none;"{{/}}>
+	{{yield}}
+</div>
+
+<style>
+	.ui-selectable-helper { 
+		position: absolute; z-index: 500; border:1px dotted black; 
+	}	
+</style>
+
+<script>
+
+component.exports = {
+	//defaulted options, can be overridden at component markup
+	// options to be added as needed, and they should match
+	// the jqueryui options
+	data: {
+			useParent: false,
+			filter: "*",
+			delay: 0,
+			cancel: null,
+			selected: [],
+	},
+	noCssTransform: true,
+	decorators: {
+		selectable: function (srcNode) {
+			var r = this;
+			var node;
+			if(r.get("useParent")) {
+				node = srcNode.parentNode;	
+			} else {
+				node = srcNode;
+			}
+
+			$(node).selectable({
+				filter: r.get("filter"),
+				cancel: r.get("cancel"),
+				delay: r.get("delay"),
+				selected: function(event, ui) {
+					r.fire("selected", ui.selected);	
+				},
+				unselected: function(event, ui) {
+					r.fire("unselected", ui.unselected);	
+				},
+				start: function() {
+					r.fire("start");
+				},
+				stop: function() {
+					var selected = [];
+					$(".ui-selected").each(function() {
+						selected.push(this);
+					});
+					r.fire("stop", selected);
+				},
+			});
+			return {
+				teardown: function () {
+					$(node).selectable("destroy");
+				}
+			};
+		},
+	},
+
+	onrender: function() {
+		var r = this;
+		
+		r.on({
+			"reset": function() {
+				$(".ui-selected").each(function() {
+					$(this).removeClass("ui-selected");
+					r.fire("unselected", this);	
+				});
+			},
+		});
+		
+	},
+
+};
+</script>

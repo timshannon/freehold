@@ -1,0 +1,125 @@
+<span id="{{id}}" class="draggable {{class}}" decorator="draggable" {{#.useParent}}style="display:none;"{{/}}>
+	{{yield}}
+</span>
+
+<style>
+	.drag-nametag {
+		font-size: 1.3em; 
+		color: #fff;
+		background-color: #337ab7;
+		border-radius: 4px;
+		padding: 5px 10px; 
+		max-width: 300px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		word-wrap: break-word;
+		white-space: nowrap;
+	}
+
+	.drag-nametag>.badge {
+		position: relative;
+		color: #337ab7;
+		background-color: #fff;
+		margin-left: 5px;
+		top: -2px;
+
+	}
+
+
+</style>
+
+<script>
+
+component.exports = {
+	//defaulted options, can be overridden at component markup
+	// options to be added as needed, and they should match
+	// the jqueryui options
+	data: {
+			useParent: false,
+			addClasses: false,
+			revert: false,
+			snap: false,
+			scroll: true,
+			containment: false,
+			zIndex: false,	
+			opacity: false,
+			scope: "default",
+			helper: "original",
+			cursor: false,
+			cursorAt: false,
+			appendTo: false,
+			dragData: null,
+			name:	null,
+			count: null,
+	},
+	decorators: {
+		draggable: function (srcNode) {
+			var r = this;
+			var node;
+			if(r.get("useParent")) {
+				node = srcNode.parentNode;	
+			} else {
+				node = srcNode;
+			}
+
+			var helper = r.get("helper")
+
+			if (r.get("helper") == "nametag") {
+				if(!r.get("cursorAt")) {
+					r.set("cursorAt", {
+						top: 5,
+						left: 10,
+					});
+				}
+
+				helper = function() {
+					//Ractive is so freaking fast
+					var helpNode = new Ractive({
+						template: "<div data-ractive-css='{{cssId}}' class='drag-nametag'><span class='{{iconClass}}'></span>  {{name}}" +
+											"{{#count}}<span class='badge'>{{count}}</span>{{/}}</div>",
+						data: {
+							name: r.get("name"),
+							count: r.get("count"),
+							iconClass: r.get("iconClass"),
+							cssId: $(srcNode).attr("data-ractive-css"),
+						},
+					});
+
+					return $(helpNode.toHTML());
+				}
+			}
+
+
+			$(node).draggable({
+				addClasses: r.get("addClasses"),
+				revert: r.get("revert"),
+				snap: r.get("snap"),
+				scroll: r.get("scroll"),
+				appendTo: r.get("appendTo"),
+				scope: r.get("scope"),
+				containment: r.get("containment"),
+				opacity: r.get("opacity"),
+				zIndex: r.get("zIndex"),
+				helper: helper,
+				cursor: r.get("cursor"),
+				cursorAt: r.get("cursorAt"),
+				start: function(event, ui) {
+					if(r.get("dragData")) {
+						$(node).data("dragData", r.get("dragData"));	
+					}
+					r.fire("start", r.get("dragData"));
+				},
+			});
+			return {
+				teardown: function () {
+					$(node).draggable("destroy");
+				}
+			};
+		},
+	},
+
+	onrender: function() {
+	},
+
+};
+</script>
