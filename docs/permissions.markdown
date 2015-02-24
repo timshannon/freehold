@@ -22,7 +22,7 @@ Other implicit permissions are built into freehold, and apply to the core operat
 
 Files and Folders
 -----------------------
-* Root File Folders - The root file folder (```/v1/file/``` or ```/app/v1/file/```) can only be written to by an Admin.  A non-admin user will not be able to upload or create any files unless an admin creates a folder with the appropriate permissions for them.  The core Admin application has a checkbox that will automatically create a User Folder (a folder in which the non-admin user has Write permissions) when creating a new user.  Non-admin users can read the contents of the Root File folder, but cannot write to it.
+* Root File Folders - The root file folder (`/v1/file/` or `/app/v1/file/`) can only be written to by an Admin.  A non-admin user will not be able to upload or create any files unless an admin creates a folder with the appropriate permissions for them.  The core Admin application has a checkbox that will automatically create a User Folder (a folder in which the non-admin user has Write permissions) when creating a new user.  Non-admin users can read the contents of the Root File folder, but cannot write to it.
 * Datastore Folders - Datastores handle folders differently from Files, in that they aren't treated as folders, but more like simple paths.  Users don't have to manually request a Datastore folder to be created, instead they will simply be created as needed, and removed when empty.  All authenticted users have the ability to view the contents of a Datastore folder.
 
 Sessions
@@ -64,3 +64,8 @@ Tokens
 Log
 -----------
 * View Log - Admin Only
+
+Backups
+-----------
+* View Previous Backups - Admin Only
+* Generate New Backups - Admin Only
