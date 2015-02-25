@@ -41,7 +41,7 @@ You can also specify where you want freehold to store your data.  By default it 
 
 Building From Source
 ======================
-If you wish to build freehold from source (which will probably be the case until I upload some binaries) you'll need to first install Go.
+If you wish to build freehold from source, you'll need to first install Go.
 http://golang.org/doc/install
 
 Grab the code
