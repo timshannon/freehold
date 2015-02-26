@@ -6,11 +6,7 @@ import shutil
 
 def package(app):
 
-    if app == "components":
-        print "packaging components file" 
-        os.chdir("./"+app)
-        subprocess.call(["make"])
-        os.chdir("..")
+    if not isApp(app):
         return
 
     print "packaging " + app
@@ -28,6 +24,14 @@ def package(app):
     os.chdir("..")
     #cleanup temp folder
     shutil.rmtree(tmpDir)
+
+def isApp(folder):
+    for path, _, files in os.walk(folder):
+        for f in files:
+            if f == "app.json":
+                return True
+
+    return False
 
 def makeFolder(folder):
     for path, _, files in os.walk(folder):
