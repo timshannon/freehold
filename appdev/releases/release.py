@@ -31,6 +31,7 @@ def makeDebFolder(version, packageRevision):
             "Section: base", "\n",
             "Priority: optional", "\n",
             "Architecture: "+arch, "\n",
+            "Installed-Size: "+str(os.path.getsize(name)/1024), "\n",
             "Depends:", "\n",
             "Maintainer: "+AUTHOR, "\n",
             "Description: " + DESCRIPTION, "\n"])
@@ -60,19 +61,16 @@ def makeDeb(version):
     #copy in available apps
     shutil.copytree(os.path.join(PATH_TO_APPFOLDER, "available"), os.path.join(debAppPath, "available"))
     
-    #dName = debName(version, packageRevision) #no arch in name to match standard
+    #set proper ownership
+    subprocess.call(["chown", "-R", "root:root", name])
 
     print "Making deb file " + name +".deb"
     subprocess.call(["dpkg-deb", "--build", name])
     
     shutil.rmtree(name)
 
-
-def debName(version, packageRevision):
-    return APP_NAME+"_"+version+"-"+str(packageRevision)
-
 def debFileName(version, packageRevision):
-    return debName(version, packageRevision) +"_"+arch
+    return APP_NAME+"_"+version+"-"+str(packageRevision) +"_"+arch
 
 
 def makeTarball(version):
