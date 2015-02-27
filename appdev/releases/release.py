@@ -11,18 +11,18 @@ import shutil
 
 APP_NAME = "freehold"
 DESCRIPTION ="A simple and secure personal webserver for all your files and data."
-AUTHOR = "Tim Shannon shannon.timothy@gmail.com"
+AUTHOR = "Tim Shannon <shannon.timothy@gmail.com>"
 PATH_TO_EXE = "../../"
 PATH_TO_APPFOLDER = "../../application/"
 
 arch = "amd64"
 
 def makeDebFolder(version, packageRevision):
-    name = debName(version, packageRevision)
+    name = debFileName(version, packageRevision)
     shutil.copytree("deb", name)
 
     metaPath = os.path.join(name, "DEBIAN")
-    if not os.path.isfile(metaPath):
+    if not os.path.exists(metaPath):
         os.mkdir(metaPath)
 
     with open(os.path.join(metaPath, "control"), "w") as metaFile:
@@ -41,13 +41,28 @@ def makeDeb(version):
 
     #check if version is already packaged, if so, increase package revision
 
-    name = debName(version, packageRevision)
-    while os.path.isfile(name+".deb"):
+    name = debFileName(version, packageRevision)
+    while os.path.exists(name+".deb"):
         packageRevision+=1
-        name = debName(version, packageRevision)
+        name = debFileName(version, packageRevision)
 
     makeDebFolder(version, packageRevision)
-    print "Making deb file " + name+".deb"
+
+    #copy in latest build
+    debExePath = os.path.join(name, "usr/local/bin")
+    debAppPath = os.path.join(name, "var/lib/freehold/application")
+    os.makedirs(debExePath)
+    shutil.copy(os.path.join(PATH_TO_EXE, APP_NAME), debExePath)
+
+    os.makedirs(debAppPath)
+    #copy in core app
+    shutil.copytree(os.path.join(PATH_TO_APPFOLDER, "core"), os.path.join(debAppPath, "core"))
+    #copy in available apps
+    shutil.copytree(os.path.join(PATH_TO_APPFOLDER, "available"), os.path.join(debAppPath, "available"))
+    
+    #dName = debName(version, packageRevision) #no arch in name to match standard
+
+    print "Making deb file " + name +".deb"
     subprocess.call(["dpkg-deb", "--build", name])
     
     shutil.rmtree(name)
@@ -55,6 +70,9 @@ def makeDeb(version):
 
 def debName(version, packageRevision):
     return APP_NAME+"_"+version+"-"+str(packageRevision)
+
+def debFileName(version, packageRevision):
+    return debName(version, packageRevision) +"_"+arch
 
 
 def makeTarball(version):
