@@ -11,7 +11,7 @@ Freehold is a webserver that you can host on anything from a multi-core VPS to a
 
 Once running the freehold instance exposes a simple REST API for uploading files and managing them.  There is also a built-in datastore API that allows for storing any other type of data you need.
 
-Interacting with the REST API is done through the core applications that come with your freehold instance, and other applications can be installed easily.   The documentation on how to use the RESTAPI comes built in with every instance of freehold at ``` https://instance-url/docs/ ```
+Interacting with the REST API is done through the core applications that come with your freehold instance, and other applications can be installed easily.   The documentation on how to use the RESTAPI comes built in with every instance of freehold at ` https://instance-url/docs/ `
 
 Getting Started
 ==================
@@ -33,11 +33,17 @@ There are a few more steps if you want to customize how you are hosting your ins
 
 Simply update the port to whatever you want and restart the freehold instance.
 
+SSL
+-----------
 You'll also notice that you can specify a Certificate and Key file if you want to host your instance on SSL, which is definitely recommended.
 
-If you are hosting your freehold instance on a local network and want to take advantage of SSL encryption, you can (hopefully as a last resort) generate a [self-signed certificate](http://en.wikipedia.org/wiki/Self-signed_certificate) and key file and host using that with the *selfsign* flag ```freehold -selfsign```
+If you are hosting your freehold instance on a local network and want to take advantage of SSL encryption, you can (hopefully as a last resort) generate a [self-signed certificate](http://en.wikipedia.org/wiki/Self-signed_certificate) and key file and host using that with the *selfsign* flag `freehold -selfsign`
 
 You can also specify where you want freehold to store your data.  By default it is the running directory of the executable.
+
+Debian
+-------------
+If you are running on a Debian based system like [Raspbian](http://www.raspbian.org) or [Ubuntu](http://www.ubuntu.com) then there are pre-build deb files in the downloads section.  When installed they will automatically setup a Freehold service and a freehold user to run it.  Your data will be stored in `/var/lib/freehold` and your settings.json file will be in `/etc/freehold/settings.json`.  After installing it you can change your settings.json file to use your own ssl certs (or generate self signed ones), then run `sudo /etc/init.d/freehold start` to startup your instance.
 
 Building From Source
 ======================
@@ -54,7 +60,9 @@ Change to the source directory
 cd freehold
 ```
 
-Then simply run ```go install``` to install to system, or ```go build``` to build and run it out of the source directory.
+Then simply run `go install` to install to system, or `go build` to build and run it out of the source directory.
+
+If you have your [$GOPATH environment variable](http://golang.org/doc/code.html#GOPATH) setup already, then a simple `go get bitbucket.org/tshannon/freehold` will work.
 
 
 Users and Permissions
