@@ -3,5 +3,5 @@
     "certificateFile": "",
     "keyFile": "",
     "port": "80",
-	"dataDir": "/var/lib/freehold/",
+	"dataDir": "/var/lib/freehold/"
 }

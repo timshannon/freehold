@@ -50,7 +50,7 @@ def makeDeb(version):
     makeDebFolder(version, packageRevision)
 
     #copy in latest build
-    debExePath = os.path.join(name, "usr/local/bin")
+    debExePath = os.path.join(name, "usr/bin")
     debAppPath = os.path.join(name, "var/lib/freehold/application")
     os.makedirs(debExePath)
     shutil.copy(os.path.join(PATH_TO_EXE, APP_NAME), debExePath)
