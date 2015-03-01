@@ -176,22 +176,22 @@
 <!-- {{/appPanel}} -->
 
 <!-- {{>appTile}} -->
-		{{#if !installed}}
-			<span class="thumbnail app-tile">
-				<img class="app-icon img-responsive" src="/home/v1/file/image/available_icon.png">	
-				<h3><div class="app-id">{{name}}</div></h3>
-			</span>
-		{{else}}
-			<a href="{{id}}" class="thumbnail app-tile">
-				{{#if !icon}}
-					<img class="app-icon img-responsive" src="/home/v1/file/image/app_icon.png">	
-				{{else}}
-					<img class="app-icon img-responsive" src="{{icon}}">	
-				{{/if}}
-				<h3><div class="app-id">{{name}}</div></h3>
-			</a>
-		{{/if}}
-		<!-- {{/appTile}} -->
+	{{#if !installed}}
+		<span class="thumbnail app-tile">
+			<img class="app-icon img-responsive" src="/home/v1/file/image/available_icon.png">	
+			<h3><div class="app-id">{{name}}</div></h3>
+		</span>
+	{{else}}
+		<a href="{{id}}" class="thumbnail app-tile">
+			{{#if !icon}}
+				<img class="app-icon img-responsive" src="/home/v1/file/image/app_icon.png">	
+			{{else}}
+				<img class="app-icon img-responsive" src="{{icon}}">	
+			{{/if}}
+			<h3><div class="app-id">{{name}}</div></h3>
+		</a>
+	{{/if}}
+<!-- {{/appTile}} -->
 
 </script>
 <!--end templates-->
