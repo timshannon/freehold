@@ -25,6 +25,7 @@ function buildDefaultIcons() {
         "gif": "file-image-o",
         "bmp": "file-image-o",
         "mov": "file-movie-o",
+        "webm": "file-movie-o",
         "mpg": "file-movie-o",
         "mp4": "file-movie-o",
         "mpeg": "file-movie-o",
@@ -43,8 +44,10 @@ function buildDefaultIcons() {
         "azw": "book",
         "kf8": "book",
         "torrent": "share-alt",
-		"mmap": "sitemap",
-		"mup": "sitemap",
+        "mmap": "sitemap",
+        "mup": "sitemap",
+        "msg": "envelope-o",
+        "iso": "hdd-o",
     };
 }
 
@@ -600,5 +603,3 @@ function buildIconList() {
         "youtube-play",
     ];
 }
-
-

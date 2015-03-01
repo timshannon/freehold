@@ -53,7 +53,7 @@ func main() {
 	flag.Parse()
 
 	settingPaths := config.StandardFileLocations("freehold/settings.json")
-	fmt.Println("Freehold is looking for settings files in the following locations (in order of priority):")
+	fmt.Println("Freehold will use settings files in the following locations (in order of priority):")
 	for i := range settingPaths {
 		fmt.Println("\t", settingPaths[i])
 	}
@@ -68,7 +68,7 @@ func main() {
 	keyFile := cfg.String("keyFile", "")
 	dataDir := cfg.String("dataDir", "./")
 
-	fmt.Printf("Freehold found a settings file and is currently using the file %s for settings.\n", cfg.FileName())
+	fmt.Printf("Freehold is currently using the file %s for settings.\n", cfg.FileName())
 
 	cwd, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	if err != nil {
