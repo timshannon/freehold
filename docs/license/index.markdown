@@ -33,3 +33,4 @@ Attribution and Credits
 * [CommonMark.js](https://github.com/jgm/commonmark.js) - John MacFarlane - (BSD-2-Clause) https://github.com/jgm/commonmark.js/blob/master/LICENSE
 * [Spectrum](https://github.com/bgrins/spectrum) - Brian Grinstead - (MIT) https://github.com/bgrins/spectrum/blob/master/LICENSE
 
+Look at the names and organizations above.  If you find freehold to be useful, please consider supporting them first.  If you wish to support me you can do so [here](https://www.coinbase.com/tshannon).  Thanks.

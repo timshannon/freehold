@@ -60,6 +60,8 @@ def makeDeb(version):
     shutil.copytree(os.path.join(PATH_TO_APPFOLDER, "core"), os.path.join(debAppPath, "core"))
     #copy in available apps
     shutil.copytree(os.path.join(PATH_TO_APPFOLDER, "available"), os.path.join(debAppPath, "available"))
+    #copy in docs
+    shutil.copytree(os.path.join(PATH_TO_EXE, "docs"), os.path.join(name, "var/lib/freehold/docs"))
     
     #set proper ownership
     subprocess.call(["chown", "-R", "root:root", name])
@@ -87,6 +89,7 @@ def makeTarball(version):
     shutil.copytree(os.path.join(PATH_TO_APPFOLDER, "core"), os.path.join(appFolder, "core"))
     #copy in available apps
     shutil.copytree(os.path.join(PATH_TO_APPFOLDER, "available"), os.path.join(appFolder, "available"))
+    shutil.copytree(os.path.join(PATH_TO_EXE, "docs"), os.path.join(name, "docs"))
     
 
     subprocess.call(["tar", "czf", name+".tar.gz", name])
