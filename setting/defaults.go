@@ -173,6 +173,12 @@ func init() {
 			Value: false, //I'm willing to reconsider this default
 		},
 	}
+	//Initiate all settings with setFuncs
+	for _, v := range settingDefaults {
+		if v.setFunc != nil {
+			v.setFunc()
+		}
+	}
 }
 
 func setDatastoreTimeout() {

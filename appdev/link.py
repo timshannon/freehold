@@ -5,9 +5,9 @@ import os
 import shutil
 
 def link(app):
-    if app == "components":
+    if not isApp(app):
         return
-
+ 
     print "linking " + app
     os.chdir("../application")
     if os.path.islink(app):
@@ -17,6 +17,14 @@ def link(app):
 
     subprocess.call(["ln", "-s", "../appdev/"+app, app])
     os.chdir("../appdev")
+
+def isApp(folder):
+    for path, _, files in os.walk(folder):
+        for f in files:
+            if f == "app.json":
+                return True
+
+    return False
 
 if len(sys.argv) > 1:
     #link passed in app
