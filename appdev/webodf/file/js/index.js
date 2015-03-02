@@ -4,7 +4,7 @@
 
 $(document).ready(function() {
     var docUrl = fh.util.urlParm("file");
-    var editor;
+var editor;
     var viewer;
     var mimetype = "application/vnd.oasis.opendocument.text";
 
