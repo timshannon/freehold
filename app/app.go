@@ -376,7 +376,7 @@ func PostAvailable(uri string) (string, error) {
 		filename += ".zip"
 	}
 
-	err = resource.WriteFile(r.Body, path.Join(resource.AvailableAppDir, filename), false)
+	err = resource.WriteFile(r.Body, path.Join(resource.AvailableAppDir, filename), true)
 	if err != nil {
 		os.Remove(path.Join(resource.AvailableAppDir, filename))
 		return "", err
