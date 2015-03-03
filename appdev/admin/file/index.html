@@ -321,16 +321,15 @@
 			</div>
 		</div>
 	{{else}}
-		<h4>Backups will be written to: </h4>
+		<h4>Backups will be written to:  <a target="_blank" href="/explorer/?url={{file.url}}">{{file.url}}</a></h4>
 		<ul class="list-unstyled">
-		{{#if chooseFolder}}
-			<li><filetree selected="{{file}}" folderOnly="true"></filetree></li>
-		{{else}}
 			<li>
-				<a target="_blank" href="/explorer/?url={{file}}">{{file}}</a>
-				<button type="button" class="btn btn-sm btn-default pull-right" on-click="toggle('chooseFolder')">Choose a different folder</button>
+			{{#if chooseFolder}}
+				<filetree selected="{{file}}" folderOnly="true"></filetree>
+			{{else}}
+				<button type="button" class="btn btn-sm btn-default" on-click="toggle('chooseFolder')">Choose a different folder</button>
+			{{/if}}
 			</li>
-		{{/if}}
 		</ul>
 		<form on-submit="generateBackup">
 			<div class="form-group {{#backupPasswordError}}has-error has-feedback{{/}}" title="{{backupPasswordError}}">
