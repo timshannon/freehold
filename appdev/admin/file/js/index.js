@@ -401,7 +401,7 @@ $(document).ready(function() {
             rBackups.set("backupPassword", null);
             rBackups.set("backupAll", true);
             rBackups.set("step", 1);
-            rBackups.set("file", "/v1/file/backups/");
+            rBackups.set("file.url", "/v1/file/backups/");
             rBackups.set("chooseFolder", false);
             $("#backupsModal").on("shown.bs.modal", function() {
                 $("#backupPassword").focus();
