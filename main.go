@@ -5,6 +5,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"flag"
 	"fmt"
 	"net/http"
@@ -67,6 +68,7 @@ func main() {
 	certFile := cfg.String("certificateFile", "")
 	keyFile := cfg.String("keyFile", "")
 	dataDir := cfg.String("dataDir", "./")
+	minTLSVersion := uint16(cfg.Int("minTLSVersion", tls.VersionTLS10))
 
 	fmt.Printf("Freehold is currently using the file %s for settings.\n", cfg.FileName())
 
@@ -119,12 +121,14 @@ func main() {
 
 	}
 
+	tlsCFG := &tls.Config{MinVersion: minTLSVersion}
 	server := &http.Server{
 		Handler:        rootHandler,
 		ReadTimeout:    time.Duration(cfg.Int("ReadTimeoutSeconds", 0)) * time.Second,
 		WriteTimeout:   time.Duration(cfg.Int("WriteTimeoutSeconds", 0)) * time.Second,
 		MaxHeaderBytes: cfg.Int("MaxHeaderBytes", 0),
 		ErrorLog:       log.FHLogger(),
+		TLSConfig:      tlsCFG,
 	}
 	if certFile == "" || keyFile == "" {
 		if port == "" {
