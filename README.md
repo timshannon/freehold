@@ -43,7 +43,7 @@ You can also specify where you want freehold to store your data.  By default it 
 
 Debian
 -------------
-If you are running on a Debian based system like [Raspbian](http://www.raspbian.org) or [Ubuntu](http://www.ubuntu.com) then there are pre-build deb files in the downloads section.  When installed they will automatically setup a Freehold service and a freehold user to run it.  Your data will be stored in `/var/lib/freehold` and your settings.json file will be in `/etc/freehold/settings.json`.  After installing it you can change your settings.json file to use your own ssl certs (or generate self signed ones), then run `sudo /etc/init.d/freehold start` to startup your instance.
+If you are running on a Debian based system like [Raspbian](http://www.raspbian.org) or [Ubuntu](http://www.ubuntu.com) then there are pre-built deb files in the downloads section.  When installed they will automatically setup a Freehold service and a freehold user to run it.  Your data will be stored in `/var/lib/freehold` and your settings.json file will be in `/etc/freehold/settings.json`.  After installing it you can change your settings.json file to use your own ssl certs (or generate self signed ones), then run `sudo /etc/init.d/freehold start` to start up your instance.
 
 Building From Source
 ======================
