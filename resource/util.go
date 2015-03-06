@@ -146,9 +146,11 @@ func resPathFromProperty(propertyPath string) string {
 }
 
 //WriteFile writes the contents of the reader buffered, and closes it
-func WriteFile(reader io.Reader, filepath string, overwrite bool) error {
+func WriteFile(reader io.ReadCloser, filepath string, overwrite bool) error {
 	var newFile *os.File
 	var err error
+
+	defer reader.Close()
 
 	if overwrite {
 		newFile, err = os.Create(filepath)
