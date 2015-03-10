@@ -13,6 +13,8 @@ Once running the freehold instance exposes a simple REST API for uploading files
 
 Interacting with the REST API is done through the core applications that come with your freehold instance, and other applications can be installed easily.   The documentation on how to use the RESTAPI comes built in with every instance of freehold at ` https://instance-url/docs/ `
 
+Here is a quick screencast that gives you an overview of what comes with freehold out of the box: [https://www.youtube.com/watch?v=gXYrb3ChSLs](https://www.youtube.com/watch?v=gXYrb3ChSLs)
+
 Getting Started
 ==================
 Freehold is made to be easy to setup and get running.  If you have the executable on your system, then you simply need to run it and open up a web browser to http://localhost.  It will then prompt you to setup your first user before taking you to your *Home* screen.  
