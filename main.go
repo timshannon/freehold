@@ -25,10 +25,10 @@ const (
 	defaultKeyFile  = "key.pem"
 )
 
-var flagSelfSign bool = false
-var flagAdmin string = ""
-var flagAdminPass string = ""
-var isSSL bool = false
+var flagSelfSign = false
+var flagAdmin string
+var flagAdminPass string
+var isSSL = false
 
 func init() {
 	flag.BoolVar(&flagSelfSign, "selfsign", false, "Generate a self-signed certificate, and host using it. "+
