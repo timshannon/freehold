@@ -33,8 +33,12 @@ const (
 	authRateLimitType    = "authentication"
 )
 
+// ErrNoWritePermissions is the error returned when the user does not have permissions
+// to write to a given resource
 var ErrNoWritePermission = errors.New("You do not have permission to write to this resource.")
 
+// Auth contains the type and identity of a user in Freehold
+// if user == nil, then auth is public access
 type Auth struct {
 	AuthType string `json:"type"`
 	Username string `json:"user,omitempty"`
