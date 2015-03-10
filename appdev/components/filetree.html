@@ -1,0 +1,118 @@
+<link rel="ractive" href="tree.html" name="tree">
+<div class="filetree">
+	{{#error}}
+		<div class="alert alert-danger" role="alert">{{error}}</div>
+	{{/error}}
+	<tree root="{{root}}" selected="{{selected}}"></tree>
+</div>
+
+<style>
+</style>
+
+<script>
+component.exports = {
+	data: {
+		rootDir: "/v1/file/",
+		folderOnly: false,
+		filterRegex: ""
+	},
+	onrender: function() {
+		var r = this;
+		
+		this._super();
+
+		this.on({
+			"tree.open": function(event) {
+				if (event.context.isFolder) {
+					if (event.context.children.length == 0) {
+						getFile(event.context.url, event.keypath);
+					}
+				}
+			},
+		});
+
+		this.observe({
+			"rootDir": function(newvalue, oldvalue, keypath) {
+				r.set("root", {
+					url: r.get("rootDir"),
+					name: r.get("rootDir"),
+					iconClass: "glyphicon glyphicon-folder-open",
+				});
+
+				getFile(r.get("rootDir"), "root");
+			},
+		});
+
+		function getFile(file, keypath) {
+			fh.properties.get(file)
+				.done(function(result) {
+					r.set(keypath+".children", prepFiles(result.data));
+				})
+				.fail(function(result) {
+					if(result.status !== 404) {
+						result = result.responseJSON;
+						r.set("error", result.message);
+					}
+				});
+		}
+
+		function prepFiles(files) {
+			var regEx;
+			try {
+					regEx = new RegExp(r.get("filterRegex"), "i");
+			} catch (e) {
+					console.log("invalid regxex: " + e.message);
+					regEx = new RegExp("", "i");
+			}
+
+			sort(files);
+
+			for (var i = 0; i < files.length;i++) {
+				if (!files[i].isDir) {
+					if (r.get("folderOnly") || (!regEx.exec(files[i].name))) {
+						files[i].hide = true;
+					}
+					files[i].canSelect = true;
+					files[i].iconClass  = "glyphicon glyphicon-file";
+				} else {
+					if (r.get("folderOnly")) {
+						files[i].canSelect = true;
+					}
+					files[i].isFolder = true;
+					files[i].iconClass  = "glyphicon glyphicon-folder-close";
+					files[i].children = [];
+				}
+			}
+
+			return files;
+		}
+
+
+		function sort(files) {
+			if (!files) {
+					return;
+			}
+
+			files.sort(function(a, b) {
+				if (a.isDir && !b.isDir) {
+						return -1;
+				}
+
+				if (b.isDir && !a.isDir) {
+						return 1;
+				}
+
+				if (a.name < b.name) {
+					return -1;
+				}
+				if (a.name > b.name) {
+					return 1;
+				}
+				return 0;
+			});
+    }
+		
+	},
+
+};
+</script>

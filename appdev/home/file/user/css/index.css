@@ -1,0 +1,15 @@
+.inline-label {
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
+.filetree {
+	max-height: 50vh;
+	overflow-x: auto;
+}
+
+
+table {
+    table-layout: fixed;
+    word-wrap: break-word;
+}

@@ -1,0 +1,18 @@
+#dsOpen {
+	margin-bottom: 10px;
+}
+
+.file-label {
+	font-size: 14px;
+
+}
+
+#filterSpinner {
+	position: absolute;
+}
+
+table {
+    table-layout: fixed;
+    word-wrap: break-word;
+}
+

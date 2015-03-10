@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Administrator Console - freehold</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+		<link href="/core/v1/file/css/freehold.css" rel="stylesheet" media="screen">
+		<link href="/admin/v1/file/css/index.css" rel="stylesheet" media="screen">
+	</head>
+<body>
+<div id="navHook"></div>
+
+<div class="container">
+	<ul class="nav nav-tabs" role="tablist">
+		<li class="active"><a href="#logs" role="tab" data-toggle="tab">Logs</a></li>
+		<li><a href="#users" role="tab" data-toggle="tab">Users</a></li>
+		<li><a href="#settings" role="tab" data-toggle="tab">Settings</a></li>
+		<li><a href="#backups" role="tab" data-toggle="tab">Backups</a></li>
+	</ul>
+
+	<!--tab contents-->
+	<div class="tab-content">
+		<div class="tab-pane active" id="logs">
+		</div>
+		<div class="tab-pane" id="users">
+		</div>
+		<div class="tab-pane" id="settings">
+		</div>
+		<div class="tab-pane" id="backups">
+		</div>
+
+	</div>
+	
+</div><!--container-->
+
+<!--templates-->
+<script id="tLogs" type="text/ractive">
+<modal id="viewJSON" title="JSON Data">
+	{{currentBefore}}
+	<jsonviewer object="{{currentValue}}"></jsonviewer>
+	{{currentAfter}}
+</modal>
+<div class="well form-inline form-group admin-control-group">
+	<label id="filterLabel" class="control-label">Filter:</label>
+	<label class="radio-inline"><input type="radio" name="typeFilter" on-click="filterAll" value="all" checked>All</label>
+	<label class="radio-inline"><input type="radio" name="typeFilter" on-click="filterError" value="error">Errors</label>
+	<label class="radio-inline"><input type="radio" name="typeFilter" on-click="filterFail" value="fail">Failures</label>
+	<label class="radio-inline"><input type="radio" name="typeFilter" on-click="filterAuth" value="auth">Authentication</label>
+	<div class="form-group">
+		<input type="text" id="filterText" class="form-control" placeholder="filter logs" value="{{filterText}}">
+		{{#filterWaiting}}
+		<div id="filterSpinner" class="spinner form-group"></div>
+		{{/filterWaiting}}
+	</div>
+</div>
+
+<table class="table table-condensed table-striped table-hover">
+	<thead>
+		<tr>
+			<th>
+				<a href="javascript:void(0)" on-click="sortLog">When<span class="caret{{#iter.order == 'asc'}} caret-up{{/sortAsc}}"></span></a>
+			</th>
+			<th>Type</th>
+			<th>Message</th>
+		</tr>
+	</thead>
+	<tbody>
+		{{#logs:i }}
+		{{#i >= page.start && i < page.end}}
+		<tr class="{{type=='error' ? 'danger' : ''}} {{type=='failure' ? 'warning' : ''}}">
+			<td>{{when}}</td>
+			<td>{{type}}</td>
+			{{#jsonValue}}
+				<td>{{before}}<a href="" on-click="viewJSON">{{linkData}}</a>{{after}}</td>
+			{{/jsonValue}}
+			{{^jsonValue}}
+				<td>{{log}}</td>
+			{{/jsonValue}}
+		</tr>
+		{{/i}}
+		{{/logs}}
+	</tbody>
+</table>
+<div class="btn-group">
+	<a href="javascript:void(0)" class="btn btn-default{{#page.start === 0}} disabled{{/page}}" on-click="prev">
+		<span class="glyphicon glyphicon-chevron-left"></span></a>
+	<a href="javascript:void(0)" class="btn btn-default{{#page.end > logs.length}} disabled{{/page}}" on-click="next">
+		<span class="glyphicon glyphicon-chevron-right"></span></a>
+</div>
+
+</script>
+
+<script id="tUsers" type="text/ractive">
+<modal id="userModal" title="{{#if mode == "add"}}Add New User{{else}}Change User {{current.user}}{{/if}}" customFooter="true">
+	<div>
+		{{#errors.save}}
+		<div class="alert alert-danger center-block">{{errors.save}}</div>
+		{{/errors.save}}
+	</div>
+
+	<form class="form-horizontal" role="form">
+
+	<div class="form-group {{#errors.user}}has-error has-feedback{{/errors.user}}" title="{{errors.user}}">
+    <label for="username" class="col-sm-3 control-label">Username</label>
+		{{#if mode=="add"}}
+		<div class="col-sm-9">
+			<input type="text" class="form-control" id="username" placeholder="Enter a username" value="{{current.user}}">
+			{{#errors.user}}
+				<span class="form-control-feedback glyphicon glyphicon-remove"></span>
+			{{/errors.user}}
+		</div>
+		{{else}}
+		<div class="col-sm-6">
+      <p class="form-control-static">{{current.user}}</p>
+    </div>
+		<div class="col-sm-3">
+			<button type="button" on-click="changePassword" class="form-control btn btn-default btn-xs">Change Password</button>
+    </div>
+
+		{{/if}}
+  </div>
+
+	{{#if mode=="add" || changePassword}}
+	<div class="form-group {{#errors.password}}has-error has-feedback{{/errors.password}}" title="{{errors.password}}">
+    <label for="password" class="col-sm-3 control-label">Password</label>
+		<div class="col-sm-9">
+			<input type="password" class="form-control" id="password" placeholder="Enter a password" value="{{current.password}}">
+		{{#errors.password}}
+			<span class="form-control-feedback glyphicon glyphicon-remove"></span>
+		{{/errors.password}}
+		</div>
+	</div>
+	<div class="form-group {{#errors.password2}}has-error has-feedback{{/errors.password2}}" title="{{errors.password2}}">
+		<label for="password2" class="col-sm-3 control-label">Confirm</label>
+		<div class="col-sm-9">
+			<input type="password" class="form-control" id="password2" placeholder="Enter the password again" value="{{current.password2}}">
+		{{#errors.password2}}
+			<span class="form-control-feedback glyphicon glyphicon-remove"></span>
+		{{/errors.password2}}
+		</div>
+  </div>
+	{{/if}}
+
+	<div class="form-group">
+    <label for="name" class="col-sm-3 control-label">Name</label>
+		<div class="col-sm-9">
+			<input type="text" class="form-control" id="name" placeholder="Enter user's name" value="{{current.name}}">
+		</div>
+  </div>
+	<div class="form-group">
+		<label for="homeApp" class="col-sm-3 control-label">User Home App</label>
+		<div class="col-sm-9">
+			<select class="form-control" name="homeApp" value="{{current.homeApp}}">
+				{{#apps:i}}
+				<option value="{{i}}">{{name}}</option>
+				{{/apps}}
+			</select>
+		</div>
+	</div>
+
+	<div class="form-group">
+	<div class="col-sm-offset-3 col-sm-3">
+	{{#if mode=="add"}}
+		<div class="checkbox">
+			<label>
+				<input type="checkbox" checked="{{current.admin}}"> Admin?
+			</label>
+		</div>
+	{{else}}
+		{{#if !current.admin}}
+		<button type="button" class="btn btn-success" on-click="makeAdmin">Make Admin</button>
+		{{else}}
+			{{#if current.user == auth.user}}
+			<button type="button" class="btn btn-danger" on-click="removeAdmin">Remove Admin Rights</button>
+			{{/if}}
+		{{/if}}
+	{{/if}}
+	</div>
+	<div class="col-sm-6">
+		{{#if mode=="add"}}
+			<div class="checkbox">
+				<label>
+					<input type="checkbox" checked="{{current.userFolder}}"> Create User Folder?
+				</label>
+				<p class="help-block">User Folders are user owned folders for their private files.</p>
+			</div>
+		{{/if}}
+	</div>
+
+	</div>
+	</form>
+	
+	<div class="modal-footer">
+	{{#if mode=="change"}}
+		<button type="button" class="btn btn-danger pull-left" on-click="delete">
+			<span class="glyphicon glyphicon-remove"></span> Delete</button>
+	{{/if}}
+		<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+		<button type="button" class="btn btn-primary" on-click="save">Save</button>
+	</div>
+</modal>
+
+<ul class="list-group">
+	<li class="list-group-item well">
+		<button class="btn btn-success" on-click="addUser" type="button">
+		<span class="glyphicon glyphicon-plus"></span> New User</button>
+	</li>
+	{{#users:i}}
+	<li class="list-group-item">
+
+	<button type="button" on-click="changeUser" class="pull-right btn btn-default btn-lg" title="Modify User">
+		<span class="glyphicon glyphicon-cog"></span></button>
+
+
+		<h3 class="list-group-item-heading">{{i}}{{#admin}} <small>(admin)</small>{{/admin}}</h3>
+		<p class="list-group-item-text"><b>Name:</b> {{name}}</p>
+		<p class="list-group-item-text"><b>Home App:</b> {{#homeApp}}<a href="/{{homeApp}}">{{homeApp}}</a>{{/homeApp}}</p>
+	</li>
+	{{/users}}
+</ul>
+</script>
+
+<script id="tSettings" type="text/ractive">
+<div class="container">
+<ul class="list-group">
+	<li class="list-group-item row well">
+		<p>Note: Settings take effect immediately.</p>
+		<input type="text" class="form-control" placeholder="filter settings" value="{{settingsFilter}}">
+	</li>
+	{{#settings:i}}
+	{{#if !filtered}}
+	<li class="list-group-item row{{#change}} list-group-item-info{{/change}}">
+		<div class="col-md-8">
+		<dl>
+			<dt>{{i}}</dt><dd>{{description}}</dd>
+		</dl>
+		</div>
+		<div class="col-md-4">
+		{{#error}}
+		<span class="label label-danger">{{error}}</span>
+		{{/error}}
+		<div class="input-group">
+			{{#if type=="string"}}
+			<input type="text" class="form-control" disabled="{{^change}}disabled{{/change}}" value="{{value}}">
+			{{/if}} 
+			{{#if type=="number"}}
+			<input type="number" class="form-control" disabled="{{^change}}disabled{{/change}}" value="{{value}}">
+			{{/if}}
+			{{#if type=="boolean"}}
+				<button type="button" disabled="{{^change}}disabled{{/change}}"  on-click="changeBoolean"
+					class="btn btn-default {{#value}}btn-primary active{{/value}}">
+				{{#if value}}
+					True
+				{{else}}
+					False
+				{{/if}}
+				</button>
+			{{/if}}
+
+      <span class="input-group-btn">
+					<button class="btn btn-default" on-click="changeMode" type="button">{{#change}}Save{{else}}Change{{/change}}</button>
+					<button class="btn btn-default" on-click="setDefault" title="set to default value" type="button">
+						<span class="glyphicon glyphicon-repeat"></span>
+					</button>
+      </span>
+
+    </div>
+		</div>
+	</li>
+	{{/if}}
+	{{/settings}}
+</ul>
+</div>
+</script>
+
+<script id="tBackups" type="text/ractive">
+<modal id="viewDS" title="Datastores">
+	<jsonviewer object="{{currentDatastores}}"></jsonviewer>
+</modal>
+
+<modal id="backupsModal" title="Generate Backup File" customFooter="true">
+{{#if step == 1}}
+	<h4>Which datastores you which to include in the backup file?
+		<button type="button" on-click="toggle('backupAll')"	class="pull-right btn btn-default {{#backupAll}}btn-primary active{{/}}">
+			Include All
+		</button>
+	</h4>
+	<hr>
+	{{#coreDS:i}}
+	<div class="row">
+		<div class="col-sm-10">
+			<dl>
+				<dt>{{i}}</dt><dd>{{.description}}</dd>
+			</dl>
+		</div>
+		<div class="col-sm-2">
+			<button type="button" on-click="selectBackup"
+				class="pull-right btn btn-default {{#backupAll}}btn-primary active disabled{{/}}{{#include}} btn-primary active{{/}}">
+				Include
+			</button>
+		</div>
+	</div>
+	{{/coreDS}}
+<div class="modal-footer">
+	<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+	<button type="button" class="btn btn-default" on-click="add('step')">Next
+		<span class="glyphicon glyphicon-chevron-right"></span></button>
+</div>
+{{/if}}
+{{#if step == 2}}
+	{{#if backupError}}
+	<div class="alert alert-danger">
+		{{backupError}}	
+	</div>
+	{{/if}}
+	{{#if waiting}}
+		<div class="progress">
+			<div class="progress-bar progress-bar-striped active"  role="progressbar" 
+				aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+				<span>Loading...</span>
+			</div>
+		</div>
+	{{else}}
+		<h4>Backups will be written to:  <a target="_blank" href="/explorer/?url={{file.url}}">{{file.url}}</a></h4>
+		<ul class="list-unstyled">
+			<li>
+			{{#if chooseFolder}}
+				<filetree selected="{{file}}" folderOnly="true"></filetree>
+			{{else}}
+				<button type="button" class="btn btn-sm btn-default" on-click="toggle('chooseFolder')">Choose a different folder</button>
+			{{/if}}
+			</li>
+		</ul>
+		<form on-submit="generateBackup">
+			<div class="form-group {{#backupPasswordError}}has-error has-feedback{{/}}" title="{{backupPasswordError}}">
+				<label for="backupPassword">Enter Password</label>
+				<input type="password" class="form-control" id="backupPassword" placeholder="Enter password" value="{{backupPassword}}">
+				{{#backupPasswordError}}
+				<span class="form-control-feedback glyphicon glyphicon-remove"></span>
+				{{/}}
+			</div>
+		</form>
+	{{/if}}
+	<div class="modal-footer">
+		<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+		<button type="button" class="btn btn-default" on-click="subtract('step')">
+			<span class="glyphicon glyphicon-chevron-left"></span> Previous</button>
+		<button type="button" on-click="generateBackup"	class="btn btn-success">
+			<span class="glyphicon glyphicon-download-alt"></span> Generate Backup
+		</button>
+	</div>
+{{/if}}
+{{#if step == 3}}
+	<div class="row">
+		<div class="col-sm-8">
+			<h4>The backup file has been generated.</h4>
+		</div>
+		<div class="col-sm-4">
+			<a href="{{url}}" class=" pull-right btn btn-success"><span class="glyphicon glyphicon-download-alt"></span> Download Backup</a>
+		</div>
+	</div>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+	</div>
+{{/if}}
+</modal>
+
+<form class="form-inline well">
+  <div class="form-group">
+		<label for="backupFrom">From: </label>
+		<datepicker id="backupFrom" class="form-control" value="{{from}}"></datepicker>
+	</div>
+	<button type="button" on-click="downloadBackupModal"	class="pull-right btn btn-success">
+		<span class="glyphicon glyphicon-download-alt"></span> Generate New Backup
+	</button>
+</form>
+	<table class="table table-condensed table-striped table-hover">
+		<thead>
+			<tr>
+				<th>When</th>
+				<th>File</th>
+				<th>Who</th>
+				<th>Datastores</th>
+			</tr>
+		</thead>
+		<tbody>
+			{{#backups:i }}
+			<tr>
+				<td>{{when}}</td>
+				<td><a href="{{file}}" title="{{file}}">{{fileName}}</a></td>
+				<td>{{who}}</td>
+				<td class="ds-link"><a href="javascript:void(0)" on-click="viewDatastores">{{datastores}}</a></td>
+			</tr>
+			{{/backups}}
+		</tbody>
+	</table>
+</script>
+
+<!--end templates-->
+<script src="/core/v1/file/js/jquery-2.1.1.min.js"></script>
+<script src="/core/v1/file/js/bootstrap.min.js"></script>
+<script src="/core/v1/file/js/ractive.min.js"></script>
+<script src="/core/v1/file/js/fh.js"></script>
+<script src="/core/v1/file/js/components.js"></script>
+<script src="/admin/v1/file/js/index.js"></script>
+</body>
+</html>
