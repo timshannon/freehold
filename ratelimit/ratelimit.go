@@ -15,15 +15,15 @@ import (
 	"bitbucket.org/tshannon/freehold/setting"
 )
 
-const (
-	DS        = "core/ratelimit.ds"
-	baseRange = 1 * time.Minute
-)
+//DS is the path to the ratelimit core ds file
+const DS = "core/ratelimit.ds"
+const baseRange = 1 * time.Minute
 
-var FailExceededLimit = errors.New("Maximum request limit has been reached. Please try again later.")
+// FailExceedLimit is the type of error thrown when a rate limit has been reached
+var ErrExceededLimit = errors.New("Maximum request limit has been reached. Please try again later.")
 
 type requestAttempt struct {
-	IpAddress string    `json:"ipAddress,omitempty"`
+	IPAddress string    `json:"ipAddress,omitempty"`
 	When      time.Time `json:"when,omitempty"`
 	Type      string    `json:"type,omitempty"`
 
@@ -31,15 +31,17 @@ type requestAttempt struct {
 }
 
 func (r *requestAttempt) key() string {
-	return r.Type + "_" + r.IpAddress + "_" + r.When.Format(time.RFC3339)
+	return r.Type + "_" + r.IPAddress + "_" + r.When.Format(time.RFC3339)
 }
 
+// AttemptRequest logs an an attempt request of the passed in type for the passed in IP address
+// Will return ErrExceededLimit if the  passed in limit per minute is reached
 func AttemptRequest(ipAddress string, requestType string, limit float64) error {
 	if limit <= 0 {
 		return nil
 	}
 	attempt := &requestAttempt{
-		IpAddress: ipAddress,
+		IPAddress: ipAddress,
 		When:      time.Now(),
 		Type:      requestType,
 		limit:     limit,
@@ -68,13 +70,15 @@ func AttemptRequest(ipAddress string, requestType string, limit float64) error {
 		if setting.Float("RateLimitWait") > 0 {
 			time.Sleep(time.Duration(setting.Float("RateLimitWait")) * time.Second)
 		}
-		return fail.NewFromErr(FailExceededLimit, attempt)
+
+		return fail.NewFromErr(ErrExceededLimit, attempt)
 	}
 
 	return nil
 
 }
 
+// ResetLimit resets the number of requests for a request type and IP address
 func ResetLimit(ipAddress string, requestType string) error {
 	attempts, err := previousAttempts(ipAddress, requestType)
 	if err != nil {
@@ -103,7 +107,7 @@ func previousAttempts(ipAddress string, requestType string) ([]*requestAttempt, 
 	}
 
 	base := &requestAttempt{
-		IpAddress: ipAddress,
+		IPAddress: ipAddress,
 		Type:      requestType,
 		When:      time.Time{},
 	}
