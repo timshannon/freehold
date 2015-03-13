@@ -76,6 +76,8 @@ The Auth header will always override any authentication via cookie.
 
 GET requests with a JSON payload will be accepted both in the request body or as a parameter `https://host/v1/file/?<jsonpayload>`. For writing applications, making an AJAX GET request with a JSON payload should just work. 
 
+You'll notice the API is versioned.  The version number in the url paths will only change if there is a backwards incompatible change to that specific area.  Meaning if I remove a field from the datastore API, or change the behavior of it, then the datastore path will become `/v2/datastore/` and all other API paths will remain v1 until a backwards incompatible change is made to them.  Previous versions of an API path should still retain their same response and behavior even if a new version of the path exists.
+
 <a name="#storage"></a>Storage
 =======
 You can store data either in files directly or in a key / value DataStore.
