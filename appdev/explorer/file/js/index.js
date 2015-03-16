@@ -1214,13 +1214,15 @@ $(document).ready(function() {
 
         if (replace && !isDS) {
             //Delete file and upload to preserve original modified date
-            fh.file.delete(file)
+            fh.file.delete(fh.util.urlJoin(uploadPath, file.name))
                 .done(function() {
-                    uploadFile(file, uploadPath, false);
+                    fileRemoveInCurrent(file);
+                    uploadFile(file, uploadPath);
                 })
                 .fail(function(result) {
                     error(result);
                 });
+            return;
         } else {
             if (!isDS) {
                 uploadFunc = fh.file.upload;
@@ -1237,7 +1239,7 @@ $(document).ready(function() {
 
         rMain.set("uploads." + id, file);
 
-        if (!replace && fileExists(file)) {
+        if (!replace && fileExistsInCurrent(file)) {
             if (isDS) {
                 rMain.set("uploads." + id + ".error", "A datastore with this name already exists!");
             } else {
@@ -1272,7 +1274,7 @@ $(document).ready(function() {
 
     }
 
-    function fileExists(file) {
+    function fileExistsInCurrent(file) {
         var files = rMain.get("currentFolder.children");
 
         for (var i = 0; i < files.length; i++) {
@@ -1281,6 +1283,17 @@ $(document).ready(function() {
             }
         }
         return false;
+    }
+
+    function fileRemoveInCurrent(file) {
+        var files = rMain.get("currentFolder.children");
+
+        for (var i = 0; i < files.length; i++) {
+            if (files[i].name === file.name) {
+                rMain.splice("currentFolder.children",i, 1);
+            }
+        }
+
     }
 
     function removeUpload(id) {
