@@ -1213,7 +1213,14 @@ $(document).ready(function() {
         var isDS = !isFile(uploadPath);
 
         if (replace && !isDS) {
-            uploadFunc = fh.file.update;
+            //Delete file and upload to preserve original modified date
+            fh.file.delete(file)
+                .done(function() {
+                    uploadFile(file, uploadPath, false);
+                })
+                .fail(function(result) {
+                    error(result);
+                });
         } else {
             if (!isDS) {
                 uploadFunc = fh.file.upload;

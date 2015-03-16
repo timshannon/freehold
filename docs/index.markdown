@@ -127,11 +127,13 @@ If a GET is called against a file of extension type *.markdown* the markdown wil
 rendered as html (thanks to https://github.com/russross/blackfriday) such as with this file.
 
 **POST** - Add a new file.  Can be used to create an empty folder if now form-data is passed in.
-multipart/formdata are accepted.
+multipart/formdata are accepted.  In order to preserver the original modified date of the file, you should set the `Fh-Modified` header to the modified date of the file being uploaded.  If not set, the modified date will be the date the file was uploaded.  The date should be in the ISO8601 format / RFC3339 format.
 
 This example will upload profile.jpg in it
 ```
 POST "/v1/file/new-directory/"
+Fh-Modified: 2015-03-16T09:51:16-05:00
+
 ------WebKitFormBoundary
 Content-Disposition: form-data; name="files[]"; filename="profile.jpg"
 Content-Type: image/jpeg
@@ -195,7 +197,7 @@ Error Response (500):
 }
 ```
 
-**PUT** - Replace a previously uploaded file.  You must be the owner.
+**PUT** - Replace a previously uploaded file.  You must be the owner.  This changes the modified date of the file.
 ```
 PUT "/v1/file/new-directory/"
 ------WebKitFormBoundary

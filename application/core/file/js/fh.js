@@ -48,20 +48,8 @@ window.fh = (function() {
         // just be sure to include the X-CSRFToken header:
         //   xhr.setRequestHeader ("X-CSRFToken", fh.auth.CSRFToken);
         var formData;
-        if (fileData instanceof FormData) {
-            formData = fileData;
-        } else if (fileData instanceof File) {
-            formData = new FormData();
 
-            formData.append(fileData.name,
-                fileData, fileData.name);
-        } else {
-            //not supported
-            throw "FileData type not supported";
-        }
-
-        return stdAjax(type, uploadPath, {
-            data: formData,
+        var options = {
             cache: false,
             processData: false,
             contentType: false,
@@ -70,7 +58,27 @@ window.fh = (function() {
                 xhr.upload.addEventListener("progress", progress, false);
                 return xhr;
             },
-        });
+        };
+
+        if (fileData instanceof FormData) {
+            options.data = fileData;
+        } else if (fileData instanceof File) {
+            options.data = new FormData();
+
+            options.data.append(fileData.name,
+                fileData, fileData.name);
+
+            //Set Modified Date
+            options.beforeSend = function(xhr) {
+                xhr.setRequestHeader("X-CSRFToken", fh.auth.CSRFToken);
+                xhr.setRequestHeader("Fh-Modified", fileData.lastModifiedDate.toJSON());
+            };
+        } else {
+            //not supported
+            throw "FileData type not supported";
+        }
+
+        return stdAjax(type, uploadPath, options);
     }
 
     return {
