@@ -202,13 +202,13 @@ func serveApp(w http.ResponseWriter, r *http.Request, appid string, auth *Auth) 
 
 	root := a.Root
 	if root == "" {
-		log.Error(errors.New("App " + a.Id + " has no root specified."))
+		log.Error(errors.New("App " + a.ID + " has no root specified."))
 	}
 
-	if rRoot, _ := splitRootAndPath(root); rRoot != a.Id {
+	if rRoot, _ := splitRootAndPath(root); rRoot != a.ID {
 		// if root path is relative to the application, automatically
 		// redirect based on application
-		root = path.Join("/", a.Id, root)
+		root = path.Join("/", a.ID, root)
 	}
 
 	serveResource(w, r, resource.NewFile(root), auth)

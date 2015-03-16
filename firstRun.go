@@ -96,7 +96,7 @@ func recurseSetPermissionOnFolder(filePath string, prm *permission.Permission) e
 	}
 
 	//set folder permissions
-	err = permission.Set(&app.AppResource{filePath}, prm)
+	err = permission.Set(&app.Resource{filePath}, prm)
 	if err != nil {
 		return err
 	}
@@ -111,7 +111,7 @@ func recurseSetPermissionOnFolder(filePath string, prm *permission.Permission) e
 			continue
 		}
 
-		err = permission.Set(&app.AppResource{child}, prm)
+		err = permission.Set(&app.Resource{child}, prm)
 		if err != nil {
 			return err
 		}

@@ -6,9 +6,11 @@ package resource
 
 import (
 	"io"
+	"net/http"
 	"os"
 	"path"
 	"strings"
+	"time"
 
 	"bufio"
 
@@ -16,13 +18,21 @@ import (
 )
 
 const (
-	DocsDir         = "docs/"
-	FileDir         = "file/"
-	CoreDSDir       = "core/"
-	DatastoreDir    = "datastore/"
+	// DocsDir is the path to the Documentation directory
+	DocsDir = "docs/"
+	// FileDir is the path to where files will be stored
+	FileDir = "file/"
+	// CoreDSDir is where the core datastore files will be stored
+	CoreDSDir = "core/"
+	// DatastoreDir is where user datastore files will be stored
+	DatastoreDir = "datastore/"
+	// AvailableAppDir is where new available application zip files are stored
 	AvailableAppDir = AppDir + "available/"
-	AppDir          = "application/"
+	// AppDir are were installed applications are installed to
+	AppDir = "application/"
 )
+
+const modifiedHeader = "Fh-Modified"
 
 var versions = map[string]struct{}{"v1": struct{}{}}
 
@@ -123,6 +133,7 @@ func isVersion(version string) bool {
 	return ok
 }
 
+// IsRestrictedPath is whether or not the passed in path is allowed to be created.  i.e Not a version and not a doc
 func IsRestrictedPath(path string) bool {
 	if isDocPath(path) {
 		return true
@@ -146,7 +157,7 @@ func resPathFromProperty(propertyPath string) string {
 }
 
 //WriteFile writes the contents of the reader buffered, and closes it
-func WriteFile(reader io.ReadCloser, filepath string, overwrite bool) error {
+func WriteFile(reader io.ReadCloser, filepath string, overwrite bool, modTime time.Time) error {
 	var newFile *os.File
 	var err error
 
@@ -185,5 +196,27 @@ func WriteFile(reader io.ReadCloser, filepath string, overwrite bool) error {
 	if err != nil {
 		return err
 	}
+	if !modTime.IsZero() && !overwrite {
+		err = os.Chtimes(filepath, time.Now(), modTime)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
+}
+
+// ModTimeFromRequest returns the time parsed from the fh-modified header
+// If the header doesn't exist, it returns a Zero time
+func ModTimeFromRequest(r *http.Request) time.Time {
+	strTime := r.Header.Get(modifiedHeader)
+	if strTime == "" {
+		return time.Time{}
+	}
+
+	t, err := time.Parse(time.RFC3339, strTime)
+	if err != nil {
+		return time.Time{}
+	}
+	return t
+
 }

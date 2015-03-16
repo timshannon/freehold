@@ -63,7 +63,7 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 		}
 		mp := r.MultipartForm
 
-		fileList, failures := uploadFile(w, res, auth.User, mp)
+		fileList, failures := uploadFile(w, res, auth.User, mp, resource.ModTimeFromRequest(r))
 		status := statusSuccess
 
 		if len(failures) == 0 {
@@ -117,7 +117,7 @@ func createFolder(res *resource.File, auth *Auth) error {
 	return nil
 }
 
-func uploadFile(w http.ResponseWriter, parent *resource.File, owner *user.User, mp *multipart.Form) ([]Properties, []error) {
+func uploadFile(w http.ResponseWriter, parent *resource.File, owner *user.User, mp *multipart.Form, modTime time.Time) ([]Properties, []error) {
 	var fileList []Properties
 	var failures []error
 
@@ -145,7 +145,7 @@ func uploadFile(w http.ResponseWriter, parent *resource.File, owner *user.User, 
 				continue
 			}
 
-			err = resource.WriteFile(file, res.Filepath(), false)
+			err = resource.WriteFile(file, res.Filepath(), false, modTime)
 			if err != nil {
 				failures = append(failures, fail.NewFromErr(err, res.Url()))
 
@@ -169,6 +169,7 @@ func uploadFile(w http.ResponseWriter, parent *resource.File, owner *user.User, 
 
 }
 
+// FileInput is the API input for modifying a files properties
 type FileInput struct {
 	Move string `json:"move,omitempty"`
 }
@@ -288,7 +289,7 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 
-			err = resource.WriteFile(file, res.Filepath(), true)
+			err = resource.WriteFile(file, res.Filepath(), true, time.Time{})
 			if err != nil {
 				failures = append(failures, fail.NewFromErr(err, res.Url()))
 				status = statusFail

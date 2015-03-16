@@ -6,7 +6,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -20,6 +19,7 @@ import (
 	"bitbucket.org/tshannon/freehold/setting"
 )
 
+// DatastoreInput is the API input for interacting with a Datastore
 type DatastoreInput struct {
 	Key   *json.RawMessage `json:"key,omitempty"`
 	Max   *json.RawMessage `json:"max,omitempty"`
@@ -127,7 +127,7 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 		val, err := ds.Get(*key)
 		if err == data.ErrNotFound {
 			//shouldn't happen
-			errHandled(errors.New(fmt.Sprintf("Max key was retrieved but value was not key: %s", key)), w, auth)
+			errHandled(fmt.Errorf("Max key was retrieved but value was not key: %s", key), w, auth)
 			return
 		}
 
@@ -160,7 +160,7 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 		val, err := ds.Get(*key)
 		if err == data.ErrNotFound {
 			//shouldn't happen
-			errHandled(errors.New(fmt.Sprintf("Max key was retrieved but value was not key: %s", key)), w, auth)
+			errHandled(fmt.Errorf("Max key was retrieved but value was not key: %s", key), w, auth)
 			return
 		}
 
@@ -226,7 +226,7 @@ func datastorePost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		//Is a datastore upload, use file upload
-		fileList, failures := uploadFile(w, res, auth.User, mp)
+		fileList, failures := uploadFile(w, res, auth.User, mp, resource.ModTimeFromRequest(r))
 
 		status := statusSuccess
 
