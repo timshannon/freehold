@@ -17,7 +17,7 @@ import (
 	"bitbucket.org/tshannon/freehold/resource"
 )
 
-type BackupInput struct {
+type backupInput struct {
 	Datastores []string `json:"datastores,omitempty"`
 	File       *string  `json:"file,omitempty"`
 	From       *string  `json:"from,omitempty"`
@@ -35,7 +35,7 @@ func backupGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	input := &BackupInput{}
+	input := &backupInput{}
 
 	err = parseJson(r, input)
 	if errHandled(err, w, auth) {
@@ -78,7 +78,7 @@ func backupPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	input := &BackupInput{}
+	input := &backupInput{}
 
 	err = parseJson(r, input)
 	if errHandled(err, w, auth) {
@@ -93,26 +93,26 @@ func backupPost(w http.ResponseWriter, r *http.Request) {
 
 	res := resource.NewFile(*input.File)
 	if res.IsDatastore() {
-		errHandled(fail.New("Invalid file path!", res.Url()), w, auth)
+		errHandled(fail.New("Invalid file path!", res.URL()), w, auth)
 		return
 	}
 
-	if !res.Exists() && strings.HasSuffix(res.Url(), "/") {
+	if !res.Exists() && strings.HasSuffix(res.URL(), "/") {
 		//create folder
 		if errHandled(createFolder(res, auth), w, auth) {
 			return
 		}
-		res = resource.NewFile(res.Url())
+		res = resource.NewFile(res.URL())
 	}
 	if res.IsDir() {
-		res = resource.NewFile(path.Join(res.Url(), "freehold_backup-"+time.Now().Format(time.RFC3339)+".zip"))
+		res = resource.NewFile(path.Join(res.URL(), "freehold_backup-"+time.Now().Format(time.RFC3339)+".zip"))
 	}
 	if strings.ToLower(filepath.Ext(res.Name())) != ".zip" {
-		res = resource.NewFile(res.Url() + ".zip")
+		res = resource.NewFile(res.URL() + ".zip")
 	}
 
 	if res.Exists() {
-		errHandled(fail.New("Backup file already exists!", res.Url()), w, auth)
+		errHandled(fail.New("Backup file already exists!", res.URL()), w, auth)
 		return
 	}
 
@@ -130,7 +130,7 @@ func backupPost(w http.ResponseWriter, r *http.Request) {
 
 	respondJsend(w, &JSend{
 		Status: statusSuccess,
-		Data:   res.Url(),
+		Data:   res.URL(),
 	})
 
 }

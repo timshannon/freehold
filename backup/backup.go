@@ -18,8 +18,10 @@ import (
 	"bitbucket.org/tshannon/freehold/resource"
 )
 
+// DS is the path to the backup datastore file
 const DS = resource.CoreDSDir + "backup.ds"
 
+// Backup is the structure of a freehold backup
 type Backup struct {
 	When       string   `json:"when"`
 	File       string   `json:"file"`
@@ -27,6 +29,7 @@ type Backup struct {
 	Datastores []string `json:"datastores"`
 }
 
+// Get retrieves a list of backups between the From and To dates passed in
 func Get(from, to string) ([]*Backup, error) {
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
@@ -51,7 +54,7 @@ func Get(from, to string) ([]*Backup, error) {
 		return nil, err
 	}
 
-	result := make([]*Backup, 0)
+	var result []*Backup
 
 	for iter.Next() {
 		if iter.Err() != nil {
@@ -76,6 +79,7 @@ func Get(from, to string) ([]*Backup, error) {
 	return result, nil
 }
 
+// New generates a new backup file
 func New(backupFile *resource.File, datastores []string, who string) error {
 	var err error
 
@@ -150,7 +154,7 @@ func New(backupFile *resource.File, datastores []string, who string) error {
 	// insert backup record
 	b := &Backup{
 		When:       time.Now().Format(time.RFC3339),
-		File:       backupFile.Url(),
+		File:       backupFile.URL(),
 		Who:        who,
 		Datastores: datastores,
 	}
@@ -177,7 +181,7 @@ func allCoreDSFiles() ([]string, error) {
 		return nil, err
 	}
 
-	dsFiles := make([]string, 0)
+	var dsFiles []string
 	files, err := coreDir.Readdirnames(0)
 	if err != nil {
 		return nil, err

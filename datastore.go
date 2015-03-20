@@ -207,7 +207,7 @@ func datastorePost(w http.ResponseWriter, r *http.Request) {
 
 	if strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
 		if !res.IsDir() {
-			errHandled(fail.New("Path is not a directory. A datastore cannot be uploaded here.", res.Url()), w, auth)
+			errHandled(fail.New("Path is not a directory. A datastore cannot be uploaded here.", res.URL()), w, auth)
 			return
 		}
 
@@ -232,7 +232,7 @@ func datastorePost(w http.ResponseWriter, r *http.Request) {
 
 		//Validate datastore files
 		for i := range fileList {
-			dsRes := resource.NewFile(fileList[i].Url)
+			dsRes := resource.NewFile(fileList[i].URL)
 			_, err = data.Open(dsRes.Filepath())
 			if err != nil {
 				failures = append(failures, fail.New("Invalid Datastore file", dsRes.Name()))
@@ -279,9 +279,9 @@ func datastorePost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	respondJsend(w, &JSend{
 		Status: statusSuccess,
-		Data: Properties{
+		Data: properties{
 			Name: res.Name(),
-			Url:  res.Url(),
+			URL:  res.URL(),
 		},
 	})
 }
@@ -389,9 +389,9 @@ func datastoreDelete(w http.ResponseWriter, r *http.Request) {
 	}
 	respondJsend(w, &JSend{
 		Status: statusSuccess,
-		Data: Properties{
+		Data: properties{
 			Name: res.Name(),
-			Url:  res.Url(),
+			URL:  res.URL(),
 		},
 	})
 }

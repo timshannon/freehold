@@ -49,7 +49,7 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 	if r.ContentLength != 0 {
 		//file upload
 		if !res.IsDir() {
-			errHandled(fail.New("Invalid location for upload!", res.Url()), w, auth)
+			errHandled(fail.New("Invalid location for upload!", res.URL()), w, auth)
 			return
 		}
 
@@ -89,7 +89,7 @@ func filePost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	respondJsend(w, &JSend{
 		Status: statusSuccess,
-		Data:   res.Url(),
+		Data:   res.URL(),
 	})
 
 }
@@ -102,9 +102,9 @@ func createFolder(res *resource.File, auth *Auth) error {
 
 	err = os.Mkdir(res.Filepath(), 0777)
 	if os.IsExist(err) {
-		err = fail.New("Folder already exists!", res.Url())
+		err = fail.New("Folder already exists!", res.URL())
 	} else if os.IsNotExist(err) {
-		err = fail.New("Invalid Folder path specified!", res.Url())
+		err = fail.New("Invalid Folder path specified!", res.URL())
 	}
 	if err != nil {
 		return err
@@ -117,8 +117,8 @@ func createFolder(res *resource.File, auth *Auth) error {
 	return nil
 }
 
-func uploadFile(w http.ResponseWriter, parent *resource.File, owner *user.User, mp *multipart.Form, modTime time.Time) ([]Properties, []error) {
-	var fileList []Properties
+func uploadFile(w http.ResponseWriter, parent *resource.File, owner *user.User, mp *multipart.Form, modTime time.Time) ([]properties, []error) {
+	var fileList []properties
 	var failures []error
 
 	for _, files := range mp.File {
@@ -130,7 +130,7 @@ func uploadFile(w http.ResponseWriter, parent *resource.File, owner *user.User, 
 				continue
 			}
 
-			res := resource.NewFile(path.Join(parent.Url(), files[i].Filename))
+			res := resource.NewFile(path.Join(parent.URL(), files[i].Filename))
 			if res.IsHidden() {
 				continue
 			}
@@ -140,27 +140,27 @@ func uploadFile(w http.ResponseWriter, parent *resource.File, owner *user.User, 
 
 			if err != nil {
 				log.Error(err)
-				failures = append(failures, fail.New("Error opening file for writing.", res.Url()))
+				failures = append(failures, fail.New("Error opening file for writing.", res.URL()))
 
 				continue
 			}
 
 			err = resource.WriteFile(file, res.Filepath(), false, modTime)
 			if err != nil {
-				failures = append(failures, fail.NewFromErr(err, res.Url()))
+				failures = append(failures, fail.NewFromErr(err, res.URL()))
 
 				continue
 			}
 			err = permission.Set(res, permission.FileNewDefault(owner.Username()))
 			if err != nil {
-				failures = append(failures, fail.NewFromErr(err, res.Url()))
+				failures = append(failures, fail.NewFromErr(err, res.URL()))
 
 				continue
 			}
 
-			fileList = append(fileList, Properties{
+			fileList = append(fileList, properties{
 				Name: res.Name(),
-				Url:  res.Url(),
+				URL:  res.URL(),
 			})
 		}
 	}
@@ -227,18 +227,18 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 
 		err = sourceFile.Move(destFile)
 		if os.IsExist(err) {
-			err = fail.New("Folder already exists!", destFile.Url())
+			err = fail.New("Folder already exists!", destFile.URL())
 		} else if os.IsNotExist(err) {
-			err = fail.New("Invalid Folder path specified!", sourceFile.Url())
+			err = fail.New("Invalid Folder path specified!", sourceFile.URL())
 		}
 		if errHandled(err, w, auth) {
 			return
 		}
 		respondJsend(w, &JSend{
 			Status: statusSuccess,
-			Data: Properties{
+			Data: properties{
 				Name: destFile.Name(),
-				Url:  destFile.Url(),
+				URL:  destFile.URL(),
 			},
 		})
 		return
@@ -254,7 +254,7 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 
 	mp := r.MultipartForm
 
-	var fileList []Properties
+	var fileList []properties
 	var failures []error
 	status := statusSuccess
 
@@ -267,7 +267,7 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 
-			res := resource.NewFile(path.Join(parent.Url(), files[i].Filename))
+			res := resource.NewFile(path.Join(parent.URL(), files[i].Filename))
 
 			err := auth.tryWrite(res)
 
@@ -283,7 +283,7 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 
 			if err != nil {
 				log.Error(err)
-				failures = append(failures, fail.New("Error opening file for writing.", res.Url()))
+				failures = append(failures, fail.New("Error opening file for writing.", res.URL()))
 				status = statusFail
 
 				continue
@@ -291,15 +291,15 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 
 			err = resource.WriteFile(file, res.Filepath(), true, time.Time{})
 			if err != nil {
-				failures = append(failures, fail.NewFromErr(err, res.Url()))
+				failures = append(failures, fail.NewFromErr(err, res.URL()))
 				status = statusFail
 
 				continue
 			}
 
-			fileList = append(fileList, Properties{
+			fileList = append(fileList, properties{
 				Name: res.Name(),
-				Url:  res.Url(),
+				URL:  res.URL(),
 			})
 		}
 	}
@@ -337,9 +337,9 @@ func fileDelete(w http.ResponseWriter, r *http.Request) {
 
 	respondJsend(w, &JSend{
 		Status: statusSuccess,
-		Data: Properties{
+		Data: properties{
 			Name: res.Name(),
-			Url:  res.Url(),
+			URL:  res.URL(),
 		},
 	})
 }
@@ -386,7 +386,7 @@ func serveResource(w http.ResponseWriter, r *http.Request, res *resource.File, a
 	}
 
 	//No index file found, redirect to properties
-	http.Redirect(w, r, strings.Replace(res.Url(), "/v1/file/", "/v1/properties/file/", 1), http.StatusFound)
+	http.Redirect(w, r, strings.Replace(res.URL(), "/v1/file/", "/v1/properties/file/", 1), http.StatusFound)
 	return
 }
 
