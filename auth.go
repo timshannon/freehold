@@ -166,7 +166,7 @@ func (a *Auth) tryRead(res permission.Permitter) error {
 		switch res.(type) {
 
 		case *resource.File:
-			return four04Fail(res.(*resource.File).Url())
+			return four04Fail(res.(*resource.File).URL())
 		default:
 			return four04Fail("")
 		}
@@ -191,9 +191,9 @@ func (a *Auth) tryWrite(res permission.Permitter) error {
 		switch res.(type) {
 		case *resource.File:
 			if prm.CanRead(a.User) {
-				return fail.NewFromErr(ErrNoWritePermission, res.(*resource.File).Url())
+				return fail.NewFromErr(ErrNoWritePermission, res.(*resource.File).URL())
 			}
-			return four04Fail(res.(*resource.File).Url())
+			return four04Fail(res.(*resource.File).URL())
 
 		default:
 			if prm.CanRead(a.User) {

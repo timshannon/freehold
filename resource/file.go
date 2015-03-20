@@ -14,6 +14,7 @@ import (
 	"bitbucket.org/tshannon/freehold/permission"
 )
 
+// File is a freehold file
 type File struct {
 	filepath   string
 	url        string
@@ -22,6 +23,7 @@ type File struct {
 	exists     bool
 }
 
+// NewFile returns a new freehold file object
 func NewFile(url string) *File {
 	//TODO: validate url path
 
@@ -46,14 +48,18 @@ func NewFile(url string) *File {
 	return r
 }
 
+// NewFileFromProperty returns a freehold file object from the
+// passed in property url
 func NewFileFromProperty(url string) *File {
 	return NewFile(resPathFromProperty(url))
 }
 
+// Parent returns the parent directory of the current file
 func (r *File) Parent() *File {
 	return NewFile(filepath.Dir(strings.TrimSuffix(r.url, "/")))
 }
 
+// Children returns the child files of the current directory
 func (r *File) Children() ([]*File, error) {
 	if !r.IsDir() {
 		return make([]*File, 0), nil
@@ -75,8 +81,8 @@ func (r *File) Children() ([]*File, error) {
 	children := make([]*File, 0, len(childNames))
 
 	for i := range childNames {
-		n := NewFile(path.Join(r.Url(), filepath.Base(childNames[i])))
-		if !n.IsHidden() && n.Exists() {
+		n := NewFile(path.Join(r.URL(), filepath.Base(childNames[i])))
+		if !r.IsHidden() && n.Exists() {
 			children = append(children, n)
 		}
 	}
@@ -84,6 +90,7 @@ func (r *File) Children() ([]*File, error) {
 	return children, nil
 }
 
+// IsDir is whether or not this file is a directory
 func (r *File) IsDir() bool {
 	if r.exists {
 		return r.info.IsDir()
@@ -91,30 +98,39 @@ func (r *File) IsDir() bool {
 	return false
 }
 
+// IsDatastore is whether or not this file is a datastore
 func (r *File) IsDatastore() bool {
 	return !isFilePath(r.url)
 }
 
+// IsHidden is whether or not freehold sees this file as hidden
+// freehold will accept regular files starting with ., but not datastore files
 func (r *File) IsHidden() bool {
-	return strings.HasPrefix(r.Name(), ".")
+	if r.IsDatastore() {
+		return strings.HasPrefix(r.Name(), ".")
+	}
+	return false
 }
 
+// Exists is whether or not this file exists
 func (r *File) Exists() bool {
 	return r.exists
 }
 
-func (r *File) Url() string {
+// URL is the url to this file
+func (r *File) URL() string {
 	if r.IsDir() && !strings.HasSuffix(r.url, "/") {
 		return r.url + "/" // add trailing slash for convience when traversing the filetree
-	} else {
-		return r.url
 	}
+	return r.url
 }
 
+// Filepath is the path to the file
 func (r *File) Filepath() string {
 	return r.filepath
 }
 
+// ID is the unique identifier for this file
 func (r *File) ID() string {
 	if r.IsDatastore() && r.IsDir() {
 		//Datastore directories dont' have permissions
@@ -122,7 +138,7 @@ func (r *File) ID() string {
 		return permission.INVALID_ID
 	}
 
-	if !r.IsDatastore() && isRootPath(r.Url()) {
+	if !r.IsDatastore() && isRootPath(r.URL()) {
 		//make sure permissions don't get set on root
 		return permission.INVALID_ID
 	}
@@ -130,10 +146,12 @@ func (r *File) ID() string {
 	return r.filepath
 }
 
+// Name is the name of the file without the path
 func (r *File) Name() string {
 	return filepath.Base(r.filepath)
 }
 
+// Size is the size of the file in bytes
 func (r *File) Size() int64 {
 	if r.exists && !r.IsDir() {
 		return r.info.Size()
@@ -141,6 +159,7 @@ func (r *File) Size() int64 {
 	return 0
 }
 
+// Modified is a JSON string value of when the file was last modified
 func (r *File) Modified() string {
 	if r.exists {
 		return r.info.ModTime().Format(time.RFC3339)
@@ -148,6 +167,7 @@ func (r *File) Modified() string {
 	return ""
 }
 
+// FileInfo is the FileInfo object returned by the OS
 func (r *File) FileInfo() os.FileInfo {
 	if r.exists {
 		return r.info
@@ -155,6 +175,7 @@ func (r *File) FileInfo() os.FileInfo {
 	return nil
 }
 
+// Move moves the file to the new location
 func (r *File) Move(to *File) error {
 	err := r.movePermissions(to)
 	if err != nil {
@@ -180,7 +201,7 @@ func (r *File) movePermissions(to *File) error {
 	}
 	for i := range children {
 		child := children[i]
-		childTo := NewFile(path.Join(to.Url(), child.Name()))
+		childTo := NewFile(path.Join(to.URL(), child.Name()))
 		err = child.movePermissions(childTo)
 		if err != nil {
 			return err
@@ -189,12 +210,13 @@ func (r *File) movePermissions(to *File) error {
 	return nil
 }
 
+// Permission  retrieves the freehold permissions for this file
 func (r *File) Permission() (*permission.Permission, error) {
 	if r.permission != nil {
 		return r.permission, nil
 	}
 	if r.IsHidden() || !r.Exists() {
-		//Hidden files can't be accessed by anyone
+		//Datastore Hidden files can't be accessed by anyone
 		r.permission = &permission.Permission{}
 		return r.permission, nil
 	}

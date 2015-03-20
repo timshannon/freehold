@@ -13,9 +13,9 @@ import (
 	"bitbucket.org/tshannon/freehold/resource"
 )
 
-type Properties struct {
+type properties struct {
 	Name        string                 `json:"name,omitempty"`
-	Url         string                 `json:"url,omitempty"`
+	URL         string                 `json:"url,omitempty"`
 	Permissions *permission.Permission `json:"permissions,omitempty"`
 	Size        int64                  `json:"size,omitempty"`
 	Modified    string                 `json:"modified,omitempty"`
@@ -49,10 +49,10 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 
 		respondJsend(w, &JSend{
 			Status: statusSuccess,
-			Data: &Properties{
+			Data: &properties{
 				Name:        res.Name(),
 				Permissions: prm,
-				Url:         res.Url(),
+				URL:         res.URL(),
 				Size:        res.Size(),
 				Modified:    res.Modified(),
 				IsDir:       res.IsDir(),
@@ -66,7 +66,7 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fileList := make([]Properties, 0, len(files))
+	fileList := make([]properties, 0, len(files))
 
 	for i := range files {
 		child := files[i]
@@ -92,10 +92,10 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 			filePrm = nil
 		}
 
-		fileList = append(fileList, Properties{
+		fileList = append(fileList, properties{
 			Name:        child.Name(),
 			Permissions: filePrm,
-			Url:         child.Url(),
+			URL:         child.URL(),
 			Size:        size,
 			Modified:    modTime,
 			IsDir:       child.IsDir(),
@@ -109,11 +109,11 @@ func propertiesGet(w http.ResponseWriter, r *http.Request) {
 
 }
 
-type PropertyInput struct {
-	Permissions *PermissionsInput `json:"permissions,omitempty"`
+type propertyInput struct {
+	Permissions *permissionsInput `json:"permissions,omitempty"`
 }
 
-type PermissionsInput struct {
+type permissionsInput struct {
 	Owner   *string `json:"owner,omitempty"`
 	Public  *string `json:"public,omitempty"`
 	Friend  *string `json:"friend,omitempty"`
@@ -122,7 +122,7 @@ type PermissionsInput struct {
 
 // makePermission translates a partial permissions input to a full permissions type
 // by filling in the unspecfied entries from the datastore
-func (pi *PermissionsInput) makePermission(curPrm *permission.Permission) *permission.Permission {
+func (pi *permissionsInput) makePermission(curPrm *permission.Permission) *permission.Permission {
 	prm := *curPrm
 	if pi.Owner != nil {
 		prm.Owner = *pi.Owner
@@ -141,7 +141,7 @@ func (pi *PermissionsInput) makePermission(curPrm *permission.Permission) *permi
 }
 
 func propertiesPut(w http.ResponseWriter, r *http.Request) {
-	input := &PropertyInput{}
+	input := &propertyInput{}
 
 	auth, err := authenticate(w, r)
 	if errHandled(err, w, auth) {
@@ -180,9 +180,9 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 			}
 
 			errHandled(fail.NewFromErr(ErrNoWritePermission,
-				&Properties{
+				&properties{
 					Name: res.Name(),
-					Url:  res.Url(),
+					URL:  res.URL(),
 				}), w, auth)
 
 			return
@@ -195,9 +195,9 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 
 		respondJsend(w, &JSend{
 			Status: statusSuccess,
-			Data: &Properties{
+			Data: &properties{
 				Name: res.Name(),
-				Url:  res.Url(),
+				URL:  res.URL(),
 			},
 		})
 		return
@@ -208,7 +208,7 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fileList := make([]Properties, 0, len(files))
+	fileList := make([]properties, 0, len(files))
 	var failures []error
 	status := statusSuccess
 
@@ -239,9 +239,9 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 
 			status = statusFail
 			failures = append(failures, fail.NewFromErr(ErrNoWritePermission,
-				&Properties{
+				&properties{
 					Name: child.Name(),
-					Url:  child.Url(),
+					URL:  child.URL(),
 				}))
 		}
 	}
