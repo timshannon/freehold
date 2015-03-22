@@ -40,6 +40,11 @@ func sessionPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if auth.AuthType != authTypeBasic {
+		errHandled(fail.New("Sessions cannot be generated from a security Token or another session.", nil), w, auth)
+		return
+	}
+
 	prm := permission.Session()
 	if !prm.CanWrite(auth.User) {
 		if !prm.CanRead(auth.User) {
