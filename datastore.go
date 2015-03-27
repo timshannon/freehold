@@ -21,7 +21,7 @@ import (
 
 // DatastoreInput is the API input for interacting with a Datastore
 type DatastoreInput struct {
-	Key   *json.RawMessage `json:"key,omitempty"`
+	Key   *data.Key        `json:"key,omitempty"`
 	Max   *json.RawMessage `json:"max,omitempty"`
 	Min   *json.RawMessage `json:"min,omitempty"`
 	Iter  *data.Iter       `json:"iter,omitempty"`
@@ -55,7 +55,7 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 		if errHandled(err, w, auth) {
 			return
 		}
-		val, err := ds.Get(*input.Key)
+		val, err := ds.Get(input.Key)
 		if err == data.ErrNotFound {
 			ds404(w, r, input.Key)
 			return
@@ -124,7 +124,7 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		val, err := ds.Get(*key)
+		val, err := ds.Get(key)
 		if err == data.ErrNotFound {
 			//shouldn't happen
 			errHandled(fmt.Errorf("Max key was retrieved but value was not key: %s", key), w, auth)
@@ -157,7 +157,7 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		val, err := ds.Get(*key)
+		val, err := ds.Get(key)
 		if err == data.ErrNotFound {
 			//shouldn't happen
 			errHandled(fmt.Errorf("Max key was retrieved but value was not key: %s", key), w, auth)
@@ -304,11 +304,6 @@ func datastorePut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if input == nil {
-		errHandled(fail.New("Empty datastore input, nothing to PUT", input), w, auth)
-		return
-	}
-
 	ds, err := data.Open(res.Filepath())
 	if errHandled(err, w, auth) {
 		return
@@ -348,7 +343,7 @@ func datastoreDelete(w http.ResponseWriter, r *http.Request) {
 		if errHandled(err, w, auth) {
 			return
 		}
-		err = ds.Delete(*input.Key)
+		err = ds.Delete(input.Key)
 		if errHandled(err, w, auth) {
 			return
 		}

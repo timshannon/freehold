@@ -5,9 +5,13 @@
 package data
 
 import (
+	"encoding/binary"
 	"encoding/json"
+	"math"
 	"regexp"
 	"time"
+
+	"bytes"
 
 	"bitbucket.org/tshannon/freehold/data/store"
 	"bitbucket.org/tshannon/freehold/fail"
@@ -20,13 +24,14 @@ type Datastore struct {
 	store store.Storer
 }
 
+// Iter is the json view of an iterator
 type Iter struct {
-	From   *json.RawMessage `json:"from,omitempty"`
-	To     *json.RawMessage `json:"to,omitempty"`
-	Skip   int              `json:"skip,omitempty"`
-	Limit  int              `json:"limit,omitempty"`
-	Regexp string           `json:"regexp,omitempty"`
-	Order  string           `json:"order,omitempty"`
+	From   *Key   `json:"from,omitempty"`
+	To     *Key   `json:"to,omitempty"`
+	Skip   int    `json:"skip,omitempty"`
+	Limit  int    `json:"limit,omitempty"`
+	Regexp string `json:"regexp,omitempty"`
+	Order  string `json:"order,omitempty"`
 }
 
 // Data is a generic key / value representation for JSON data
@@ -34,8 +39,56 @@ type Iter struct {
 // JSON bytes anyway
 type Data map[string]*json.RawMessage
 
+// Key is type that tries to save keys in proper byte order if they are numbers, so they
+// remain sortable
+// It does this by testing whether or not the incoming key is a number
+// if it is, then it'll pack the encoded value with big endian
+// encoded float value at the lead for sorting
+// for decoding it simply throws away that extra info
+type Key json.RawMessage
+
+// MarshalJSON implements  json.Marshaler interface
+func (k *Key) MarshalJSON() ([]byte, error) {
+	return (*json.RawMessage)(k).MarshalJSON()
+}
+
+// UnmarshalJSON implements  json.Unmarshaler interface
+func (k *Key) UnmarshalJSON(data []byte) error {
+	return (*json.RawMessage)(k).UnmarshalJSON(data)
+}
+
+func (k *Key) bytes() ([]byte, error) {
+	m, err := json.Marshal(k)
+	if err != nil {
+		return nil, err
+	}
+	f, err := json.Number(*k).Float64()
+	if err != nil {
+		return m, nil
+	}
+
+	//is a number
+	bits := math.Float64bits(f)
+	byteNum := make([]byte, 8)
+	binary.BigEndian.PutUint64(byteNum, bits)
+	return append(byteNum, m...), nil
+}
+
+func (k *Key) fromBytes(data []byte) error {
+	err := json.Unmarshal(data, k)
+	if err == nil {
+		return nil
+	}
+	if len(data) < 8 {
+		return err
+	}
+	//try removing the leading 8 bytes
+	return json.Unmarshal(data[8:], k)
+}
+
+// KeyValue is a JSON representation of a key value
 type KeyValue struct {
-	Key   *json.RawMessage `json:"key,omitempty"`
+	Key   *Key             `json:"key,omitempty"`
 	Value *json.RawMessage `json:"value,omitempty"`
 }
 
@@ -44,7 +97,7 @@ func Create(name string) error {
 	return store.Create(name)
 }
 
-// Delete deletes a datastore
+// Drop Delete deletes a datastore
 func Drop(name string) error {
 	return store.Drop(name)
 }
@@ -59,12 +112,18 @@ func Open(name string) (*Datastore, error) {
 
 }
 
+// Close closes an open datastore
 func Close(name string) {
 	store.Close(name)
 }
 
-func (d *Datastore) Get(key json.RawMessage) (*json.RawMessage, error) {
-	result, err := d.store.Get([]byte(key))
+// Get gets a value out of a datastore
+func (d *Datastore) Get(key *Key) (*json.RawMessage, error) {
+	keyBytes, err := key.bytes()
+	if err != nil {
+		return nil, err
+	}
+	result, err := d.store.Get(keyBytes)
 	if err != nil {
 		return nil, err
 	}
@@ -74,35 +133,50 @@ func (d *Datastore) Get(key json.RawMessage) (*json.RawMessage, error) {
 	return (*json.RawMessage)(&result), nil
 }
 
-func (d *Datastore) Max() (*json.RawMessage, error) {
-	key, err := d.store.Max()
+// Max gets the max value in the datastore
+func (d *Datastore) Max() (*Key, error) {
+	data, err := d.store.Max()
 	if err != nil {
 		return nil, err
 	}
 
-	return (*json.RawMessage)(&key), nil
+	var key Key
+	err = key.fromBytes(data)
+
+	return &key, err
 }
 
-func (d *Datastore) Min() (*json.RawMessage, error) {
-	key, err := d.store.Min()
+// Min gets the min value in the datastore
+func (d *Datastore) Min() (*Key, error) {
+	data, err := d.store.Min()
 	if err != nil {
 		return nil, err
 	}
 
-	return (*json.RawMessage)(&key), nil
+	var key Key
+	err = key.fromBytes(data)
+
+	return &key, err
 }
 
+// Put puts a new value or sets of values in the datastore
 func (d *Datastore) Put(data Data) []error {
-	errors := make([]error, 0, len(data))
+	var errors []error
 
-	if key, ok := data["key"]; ok {
+	if keyBytes, ok := data["key"]; ok {
 		v, ok := data["value"]
 		if !ok {
 			errors = append(errors, fail.New("No value put in datastore", data))
 			return errors
 		}
 
-		err := d.store.Put([]byte(*key), []byte(*v))
+		putBytes, err := (*Key)(keyBytes).bytes()
+		if err != nil {
+			errors = append(errors, err)
+			return errors
+		}
+
+		err = d.store.Put(putBytes, []byte(*v))
 		if err != nil {
 			errors = append(errors, err)
 		}
@@ -125,10 +199,16 @@ func (d *Datastore) Put(data Data) []error {
 	return errors
 }
 
-func (d *Datastore) Delete(key json.RawMessage) error {
-	return d.store.Delete([]byte(key))
+// Delete delets a value from the datastore
+func (d *Datastore) Delete(key *Key) error {
+	keyBytes, err := key.bytes()
+	if err != nil {
+		return err
+	}
+	return d.store.Delete(keyBytes)
 }
 
+// Count returns the number of records in the datastore
 func (d *Datastore) Count(iter *Iter) (int, error) {
 	if iter == nil {
 		iter = &Iter{}
@@ -144,6 +224,7 @@ func (d *Datastore) Count(iter *Iter) (int, error) {
 
 }
 
+// Iter returns the key value result set of the passed in json iterator
 func (d *Datastore) Iter(iter *Iter) ([]KeyValue, error) {
 	var rx *regexp.Regexp
 	var err error
@@ -158,7 +239,10 @@ func (d *Datastore) Iter(iter *Iter) ([]KeyValue, error) {
 	var to []byte
 
 	if iter.From != nil {
-		from = []byte(*iter.From)
+		from, err = iter.From.bytes()
+		if err != nil {
+			return nil, err
+		}
 	} else {
 		from, err = d.store.Min()
 		if err != nil {
@@ -166,7 +250,10 @@ func (d *Datastore) Iter(iter *Iter) ([]KeyValue, error) {
 		}
 	}
 	if iter.To != nil {
-		to = []byte(*iter.To)
+		to, err = iter.To.bytes()
+		if err != nil {
+			return nil, err
+		}
 	} else {
 		to, err = d.store.Max()
 		if err != nil {
@@ -181,8 +268,8 @@ func (d *Datastore) Iter(iter *Iter) ([]KeyValue, error) {
 		}
 		//Flip from and to if order is specified.  If order isn't specified, then iteration direction
 		// is implied
-		if (iter.Order == "dsc" && store.Compare(from, to) != 1) ||
-			(iter.Order == "asc" && store.Compare(to, from) == -1) {
+		if (iter.Order == "dsc" && bytes.Compare(from, to) != 1) ||
+			(iter.Order == "asc" && bytes.Compare(to, from) == -1) {
 			from, to = to, from
 		}
 	}
@@ -217,7 +304,11 @@ func (d *Datastore) Iter(iter *Iter) ([]KeyValue, error) {
 			continue
 		}
 
-		key := i.Key()
+		var key Key
+		err = key.fromBytes(i.Key())
+		if err != nil {
+			return nil, err
+		}
 		value := i.Value()
 		if value == nil {
 			//shouldn't happen
@@ -225,7 +316,7 @@ func (d *Datastore) Iter(iter *Iter) ([]KeyValue, error) {
 		}
 
 		result = append(result, KeyValue{
-			Key:   (*json.RawMessage)(&key),
+			Key:   &key,
 			Value: (*json.RawMessage)(&value),
 		})
 
@@ -235,6 +326,7 @@ func (d *Datastore) Iter(iter *Iter) ([]KeyValue, error) {
 	return result, nil
 }
 
+// SetTimeout sets the file timeout (when a datatstore file will auto close)
 func SetTimeout(timeout time.Duration) {
 	store.SetFileTimeout(timeout)
 }

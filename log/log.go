@@ -12,24 +12,30 @@ import (
 	"log/syslog"
 	"time"
 
+	"bytes"
+
 	"bitbucket.org/tshannon/freehold/data"
-	"bitbucket.org/tshannon/freehold/data/store"
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/setting"
 )
 
 const (
-	DS         = "core/log.ds"
-	AuthType   = "authentication"
+	// DS is the location of the log dS file
+	DS = "core/log.ds"
+	// AuthType is the log type for authentication log entries
+	AuthType = "authentication"
+	// Four04Type is the log type for 404 errors
 	Four04Type = "404"
 )
 
+// Log is the storage stucture for a log entry
 type Log struct {
 	When string `json:"when"`
 	Type string `json:"type"`
 	Log  string `json:"log"`
 }
 
+// Iter is an iterator for log entries
 type Iter struct {
 	Type  string           `json:"type,omitempty"`
 	From  *json.RawMessage `json:"from,omitempty"`
@@ -39,6 +45,7 @@ type Iter struct {
 	Order string           `json:"order,omitempty"`
 }
 
+// NewEntry inserts a new log entry into the datastore
 func NewEntry(Type string, entry string) {
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
@@ -63,6 +70,7 @@ func NewEntry(Type string, entry string) {
 	}
 }
 
+// Get retrieves a list of logs from the datastore
 func Get(iter *Iter) ([]*Log, error) {
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
@@ -102,8 +110,8 @@ func Get(iter *Iter) ([]*Log, error) {
 		}
 		//Flip from and to if order is specified.  If order isn't specified, then iteration direction
 		// is implied
-		if (iter.Order == "dsc" && store.Compare(from, to) != 1) ||
-			(iter.Order == "asc" && store.Compare(to, from) == -1) {
+		if (iter.Order == "dsc" && bytes.Compare(from, to) != 1) ||
+			(iter.Order == "asc" && bytes.Compare(to, from) == -1) {
 			from, to = to, from
 		}
 	}
@@ -166,6 +174,7 @@ func Error(err error) {
 	NewEntry("error", err.Error())
 }
 
+// Fail logs a failure in the datastore
 func Fail(err *fail.Fail, who string) {
 	if !setting.Bool("LogFailures") {
 		return
@@ -195,15 +204,16 @@ func syslogError(err error) {
 	lWriter.Err(err.Error())
 }
 
-type FHLogWriter struct{}
+type fhLogWriter struct{}
 
-func (w *FHLogWriter) Write(p []byte) (n int, err error) {
+func (w *fhLogWriter) Write(p []byte) (n int, err error) {
 	if setting.Bool("LogServerErrors") {
 		NewEntry("server error", string(p))
 	}
 	return len(p), nil
 }
 
+// FHLogger returns a logger for use with the http server
 func FHLogger() *log.Logger {
-	return log.New(&FHLogWriter{}, "", 0)
+	return log.New(&fhLogWriter{}, "", 0)
 }

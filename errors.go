@@ -12,6 +12,7 @@ import (
 	"os"
 	"strings"
 
+	"bitbucket.org/tshannon/freehold/data"
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/log"
 	"bitbucket.org/tshannon/freehold/permission"
@@ -23,6 +24,7 @@ const (
 	acceptHTML = "text/html"
 )
 
+// Err404 is a standard 404 error response
 var Err404 = errors.New("Resource not found")
 
 func errHandled(err error, w http.ResponseWriter, auth *Auth) bool {
@@ -160,7 +162,7 @@ func respond404Page(w http.ResponseWriter, r *http.Request) {
 }
 
 //ds404 is the response returned when a datastore entry is not found
-func ds404(w http.ResponseWriter, r *http.Request, key *json.RawMessage) {
+func ds404(w http.ResponseWriter, r *http.Request, key *data.Key) {
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Content-Type", "application/json")
 	response := &JSend{
