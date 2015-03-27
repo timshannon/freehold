@@ -8,6 +8,7 @@
 package store
 
 import (
+	"bytes"
 	"io"
 	"log"
 	"log/syslog"
@@ -18,6 +19,9 @@ import (
 	"github.com/cznic/kv"
 )
 
+// DS is a datstore, holds the pointer to the
+// underlying kv file, and keeps track of
+// when a file timesout and needs to be closed
 type DS struct {
 	*kv.DB
 	filePath string
@@ -39,7 +43,6 @@ func options() *kv.Options {
 		VerifyDbBeforeOpen:  true,
 		VerifyDbAfterClose:  true,
 		VerifyDbBeforeClose: true,
-		Compare:             naturalCompare,
 		Locker:              freeholdLocker,
 	}
 }
@@ -53,6 +56,7 @@ func init() {
 
 }
 
+// Halt closes all open datastore files
 func Halt() {
 	for k := range files.files {
 		files.close(k)
@@ -168,6 +172,7 @@ func (d *DS) reset() error {
 	return nil
 }
 
+// Get get's a value from the datastore
 func (d *DS) Get(key []byte) ([]byte, error) {
 	err := d.reset()
 	if err != nil {
@@ -178,6 +183,7 @@ func (d *DS) Get(key []byte) ([]byte, error) {
 	return result, err
 }
 
+// Max returns the max value in the datastore
 func (d *DS) Max() ([]byte, error) {
 	err := d.reset()
 	if err != nil {
@@ -187,6 +193,7 @@ func (d *DS) Max() ([]byte, error) {
 	return key, err
 }
 
+// Min returns the min value in the datastore
 func (d *DS) Min() ([]byte, error) {
 	err := d.reset()
 	if err != nil {
@@ -196,6 +203,7 @@ func (d *DS) Min() ([]byte, error) {
 	return key, err
 }
 
+// Put puts a new value in the datastore
 func (d *DS) Put(key, value []byte) error {
 	err := d.reset()
 	if err != nil {
@@ -205,6 +213,7 @@ func (d *DS) Put(key, value []byte) error {
 	return d.DB.Set(key, value)
 }
 
+// Delete deletes a value from the datastore
 func (d *DS) Delete(key []byte) error {
 	err := d.reset()
 	if err != nil {
@@ -213,13 +222,14 @@ func (d *DS) Delete(key []byte) error {
 	return d.DB.Delete(key)
 }
 
+// Iter returns an iteratore for the datastore
 func (d *DS) Iter(from, to []byte) (Iterator, error) {
 	err := d.reset()
 	if err != nil {
 		return nil, err
 	}
 
-	if to != nil && naturalCompare(from, to) == 1 {
+	if to != nil && bytes.Compare(from, to) == 1 {
 		enum, _, err := d.DB.Seek(from)
 		if err != nil {
 			return nil, err
@@ -248,6 +258,7 @@ func (d *DS) Iter(from, to []byte) (Iterator, error) {
 	}, nil
 }
 
+// KvIterator is a key value iterator
 type KvIterator struct {
 	ds *DS
 	*kv.Enumerator
@@ -259,6 +270,7 @@ type KvIterator struct {
 	err     error
 }
 
+// Next gets the next value from the iterator
 func (i *KvIterator) Next() bool {
 	err := i.ds.reset()
 	if err != nil {
@@ -274,7 +286,7 @@ func (i *KvIterator) Next() bool {
 		if err == io.EOF {
 			return false
 		}
-		if naturalCompare(key, i.to) == -1 {
+		if bytes.Compare(key, i.to) == -1 {
 			return false
 		}
 
@@ -284,7 +296,7 @@ func (i *KvIterator) Next() bool {
 			return false
 		}
 
-		if i.to != nil && naturalCompare(key, i.to) == 1 {
+		if i.to != nil && bytes.Compare(key, i.to) == 1 {
 			return false
 		}
 
@@ -296,14 +308,17 @@ func (i *KvIterator) Next() bool {
 	return true
 }
 
+// Key gets the current key in the iterator
 func (i *KvIterator) Key() []byte {
 	return i.key
 }
 
+// Value returns the current value in the iterator
 func (i *KvIterator) Value() []byte {
 	return i.value
 }
 
+// Err returns any errors that may have happened during iterating
 func (i *KvIterator) Err() error {
 	return i.err
 }
