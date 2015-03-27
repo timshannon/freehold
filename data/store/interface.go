@@ -4,9 +4,7 @@
 
 package store
 
-import "github.com/cznic/kv"
-
-// Store is the interface that is needed to run a freehold instance an any datastores in it
+// Storer is the interface that is needed to run a freehold instance an any datastores in it
 type Storer interface {
 	Get(key []byte) ([]byte, error)
 	Put(key, value []byte) error
@@ -29,15 +27,11 @@ type Iterator interface {
 
 // Create creates a new store file
 func Create(name string) error {
-	option := options()
-	db, err := kv.Create(name, option)
-	if err != nil {
-		return err
-	}
-	return db.Close()
+	_, err := files.open(name)
+	return err
 }
 
-// Delete deletes a store file
+// Drop deletes a store file
 func Drop(name string) error {
 	return files.drop(name)
 }

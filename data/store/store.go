@@ -2,7 +2,7 @@
 // Use of this source code is governed by the MIT license
 // that can be found in the LICENSE file.
 
-// store is the wrapper around the cznic/kv to match the minimum interface
+// store is the wrapper around the boltdb to match the minimum interface
 // used by freehold for a KV store.
 
 package store
@@ -16,14 +16,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cznic/kv"
+	"github.com/boltdb/bolt"
 )
 
 // DS is a datstore, holds the pointer to the
 // underlying kv file, and keeps track of
 // when a file timesout and needs to be closed
 type DS struct {
-	*kv.DB
+	*bolt.DB
 	filePath string
 	timeout  *time.Timer
 }
@@ -35,17 +35,6 @@ type timeoutLock struct {
 
 var timeout timeoutLock
 var files openedFiles
-
-func options() *kv.Options {
-
-	return &kv.Options{
-		VerifyDbAfterOpen:   true,
-		VerifyDbBeforeOpen:  true,
-		VerifyDbAfterClose:  true,
-		VerifyDbBeforeClose: true,
-		Locker:              freeholdLocker,
-	}
-}
 
 func init() {
 	timeout = timeoutLock{RWMutex: sync.RWMutex{}, duration: 1 * time.Minute}
@@ -104,7 +93,15 @@ func (o *openedFiles) open(name string) (*DS, error) {
 	o.Lock()
 	defer o.Unlock()
 
-	db, err := kv.Open(name, options())
+	db, err := bolt.Open(name, 0666, nil)
+	if err != nil {
+		return nil, err
+	}
+	err = db.Update(func(tx *bolt.Tx) error {
+		_, err := tx.CreateBucketIfNotExists([]byte(name))
+		return err
+	})
+
 	if err != nil {
 		return nil, err
 	}
@@ -144,19 +141,9 @@ func (o *openedFiles) drop(name string) error {
 	db, ok := o.files[name]
 	if ok {
 		delete(o.files, name)
-		wal = db.WALName()
-
 		err := db.Close()
 		if err != nil {
 			return err
-		}
-
-		if _, ferr := os.Stat(wal); ferr == nil {
-			//clean up wal file
-			err := os.Remove(wal)
-			if err != nil {
-				return err
-			}
 		}
 	}
 	// if db isn't open, then just remove the file
@@ -178,7 +165,11 @@ func (d *DS) Get(key []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	result, err := d.DB.Get(nil, key)
+	var result []byte
+	err = d.DB.View(func(tx *bolt.Tx) error {
+		result, err = tx.Bucket([]byte(d.filePath)).Get(key)
+		return err
+	})
 
 	return result, err
 }
@@ -189,8 +180,17 @@ func (d *DS) Max() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	key, _, err := d.DB.Last()
-	return key, err
+
+	var result []byte
+	err = d.DB.View(func(tx *bolt.Tx) error {
+		c, err := tx.Bucket([]byte(d.filePath)).Cursor()
+		if err != nil {
+			return err
+		}
+		result, _ = c.Last()
+	})
+
+	return result, err
 }
 
 // Min returns the min value in the datastore
@@ -261,7 +261,7 @@ func (d *DS) Iter(from, to []byte) (Iterator, error) {
 // KvIterator is a key value iterator
 type KvIterator struct {
 	ds *DS
-	*kv.Enumerator
+	*bolt.Cursor
 	reverse bool
 	from    []byte
 	to      []byte
