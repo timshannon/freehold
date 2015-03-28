@@ -9,7 +9,7 @@ package store
 
 import (
 	"bytes"
-	"io"
+	"fmt"
 	"log"
 	"log/syslog"
 	"os"
@@ -95,7 +95,18 @@ func (o *openedFiles) open(name string) (*DS, error) {
 
 	db, err := bolt.Open(name, 0666, nil)
 	if err != nil {
-		return nil, err
+		//try convert
+		cErr := convert(name)
+		if cErr != nil {
+			return nil, fmt.Errorf("Could not open datastore file %s.  Error: %s."+
+				"Tried conversion but that failed as well: %s", name, err, cErr)
+		}
+		//conversion succeded, try openging again
+
+		db, err = bolt.Open(name, 0666, nil)
+		if err != nil {
+			return nil, err
+		}
 	}
 	err = db.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucketIfNotExists([]byte(name))
@@ -136,8 +147,6 @@ func (o *openedFiles) close(name string) {
 func (o *openedFiles) drop(name string) error {
 	o.Lock()
 	defer o.Unlock()
-	wal := ""
-
 	db, ok := o.files[name]
 	if ok {
 		delete(o.files, name)
@@ -166,12 +175,12 @@ func (d *DS) Get(key []byte) ([]byte, error) {
 		return nil, err
 	}
 	var result []byte
-	err = d.DB.View(func(tx *bolt.Tx) error {
-		result, err = tx.Bucket([]byte(d.filePath)).Get(key)
-		return err
+	d.DB.View(func(tx *bolt.Tx) error {
+		result = tx.Bucket([]byte(d.filePath)).Get(key)
+		return nil
 	})
 
-	return result, err
+	return result, nil
 }
 
 // Max returns the max value in the datastore
@@ -182,15 +191,13 @@ func (d *DS) Max() ([]byte, error) {
 	}
 
 	var result []byte
-	err = d.DB.View(func(tx *bolt.Tx) error {
-		c, err := tx.Bucket([]byte(d.filePath)).Cursor()
-		if err != nil {
-			return err
-		}
+	d.DB.View(func(tx *bolt.Tx) error {
+		c := tx.Bucket([]byte(d.filePath)).Cursor()
 		result, _ = c.Last()
+		return nil
 	})
 
-	return result, err
+	return result, nil
 }
 
 // Min returns the min value in the datastore
@@ -199,8 +206,14 @@ func (d *DS) Min() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	key, _, err := d.DB.First()
-	return key, err
+	var result []byte
+	d.DB.View(func(tx *bolt.Tx) error {
+		c := tx.Bucket([]byte(d.filePath)).Cursor()
+		result, _ = c.First()
+		return nil
+	})
+
+	return result, nil
 }
 
 // Put puts a new value in the datastore
@@ -209,8 +222,11 @@ func (d *DS) Put(key, value []byte) error {
 	if err != nil {
 		return err
 	}
-
-	return d.DB.Set(key, value)
+	err = d.DB.Update(func(tx *bolt.Tx) error {
+		err = tx.Bucket([]byte(d.filePath)).Put(key, value)
+		return err
+	})
+	return err
 }
 
 // Delete deletes a value from the datastore
@@ -219,7 +235,11 @@ func (d *DS) Delete(key []byte) error {
 	if err != nil {
 		return err
 	}
-	return d.DB.Delete(key)
+	err = d.DB.Update(func(tx *bolt.Tx) error {
+		err = tx.Bucket([]byte(d.filePath)).Delete(key)
+		return err
+	})
+	return err
 }
 
 // Iter returns an iteratore for the datastore
@@ -229,33 +249,23 @@ func (d *DS) Iter(from, to []byte) (Iterator, error) {
 		return nil, err
 	}
 
-	if to != nil && bytes.Compare(from, to) == 1 {
-		enum, _, err := d.DB.Seek(from)
-		if err != nil {
-			return nil, err
-		}
-		return &KvIterator{
-			ds:         d,
-			Enumerator: enum,
-			from:       from,
-			to:         to,
-			reverse:    true,
-			err:        nil,
-		}, nil
-
+	iter := &KvIterator{
+		ds:   d,
+		from: from,
+		to:   to,
+		err:  nil,
 	}
-
-	enum, _, err := d.DB.Seek(from)
+	tx, err := d.DB.Begin(false)
 	if err != nil {
 		return nil, err
 	}
-	return &KvIterator{
-		ds:         d,
-		Enumerator: enum,
-		from:       from,
-		to:         to,
-		err:        nil,
-	}, nil
+	iter.Cursor = tx.Bucket([]byte(d.filePath)).Cursor()
+
+	if to != nil && bytes.Compare(from, to) == 1 {
+		iter.reverse = true
+	}
+
+	return iter, nil
 }
 
 // KvIterator is a key value iterator
@@ -268,6 +278,7 @@ type KvIterator struct {
 	key     []byte
 	value   []byte
 	err     error
+	seeked  bool
 }
 
 // Next gets the next value from the iterator
@@ -275,32 +286,28 @@ func (i *KvIterator) Next() bool {
 	err := i.ds.reset()
 	if err != nil {
 		i.err = err
+		i.Cursor.Bucket().Tx().Rollback()
 		return false
 	}
 
 	var key, value []byte
 
 	if i.reverse {
-		key, value, err = i.Enumerator.Prev()
-
-		if err == io.EOF {
-			return false
-		}
-		if bytes.Compare(key, i.to) == -1 {
-			return false
-		}
-
+		key, value = i.Cursor.Prev()
 	} else {
-		key, value, err = i.Enumerator.Next()
-		if err == io.EOF {
-			return false
-		}
-
-		if i.to != nil && bytes.Compare(key, i.to) == 1 {
-			return false
-		}
-
+		key, value = i.Cursor.Next()
 	}
+
+	if key == nil {
+		i.Cursor.Bucket().Tx().Rollback()
+		return false
+	}
+
+	if bytes.Compare(key, i.to) == -1 {
+		i.Cursor.Bucket().Tx().Rollback()
+		return false
+	}
+
 	i.key = key
 	i.value = value
 	i.err = err
