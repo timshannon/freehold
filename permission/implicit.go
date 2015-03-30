@@ -4,7 +4,7 @@
 
 package permission
 
-//Docs are open to public
+//Doc is open to public
 func Doc() *Permission {
 	return &Permission{
 		Owner:  "",

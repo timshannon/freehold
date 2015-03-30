@@ -183,7 +183,7 @@ func filePut(w http.ResponseWriter, r *http.Request) {
 	if !strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
 		//Move
 		input := &FileInput{}
-		err = parseJson(r, input)
+		err = parseJSON(r, input)
 		if errHandled(err, w, auth) {
 			return
 		}

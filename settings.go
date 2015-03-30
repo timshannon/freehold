@@ -12,7 +12,7 @@ import (
 	"bitbucket.org/tshannon/freehold/setting"
 )
 
-type SettingInput struct {
+type settingInput struct {
 	Setting *string     `json:"setting,omitempty"`
 	Value   interface{} `json:"value,omitempty"`
 }
@@ -30,8 +30,8 @@ func settingsGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	input := &SettingInput{}
-	err = parseJson(r, input)
+	input := &settingInput{}
+	err = parseJSON(r, input)
 	if errHandled(err, w, auth) {
 		return
 	}
@@ -67,7 +67,7 @@ func settingsGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func settingsPut(w http.ResponseWriter, r *http.Request) {
-	input := &SettingInput{}
+	input := &settingInput{}
 
 	auth, err := authenticate(w, r)
 	if errHandled(err, w, auth) {
@@ -84,7 +84,7 @@ func settingsPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = parseJson(r, input)
+	err = parseJSON(r, input)
 	if errHandled(err, w, auth) {
 		return
 	}
@@ -119,9 +119,9 @@ func settingsDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	input := &SettingInput{}
+	input := &settingInput{}
 
-	err = parseJson(r, input)
+	err = parseJSON(r, input)
 	if errHandled(err, w, auth) {
 		return
 	}

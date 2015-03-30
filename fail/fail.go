@@ -10,6 +10,8 @@
 
 package fail
 
+// Fail is an error whos contents can be exposed to the client and is usually the result
+// of incorrect client input
 type Fail struct {
 	Message string      `json:"message,omitempty"`
 	Data    interface{} `json:"data,omitempty"`
@@ -19,6 +21,7 @@ func (f *Fail) Error() string {
 	return f.Message
 }
 
+// New creates a new failure
 func New(message string, data interface{}) error {
 	return &Fail{
 		Message: message,
@@ -26,10 +29,12 @@ func New(message string, data interface{}) error {
 	}
 }
 
+// NewFromErr returns a new failure based on the passed in error
 func NewFromErr(err error, data interface{}) error {
 	return New(err.Error(), data)
 }
 
+// IsEqual tests whether an error is equal to another error / failure
 func IsEqual(err, other error) bool {
 	if err == nil {
 		if other == nil {
@@ -40,6 +45,7 @@ func IsEqual(err, other error) bool {
 	return err.Error() == other.Error()
 }
 
+// IsFail tests whether the passed in error is a failure
 func IsFail(err error) bool {
 	if err == nil {
 		return false

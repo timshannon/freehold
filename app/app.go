@@ -86,6 +86,7 @@ func All() (map[string]*App, error) {
 	}
 
 	iter, err := ds.Iter(nil, nil)
+	defer iter.Close()
 	if err != nil {
 		return nil, err
 	}

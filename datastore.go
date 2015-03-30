@@ -41,7 +41,7 @@ func datastoreGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	input := &DatastoreInput{}
-	parseJson(r, input)
+	parseJSON(r, input)
 
 	switch {
 	case input.Key != nil:
@@ -299,7 +299,7 @@ func datastorePut(w http.ResponseWriter, r *http.Request) {
 	}
 
 	input := make(data.Data)
-	err = parseJson(r, &input)
+	err = parseJSON(r, &input)
 	if errHandled(err, w, auth) {
 		return
 	}
@@ -331,7 +331,7 @@ func datastoreDelete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	input := &DatastoreInput{}
-	parseJson(r, input)
+	parseJSON(r, input)
 
 	res := resource.NewFile(r.URL.Path)
 	if errHandled(auth.tryWrite(res), w, auth) {

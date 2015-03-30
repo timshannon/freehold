@@ -117,6 +117,7 @@ func Get(iter *Iter) ([]*Log, error) {
 	}
 
 	i, err := ds.Iter(from, to)
+	defer i.Close()
 	if err != nil {
 		return nil, err
 	}

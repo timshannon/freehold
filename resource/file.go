@@ -135,12 +135,12 @@ func (r *File) ID() string {
 	if r.IsDatastore() && r.IsDir() {
 		//Datastore directories dont' have permissions
 		// and shouldn't be set
-		return permission.INVALID_ID
+		return permission.InvalidID
 	}
 
 	if !r.IsDatastore() && isRootPath(r.URL()) {
 		//make sure permissions don't get set on root
-		return permission.INVALID_ID
+		return permission.InvalidID
 	}
 
 	return r.filepath

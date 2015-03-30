@@ -20,6 +20,7 @@ const (
 	statusFail    = "fail"
 )
 
+// JSend is the standard format for a response from freehold
 type JSend struct {
 	Status   string      `json:"status"`
 	Data     interface{} `json:"data,omitempty"`
@@ -56,7 +57,7 @@ func respondJsend(w http.ResponseWriter, response *JSend) {
 	w.Write(result)
 }
 
-func parseJson(r *http.Request, result interface{}) error {
+func parseJSON(r *http.Request, result interface{}) error {
 	buff, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		return err

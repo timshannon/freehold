@@ -26,11 +26,14 @@ import (
 )
 
 const (
+	// DS is the location of the token datastore
 	DS = "core/token.ds"
 )
 
-var FailTokenLevel = errors.New("Token grants permissions that the requester does not currently have.")
+// ErrTokenLevel is when a token is created that grants more permissions than the requester has
+var ErrTokenLevel = errors.New("Token grants permissions that the requester does not currently have.")
 
+// Token grants access to everything a user can access, or access just to a specific resource and permissions level
 type Token struct {
 	Token      string `json:"token,omitempty"` // Unique identifier used for authentication
 	ID         string `json:"id,omitempty"`    //Unique identifier used for identification
@@ -44,6 +47,7 @@ type Token struct {
 	resource  *resource.File
 }
 
+// New creates a new token
 func New(t *Token, requester *user.User) (*Token, error) {
 	t.requester = requester
 	t.resource = resource.NewFile(t.Resource)
@@ -107,20 +111,21 @@ func (t *Token) checkPermissionsLevel(prm *permission.Permission) error {
 	switch t.Permission {
 	case permission.Read:
 		if !prm.CanRead(t.requester) {
-			return fail.NewFromErr(FailTokenLevel, t)
+			return fail.NewFromErr(ErrTokenLevel, t)
 		}
 	case permission.Read + permission.Write:
 		if !prm.CanRead(t.requester) || !prm.CanWrite(t.requester) {
-			return fail.NewFromErr(FailTokenLevel, t)
+			return fail.NewFromErr(ErrTokenLevel, t)
 		}
 	case permission.Write:
 		if !prm.CanWrite(t.requester) {
-			return fail.NewFromErr(FailTokenLevel, t)
+			return fail.NewFromErr(ErrTokenLevel, t)
 		}
 	}
 	return nil
 }
 
+// Get retrieves a token based on the passed in ID and user
 func Get(u *user.User, id string) (*Token, error) {
 	t, err := get(u, id)
 	if err != nil {
@@ -180,6 +185,7 @@ func get(u *user.User, id string) (*Token, error) {
 	return nil, fail.NewFromErr(data.ErrNotFound, id)
 }
 
+// Login attempts to login with the given token
 func Login(u *user.User, tkn string) (*Token, error) {
 	t := &Token{}
 
@@ -229,19 +235,21 @@ func iter(u *user.User) (store.Iterator, error) {
 	}
 
 	iter, err := ds.Iter(from, to)
+	defer iter.Close()
 	if err != nil {
 		return nil, err
 	}
 	return iter, nil
 }
 
+// All retrieves all tokens for the user
 func All(u *user.User) ([]*Token, error) {
 	iter, err := iter(u)
 	if err != nil {
 		return nil, err
 	}
 
-	tokens := make([]*Token, 0)
+	var tokens []*Token
 
 	for iter.Next() {
 
@@ -287,6 +295,7 @@ func All(u *user.User) ([]*Token, error) {
 	return tokens, nil
 }
 
+// Delete deletes a token
 func Delete(u *user.User, id string) error {
 	tkn, err := get(u, id)
 	if err != nil {
@@ -336,6 +345,7 @@ func generateToken() string {
 	return strings.Replace(strings.Replace(b64, "+", "-", -1), "/", "_", -1)
 }
 
+// IsExpired is whether or not the given token is expired
 func (t *Token) IsExpired() bool {
 	if t.Expires == "" {
 		return true
@@ -370,7 +380,7 @@ func (t *Token) User() *user.User {
 	return nil
 }
 
-// Permission creates the permissions to check against
+// GetPermission creates the permissions to check against
 // based on the token.
 // token access is unauthenticated in that
 // the token doesn't have a *user.User if a permission and / or a resource is supplied

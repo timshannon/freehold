@@ -13,6 +13,8 @@ import (
 	"bitbucket.org/tshannon/freehold/data/store"
 )
 
+// ErrNotFound is the error returned from a core datastore if a value
+// is not found for the passed in key
 var ErrNotFound = errors.New("Value not found")
 
 // CoreDS is a wrapper of the store interface with a few
@@ -42,6 +44,7 @@ func OpenCoreDS(filename string) (*CoreDS, error) {
 	return &CoreDS{ds}, nil
 }
 
+// Get retrieves a value from the core datastore
 func (c *CoreDS) Get(key interface{}, result interface{}) error {
 	dsKey, err := json.Marshal(key)
 	if err != nil {
@@ -59,6 +62,7 @@ func (c *CoreDS) Get(key interface{}, result interface{}) error {
 	return json.Unmarshal(dsValue, result)
 }
 
+// Put puts a new key /value in the core datastore
 func (c *CoreDS) Put(key interface{}, value interface{}) error {
 	dsKey, err := json.Marshal(key)
 	if err != nil {
@@ -73,6 +77,7 @@ func (c *CoreDS) Put(key interface{}, value interface{}) error {
 	return c.Storer.Put(dsKey, dsValue)
 }
 
+// Delete deletes a key / value from the coreds
 func (c *CoreDS) Delete(key interface{}) error {
 	dsKey, err := json.Marshal(key)
 	if err != nil {
@@ -82,6 +87,7 @@ func (c *CoreDS) Delete(key interface{}) error {
 	return c.Storer.Delete(dsKey)
 }
 
+// MakeDatastore creates a datastore type from the core datastore
 func (c *CoreDS) MakeDatastore() *Datastore {
 	return &Datastore{c.Storer}
 }

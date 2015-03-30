@@ -18,7 +18,7 @@ import (
 	"bitbucket.org/tshannon/freehold/user"
 )
 
-type TokenInput struct {
+type tokenInput struct {
 	ID         *string `json:"id,omitempty"`
 	Name       *string `json:"name,omitempty"`
 	Expires    *string `json:"expires,omitempty"`
@@ -28,7 +28,7 @@ type TokenInput struct {
 
 func tokenGet(w http.ResponseWriter, r *http.Request) {
 	//Check for token url parms
-	if isTokenUrl(w, r) {
+	if isTokenURL(w, r) {
 		return
 	}
 
@@ -48,8 +48,8 @@ func tokenGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	input := &TokenInput{}
-	err = parseJson(r, input)
+	input := &tokenInput{}
+	err = parseJSON(r, input)
 	if errHandled(err, w, auth) {
 		return
 	}
@@ -110,8 +110,8 @@ func tokenPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	input := &TokenInput{}
-	err = parseJson(r, input)
+	input := &tokenInput{}
+	err = parseJSON(r, input)
 	if errHandled(err, w, auth) {
 		return
 	}
@@ -153,8 +153,8 @@ func tokenDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	input := &TokenInput{}
-	err = parseJson(r, input)
+	input := &tokenInput{}
+	err = parseJSON(r, input)
 	if errHandled(err, w, auth) {
 		return
 	}
@@ -175,7 +175,7 @@ func tokenDelete(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (ti *TokenInput) makeToken() *token.Token {
+func (ti *tokenInput) makeToken() *token.Token {
 	t := &token.Token{}
 
 	if ti.Name != nil {
@@ -193,7 +193,7 @@ func (ti *TokenInput) makeToken() *token.Token {
 	return t
 }
 
-func isTokenUrl(w http.ResponseWriter, r *http.Request) bool {
+func isTokenURL(w http.ResponseWriter, r *http.Request) bool {
 	u := r.FormValue("user")
 	t := r.FormValue("token")
 
@@ -203,14 +203,14 @@ func isTokenUrl(w http.ResponseWriter, r *http.Request) bool {
 
 	r.SetBasicAuth(u, t)
 
-	resUrl, err := url.Parse(getTokenResource(u, t))
+	resURL, err := url.Parse(getTokenResource(u, t))
 	if err != nil {
 		log.Error(errors.New("Error parsing token resource url: " + err.Error()))
-		resUrl, _ = url.Parse("/")
+		resURL, _ = url.Parse("/")
 	}
 
-	r.URL = resUrl
-	w.Header().Add("Content-disposition", `attachment; filename="`+path.Base(resUrl.Path)+`"`)
+	r.URL = resURL
+	w.Header().Add("Content-disposition", `attachment; filename="`+path.Base(resURL.Path)+`"`)
 
 	handler, _, _ := rootHandler.Handler(r)
 

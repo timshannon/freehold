@@ -125,6 +125,7 @@ func previousAttempts(ipAddress string, requestType string) ([]*requestAttempt, 
 	}
 
 	iter, err := ds.Iter(from, to)
+	defer iter.Close()
 	if err != nil {
 		return nil, err
 	}

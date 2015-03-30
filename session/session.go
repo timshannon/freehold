@@ -25,10 +25,13 @@ import (
 )
 
 const (
-	DS         = "core/session.ds"
+	// DS is the location of the core datastore
+	DS = "core/session.ds"
+	// CookieName is the name of the cookie where the freehold cookie will be
 	CookieName = "freehold_session"
 )
 
+// Session is a freehold session, tracked by a cookie
 type Session struct {
 	key  string     `json:"-"`
 	user *user.User `json:"-"`
@@ -36,11 +39,12 @@ type Session struct {
 	ID        string `json:"id,omitempty"`
 	Expires   string `json:"expires,omitempty"`
 	CSRFToken string `json:"CSRFToken,omitempty"`
-	IpAddress string `json:"ipAddress,omitempty"`
+	IPAddress string `json:"ipAddress,omitempty"`
 	Created   string `json:"created,omitempty"`
 	UserAgent string `json:"userAgent,omitempty"`
 }
 
+// Get retrieves a session based on the cookie in the passed in request
 func Get(r *http.Request) (*Session, error) {
 
 	key := sessionCookieValue(r)
@@ -79,11 +83,13 @@ func get(key string) (*Session, error) {
 	return session, nil
 }
 
+// GetByID retrieves a session by the passed in session id
 func GetByID(id string, user *user.User) (*Session, error) {
 	k := makeKey(user.Username(), id)
 	return get(k)
 }
 
+// All retrieves all sessions for the passed in user
 func All(user *user.User) ([]*Session, error) {
 	if user == nil {
 		return nil, fail.New("Invalid user", nil)
@@ -112,6 +118,7 @@ func sessionCookieValue(r *http.Request) string {
 	return cValue
 }
 
+// New create a new session
 func New(u *user.User, base *Session) (*Session, error) {
 	if u == nil {
 		return nil, fail.New("Invalid authentication", nil)
@@ -149,6 +156,7 @@ func makeKey(username, id string) string {
 	return username + "_" + id
 }
 
+// Key returns the session's key
 func (s *Session) Key() string {
 	return s.key
 }
@@ -160,6 +168,7 @@ func (s *Session) verify() error {
 	return nil
 }
 
+// Cookie creates a cookie based on the given session
 func (s *Session) Cookie(isSSL bool) *http.Cookie {
 	if s.key == "" {
 		return nil
@@ -186,6 +195,7 @@ func id(key string) string {
 	return strings.Split(key, "_")[1]
 }
 
+// IsExpired is whether or not the session is expired
 func (s *Session) IsExpired() bool {
 	if s.Expires == "" {
 		//If expires isn't specified then it's a session cookie
@@ -224,6 +234,7 @@ func (s *Session) createdTime() time.Time {
 	return t
 }
 
+// HandleCSRF tests if the CSRF token is present and valid
 func (s *Session) HandleCSRF(w http.ResponseWriter, r *http.Request) error {
 	if r.Method != "GET" {
 		if s.IsExpired() {
@@ -254,10 +265,13 @@ func (s *Session) getUser() error {
 	s.user = user
 	return nil
 }
+
+// User returns the user for the given session
 func (s *Session) User() *user.User {
 	return s.user
 }
 
+// Expire expires the given session
 func (s *Session) Expire() error {
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
@@ -282,6 +296,7 @@ func userSessions(user string) ([]*Session, error) {
 	}
 
 	iter, err := ds.Iter(from, to)
+	defer iter.Close()
 	if err != nil {
 		return nil, err
 	}
@@ -331,7 +346,7 @@ func enforceSessionLimit(u *user.User) error {
 
 	if over > 0 {
 		//Remove oldest sessions
-		sort.Sort(SessionByCreated(sessions))
+		sort.Sort(ByCreated(sessions))
 
 		toRemove := sessions[:over]
 		for i := range toRemove {
@@ -344,11 +359,12 @@ func enforceSessionLimit(u *user.User) error {
 	return nil
 }
 
-type SessionByCreated []*Session
+// ByCreated is for sorting sessions
+type ByCreated []*Session
 
-func (s SessionByCreated) Len() int           { return len(s) }
-func (s SessionByCreated) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
-func (s SessionByCreated) Less(i, j int) bool { return s[i].createdTime().Before(s[j].createdTime()) }
+func (s ByCreated) Len() int           { return len(s) }
+func (s ByCreated) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+func (s ByCreated) Less(i, j int) bool { return s[i].createdTime().Before(s[j].createdTime()) }
 
 //Returns a random value of the bit length passed in
 func random(bits int) string {

@@ -17,11 +17,14 @@ import (
 )
 
 const (
+	//DS is the location of the user datastore
 	DS = "core/user.ds"
 )
 
-var FailLogon = errors.New("Invalid user and / or password")
+// ErrLogon is when a user fails a logon
+var ErrLogon = errors.New("Invalid user and / or password")
 
+// User is a user in a freehold instance
 type User struct {
 	Name        string `json:"name,omitempty"`
 	Password    string `json:"password,omitempty"`
@@ -34,6 +37,7 @@ type User struct {
 	adminFromDS bool   `json:"-"` //Set to the value retrieved from the DS, used for determine when to log admin changes
 }
 
+// Get retrieves a user
 func Get(username string) (*User, error) {
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
@@ -44,7 +48,7 @@ func Get(username string) (*User, error) {
 
 	err = ds.Get(username, usr)
 	if err == data.ErrNotFound {
-		return nil, fail.NewFromErr(FailLogon, username)
+		return nil, fail.NewFromErr(ErrLogon, username)
 	}
 	if err != nil {
 		return nil, err
@@ -63,6 +67,7 @@ func (u *User) prep(username string) {
 	u.Password = ""
 }
 
+// All returns all the users in a freehold instance
 func All() (map[string]*User, error) {
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
@@ -70,6 +75,7 @@ func All() (map[string]*User, error) {
 	}
 
 	iter, err := ds.Iter(nil, nil)
+	iter.Close()
 	if err != nil {
 		return nil, err
 	}
@@ -100,6 +106,7 @@ func All() (map[string]*User, error) {
 	return users, nil
 }
 
+// New creates a new user
 func New(username string, u *User) error {
 	u.username = username
 
@@ -149,6 +156,7 @@ func (u *User) validate() error {
 	return nil
 }
 
+// Delete deletes a user
 func Delete(username string) error {
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
@@ -162,6 +170,7 @@ func Delete(username string) error {
 	return nil
 }
 
+// Update updates the passed in user
 func (u *User) Update() error {
 	if u.username == "" {
 		return fail.New("Invalid username", u.username)
@@ -183,6 +192,7 @@ func (u *User) Update() error {
 	return nil
 }
 
+// UpdatePassword is called when a user changes their password
 func (u *User) UpdatePassword(password string) error {
 	err := u.setPassword(password)
 	if err != nil {
@@ -215,6 +225,7 @@ func (u *User) setPassword(password string) error {
 	return nil
 }
 
+// Login is when a user attempts to log in
 func (u *User) Login(password string) error {
 	if u.username == "" {
 		return loginFailure(u)
@@ -240,6 +251,7 @@ func (u *User) Login(password string) error {
 	return nil
 }
 
+// Username is the user's username
 func (u *User) Username() string {
 	return u.username
 }
@@ -255,6 +267,6 @@ func loginFailure(u *User) error {
 	}
 
 	u.clearPassword()
-	return fail.NewFromErr(FailLogon, u.username)
+	return fail.NewFromErr(ErrLogon, u.username)
 
 }

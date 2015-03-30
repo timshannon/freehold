@@ -37,7 +37,7 @@ func backupGet(w http.ResponseWriter, r *http.Request) {
 
 	input := &backupInput{}
 
-	err = parseJson(r, input)
+	err = parseJSON(r, input)
 	if errHandled(err, w, auth) {
 		return
 	}
@@ -80,7 +80,7 @@ func backupPost(w http.ResponseWriter, r *http.Request) {
 
 	input := &backupInput{}
 
-	err = parseJson(r, input)
+	err = parseJSON(r, input)
 	if errHandled(err, w, auth) {
 		return
 	}
