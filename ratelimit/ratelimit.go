@@ -131,6 +131,7 @@ func previousAttempts(ipAddress string, requestType string) ([]*requestAttempt, 
 	}
 
 	var attempts []*requestAttempt
+	var cleared []*requestAttempt
 
 	for iter.Next() {
 		a := &requestAttempt{}
@@ -144,14 +145,18 @@ func previousAttempts(ipAddress string, requestType string) ([]*requestAttempt, 
 		}
 
 		if a.cleared() {
-			err = ds.Delete(iter.Key())
-			if err != nil {
-				return nil, err
-			}
+			cleared = append(cleared, a)
 			continue
 		}
 
 		attempts = append(attempts, a)
+	}
+
+	for i := range cleared {
+		err = ds.Delete(cleared[i].key())
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return attempts, nil

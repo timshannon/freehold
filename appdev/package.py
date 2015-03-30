@@ -50,7 +50,7 @@ def minifyFolder(folder):
             
 def minify(filename):
     print "minify file " + filename
-    subprocess.call(["uglifyjs", filename, "-c", "-o", filename])
+    subprocess.call(["uglify", filename, "-c", "-o", filename])
 
 
 

@@ -302,6 +302,7 @@ func userSessions(user string) ([]*Session, error) {
 	}
 
 	var sessions []*Session
+	var expired []*Session
 
 	for iter.Next() {
 		s := &Session{}
@@ -324,13 +325,18 @@ func userSessions(user string) ([]*Session, error) {
 		}
 
 		if s.IsExpired() {
-			err = ds.Delete(iter.Key())
-			if err != nil {
-				return nil, err
-			}
+			expired = append(expired, s)
+
 			continue
 		}
 		sessions = append(sessions, s)
+	}
+
+	for i := range expired {
+		err = ds.Delete(expired[i].key)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return sessions, nil

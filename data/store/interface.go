@@ -4,6 +4,8 @@
 
 package store
 
+import "github.com/boltdb/bolt"
+
 // Storer is the interface that is needed to run a freehold instance an any datastores in it
 type Storer interface {
 	Get(key []byte) ([]byte, error)
@@ -28,8 +30,16 @@ type Iterator interface {
 
 // Create creates a new store file
 func Create(name string) error {
-	_, err := files.open(name)
-	return err
+	db, err := files.open(name)
+	if err != nil {
+		return err
+	}
+
+	return db.Update(func(tx *bolt.Tx) error {
+		_, err := tx.CreateBucketIfNotExists([]byte(name))
+		return err
+	})
+
 }
 
 // Drop deletes a store file

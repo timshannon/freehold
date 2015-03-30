@@ -63,11 +63,13 @@ func NewEntry(Type string, entry string) {
 	}
 
 	err = ds.Put(when+"_"+Type, log)
+
 	if err != nil {
 		syslogError(errors.New("Error can't log entry to freehold instance. Entry: " +
 			entry + " error: " + err.Error()))
 		return
 	}
+
 }
 
 // Get retrieves a list of logs from the datastore

@@ -710,6 +710,7 @@ QUnit.test("Count + Regex", function(assert) {
 QUnit.module("Datastore Iter", {
     beforeEach: function(assert) {
         var done = assert.async();
+        var done2 = assert.async();
         this.ds = {
             name: fh.util.uuid() + ".ds",
         };
@@ -732,6 +733,12 @@ QUnit.module("Datastore Iter", {
                 }
 
                 done();
+// make writers don't block readers, so give ds time to commit
+    // before reading
+    setTimeout(function() {
+		done2();
+            }, 5000);
+
             }.bind(this));
 
     },
