@@ -136,50 +136,15 @@ func Get(u *user.User, id string) (*Token, error) {
 }
 
 func get(u *user.User, id string) (*Token, error) {
-	iter, err := iter(u)
+	tkns, err := all(u)
 	if err != nil {
 		return nil, err
 	}
 
-	for iter.Next() {
-
-		t := &Token{}
-		if iter.Err() != nil {
-			return nil, iter.Err()
+	for i := range tkns {
+		if tkns[i].ID == id {
+			return tkns[i], nil
 		}
-
-		k := ""
-
-		err = json.Unmarshal(iter.Key(), &k)
-		if err != nil {
-			return nil, err
-		}
-		if username(k) != u.Username() {
-			continue
-		}
-
-		err = json.Unmarshal(iter.Value(), t)
-		if err != nil {
-			return nil, err
-		}
-
-		if t.IsExpired() && setting.Bool("RemoveExpiredTokens") {
-			ds, err := data.OpenCoreDS(DS)
-			if err != nil {
-				return nil, err
-			}
-			err = ds.Delete(k)
-			if err != nil {
-				return nil, err
-			}
-			continue
-		}
-
-		t.requester = u
-		if t.ID == id {
-			return t, nil
-		}
-
 	}
 
 	return nil, fail.NewFromErr(data.ErrNotFound, id)
@@ -244,12 +209,25 @@ func iter(u *user.User) (store.Iterator, error) {
 
 // All retrieves all tokens for the user
 func All(u *user.User) ([]*Token, error) {
+	tkns, err := all(u)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range tkns {
+		tkns[i].Token = ""
+	}
+	return tkns, nil
+}
+
+func all(u *user.User) ([]*Token, error) {
 	iter, err := iter(u)
 	if err != nil {
 		return nil, err
 	}
 
 	var tokens []*Token
+	var expired []*Token
 
 	for iter.Next() {
 
@@ -274,22 +252,24 @@ func All(u *user.User) ([]*Token, error) {
 		}
 
 		if t.IsExpired() && setting.Bool("RemoveExpiredTokens") {
-			ds, err := data.OpenCoreDS(DS)
-			if err != nil {
-				return nil, err
-			}
-			err = ds.Delete(k)
-
-			if err != nil {
-				return nil, err
-			}
+			expired = append(expired, t)
 			continue
 		}
 
 		t.requester = u
-		t.Token = ""
 
 		tokens = append(tokens, t)
+	}
+	for i := range expired {
+		ds, err := data.OpenCoreDS(DS)
+		if err != nil {
+			return nil, err
+		}
+		err = ds.Delete(key(u.Username(), expired[i].Token))
+		if err != nil {
+			return nil, err
+		}
+
 	}
 
 	return tokens, nil

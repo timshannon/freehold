@@ -110,14 +110,6 @@ func (o *openedFiles) open(name string) (*DS, error) {
 			return nil, err
 		}
 	}
-	err = db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists([]byte(name))
-		return err
-	})
-
-	if err != nil {
-		return nil, err
-	}
 
 	DS := &DS{
 		DB:       db,
@@ -144,9 +136,7 @@ func (o *openedFiles) waitForInUse(name string) {
 	o.RLock()
 	defer o.RUnlock()
 	if db, ok := o.files[name]; ok {
-		fmt.Println("waiting for in use")
 		db.inUse.Wait()
-		fmt.Println("waiting done")
 	}
 }
 
@@ -212,8 +202,7 @@ func (d *DS) Max() ([]byte, error) {
 
 	var result []byte
 	d.DB.View(func(tx *bolt.Tx) error {
-		c := tx.Bucket([]byte(d.filePath)).Cursor()
-		l, _ := c.Last()
+		l, _ := tx.Bucket([]byte(d.filePath)).Cursor().Last()
 		if l != nil {
 			result = make([]byte, len(l))
 			copy(result, l)
@@ -233,10 +222,10 @@ func (d *DS) Min() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	var result []byte
 	d.DB.View(func(tx *bolt.Tx) error {
-		c := tx.Bucket([]byte(d.filePath)).Cursor()
-		f, _ := c.First()
+		f, _ := tx.Bucket([]byte(d.filePath)).Cursor().First()
 		if f != nil {
 			result = make([]byte, len(f))
 			copy(result, f)
@@ -299,14 +288,12 @@ func (d *DS) Iter(from, to []byte) (Iterator, error) {
 	if err != nil {
 		return nil, err
 	}
-	iter.Cursor = tx.Bucket([]byte(d.filePath)).Cursor()
 
-	if from == nil {
-		from, _ = iter.Cursor.First()
+	b := tx.Bucket([]byte(d.filePath))
+	if b == nil {
+		return nil, fmt.Errorf("Bucket not found for %s", d.filePath)
 	}
-	if to == nil {
-		to, _ = iter.Cursor.Last()
-	}
+	iter.Cursor = b.Cursor()
 
 	if bytes.Compare(from, to) == 1 {
 		iter.reverse = true
@@ -341,8 +328,12 @@ func (i *KvIterator) Next() bool {
 	compare := 0
 
 	if !i.seeked {
+		if i.from == nil {
+			key, value = i.First()
+		} else {
+			key, value = i.Seek(i.from)
+		}
 		i.seeked = true
-		key, value = i.Seek(i.from)
 	} else {
 		if i.reverse {
 			key, value = i.Cursor.Prev()
@@ -354,16 +345,12 @@ func (i *KvIterator) Next() bool {
 	}
 
 	if key == nil {
-		fmt.Println("key nil")
 		return false
 	}
 
-	if bytes.Compare(key, i.to) == compare {
-		fmt.Println("after to")
+	if i.to != nil && bytes.Compare(key, i.to) == compare {
 		return false
 	}
-	fmt.Printf("From: %s To %s\n", i.from, i.to)
-	fmt.Printf("Key: %s Value %s\n", key, value)
 
 	if key != nil {
 		i.key = make([]byte, len(key))
