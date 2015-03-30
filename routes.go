@@ -5,7 +5,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"runtime"
@@ -145,7 +144,7 @@ func (m *methodHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				log.NewEntry("Runtime Error", r.(runtime.Error).Error())
 				halt(r.(runtime.Error).Error())
 			}
-			errHandled(errors.New(fmt.Sprintf("Freehold panicked on %v and has recovered", r)), w, nil)
+			errHandled(fmt.Errorf("Freehold panicked on %v and has recovered", r), w, nil)
 			return
 		}
 	}()

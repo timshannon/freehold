@@ -57,12 +57,12 @@ func sessionPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	baseSession := &session.Session{}
-	err = parseJson(r, baseSession)
+	err = parseJSON(r, baseSession)
 	if errHandled(err, w, auth) {
 		return
 	}
 
-	baseSession.IpAddress = ipAddress(r)
+	baseSession.IPAddress = ipAddress(r)
 	baseSession.UserAgent = r.UserAgent()
 	ses, err := session.New(auth.User, baseSession)
 	if errHandled(err, w, auth) {
@@ -94,7 +94,7 @@ func sessionDelete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	input := &session.Session{}
-	err = parseJson(r, input)
+	err = parseJSON(r, input)
 	if errHandled(err, w, auth) {
 		return
 	}

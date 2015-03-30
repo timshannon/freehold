@@ -50,6 +50,7 @@ func Get(from, to string) ([]*Backup, error) {
 	}
 
 	iter, err := ds.Iter(fromKey, toKey)
+	defer iter.Close()
 	if err != nil {
 		return nil, err
 	}

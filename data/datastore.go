@@ -275,6 +275,7 @@ func (d *Datastore) Iter(iter *Iter) ([]KeyValue, error) {
 	}
 
 	i, err := d.store.Iter(from, to)
+	defer i.Close()
 	if err != nil {
 		return nil, err
 	}

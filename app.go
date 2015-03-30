@@ -16,8 +16,8 @@ import (
 	"bitbucket.org/tshannon/freehold/resource"
 )
 
-type ApplicationInput struct {
-	Id   *string `json:"id,omitempty"`
+type applicationInput struct {
+	ID   *string `json:"id,omitempty"`
 	File *string `json:"file,omitempty"`
 }
 
@@ -32,14 +32,14 @@ func appGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	input := &ApplicationInput{}
-	err = parseJson(r, input)
+	input := &applicationInput{}
+	err = parseJSON(r, input)
 	if errHandled(err, w, auth) {
 		return
 	}
 
-	if input.Id != nil {
-		a, err := app.Get(*input.Id)
+	if input.ID != nil {
+		a, err := app.Get(*input.ID)
 		if errHandled(err, w, auth) {
 			return
 		}
@@ -82,8 +82,8 @@ func appPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	input := &ApplicationInput{}
-	err = parseJson(r, input)
+	input := &applicationInput{}
+	err = parseJSON(r, input)
 	if errHandled(err, w, auth) {
 		return
 	}
@@ -120,8 +120,8 @@ func appPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	input := &ApplicationInput{}
-	err = parseJson(r, input)
+	input := &applicationInput{}
+	err = parseJSON(r, input)
 	if errHandled(err, w, auth) {
 		return
 	}
@@ -154,18 +154,18 @@ func appDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	input := &ApplicationInput{}
-	err = parseJson(r, input)
+	input := &applicationInput{}
+	err = parseJSON(r, input)
 	if errHandled(err, w, auth) {
 		return
 	}
 
-	if input.Id == nil {
+	if input.ID == nil {
 		errHandled(fail.New("JSON request must contain the id property", nil), w, auth)
 		return
 	}
 
-	err = app.Uninstall(*input.Id)
+	err = app.Uninstall(*input.ID)
 	if errHandled(err, w, auth) {
 		return
 	}
@@ -260,8 +260,8 @@ func appAvailablePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	input := &ApplicationInput{}
-	err = parseJson(r, input)
+	input := &applicationInput{}
+	err = parseJSON(r, input)
 	if errHandled(err, w, auth) {
 		return
 	}

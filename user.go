@@ -14,7 +14,7 @@ import (
 	"bitbucket.org/tshannon/freehold/user"
 )
 
-type UserInput struct {
+type userInput struct {
 	User     *string `json:"user,omitempty"`
 	Name     *string `json:"name,omitempty"`
 	Password *string `json:"password,omitempty"`
@@ -35,8 +35,8 @@ func userGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	input := &UserInput{}
-	err = parseJson(r, input)
+	input := &userInput{}
+	err = parseJSON(r, input)
 	if errHandled(err, w, auth) {
 		return
 	}
@@ -89,8 +89,8 @@ func userPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	input := &UserInput{}
-	err = parseJson(r, input)
+	input := &userInput{}
+	err = parseJSON(r, input)
 	if errHandled(err, w, auth) {
 		return
 	}
@@ -122,8 +122,8 @@ func userPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	input := &UserInput{}
-	err = parseJson(r, input)
+	input := &userInput{}
+	err = parseJSON(r, input)
 	if errHandled(err, w, auth) {
 		return
 	}
@@ -145,7 +145,7 @@ func userPut(w http.ResponseWriter, r *http.Request) {
 	}
 
 	usr, err := user.Get(*input.User)
-	if fail.IsEqual(err, user.FailLogon) {
+	if fail.IsEqual(err, user.ErrLogon) {
 		err = fail.New("Invalid user", input)
 	}
 	if errHandled(err, w, auth) {
@@ -203,8 +203,8 @@ func userDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	input := &UserInput{}
-	err = parseJson(r, input)
+	input := &userInput{}
+	err = parseJSON(r, input)
 	if errHandled(err, w, auth) {
 		return
 	}
@@ -236,7 +236,7 @@ func userDelete(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (ui *UserInput) makeUser(curUsr *user.User) *user.User {
+func (ui *userInput) makeUser(curUsr *user.User) *user.User {
 	usr := *curUsr
 
 	if ui.Name != nil {
@@ -258,14 +258,14 @@ func (ui *UserInput) makeUser(curUsr *user.User) *user.User {
 	return &usr
 }
 
-func (ui *UserInput) isPasswordChange() bool {
+func (ui *userInput) isPasswordChange() bool {
 	return ui.Password != nil
 }
 
-func (ui *UserInput) isMakeAdmin() bool {
+func (ui *userInput) isMakeAdmin() bool {
 	return ui.Admin != nil && *ui.Admin
 }
 
-func (ui *UserInput) isRemoveAdmin() bool {
+func (ui *userInput) isRemoveAdmin() bool {
 	return ui.Admin != nil && !*ui.Admin
 }

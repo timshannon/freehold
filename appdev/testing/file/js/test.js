@@ -550,13 +550,17 @@ QUnit.test("Max Key", function(assert) {
             .then();
     }
 
-    ds.max().always(function(result) {
-        assert.ok(
-            (result.status == "success") &&
-            (result.data.key == 99)
-        );
-        done();
-    });
+    // make writers don't block readers, so give ds time to commit
+    // before reading
+    setTimeout(function() {
+        ds.max().always(function(result) {
+            assert.ok(
+                (result.status == "success") &&
+                (result.data.key == 99)
+            );
+            done();
+        });
+    }, 5000);
 
 });
 

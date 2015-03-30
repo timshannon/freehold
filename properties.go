@@ -148,7 +148,7 @@ func propertiesPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = parseJson(r, input)
+	err = parseJSON(r, input)
 	if errHandled(err, w, auth) {
 		return
 	}

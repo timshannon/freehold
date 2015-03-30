@@ -15,19 +15,25 @@ import (
 )
 
 const (
+	// DS is the location of the permissions datastore
 	DS = "core/permission.ds"
 
-	Read  = "r"
+	// Read permission constant
+	Read = "r"
+	// Write permission constant
 	Write = "w"
 
-	INVALID_ID = ""
+	// InvalidID consant for an invalid permission id
+	InvalidID = ""
 )
 
+// Permitter is the interface of methods requried to assign permissions
 type Permitter interface {
 	ID() string
 	Permission() (*Permission, error)
 }
 
+// Permission controls access to a resource in freehold
 type Permission struct {
 	Owner   string `json:"owner,omitempty"`
 	Public  string `json:"public,omitempty"`
@@ -39,7 +45,7 @@ type Permission struct {
 
 //Get the permissions by ID what the ID is will depend on the resource
 func Get(ptr Permitter) (*Permission, error) {
-	if ptr.ID() == INVALID_ID {
+	if ptr.ID() == InvalidID {
 		return nil, errors.New("Invalid resource id")
 	}
 
@@ -73,8 +79,9 @@ func orphanedResource(ptr Permitter) (*Permission, error) {
 	return prm, nil
 }
 
+// Set sets the passed in permissions for the passed in permitter
 func Set(ptr Permitter, permissions *Permission) error {
-	if ptr.ID() == INVALID_ID {
+	if ptr.ID() == InvalidID {
 		return errors.New("Invalid resource id")
 	}
 
@@ -100,8 +107,9 @@ func set(id string, permissions *Permission) error {
 	return nil
 }
 
+// Delete removes the permissions
 func Delete(ptr Permitter) error {
-	if ptr.ID() == INVALID_ID {
+	if ptr.ID() == InvalidID {
 		return errors.New("Invalid resource id")
 	}
 	ds, err := data.OpenCoreDS(DS)
@@ -117,6 +125,7 @@ func Delete(ptr Permitter) error {
 	return nil
 }
 
+// Move moves the permissions from one resource to another
 func Move(from, to Permitter) error {
 	prm, err := Get(from)
 	if err != nil {
@@ -148,7 +157,7 @@ func (p *Permission) validate() error {
 
 	_, err := user.Get(p.Owner)
 	if err != nil {
-		if fail.IsEqual(user.FailLogon, err) {
+		if fail.IsEqual(user.ErrLogon, err) {
 			return fail.New("Set permission failed because owner isn't a valid user.", p)
 		}
 	}
@@ -156,6 +165,7 @@ func (p *Permission) validate() error {
 	return err
 }
 
+// Valid is tests if the permissions string contains valid permissions
 func Valid(permission string) bool {
 	switch permission {
 	case "", Read, Write, Read + Write:
@@ -184,10 +194,12 @@ func (p *Permission) can(permType rune, u *user.User) bool {
 	return strings.ContainsRune(p.Friend, permType)
 }
 
+// CanRead tests if the passed in user can read based on the current permissions
 func (p *Permission) CanRead(u *user.User) bool {
 	return p.can(rune(Read[0]), u)
 }
 
+// CanWrite tests if the passed in user can write based on the current permissions
 func (p *Permission) CanWrite(u *user.User) bool {
 	return p.can(rune(Write[0]), u)
 }

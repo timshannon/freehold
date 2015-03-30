@@ -20,6 +20,7 @@ type Iterator interface {
 	Key() []byte
 	Value() []byte
 	Err() error
+	Close() error
 }
 
 //Replace Create, Open, Close and Drop with any data backend that satisfies store and iterator interface

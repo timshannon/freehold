@@ -21,11 +21,13 @@ import (
 
 // DS is a datstore, holds the pointer to the
 // underlying kv file, and keeps track of
-// when a file timesout and needs to be closed
+// when a file times-out and needs to be closed
+// and when it's in use
 type DS struct {
 	*bolt.DB
 	filePath string
 	timeout  *time.Timer
+	inUse    sync.WaitGroup
 }
 
 type timeoutLock struct {
@@ -103,7 +105,7 @@ func (o *openedFiles) open(name string) (*DS, error) {
 		}
 		//conversion succeded, try openging again
 
-		db, err = bolt.Open(name, 0666, nil)
+		db, err = bolt.Open(name, 0666, &bolt.Options{Timeout: 1 * time.Second})
 		if err != nil {
 			return nil, err
 		}
@@ -123,13 +125,33 @@ func (o *openedFiles) open(name string) (*DS, error) {
 		timeout: time.AfterFunc(Timeout(), func() {
 			o.close(name)
 		}),
+		inUse: sync.WaitGroup{},
 	}
 
 	o.files[name] = DS
 	return DS, nil
 }
 
+func (d *DS) finish() {
+	d.inUse.Done()
+}
+
+func (d *DS) start() {
+	d.inUse.Add(1)
+}
+
+func (o *openedFiles) waitForInUse(name string) {
+	o.RLock()
+	defer o.RUnlock()
+	if db, ok := o.files[name]; ok {
+		fmt.Println("waiting for in use")
+		db.inUse.Wait()
+		fmt.Println("waiting done")
+	}
+}
+
 func (o *openedFiles) close(name string) {
+	o.waitForInUse(name)
 	o.Lock()
 	defer o.Unlock()
 	db, ok := o.files[name]
@@ -145,17 +167,7 @@ func (o *openedFiles) close(name string) {
 }
 
 func (o *openedFiles) drop(name string) error {
-	o.Lock()
-	defer o.Unlock()
-	db, ok := o.files[name]
-	if ok {
-		delete(o.files, name)
-		err := db.Close()
-		if err != nil {
-			return err
-		}
-	}
-	// if db isn't open, then just remove the file
+	o.close(name)
 	return os.Remove(name)
 }
 
@@ -170,21 +182,29 @@ func (d *DS) reset() error {
 
 // Get get's a value from the datastore
 func (d *DS) Get(key []byte) ([]byte, error) {
+	d.start()
+	defer d.finish()
 	err := d.reset()
 	if err != nil {
 		return nil, err
 	}
 	var result []byte
 	d.DB.View(func(tx *bolt.Tx) error {
-		result = tx.Bucket([]byte(d.filePath)).Get(key)
+		v := tx.Bucket([]byte(d.filePath)).Get(key)
+		if v != nil {
+			result = make([]byte, len(v))
+			copy(result, v)
+		}
 		return nil
 	})
-
 	return result, nil
 }
 
 // Max returns the max value in the datastore
 func (d *DS) Max() ([]byte, error) {
+	d.start()
+	defer d.finish()
+
 	err := d.reset()
 	if err != nil {
 		return nil, err
@@ -193,7 +213,11 @@ func (d *DS) Max() ([]byte, error) {
 	var result []byte
 	d.DB.View(func(tx *bolt.Tx) error {
 		c := tx.Bucket([]byte(d.filePath)).Cursor()
-		result, _ = c.Last()
+		l, _ := c.Last()
+		if l != nil {
+			result = make([]byte, len(l))
+			copy(result, l)
+		}
 		return nil
 	})
 
@@ -202,6 +226,9 @@ func (d *DS) Max() ([]byte, error) {
 
 // Min returns the min value in the datastore
 func (d *DS) Min() ([]byte, error) {
+	d.start()
+	defer d.finish()
+
 	err := d.reset()
 	if err != nil {
 		return nil, err
@@ -209,7 +236,11 @@ func (d *DS) Min() ([]byte, error) {
 	var result []byte
 	d.DB.View(func(tx *bolt.Tx) error {
 		c := tx.Bucket([]byte(d.filePath)).Cursor()
-		result, _ = c.First()
+		f, _ := c.First()
+		if f != nil {
+			result = make([]byte, len(f))
+			copy(result, f)
+		}
 		return nil
 	})
 
@@ -218,6 +249,9 @@ func (d *DS) Min() ([]byte, error) {
 
 // Put puts a new value in the datastore
 func (d *DS) Put(key, value []byte) error {
+	d.start()
+	defer d.finish()
+
 	err := d.reset()
 	if err != nil {
 		return err
@@ -231,6 +265,9 @@ func (d *DS) Put(key, value []byte) error {
 
 // Delete deletes a value from the datastore
 func (d *DS) Delete(key []byte) error {
+	d.start()
+	defer d.finish()
+
 	err := d.reset()
 	if err != nil {
 		return err
@@ -244,6 +281,9 @@ func (d *DS) Delete(key []byte) error {
 
 // Iter returns an iteratore for the datastore
 func (d *DS) Iter(from, to []byte) (Iterator, error) {
+	d.start()
+	defer d.finish()
+
 	err := d.reset()
 	if err != nil {
 		return nil, err
@@ -261,10 +301,18 @@ func (d *DS) Iter(from, to []byte) (Iterator, error) {
 	}
 	iter.Cursor = tx.Bucket([]byte(d.filePath)).Cursor()
 
-	if to != nil && bytes.Compare(from, to) == 1 {
+	if from == nil {
+		from, _ = iter.Cursor.First()
+	}
+	if to == nil {
+		to, _ = iter.Cursor.Last()
+	}
+
+	if bytes.Compare(from, to) == 1 {
 		iter.reverse = true
 	}
 
+	d.start()
 	return iter, nil
 }
 
@@ -286,30 +334,46 @@ func (i *KvIterator) Next() bool {
 	err := i.ds.reset()
 	if err != nil {
 		i.err = err
-		i.Cursor.Bucket().Tx().Rollback()
 		return false
 	}
 
 	var key, value []byte
+	compare := 0
 
-	if i.reverse {
-		key, value = i.Cursor.Prev()
+	if !i.seeked {
+		i.seeked = true
+		key, value = i.Seek(i.from)
 	} else {
-		key, value = i.Cursor.Next()
+		if i.reverse {
+			key, value = i.Cursor.Prev()
+			compare = -1
+		} else {
+			key, value = i.Cursor.Next()
+			compare = 1
+		}
 	}
 
 	if key == nil {
-		i.Cursor.Bucket().Tx().Rollback()
+		fmt.Println("key nil")
 		return false
 	}
 
-	if bytes.Compare(key, i.to) == -1 {
-		i.Cursor.Bucket().Tx().Rollback()
+	if bytes.Compare(key, i.to) == compare {
+		fmt.Println("after to")
 		return false
 	}
+	fmt.Printf("From: %s To %s\n", i.from, i.to)
+	fmt.Printf("Key: %s Value %s\n", key, value)
 
-	i.key = key
-	i.value = value
+	if key != nil {
+		i.key = make([]byte, len(key))
+		copy(i.key, key)
+	}
+
+	if value != nil {
+		i.value = make([]byte, len(value))
+		copy(i.value, value)
+	}
 	i.err = err
 
 	return true
@@ -328,6 +392,13 @@ func (i *KvIterator) Value() []byte {
 // Err returns any errors that may have happened during iterating
 func (i *KvIterator) Err() error {
 	return i.err
+}
+
+// Close closes the iterator
+func (i *KvIterator) Close() error {
+	err := i.Cursor.Bucket().Tx().Commit()
+	i.ds.finish()
+	return err
 }
 
 func logError(err error) {
