@@ -40,7 +40,7 @@ func init() {
 		},
 
 		"DatastoreFileTimeout": Setting{
-			Description: "The number of seconds of inactivity is needed for a a datastore file is " +
+			Description: "The number of seconds of inactivity needed before a datastore file is " +
 				"automatically closed. The higher the timeout the more resources needed to hold " +
 				"open more files.  The lower the timeout the more clients will be waiting on " +
 				"locked files to be opened.",
