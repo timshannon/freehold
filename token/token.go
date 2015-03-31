@@ -16,7 +16,6 @@ import (
 	"unicode/utf8"
 
 	"bitbucket.org/tshannon/freehold/data"
-	"bitbucket.org/tshannon/freehold/data/store"
 	"bitbucket.org/tshannon/freehold/fail"
 	"bitbucket.org/tshannon/freehold/log"
 	"bitbucket.org/tshannon/freehold/permission"
@@ -184,7 +183,20 @@ func Login(u *user.User, tkn string) (*Token, error) {
 	return t, nil
 }
 
-func iter(u *user.User) (store.Iterator, error) {
+// All retrieves all tokens for the user
+func All(u *user.User) ([]*Token, error) {
+	tkns, err := all(u)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range tkns {
+		tkns[i].Token = ""
+	}
+	return tkns, nil
+}
+
+func all(u *user.User) ([]*Token, error) {
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
 		return nil, err
@@ -204,33 +216,11 @@ func iter(u *user.User) (store.Iterator, error) {
 	if err != nil {
 		return nil, err
 	}
-	return iter, nil
-}
-
-// All retrieves all tokens for the user
-func All(u *user.User) ([]*Token, error) {
-	tkns, err := all(u)
-	if err != nil {
-		return nil, err
-	}
-
-	for i := range tkns {
-		tkns[i].Token = ""
-	}
-	return tkns, nil
-}
-
-func all(u *user.User) ([]*Token, error) {
-	iter, err := iter(u)
-	if err != nil {
-		return nil, err
-	}
 
 	var tokens []*Token
 	var expired []*Token
 
 	for iter.Next() {
-
 		t := &Token{}
 		if iter.Err() != nil {
 			return nil, iter.Err()
@@ -260,11 +250,8 @@ func all(u *user.User) ([]*Token, error) {
 
 		tokens = append(tokens, t)
 	}
+
 	for i := range expired {
-		ds, err := data.OpenCoreDS(DS)
-		if err != nil {
-			return nil, err
-		}
 		err = ds.Delete(key(u.Username(), expired[i].Token))
 		if err != nil {
 			return nil, err
