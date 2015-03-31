@@ -142,6 +142,9 @@ func (m *methodHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			if _, ok := r.(runtime.Error); ok {
 				//Try to log the error, then halt the instance
 				log.NewEntry("Runtime Error", r.(runtime.Error).Error())
+				buf := make([]byte, 1<<20)
+				fmt.Printf("Runtime Error: %s\n", buf[:runtime.Stack(buf, true)])
+
 				halt(r.(runtime.Error).Error())
 			}
 			errHandled(fmt.Errorf("Freehold panicked on %v and has recovered", r), w, nil)

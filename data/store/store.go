@@ -13,6 +13,7 @@ import (
 	"log"
 	"log/syslog"
 	"os"
+	"runtime"
 	"sync"
 	"time"
 
@@ -28,6 +29,7 @@ type DS struct {
 	filePath string
 	timeout  *time.Timer
 	inUse    sync.WaitGroup
+	t        *time.Timer
 }
 
 type timeoutLock struct {
@@ -126,17 +128,28 @@ func (o *openedFiles) open(name string) (*DS, error) {
 
 func (d *DS) finish() {
 	d.inUse.Done()
+	d.t.Stop()
 }
 
 func (d *DS) start() {
 	d.inUse.Add(1)
+	if d.t != nil {
+		d.t.Stop()
+	}
+	d.t = time.AfterFunc(10*time.Second, func() {
+		fmt.Printf("Open Transactions: %d\n", d.Stats().OpenTxN)
+		buf := make([]byte, 1<<20)
+		fmt.Printf("Timedout: %s\n", buf[:runtime.Stack(buf, true)])
+	})
 }
 
 func (o *openedFiles) waitForInUse(name string) {
 	o.RLock()
 	defer o.RUnlock()
 	if db, ok := o.files[name]; ok {
+		fmt.Println("Wait in use for ", name)
 		db.inUse.Wait()
+		fmt.Println("Done waiting for ", name)
 	}
 }
 
@@ -238,6 +251,7 @@ func (d *DS) Min() ([]byte, error) {
 
 // Put puts a new value in the datastore
 func (d *DS) Put(key, value []byte) error {
+
 	d.start()
 	defer d.finish()
 
@@ -314,6 +328,7 @@ type KvIterator struct {
 	value   []byte
 	err     error
 	seeked  bool
+	t       *time.Timer
 }
 
 // Next gets the next value from the iterator

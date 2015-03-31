@@ -31,7 +31,7 @@ type requestAttempt struct {
 }
 
 func (r *requestAttempt) key() string {
-	return r.Type + "_" + r.IPAddress + "_" + r.When.Format(time.RFC3339)
+	return r.Type + "_" + r.IPAddress + "_" + r.When.Format(time.RFC3339Nano)
 }
 
 // AttemptRequest logs an an attempt request of the passed in type for the passed in IP address
