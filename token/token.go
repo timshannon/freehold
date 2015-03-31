@@ -217,7 +217,7 @@ func all(u *user.User) ([]*Token, error) {
 		return nil, err
 	}
 
-	var tokens []*Token
+	tokens := make([]*Token, 0)
 	var expired []*Token
 
 	for iter.Next() {
