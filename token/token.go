@@ -217,7 +217,7 @@ func all(u *user.User) ([]*Token, error) {
 		return nil, err
 	}
 
-	tokens := make([]*Token, 0)
+	tokens := make([]*Token, 0, 1) // would rather have a empty slice, than a nil json object
 	var expired []*Token
 
 	for iter.Next() {
