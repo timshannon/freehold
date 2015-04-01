@@ -51,16 +51,28 @@ type Auth struct {
 // Checks for basic http authentication where the password is either the user's password
 // or a valid security token, or the user has an valid cookie based session.
 func authenticate(w http.ResponseWriter, r *http.Request) (*Auth, error) {
+	blnSuccess := false
+	defer func() {
+		if !blnSuccess {
+			// if failed login attempt,
+			err := ratelimit.InsertAttempt(ipAddress(r), authRateLimitType, setting.Float("LogonAttemptRateLimit"))
+			if err != nil {
+				log.Error(err)
+			}
+		}
+	}()
+
+	err := ratelimit.OverLimit(ipAddress(r), authRateLimitType, setting.Float("LogonAttemptRateLimit"))
+	if err != nil {
+		return nil, err
+	}
+
 	a := &Auth{
 		AuthType: authTypeNone,
 	}
 
 	headerInfo := r.Header.Get("Authorization")
 	if headerInfo != "" {
-		err := ratelimit.AttemptRequest(ipAddress(r), authRateLimitType, setting.Float("LogonAttemptRateLimit"))
-		if err != nil {
-			return nil, err
-		}
 
 		authInfo := strings.TrimPrefix(headerInfo, "Basic ")
 		if len(authInfo) == len(headerInfo) {
@@ -81,6 +93,7 @@ func authenticate(w http.ResponseWriter, r *http.Request) (*Auth, error) {
 
 		if u == "" {
 			//public access
+			blnSuccess = true
 			return a, a.attemptWrite(r)
 		}
 
@@ -105,7 +118,7 @@ func authenticate(w http.ResponseWriter, r *http.Request) (*Auth, error) {
 			if a.User != nil {
 				a.Username = t.User().Username()
 			}
-			err = ratelimit.ResetLimit(ipAddress(r), authRateLimitType)
+			blnSuccess = true
 			return a, nil
 		}
 
@@ -117,10 +130,7 @@ func authenticate(w http.ResponseWriter, r *http.Request) (*Auth, error) {
 		a.User = user
 		a.Username = user.Username()
 
-		err = ratelimit.ResetLimit(ipAddress(r), authRateLimitType)
-		if err != nil {
-			return nil, err
-		}
+		blnSuccess = true
 		return a, nil
 	}
 
@@ -133,6 +143,7 @@ func authenticate(w http.ResponseWriter, r *http.Request) (*Auth, error) {
 	if ses == nil || ses.IsExpired() {
 		//No valid session cookie
 		// public access
+		blnSuccess = true
 		return a, a.attemptWrite(r)
 	}
 
@@ -146,6 +157,7 @@ func authenticate(w http.ResponseWriter, r *http.Request) (*Auth, error) {
 	a.User = ses.User()
 	a.Username = ses.User().Username()
 	a.Session = ses
+	blnSuccess = true
 	return a, nil
 }
 
