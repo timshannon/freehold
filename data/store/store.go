@@ -147,9 +147,7 @@ func (o *openedFiles) waitForInUse(name string) {
 	o.RLock()
 	defer o.RUnlock()
 	if db, ok := o.files[name]; ok {
-		fmt.Println("Wait in use for ", name)
 		db.inUse.Wait()
-		fmt.Println("Done waiting for ", name)
 	}
 }
 
