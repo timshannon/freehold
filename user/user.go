@@ -75,7 +75,7 @@ func All() (map[string]*User, error) {
 	}
 
 	iter, err := ds.Iter(nil, nil)
-	iter.Close()
+	defer iter.Close()
 	if err != nil {
 		return nil, err
 	}
