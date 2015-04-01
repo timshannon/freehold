@@ -398,8 +398,9 @@ func (i *KvIterator) Err() error {
 
 // Close closes the iterator
 func (i *KvIterator) Close() error {
-	err := i.Cursor.Bucket().Tx().Commit()
+	err := i.Cursor.Bucket().Tx().Rollback()
 	i.ds.finish()
+
 	return err
 }
 
