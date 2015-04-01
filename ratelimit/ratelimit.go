@@ -36,7 +36,17 @@ func (r *requestAttempt) key() string {
 
 // AttemptRequest logs an an attempt request of the passed in type for the passed in IP address
 // Will return ErrExceededLimit if the  passed in limit per minute is reached
+// It is a combination of InsertAttempt and OverLimit
 func AttemptRequest(ipAddress string, requestType string, limit float64) error {
+	err := InsertAttempt(ipAddress, requestType, limit)
+	if err != nil {
+		return err
+	}
+	return OverLimit(ipAddress, requestType, limit)
+}
+
+// InsertAttempt will insert a new request attempt into the datastore
+func InsertAttempt(ipAddress string, requestType string, limit float64) error {
 	if limit <= 0 {
 		return nil
 	}
@@ -52,11 +62,11 @@ func AttemptRequest(ipAddress string, requestType string, limit float64) error {
 		return err
 	}
 
-	err = ds.Put(attempt.key(), attempt)
-	if err != nil {
-		return err
-	}
+	return ds.Put(attempt.key(), attempt)
+}
 
+// OverLimit tests if the ipAddress is over the passed in limit for the given request type
+func OverLimit(ipAddress string, requestType string, limit float64) error {
 	pAttempt, err := previousAttempts(ipAddress, requestType)
 	if err != nil {
 		return err
@@ -65,17 +75,21 @@ func AttemptRequest(ipAddress string, requestType string, limit float64) error {
 	//If limit is fractional, then the timerange is expand to encompass limit * 1 minute
 	// so if more than one entry is found within that expanded range, then they are over
 	// the fraction limit
-	if (limit >= 1 && float64(len(pAttempt)) > attempt.limit) ||
+	if (limit >= 1 && float64(len(pAttempt)) > limit) ||
 		(limit < 1 && len(pAttempt) > 1) {
 		if setting.Float("RateLimitWait") > 0 {
 			time.Sleep(time.Duration(setting.Float("RateLimitWait")) * time.Second)
 		}
 
-		return fail.NewFromErr(ErrExceededLimit, attempt)
+		return fail.NewFromErr(ErrExceededLimit, &requestAttempt{
+			IPAddress: ipAddress,
+			When:      time.Now(),
+			Type:      requestType,
+			limit:     limit,
+		})
 	}
 
 	return nil
-
 }
 
 // ResetLimit resets the number of requests for a request type and IP address
