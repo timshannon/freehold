@@ -285,7 +285,7 @@ but the rate limiting should prevent spammy users.
 
 Public read access can read keys but not download the entire datastore file.
 
-Currently the datastore is backed by https://github.com/cznic/kv, but other storage backends could potentially be used as well.
+Currently the datastore is backed by [BoltDB](https://github.com/boltdb/bolt), but other storage backends could potentially be used as well.
 
 **POST**
 
