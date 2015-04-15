@@ -895,7 +895,7 @@ Response (201):
 
 **PUT**
 
-*Update an existing user* - Admin can update all users, users can update themselves only
+*Update an existing user* - Admin can update all users, users can update themselves only. User password changes cannot be made from security Tokens.
 ```
 PUT /v1/auth/user
 {
