@@ -178,6 +178,10 @@ func userPut(w http.ResponseWriter, r *http.Request) {
 
 	newUsr := input.makeUser(usr)
 	if input.isPasswordChange() {
+		if auth.AuthType == authTypeToken {
+			errHandled(fail.New("User Passwords cannot be set from a security Token.", nil), w, auth)
+			return
+		}
 		err = newUsr.UpdatePassword(*input.Password)
 		if errHandled(err, w, auth) {
 			return
