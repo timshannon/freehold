@@ -338,7 +338,6 @@ func (i *KvIterator) Next() bool {
 	}
 
 	var key, value []byte
-	compare := 0
 
 	if !i.seeked {
 		if i.from == nil {
@@ -347,7 +346,12 @@ func (i *KvIterator) Next() bool {
 			key, value = i.Seek(i.from)
 		}
 		i.seeked = true
+		if key == nil {
+			return false
+		}
+
 	} else {
+		compare := 0
 		if i.reverse {
 			key, value = i.Cursor.Prev()
 			compare = -1
@@ -355,16 +359,16 @@ func (i *KvIterator) Next() bool {
 			key, value = i.Cursor.Next()
 			compare = 1
 		}
-	}
 
-	if key == nil {
-		return false
-	}
+		if key == nil {
+			return false
+		}
 
-	if i.to != nil && bytes.Compare(key, i.to) == compare {
-		return false
-	}
+		if i.to != nil && bytes.Compare(key, i.to) == compare {
+			return false
+		}
 
+	}
 	if key != nil {
 		i.key = make([]byte, len(key))
 		copy(i.key, key)
