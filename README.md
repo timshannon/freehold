@@ -107,3 +107,6 @@ In those cases, it's usually not a good idea to be storing your username and pas
 
 
 See the built-in documentation (/docs) for more detailed information.
+
+
+See CHANGELOG.md for recent changes.
