@@ -457,5 +457,5 @@ func writeMarkdown(file *os.File, res *resource.File) ([]byte, error) {
 		"' rel='stylesheet' media='screen'></head><body>"
 	htmlFooter := "</body></html>"
 
-	return []byte(commonmark.Md2Html(htmlHeader + string(buf) + htmlFooter)), nil
+	return []byte(commonmark.Md2Html(htmlHeader+string(buf)+htmlFooter, 0)), nil
 }
