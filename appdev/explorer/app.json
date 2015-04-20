@@ -1,7 +1,7 @@
 {
 	"id": "explorer",
 	"name": "Explorer",
-	"version": "0.2",
+	"version": "0.3",
 	"description": "File and Datastore Explorer.  Manages files and datastores, including uploads and permissions.",
 	"author": "Tim Shannon - shannon.timothy@gmail.com",
 	"root": "/explorer/v1/file/index.html",

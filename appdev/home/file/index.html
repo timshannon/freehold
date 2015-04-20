@@ -139,7 +139,7 @@
 	</div>
 </div>
 
-<!-- {{>appPanel}} -->
+{{#partial appPanel}} 
 <span class="app-panel{{^installed}} available{{/}}">
 	<a class="star-btn" href="javascript:void(0)" on-click="star" title="Star App">
 		<span class="glyphicon glyphicon-star star {{#starred}}starred{{/starred}}"></span>
@@ -173,9 +173,9 @@
 		</div>
 	</div>	
 </span>
-<!-- {{/appPanel}} -->
+{{/partial}}
 
-<!-- {{>appTile}} -->
+{{#partial appTile}}
 	{{#if !installed}}
 		<span class="thumbnail app-tile">
 			<img class="app-icon img-responsive" src="/home/v1/file/image/available_icon.png">	
@@ -191,7 +191,7 @@
 			<h3><div class="app-id">{{name}}</div></h3>
 		</a>
 	{{/if}}
-<!-- {{/appTile}} -->
+{{/partial}}
 
 </script>
 <!--end templates-->

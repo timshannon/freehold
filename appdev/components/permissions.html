@@ -67,14 +67,9 @@
 <script>
 	component.exports = {
 		data: {
-			permissions: {
-				owner: "",
-				public: "",
-				private: "",
-				friend: "",
-			},
 			showOwner: true,
 			readOnly: false,
+			permissions: null,
 		},
 
 		onrender: function() {

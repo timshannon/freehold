@@ -20,15 +20,15 @@
 </div>
 
 
-<!-- {{>child}} -->
+{{#partial child}}
 <ul>
 	{{#.children:i}}
 		{{>value}}
 	{{/.children}}
 </ul>
-<!-- {{/child}} -->
+{{/partial}}
 
-<!-- {{>value}} -->
+{{#partial value}}
 {{#if !../../collapsed}}
 {{#this}}
 <li>
@@ -56,7 +56,7 @@
 </li>
 {{/this}}
 {{/if}}
-<!-- {{/value}} -->
+{{/partial}}
 
 
 <style>
@@ -86,12 +86,12 @@
 <script>
 component.exports = {
 	data: {
-		root: {},
-		object: {},
 		startCollapsed: false,
 	},
 	onrender: function() {
 		var r = this;
+		r.set("root", {});
+		r.set("object", {});
 
 		this.on({
 			"collapse": function(event) {
