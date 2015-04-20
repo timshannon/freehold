@@ -17,6 +17,7 @@ import (
 	"bitbucket.org/tshannon/config"
 	"bitbucket.org/tshannon/freehold/cert"
 	"bitbucket.org/tshannon/freehold/log"
+	"bitbucket.org/tshannon/freehold/setting"
 	"bitbucket.org/tshannon/freehold/user"
 )
 
@@ -82,6 +83,8 @@ func main() {
 	}
 
 	firstRun = !fileExists(user.DS)
+
+	setting.InitSettings() // must happen after datadir is set
 
 	if flagAdmin != "" {
 		if flagAdminPass == "" {
