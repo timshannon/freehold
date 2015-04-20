@@ -1,0 +1,10 @@
+.*\.swp$
+freehold
+.*\.cert$
+.*\.key$
+.*\.pem$
+settings.json
+^core$
+^application$
+^datastore$
+^file$

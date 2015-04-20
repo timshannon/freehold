@@ -1,0 +1,97 @@
+.app-tile {
+	position: relative;
+	width: 148px;
+	height: 148px;
+	margin-top: 10px;
+	margin-right: 10px;
+	margin-bottom: 10px;
+	display: inline-block;
+}
+
+.app-icon {
+	position: relative;
+	min-height: 64px;
+	min-width: 64px;
+	max-height: 128px;
+	max-width: 128px;
+}
+
+.app-id {
+	position: absolute;
+	bottom: 5px;
+	left: 0;
+	width: 100%;
+	display: inline;
+	padding: 0.2em 0.6em 0.3em;
+	font-size: 75%;
+	font-weight: 700;
+	line-height: 1;
+	color: #FFF;
+	text-align: center;
+	vertical-align: baseline;
+	background-color:rgba(0, 0, 0, 0.5)
+}
+
+.star {
+	font-size: 1.3em;
+}
+
+.star:hover {
+	font-size: 1.35em;
+}
+
+
+.starred {
+	color: gold;
+	font-size: 1.35em;
+}
+
+
+.footer {
+	width: 100%;
+	padding: 30px;
+}
+
+#filterText {
+	margin-top: 10px
+}
+
+.app-panel {
+	position: relative;
+	width: 450px;
+	padding-left: 10px;
+	padding-right: 10px;
+	margin-right: 10px;
+	margin-top: 10px;
+
+	display: inline-block;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+
+}
+
+
+.app-panel.available {
+	background-color: #f5f5f5;
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.05);
+}
+
+.app-description {
+	min-height: 102px;
+	margin-top: 10px;
+	padding: 5px;
+}
+
+.admin-btns {
+	border-top: 1px solid #e5e5e5;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	min-height: 51px
+}
+
+.star-btn {
+	position: absolute;
+	right: 0;
+	padding: 5px;
+	z-index: 50;
+}

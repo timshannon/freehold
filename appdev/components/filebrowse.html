@@ -1,0 +1,256 @@
+<div class="filebrowse">
+<div class="row">
+	<div class="col-sm-12 root">
+		<div class="btn-group btn-group-sm" role="group">
+			<button type="button" class="btn btn-sm btn-default" on-click="openParent" tile="Up to parent">
+				<span class="icon glyphicon glyphicon-circle-arrow-up"></span>  {{.currentFolder.parent.name}}
+			</button>
+			<button type="button" class="btn btn-sm btn-primary active" style="cursor: default;">
+				<span class="glyphicon glyphicon-folder-open"></span><span class="rootName">  {{.currentFolder.name}}</span>
+			</button>
+		</div>
+
+	</div>
+</div>
+<div class="row">
+	<div class="col-sm-12">
+	{{#if error}}
+		<div class="bg-danger">
+			{{error}}
+		</div>
+	{{else}}
+		<ul class="files">
+		{{#files:i}}
+			{{#if !.hide}}
+				{{#if .isDir}}
+				<li class="file">
+					<a href="javascript:void(0)" on-click="openFolder">
+						<span class="icon glyphicon glyphicon-folder-close"></span> {{.name}}
+					</a>
+				</li>
+				{{else}}
+				<li class="file {{#if selected.url === .url}}selected{{/if}}" on-click="selectFile">
+					<span class="icon glyphicon glyphicon-file"></span> {{.name}}
+				</li>
+				{{/if}}
+			{{/if}}
+		{{/files}}
+		</ul>
+	{{/if}}
+	</div>
+</div>
+<div class="row">
+	<div class="col-sm-12">
+		<div class="input-group">
+			<span class="input-group-addon" id="fileName">File Name</span>
+			<input type="text" class="form-control" placeholder="{{filenamePlaceholder}}" 
+				value="{{filename}}" aria-describedby="fileName">
+		</div>
+	</div>
+</div>
+</div>
+
+<style>
+	.rootName {
+		margin-left: 5px;
+		font-weight:bold;
+	}
+
+	.files {
+		cursor: default;
+		overflow-x: auto;
+		max-height: 50vh;
+		min-height: 200px;
+		margin-top: 15px;
+		border-top: 1px solid #E5E5E5;
+	}
+
+	.file {
+		padding: 5px;
+	}
+
+	.file:hover {
+		background-color: #f5f5f5;
+		border: 0px solid transparent;
+		border-radius: 4px;
+		padding: 5px;
+	}
+
+	.file.selected, .file.selected:hover {
+		border-color: #ccc;
+		border-radius: 4px;
+		font-weight:bold;
+		background-color: #D9EDF7;
+	}
+
+	a:hover, a:focus {
+		text-decoration: none;	
+		color: #333;
+	}
+
+	a {
+		color: #333;
+	}
+	ul {
+		list-style: none;
+	}
+
+	li {
+		margin-left: -22px;
+	}
+
+	.icon {
+		color: #555;
+	}
+</style>
+
+<script>
+component.exports = {
+	data: {
+		rootDir: null,
+		filterRegex: "",
+		fileExists: false,
+	},
+	onrender: function() {
+		var r = this;
+
+		if (!r.get("rootDir")) {
+			setRoot();
+		} else {
+			loadDir(r.get("rootDir"));
+		}
+
+		r.on({
+			"openParent": function(event) {
+				loadDir(r.get("currentFolder.parent.url"));
+			},
+			"openFolder": function(event) {
+				loadDir(event.context.url);
+			},
+			"selectFile": function(event) {
+				r.set("selected", event.context);
+				r.set("filename", event.context.name);
+			},
+		});
+
+		r.observe({
+			"filename": function(newValue, oldValue, keypath) {
+				if (newValue) {
+					r.set("fileExists", false);
+					var files = r.get("files");
+					for(var i = 0; i < files.length; i++) {
+						if (newValue === files[i].name) {
+							r.set("fileExists", true);
+							return;
+						}
+					}
+				}	
+			},
+
+		});
+
+		function loadDir(url) {
+			setCurrent(url);
+
+			fh.properties.get(url)
+				.done(function(result) {
+					var regEx;
+					var files = result.data;
+					try {
+						regEx = new RegExp(r.get("filterRegex"), "i");
+					} catch (e) {
+						console.log("invalid regxex: " + e.message);
+						regEx = new RegExp("", "i");
+					}
+
+					sort(files);
+
+					for(var i = 0; i < files.length; i++) {
+						if(!files[i].isDir && !regEx.exec(files[i].name)) {
+							files[i].hide = true;
+						} else {
+							files[i].hide = false;
+						}
+					}
+
+					r.set("files", files);	
+				})
+				.fail(function(result) {
+					loadDir(r.get("currentFolder.parent.url"));
+				});
+		}
+
+		function setRoot() {
+			var userFolder = fh.util.urlJoin("/v1/file/", fh.auth.user, "/");
+
+			fh.properties.get(userFolder)
+				.fail(function() {
+					r.set("rootDir", "/v1/file/");
+					loadDir(r.get("rootDir"));
+				})
+				.done(function() {
+					//folder exists
+					r.set("rootDir", userFolder);
+					loadDir(r.get("rootDir"));
+				});
+    }
+
+		function setCurrent(url) {
+			//trim trailing slash
+			r.set("currentFolder.url", url);
+
+			if (url.lastIndexOf("/") === url.length - 1) {
+					url = url.slice(0, url.length - 1);
+			}
+
+			if (url == "/v1/file") {
+				r.set("currentFolder.name", "file");
+				r.set("currentFolder.parent.url", "/v1/file/");
+				r.set("currentFolder.parent.name", ".");
+
+				return
+			}
+			if (url == "/v1/datastore") {
+				r.set("currentFolder.name", "datastore");
+				r.set("currentFolder.parent.url", "/v1/datastore/");
+				r.set("currentFolder.parent.name", ".");
+
+				return
+			}
+
+			url = url.split("/");	
+			r.set("currentFolder.name", url.pop());
+			var parentUrl = url.join("/")+"/";
+			r.set("currentFolder.parent.url", parentUrl);
+			r.set("currentFolder.parent.name", url.pop());
+		}
+
+
+		function sort(files) {
+			if (!files) {
+					return;
+			}
+
+			files.sort(function(a, b) {
+				if (a.isDir && !b.isDir) {
+						return -1;
+				}
+
+				if (b.isDir && !a.isDir) {
+						return 1;
+				}
+
+				if (a.name < b.name) {
+					return -1;
+				}
+				if (a.name > b.name) {
+					return 1;
+				}
+				return 0;
+			});
+    }
+
+
+	}, //on render
+};
+</script>

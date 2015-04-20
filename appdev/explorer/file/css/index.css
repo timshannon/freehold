@@ -1,0 +1,377 @@
+html, body {
+	height: 100%;
+	width: 100%;
+}
+
+#pageContainer {
+	width: 100%;
+	padding-right: 15px;
+	padding-left: 15px;
+	margin-top: -20px;
+	height:calc(100% - 51px); 
+}
+
+a:focus {
+	outline: none;
+}
+
+.page-nav {
+	border-bottom: 1px solid #ccc;
+	padding-top: 15px;
+	padding-bottom: 15px;
+	background-color: #f8f8f8;
+
+
+}
+
+.file-nav {
+	height:calc(100% - 65px); 
+}
+
+#sidebar {
+	border-right: 1px solid #ccc;
+	height: 100%;
+}
+
+
+@media (min-width: 768px) {
+	#sidebar {
+		overflow-x: auto;
+	}
+	.file-area {
+		overflow-x: auto;
+	}
+}
+
+#explorer {
+	height: 100%;
+	padding-right: 0px;
+}
+
+.file-area {
+	height: 100%;
+	padding-right: 15px;
+}
+
+
+.trees {
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
+#rootNav {
+/*
+	this is a hacky work around so I can have drop
+	down menus and not have breadcrumbs go multi-line
+	If I limit breadcrumbs with an overflow in folderNav,
+	I can't use the drop down menu.  I don't like this.
+	I need to find somethinger better.
+	Possible alternative would be to handle in JS and
+	provide a drop down menu of all hidden breadcumbs
+	when the breadcumbs get too long, but that doesn't
+	solve the issue of long folder names causing it to 
+	overrun.
+*/
+	background: #f8f8f8;
+	z-index: 10;
+}
+
+#folderNav {
+	/*overflow: hidden;*/
+}
+
+.breadcrumb {
+	background-color: transparent;
+	font-size: 1.3em;
+	margin-bottom: 0px;
+	padding: 0px;
+
+	white-space: nowrap;
+	float: right;
+}
+
+.breadcrumb>.active {
+	font-weight: bold;	
+	padding: 4px;
+}
+
+.breadcrumb>li>a, .breadcrumb-menu, .breadcrumb-menu>a {
+	color: #777;
+	padding: 4px;
+	text-decoration: none;	
+
+
+}
+
+.breadcrumb>li>a:hover, .breadcrumb-menu:hover {
+	text-decoration: none;	
+	background-color: #e7e7e7;
+}
+
+.breadcrumb-menu.open {
+	background-color: #e7e7e7;
+}
+
+.breadcrumb-menu>.dropdown-menu {
+	margin-top: 0;
+	border-top-left-radius: 0;
+	border-top-right-radius: 0;
+}
+
+.file-tile {
+	position: relative;
+	width: 128px;
+	height: 128px;
+	margin-top: 10px;
+	margin-right: 10px;
+	display: inline-block;
+	border: 3px solid transparent;
+	border-radius: 4px;
+
+}
+
+.file-tile:hover, .file-tile:focus {
+	background-color: #f5f5f5;
+	border: 3px solid #ccc;
+	border-radius: 4px;
+	text-decoration: none;	
+}
+
+
+.grid-icon {
+	position: relative;
+	margin-left: auto;
+	margin-right: auto;
+	text-align: center;
+	top: 10px;
+	display: block;
+	color: #333;
+}
+
+.filename {
+	position: absolute;
+	bottom: 5px;
+	left: 0;
+	width: 100%;
+	display: inline;
+	padding: 0.2em 0.6em 0.3em;
+	font-weight: 700;
+	line-height: 1;
+	color: #FFF;
+	text-align: center;
+	vertical-align: baseline;
+	background-color:rgba(0, 0, 0, 0.5);
+
+	overflow: hidden;
+	text-overflow: ellipsis;
+	word-wrap: break-word;
+	white-space: nowrap;
+}
+
+.filename:hover {
+	overflow: visible;
+	text-overflow: auto;
+	white-space: normal;
+}
+
+.btn-file-grid {
+	position: absolute;
+	z-index: 100;
+	right: 0px;
+	padding: 5px;
+	width: 30px;
+	height: 30px;
+
+	color: #999;
+}
+
+.btn-file-grid:hover {
+	color: #222;
+}
+
+.star {
+	font-size: 1.3em;
+	margin-top: 10px;
+}
+
+.starred {
+	color: gold;
+	font-size: 1.35em;
+}
+
+.table a {
+	color: #333;
+}
+.table a:hover, .table a:focus {
+	text-decoration: none;
+}
+
+.overlay {
+	position: fixed;
+	z-index: 10000;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	opacity: 0.7;
+	background-color: #777;
+}
+
+.loading {
+	position: fixed;
+	z-index: 10005;
+	top: 100px;
+	left: 50%;
+	margin-left: -20%;
+	width: 40%;	
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	padding: 15px;
+	background-color: #e7e7e7;
+}
+
+.loading>.progress {
+	margin-bottom: 0px;
+}
+
+/*fix for firefox - wrap was causing icons to drop to next line*/
+.dropdown-menu-right > li > a {
+	white-space: normal;
+}
+
+
+.hidden-sidebar {
+	position: absolute;
+	width: 15px;
+	padding: 0px;
+	overflow-x: hidden;
+	/*Hidden sidebar grows past 100% ? I don't know why this is, but this fixes it
+  	I should probabaly figure this out someday*/
+	max-height:calc(100% - 116px); 
+}
+
+.sidebar-hide-btn {
+	position: absolute;
+	right: 0px;
+	color: #333;
+	height: 100%;
+	z-index: 100;
+}
+
+.sidebar-hide-btn:hover {
+	background-color: #f5f5f5;	
+}
+
+.sidebar-hide-btn>span {
+	top: 50%;
+}
+
+@media (min-width: 768px) {
+	.property-form {
+		margin-bottom: 0px;
+	}
+
+	.property-icon {
+		margin-left: 15px;
+	}
+
+}
+
+.btn-property-rename {
+	max-width: 100%;
+	overflow: hidden;
+}
+
+
+#currentFileUrl {
+	word-wrap: break-word;
+}
+
+.folder-nav-btns {
+	position: absolute;
+	right: 15px;
+} 
+
+.property-content {
+	margin-top: 15px;
+	margin-bottom: 15px;
+}
+
+.upload-list {
+	position: fixed;
+	width: 500px;
+	bottom: 20px;
+	right: 20px;
+	z-index: 500;
+}
+
+.upload-list>.modal-body>.row {
+	height: 30px;
+}
+
+.upload-progress {
+	margin-bottom: 10px;
+}
+
+.upload-filename {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	padding-right: 0px;
+}
+
+.upload-error {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.drop-over, .drop-over:focus, .table > tbody > tr > td.drop-over {
+	border: 3px solid #337ab7;
+	background: #d9edf7;
+}
+
+.table > tbody > tr > td.drop-over {
+	padding: 5px 3px 4px 3px;
+}
+
+
+.ui-selecting, .ui-selecting:hover, .ui-selecting:focus,
+.ui-selected, .ui-selected:hover, .ui-selected:focus,
+.table-hover > tbody > tr.ui-selected:hover > td {
+	background: #d9edf7;
+}
+
+.file-alert-container {
+	position: fixed;
+	z-index: 10000;
+	margin: 0 auto;
+	width: 100%;
+	top: 0;
+	left: 0;
+}
+
+.file-alert {
+	width: 355px;
+	display: table;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 20px;
+}
+
+.file-alert-btn {
+	width: 300px;
+	overflow: visible;
+	text-overflow: auto;
+	white-space: normal;
+}
+
+.file-alert-option {
+	margin-top: 10px;
+	max-width: 100%;
+}
+
+.search-spinner {
+	margin-left: -15px;
+}
+
