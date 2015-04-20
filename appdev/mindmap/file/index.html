@@ -168,7 +168,7 @@
 
 <colorpicker showPalette="true" value="{{nodeColor}}"></colorpicker>
 
-<!-- {{>cmEdit}} -->
+{{#partial cmEdit}}
 <div class="cm-editor">
  <!-- Nav tabs -->
   <ul id="cmEditorTabs" class="nav nav-tabs" role="tablist">
@@ -201,8 +201,7 @@
 		</div>
   </div>
 </div>
-
-<!-- {{/cmEdit}} -->
+{{/partial}}
 
 <div id="contextMenu">
 <ul class="dropdown-menu" role="menu">

@@ -19,7 +19,6 @@ component.exports = {
 			filter: "*",
 			delay: 0,
 			cancel: null,
-			selected: [],
 	},
 	noCssTransform: true,
 	decorators: {
@@ -64,6 +63,7 @@ component.exports = {
 	onrender: function() {
 		var r = this;
 		
+		r.set("selected",[]),
 		r.on({
 			"reset": function() {
 				$(".ui-selected").each(function() {

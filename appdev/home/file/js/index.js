@@ -106,7 +106,7 @@ $(document).ready(function() {
                 .done(function() {
                     refreshApps();
                 })
-                .fail(function() {
+                .fail(function(result) {
                     error(result);
                 });
         },

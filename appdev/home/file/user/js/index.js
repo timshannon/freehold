@@ -11,7 +11,9 @@ $(document).ready(function() {
     var rMain = new Ractive({
         el: "main",
         template: "#tMain",
-        data: {}
+        data: {
+            "tokenName": "",
+        }
     });
 
     var nav = rMain.findComponent("navbar");
