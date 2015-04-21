@@ -94,8 +94,8 @@ func (o *openedFiles) open(name string) (*DS, error) {
 
 	o.Lock()
 	defer o.Unlock()
-	
-	db, err := bolt.Open(name, 0666, nil)
+
+	db, err := bolt.Open(name, 0666, &bolt.Options{Timeout: 30 * time.Second})
 	if err != nil {
 		//try convert
 		cErr := convert(name)
@@ -105,7 +105,7 @@ func (o *openedFiles) open(name string) (*DS, error) {
 		}
 		//conversion succeded, try openging again
 
-		db, err = bolt.Open(name, 0666, &bolt.Options{Timeout: 1 * time.Second})
+		db, err = bolt.Open(name, 0666, &bolt.Options{Timeout: 30 * time.Second})
 		if err != nil {
 			return nil, err
 		}
@@ -246,7 +246,6 @@ func (d *DS) Min() ([]byte, error) {
 
 // Put puts a new value in the datastore
 func (d *DS) Put(key, value []byte) error {
-
 	d.start()
 	defer d.finish()
 

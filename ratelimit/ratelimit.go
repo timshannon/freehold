@@ -139,8 +139,8 @@ func previousAttempts(ipAddress string, requestType string) ([]*requestAttempt, 
 	}
 
 	iter, err := ds.Iter(from, to)
-	defer iter.Close()
 	if err != nil {
+		iter.Close()
 		return nil, err
 	}
 
@@ -150,11 +150,13 @@ func previousAttempts(ipAddress string, requestType string) ([]*requestAttempt, 
 	for iter.Next() {
 		a := &requestAttempt{}
 		if iter.Err() != nil {
+			iter.Close()
 			return nil, iter.Err()
 		}
 
 		err = json.Unmarshal(iter.Value(), a)
 		if err != nil {
+			iter.Close()
 			return nil, err
 		}
 
@@ -164,6 +166,10 @@ func previousAttempts(ipAddress string, requestType string) ([]*requestAttempt, 
 		}
 
 		attempts = append(attempts, a)
+	}
+	err = iter.Close()
+	if err != nil {
+		return nil, err
 	}
 
 	for i := range cleared {
