@@ -84,7 +84,6 @@ func main() {
 
 	firstRun = !fileExists(user.DS)
 
-
 	if flagAdmin != "" {
 		if flagAdminPass == "" {
 			halt("You must specify admin and adminPass")
