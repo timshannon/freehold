@@ -84,7 +84,6 @@ func main() {
 
 	firstRun = !fileExists(user.DS)
 
-	setting.InitSettings() // must happen after datadir is set
 
 	if flagAdmin != "" {
 		if flagAdminPass == "" {
@@ -123,6 +122,8 @@ func main() {
 		}
 
 	}
+
+	setting.InitSettings() // must happen after datadir is set
 
 	tlsCFG := &tls.Config{MinVersion: minTLSVersion}
 	server := &http.Server{

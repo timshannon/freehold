@@ -94,7 +94,7 @@ func (o *openedFiles) open(name string) (*DS, error) {
 
 	o.Lock()
 	defer o.Unlock()
-
+	
 	db, err := bolt.Open(name, 0666, nil)
 	if err != nil {
 		//try convert
@@ -109,6 +109,14 @@ func (o *openedFiles) open(name string) (*DS, error) {
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	err = db.Update(func(tx *bolt.Tx) error {
+		_, err = tx.CreateBucketIfNotExists([]byte(name))
+		return err
+	})
+	if err != nil {
+		return nil, err
 	}
 
 	DS := &DS{
