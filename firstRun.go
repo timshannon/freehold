@@ -5,7 +5,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"path"
 
@@ -49,19 +48,16 @@ func makeFirstAdmin(username, password string) error {
 		Password: password,
 		Admin:    true,
 	}
-	fmt.Println("before user")
 	err = user.New(username, admin)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("before setup core")
 	err = setupCore(username)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("before setup home")
 	err = setupHome(username)
 	if err != nil {
 		return err
@@ -85,6 +81,14 @@ func setupCore(owner string) error {
 		Friend:  permission.Read,
 		Private: permission.Read + permission.Write,
 	})
+}
+
+func resetCorePermissions() error {
+	p, err := permission.Get(&app.Resource{"application/core/file/public.html"})
+	if err != nil {
+		return err
+	}
+	return setupCore(p.Owner)
 }
 
 func recurseSetPermissionOnFolder(filePath string, prm *permission.Permission) error {

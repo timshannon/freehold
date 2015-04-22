@@ -24,6 +24,7 @@ import (
 const (
 	defaultCertFile = "cert.pem"
 	defaultKeyFile  = "key.pem"
+	freeholdVersion = "0.2"
 )
 
 var flagSelfSign = false
@@ -123,6 +124,18 @@ func main() {
 	}
 
 	setting.InitSettings() // must happen after datadir is set
+
+	if cfg.String("version", "") != freeholdVersion {
+		err = resetCorePermissions()
+		if err != nil {
+			halt("Error resetting core file permissions: " + err.Error())
+		}
+		cfg.SetValue("version", freeholdVersion)
+		err = cfg.Write()
+		if err != nil {
+			halt("Error writting settings file: " + err.Error())
+		}
+	}
 
 	tlsCFG := &tls.Config{MinVersion: minTLSVersion}
 	server := &http.Server{
