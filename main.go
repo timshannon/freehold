@@ -126,9 +126,11 @@ func main() {
 	setting.InitSettings() // must happen after datadir is set
 
 	if cfg.String("version", "") != freeholdVersion {
-		err = resetCorePermissions()
-		if err != nil {
-			halt("Error resetting core file permissions: " + err.Error())
+		if !firstRun {
+			err = resetCorePermissions()
+			if err != nil {
+				halt("Error resetting core file permissions: " + err.Error())
+			}
 		}
 		cfg.SetValue("version", freeholdVersion)
 		err = cfg.Write()
