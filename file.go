@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -391,7 +390,7 @@ func serveResource(w http.ResponseWriter, r *http.Request, res *resource.File, a
 }
 
 func isIndex(filename string) bool {
-	return strings.ToLower(strings.TrimRight(filepath.Base(filename), filepath.Ext(filename))) == "index"
+	return strings.ToLower(strings.TrimRight(path.Base(filename), path.Ext(filename))) == "index"
 }
 
 func serveFile(w http.ResponseWriter, r *http.Request, res *resource.File, auth *Auth) {
@@ -448,9 +447,9 @@ func writeMarkdown(file *os.File, res *resource.File) ([]byte, error) {
 		return nil, err
 	}
 
-	title := strings.TrimSuffix(filepath.Base(file.Name()), filepath.Ext(file.Name()))
+	title := strings.TrimSuffix(path.Base(file.Name()), path.Ext(file.Name()))
 	if isIndex(title) {
-		title = filepath.Base(res.Parent().Name())
+		title = path.Base(res.Parent().Name())
 	}
 
 	htmlHeader := "<html><head><title>" + title + "</title><link href='" + setting.String("MarkdownCSSFile") +

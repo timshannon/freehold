@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
-	"path"
+	"path/filepath"
 
 	"bitbucket.org/tshannon/freehold/data/store"
 )
@@ -27,9 +27,9 @@ type CoreDS struct {
 // OpenCoreDS opens a Core datastore
 func OpenCoreDS(filename string) (*CoreDS, error) {
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
-		err := os.MkdirAll(path.Dir(filename), 0777)
+		err := os.MkdirAll(filepath.Dir(filename), 0777)
 		if err != nil {
-			return nil, errors.New("Error creating core datastore folder at: " + path.Dir(filename) + ":" + err.Error())
+			return nil, errors.New("Error creating core datastore folder at: " + filepath.Dir(filename) + ":" + err.Error())
 		}
 		err = store.Create(filename)
 		if err != nil {

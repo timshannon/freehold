@@ -7,7 +7,6 @@ package main
 import (
 	"net/http"
 	"path"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -107,7 +106,7 @@ func backupPost(w http.ResponseWriter, r *http.Request) {
 	if res.IsDir() {
 		res = resource.NewFile(path.Join(res.URL(), "freehold_backup-"+time.Now().Format(time.RFC3339)+".zip"))
 	}
-	if strings.ToLower(filepath.Ext(res.Name())) != ".zip" {
+	if strings.ToLower(path.Ext(res.Name())) != ".zip" {
 		res = resource.NewFile(res.URL() + ".zip")
 	}
 

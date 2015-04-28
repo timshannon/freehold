@@ -9,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"log/syslog"
 	"time"
 
 	"bytes"
@@ -49,7 +48,7 @@ type Iter struct {
 func NewEntry(Type string, entry string) {
 	ds, err := data.OpenCoreDS(DS)
 	if err != nil {
-		syslogError(errors.New("Error can't log entry to freehold instance. Entry: " +
+		SyslogError(errors.New("Error can't log entry to freehold instance. Entry: " +
 			entry + " error: " + err.Error()))
 		return
 
@@ -65,7 +64,7 @@ func NewEntry(Type string, entry string) {
 	err = ds.Put(when+"_"+Type, log)
 
 	if err != nil {
-		syslogError(errors.New("Error can't log entry to freehold instance. Entry: " +
+		SyslogError(errors.New("Error can't log entry to freehold instance. Entry: " +
 			entry + " error: " + err.Error()))
 		return
 	}
@@ -172,7 +171,7 @@ func Error(err error) {
 		return
 	}
 	if setting.Bool("LogErrorsToSyslog") {
-		syslogError(err)
+		SyslogError(err)
 	}
 	NewEntry("error", err.Error())
 }
@@ -196,15 +195,6 @@ func Fail(err *fail.Fail, who string) {
 	entry += fmt.Sprintf("Message: %s  Data: %s", err.Message, data)
 
 	NewEntry("failure", entry)
-}
-
-func syslogError(err error) {
-	lWriter, lerr := syslog.New(syslog.LOG_ERR, "freehold")
-	if lerr != nil {
-		log.Fatal("Error writing to syslog: %v", err)
-	}
-
-	lWriter.Err(err.Error())
 }
 
 type fhLogWriter struct{}

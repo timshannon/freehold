@@ -6,7 +6,7 @@ package main
 
 import (
 	"os"
-	"path"
+	"path/filepath"
 
 	"bitbucket.org/tshannon/freehold/app"
 	"bitbucket.org/tshannon/freehold/fail"
@@ -75,7 +75,7 @@ func setupHome(owner string) error {
 // setupCore sets the initial starting permissions for all necessary core resources
 func setupCore(owner string) error {
 	//core files
-	return recurseSetPermissionOnFolder("application/core/file/", &permission.Permission{
+	return recurseSetPermissionOnFolder(filepath.ToSlash("application/core/file/"), &permission.Permission{
 		Owner:   owner,
 		Public:  permission.Read,
 		Friend:  permission.Read,
@@ -84,7 +84,7 @@ func setupCore(owner string) error {
 }
 
 func resetCorePermissions() error {
-	p, err := permission.Get(&app.Resource{"application/core/file/public.html"})
+	p, err := permission.Get(&app.Resource{filepath.ToSlash("application/core/file/public.html")})
 	if err != nil {
 		return err
 	}
@@ -110,7 +110,7 @@ func recurseSetPermissionOnFolder(filePath string, prm *permission.Permission) e
 	}
 
 	for i := range files {
-		child := path.Join(filePath, files[i].Name())
+		child := filepath.Join(filePath, files[i].Name())
 		if files[i].IsDir() {
 			err = recurseSetPermissionOnFolder(child, prm)
 			if err != nil {
