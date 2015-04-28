@@ -10,8 +10,6 @@ package store
 import (
 	"bytes"
 	"fmt"
-	"log"
-	"log/syslog"
 	"os"
 	"sync"
 	"time"
@@ -158,7 +156,7 @@ func (o *openedFiles) close(name string) {
 		err := db.Close()
 
 		if err != nil {
-			logError(err)
+			fmt.Fprintln(os.Stderr, err)
 		}
 
 	}
@@ -400,12 +398,4 @@ func (i *KvIterator) Close() error {
 	i.ds.finish()
 
 	return err
-}
-
-func logError(err error) {
-	lWriter, err := syslog.New(syslog.LOG_ERR, "freehold")
-	if err != nil {
-		log.Fatal("Error writing to syslog: %v", err)
-	}
-	lWriter.Err(err.Error())
 }

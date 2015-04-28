@@ -221,7 +221,7 @@ func (r *File) Permission() (*permission.Permission, error) {
 		return r.permission, nil
 	}
 
-	if isDocPath(r.filepath) {
+	if isDocPath(r.URL()) {
 		r.permission = permission.Doc()
 		return r.permission, nil
 	}

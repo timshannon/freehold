@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"io"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -91,7 +92,7 @@ func New(backupFile *resource.File, datastores []string, who string) error {
 		}
 	} else {
 		for i := range datastores {
-			if strings.ToLower(filepath.Ext(datastores[i])) != ".ds" {
+			if strings.ToLower(path.Ext(datastores[i])) != ".ds" {
 				datastores[i] += ".ds"
 			}
 		}
