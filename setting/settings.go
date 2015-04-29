@@ -15,7 +15,7 @@ import (
 )
 
 // DS is the location of the sessions datastore file
-const DS = "core/settings.ds"
+const DS = "core" + string(os.PathSeparator) + "settings.ds"
 
 // Setting is a value that changes how the freehold instance operates
 type Setting struct {

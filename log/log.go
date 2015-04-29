@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"bytes"
@@ -20,7 +21,7 @@ import (
 
 const (
 	// DS is the location of the log dS file
-	DS = "core/log.ds"
+	DS = "core" + string(os.PathSeparator) + "log.ds"
 	// AuthType is the log type for authentication log entries
 	AuthType = "authentication"
 	// Four04Type is the log type for 404 errors
