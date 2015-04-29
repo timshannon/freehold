@@ -27,7 +27,7 @@ import (
 
 const (
 	//DS is the location of the application ds file
-	DS = "core/app.ds"
+	DS = "core" + string(os.PathSeparator) + "app.ds"
 )
 
 var (

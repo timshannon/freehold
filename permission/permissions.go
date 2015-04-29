@@ -6,6 +6,7 @@ package permission
 
 import (
 	"errors"
+	"os"
 	"strings"
 
 	"bitbucket.org/tshannon/freehold/data"
@@ -16,7 +17,7 @@ import (
 
 const (
 	// DS is the location of the permissions datastore
-	DS = "core/permission.ds"
+	DS = "core" + string(os.PathSeparator) + "permission.ds"
 
 	// Read permission constant
 	Read = "r"

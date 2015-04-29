@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"math"
+	"os"
 	"time"
 
 	"bitbucket.org/tshannon/freehold/data"
@@ -16,7 +17,7 @@ import (
 )
 
 //DS is the path to the ratelimit core ds file
-const DS = "core/ratelimit.ds"
+const DS = "core" + string(os.PathSeparator) + "ratelimit.ds"
 const baseRange = 1 * time.Minute
 
 // FailExceedLimit is the type of error thrown when a rate limit has been reached

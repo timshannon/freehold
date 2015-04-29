@@ -7,6 +7,7 @@ package user
 import (
 	"encoding/json"
 	"errors"
+	"os"
 
 	"bitbucket.org/tshannon/freehold/data"
 	"bitbucket.org/tshannon/freehold/fail"
@@ -18,7 +19,7 @@ import (
 
 const (
 	//DS is the location of the user datastore
-	DS = "core/user.ds"
+	DS = "core" + string(os.PathSeparator) + "user.ds"
 )
 
 // ErrLogon is when a user fails a logon

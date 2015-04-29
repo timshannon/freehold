@@ -20,17 +20,17 @@ import (
 
 const (
 	// DocsDir is the path to the Documentation directory
-	DocsDir = "docs/"
+	DocsDir = "docs"
 	// FileDir is the path to where files will be stored
-	FileDir = "file/"
+	FileDir = "file"
 	// CoreDSDir is where the core datastore files will be stored
-	CoreDSDir = "core/"
+	CoreDSDir = "core"
 	// DatastoreDir is where user datastore files will be stored
-	DatastoreDir = "datastore/"
+	DatastoreDir = "datastore"
 	// AvailableAppDir is where new available application zip files are stored
-	AvailableAppDir = AppDir + "available/"
+	AvailableAppDir = AppDir + string(os.PathSeparator) + "available"
 	// AppDir are were installed applications are installed to
-	AppDir = "application/"
+	AppDir = "application"
 )
 
 const modifiedHeader = "Fh-Modified"

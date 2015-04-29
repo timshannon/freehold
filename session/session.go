@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"sort"
 	"strings"
 	"time"
@@ -26,7 +27,8 @@ import (
 
 const (
 	// DS is the location of the core datastore
-	DS = "core/session.ds"
+	DS = "core" + string(os.PathSeparator) + "session.ds"
+
 	// CookieName is the name of the cookie where the freehold cookie will be
 	CookieName = "freehold_session"
 )

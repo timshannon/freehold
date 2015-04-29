@@ -20,7 +20,7 @@ import (
 )
 
 // DS is the path to the backup datastore file
-const DS = resource.CoreDSDir + "backup.ds"
+const DS = resource.CoreDSDir + string(os.PathSeparator) + "backup.ds"
 
 // Backup is the structure of a freehold backup
 type Backup struct {

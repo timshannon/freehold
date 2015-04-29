@@ -56,7 +56,7 @@ $(document).ready(function() {
                         refreshApps();
                     })
                     .fail(function(xhr) {
-                        error(result);
+                        error(xhr);
                     });
             }
         });
