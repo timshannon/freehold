@@ -95,13 +95,15 @@ func (o *openedFiles) open(name string) (*DS, error) {
 
 	db, err := bolt.Open(name, 0666, &bolt.Options{Timeout: 30 * time.Second})
 	if err != nil {
-		//try convert
-		cErr := convert(name)
-		if cErr != nil {
-			return nil, fmt.Errorf("Could not open datastore file %s.  Error: %s."+
-				"Tried conversion but that failed as well: %s", name, err, cErr)
+		if err != bolt.ErrTimeout {
+			//try convert
+			cErr := convert(name)
+			if cErr != nil {
+				return nil, fmt.Errorf("Could not open datastore file %s.  Error: %s."+
+					"Tried conversion but that failed as well: %s", name, err, cErr)
+			}
+			//conversion succeded, try openging again
 		}
-		//conversion succeded, try openging again
 
 		db, err = bolt.Open(name, 0666, &bolt.Options{Timeout: 30 * time.Second})
 		if err != nil {
