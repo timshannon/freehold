@@ -106,14 +106,14 @@ $(document).ready(function() {
 
     });
 
-fh.application.installed()
-            .done(function(result) {
-                rUsers.set("apps", result.data);
-            })
-            .fail(function(result) {
-                result = result.responseJSON;
-                setError(result.message);
-            });
+    fh.application.installed()
+        .done(function(result) {
+            rUsers.set("apps", result.data);
+        })
+        .fail(function(result) {
+            result = result.responseJSON;
+            setError(result.message);
+        });
 
 
 
@@ -572,7 +572,7 @@ fh.application.installed()
                 setError(result.message);
             });
 
-        
+
     }
 
     function filterSettings() {
@@ -688,33 +688,32 @@ fh.application.installed()
     }
 
     function loadBackups() {
-        var from = new Date(rBackups.get("from"));
-        fh.backup.get(from.toJSON())
-            .done(function(result) {
-                var backups = result.data;
-                if (!backups) {
-                    return;
-                }
-                for (var i = 0; i < backups.length; i++) {
-                    backups[i].when = new Date(backups[i].when).toLocaleString();
-                    backups[i].fileName = backups[i].file.split("/").pop();
-                }
-                backups.sort(function(a, b) {
-                    if (a.when > b.when) {
-                        return -1;
+        var from = $("#backupFrom").datepicker("getDate");
+        if (from) {
+            fh.backup.get(from.toJSON())
+                .done(function(result) {
+                    var backups = result.data || [];
+                    for (var i = 0; i < backups.length; i++) {
+                        backups[i].when = new Date(backups[i].when).toLocaleString();
+                        backups[i].fileName = backups[i].file.split("/").pop();
                     }
-                    if (a.when < b.when) {
-                        return 1;
-                    }
-                    return 0;
-                });
+                    backups.sort(function(a, b) {
+                        if (a.when > b.when) {
+                            return -1;
+                        }
+                        if (a.when < b.when) {
+                            return 1;
+                        }
+                        return 0;
+                    });
 
-                rBackups.set("backups", backups);
-            })
-            .fail(function(result) {
-                result = result.responseJSON;
-                setError(result.message);
-            });
+                    rBackups.set("backups", backups);
+                })
+                .fail(function(result) {
+                    result = result.responseJSON;
+                    setError(result.message);
+                });
+        }
     }
 
     function setError(error) {
