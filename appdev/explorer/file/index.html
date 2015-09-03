@@ -349,10 +349,12 @@
 				{{/apps}}
 			</ul>
 		</div>
+		{{#if currentFolder.droppable}}
 		<fileinput multiple="true">
 			<button type="button" class="btn btn-success pull-right">
 			<span class="glyphicon glyphicon-upload"></span> Upload Files</button>
 		</fileinput>
+		{{/if}}
 	</div>
 	<div id="folderNav" class="col-sm-7">
 		{{#if currentKeypath !== "stars" && !searchMode}}
@@ -490,7 +492,7 @@
 	</div> <!-- sidebar -->
 
 	<div id="explorer" class="{{#if hideSidebar}}col-sm-12{{else}}col-sm-9{{/if}}">
-	{{#if currentKeypath !== "stars"}}
+	{{#if currentKeypath !== "stars" && currentFolder.droppable}}
 		<dropzone useParent="true"></dropzone>
 	{{/if}}
 	{{#loading}}
