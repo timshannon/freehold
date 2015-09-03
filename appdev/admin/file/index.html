@@ -178,7 +178,7 @@
 	{{/if}}
 	</div>
 	<div class="col-sm-6">
-		{{#if mode=="add"}}
+		{{#if mode=="add" || !current.hasFolder}}
 			<div class="checkbox">
 				<label>
 					<input type="checkbox" checked="{{current.userFolder}}"> Create User Folder?

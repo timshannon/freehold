@@ -212,10 +212,11 @@ $(document).ready(function() {
             rUsers.set("changePassword", false);
 
             var current = rUsers.get(event.keypath);
-            current.user = event.index.i;
+current.user = event.index.i;
 
             rUsers.set("current", current);
             rUsers.set("errors", null);
+			currentHasFolder();
 
             $("#userModal").modal();
         },
@@ -256,13 +257,16 @@ $(document).ready(function() {
                     result = result.responseJSON;
                     rUsers.set("errors.save", result.message);
                 });
+            if (!current.hasFolder && current.userFolder) {
+                createUserFolder(current.user);
+            }
         },
 
         "changePassword": function(event) {
             rUsers.set("changePassword", true);
         },
         "delete": function(event) {
-            fh.user.delete(event.context.current.user)
+            fh.user.delete(rUsers.get("current.user"))
                 .done(function() {
                     $("#userModal").modal("toggle");
                     loadUsers();
@@ -659,6 +663,18 @@ $(document).ready(function() {
 
         rUsers.set("errors.password2", null);
         return true;
+
+    }
+
+    function currentHasFolder() {
+        var newUrl = fh.util.urlJoin("/v1/file/", rUsers.get("current.user"));
+        fh.properties.get(newUrl)
+            .done(function() {
+                rUsers.set("current.hasFolder", true);
+            })
+            .fail(function() {
+                rUsers.set("current.hasFolder", false);
+            });
 
     }
 
