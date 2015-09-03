@@ -893,6 +893,20 @@ $(document).ready(function() {
         if (!file.isFilePath) {
             return false;
         }
+
+		if(file.permissions) {
+        var prm = file.permissions;
+        if (prm.owner === fh.auth.user && prm.private) {
+            if (prm.private.indexOf("w") == -1) {
+                return false;
+            }
+        }
+
+        if (prm.friend && prm.friend.indexOf("w") == -1) {
+            return false;
+        }
+	}
+
         return true;
     }
 
@@ -1290,7 +1304,7 @@ $(document).ready(function() {
 
         for (var i = 0; i < files.length; i++) {
             if (files[i].name === file.name) {
-                rMain.splice("currentFolder.children",i, 1);
+                rMain.splice("currentFolder.children", i, 1);
             }
         }
 

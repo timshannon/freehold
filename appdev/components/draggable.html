@@ -112,7 +112,10 @@ component.exports = {
 			});
 			return {
 				teardown: function () {
-					$(node).draggable("destroy");
+					if($(node).draggable("instance")) {
+						$(node).draggable("destroy");
+					}
+
 				}
 			};
 		},

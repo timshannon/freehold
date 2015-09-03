@@ -41,7 +41,9 @@ component.exports = {
 			});
 			return {
 				teardown: function () {
-					$(node).droppable("destroy");
+					if($(node).droppable("instance")) {
+						$(node).droppable("destroy");
+					}
 				}
 			};
 		},
