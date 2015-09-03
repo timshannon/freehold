@@ -6,6 +6,7 @@
 
 		<link href="/core/v1/file/css/freehold.css" rel="stylesheet" media="screen">
 		<link href="/home/v1/file/user/css/index.css" rel="stylesheet" media="screen">
+		<link rel="shortcut icon" href="/core/v1/file/images/favicon.ico">
 	</head>
 <body>
 <main>
@@ -228,7 +229,7 @@
 </div>
 
 
-<!-- {{>tokenStep1}} -->
+{{#partial tokenStep1}}
 <form class="form-horizontal" role="form">
 	<div class="form-group {{#errors.name}}has-error has-feedback{{/errors.name}}" title="{{errors.name}}">
 		<label for="tokenName" class="col-sm-3 control-label">Name</label>
@@ -257,10 +258,9 @@
 		<span class="glyphicon glyphicon-chevron-right"></span></button>
 
 </div>
+{{/partial}} 
 
-<!-- {{/tokenStep1}} -->
-
-<!-- {{>tokenStep2}} -->
+{{#partial tokenStep2}}
 <div class="row">
 	<div class="col-sm-12">
 		<strong>Do you want the token to grant access to:</strong>
@@ -313,10 +313,9 @@
 	{{/if}}
 
 </div>
+{{/partial}}
 
-<!-- {{/tokenStep2}} -->
-
-<!-- {{>tokenStep3}} -->
+{{#partial tokenStep3}}
 <form class="form-horizontal" role="form">
 
 {{#if .type === "file"}}
@@ -373,10 +372,9 @@
 		<span class="glyphicon glyphicon-chevron-left"></span> Previous</button>
 	<button type="button" class="btn btn-success" on-click="generateToken">Generate Token</button>
 </div>
+{{/partial}}
 
-<!-- {{/tokenStep3}} -->
-
-<!-- {{>tokenResult}} -->
+{{#partial tokenResult}}
 <input type="text" id="tokenSelect" class="form-control input-lg" value="{{.token}}" readonly>
 <p>
 This unique token will <em>not</em> be retrievable after you close this window.
@@ -391,8 +389,7 @@ Be sure to copy it to where you need to before continuing.
 <div class="modal-footer">
 	<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 </div>
-
-<!-- {{/tokenResult}} -->
+{{/partial}}
 
 
 </script>

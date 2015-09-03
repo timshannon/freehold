@@ -6,6 +6,7 @@
 		<link href="/core/v1/file/css/freehold.css" rel="stylesheet" media="screen"> 
 		<link href="/core/v1/file/css/font-awesome.min.css" rel="stylesheet" media="screen"> 
 		<link href="/explorer/v1/file/css/index.css" rel="stylesheet" media="screen"> 
+		<link rel="shortcut icon" href="/core/v1/file/images/favicon.ico">
 	</head>
 <body>
 <div id="nb"></div>
@@ -600,7 +601,7 @@
 	</div>	<!-- explorer -->
 </div> 
 
-<!-- {{>draggable}} -->
+{{#partial draggable}}
 {{#if .exDraggable && currentKeypath !== 'stars'}}
 	<draggable useParent="true" helper="nametag" zIndex="1000" 	dragData="{{ inSelection ? selection : .}}" 
 		name="{{ inSelection && selection.length > 1 ? 'multiple files' : name}}" 
@@ -609,16 +610,16 @@
 		containment="window" appendTo="body">
 	</draggable>
 {{/if}}
-<!-- {{/draggable}} -->
+{{/partial}}
 
-<!-- {{>droppable}} -->
+{{#partial droppable}}
 {{#if .droppable && currentKeypath !== 'stars' && !.inSelection}}
 	<droppable useParent="true" hoverClass="drop-over" dropData="{{.}}" greedy="true" tolerance="pointer" addClasses="false">
 	</droppable>
 {{/if}}
-<!-- {{/droppable}} -->
+{{/partial}}
 
-<!-- {{>fileTile}} -->
+{{#partial fileTile}}
 {{#if .isDir}}
 	<a href="javascript:void(0)" on-click="explorerSelect" class="file-tile {{#if .selectable}}selectable{{/if}}"
 		 onmousedown="return false" data-select="{{i}}">
@@ -658,7 +659,7 @@
 
 	{{/if}}
 {{/if}}
-<!-- {{/fileTile}} -->
+{{/partial}}
 
 {{#uploads}}
 <div class="upload-list modal-content" intro="slide" outro="slide">

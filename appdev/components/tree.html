@@ -8,7 +8,7 @@
 			<droppable useParent="true" hoverClass="drop-over" tolerance="pointer" dropData="{{.}}"></droppable>	
 		{{/if}}
 
-		{{#tree.hasChildren(this)}}
+		{{#hasChildren(this)}}
 			<a href="javascript:void(0)" on-click="open">
 				<span class="glyphicon glyphicon-{{#if .open}}minus{{else}}plus{{/if}}"></span>
 			</a>
@@ -23,15 +23,15 @@
 		{{#if .canSelect}}
 			<a href="javascript:void(0)"  on-click="select">{{.name}}</a>
 		{{else}}
-			 {{#tree.hasChildren(this)}}
+			 {{#hasChildren(this)}}
 				<a href="javascript:void(0)"  on-click="open">{{.name}}</a>
 			{{/tree}}
-			{{^tree.hasChildren(this)}}
+			{{^hasChildren(this)}}
 				{{.name}}
 			{{/tree}}
 		{{/if}}
 	</div>  
-		{{#tree.hasChildren(this)}} 
+		{{#hasChildren(this)}} 
 			{{#if .open}}
 				{{>children}}
 			{{/if}}
@@ -39,7 +39,7 @@
 	{{/root}}
 </div>
 
-<!-- {{>children}} -->
+{{#partial children}}
 <ul>
   {{#.children}}
 		{{^.hide}}
@@ -47,9 +47,9 @@
 		{{/.hide}}
   {{/children}}
 </ul>
-<!-- {{/children}} -->
+{{/partial}}
 
-<!-- {{>child}} -->
+{{#partial child}}
 <li>
 	<div class="{{#if selectKeypath == @keypath}}selected{{/if}} child" {{^.draggable}}onmousedown="return false"{{/}}>
 		{{#if .draggable}}
@@ -59,7 +59,7 @@
 			<droppable useParent="true" hoverClass="drop-over" tolerance="pointer" dropData="{{.}}"></droppable>	
 		{{/if}}
 
-		{{#tree.hasChildren(this)}}
+		{{#hasChildren(this)}}
 			<a href="javascript:void(0)" on-click="open">
 				<span class="glyphicon glyphicon-{{#if .open}}minus{{else}}plus{{/if}}"></span>
 			</a>
@@ -73,21 +73,21 @@
 		{{#if .canSelect}}
 			<a href="javascript:void(0)"  on-click="select">{{.name}}</a>
 		{{else}}
-			{{#tree.hasChildren(this)}}
+			{{#hasChildren(this)}}
 				<a href="javascript:void(0)"  on-click="open">{{.name}}</a>
 			{{/tree}}
-			{{^tree.hasChildren(this)}}
+			{{^hasChildren(this)}}
 				{{.name}}
 			{{/tree}}
 		{{/if}}
 	</div>
-	{{#tree.hasChildren(this)}} 
+	{{#hasChildren(this)}} 
 		{{#if .open}}
 			{{>children}}
 		{{/if}}
 	{{/this}}
 </li>
-<!-- {{/child}} -->
+{{/partial}}
 
 <style>
 	.child.selected, .child.selected:hover {
@@ -151,10 +151,8 @@
 <script>
 component.exports = {
 	data: {
-		tree: {
-			hasChildren: function(child) {
-				return (typeof child.children !== "undefined" && child.children.length >= 0);
-			},
+		hasChildren: function(child) {
+			return (child && typeof child.children !== "undefined" && child.children.length >= 0);
 		},
 	},
 	onrender: function() {

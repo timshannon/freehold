@@ -56,7 +56,7 @@ $(document).ready(function() {
                         refreshApps();
                     })
                     .fail(function(xhr) {
-                        error(result);
+                        error(xhr);
                     });
             }
         });
@@ -106,7 +106,7 @@ $(document).ready(function() {
                 .done(function() {
                     refreshApps();
                 })
-                .fail(function() {
+                .fail(function(result) {
                     error(result);
                 });
         },

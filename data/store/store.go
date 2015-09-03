@@ -10,10 +10,7 @@ package store
 import (
 	"bytes"
 	"fmt"
-	"log"
-	"log/syslog"
 	"os"
-	"runtime"
 	"sync"
 	"time"
 
@@ -29,7 +26,6 @@ type DS struct {
 	filePath string
 	timeout  *time.Timer
 	inUse    sync.WaitGroup
-	t        *time.Timer
 }
 
 type timeoutLock struct {
@@ -97,20 +93,30 @@ func (o *openedFiles) open(name string) (*DS, error) {
 	o.Lock()
 	defer o.Unlock()
 
-	db, err := bolt.Open(name, 0666, nil)
+	db, err := bolt.Open(name, 0666, &bolt.Options{Timeout: 30 * time.Second})
 	if err != nil {
-		//try convert
-		cErr := convert(name)
-		if cErr != nil {
-			return nil, fmt.Errorf("Could not open datastore file %s.  Error: %s."+
-				"Tried conversion but that failed as well: %s", name, err, cErr)
+		if err != bolt.ErrTimeout {
+			//try convert
+			cErr := convert(name)
+			if cErr != nil {
+				return nil, fmt.Errorf("Could not open datastore file %s.  Error: %s."+
+					"Tried conversion but that failed as well: %s", name, err, cErr)
+			}
+			//conversion succeded, try openging again
 		}
-		//conversion succeded, try openging again
 
-		db, err = bolt.Open(name, 0666, &bolt.Options{Timeout: 1 * time.Second})
+		db, err = bolt.Open(name, 0666, &bolt.Options{Timeout: 30 * time.Second})
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	err = db.Update(func(tx *bolt.Tx) error {
+		_, err = tx.CreateBucketIfNotExists([]byte(name))
+		return err
+	})
+	if err != nil {
+		return nil, err
 	}
 
 	DS := &DS{
@@ -128,19 +134,10 @@ func (o *openedFiles) open(name string) (*DS, error) {
 
 func (d *DS) finish() {
 	d.inUse.Done()
-	d.t.Stop()
 }
 
 func (d *DS) start() {
 	d.inUse.Add(1)
-	if d.t != nil {
-		d.t.Stop()
-	}
-	d.t = time.AfterFunc(10*time.Second, func() {
-		fmt.Printf("Open Transactions: %d\n", d.Stats().OpenTxN)
-		buf := make([]byte, 1<<20)
-		fmt.Printf("Timedout: %s\n", buf[:runtime.Stack(buf, true)])
-	})
 }
 
 func (o *openedFiles) waitForInUse(name string) {
@@ -161,7 +158,7 @@ func (o *openedFiles) close(name string) {
 		err := db.Close()
 
 		if err != nil {
-			logError(err)
+			fmt.Fprintln(os.Stderr, err)
 		}
 
 	}
@@ -249,7 +246,6 @@ func (d *DS) Min() ([]byte, error) {
 
 // Put puts a new value in the datastore
 func (d *DS) Put(key, value []byte) error {
-
 	d.start()
 	defer d.finish()
 
@@ -404,12 +400,4 @@ func (i *KvIterator) Close() error {
 	i.ds.finish()
 
 	return err
-}
-
-func logError(err error) {
-	lWriter, err := syslog.New(syslog.LOG_ERR, "freehold")
-	if err != nil {
-		log.Fatal("Error writing to syslog: %v", err)
-	}
-	lWriter.Err(err.Error())
 }

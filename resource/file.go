@@ -56,7 +56,7 @@ func NewFileFromProperty(url string) *File {
 
 // Parent returns the parent directory of the current file
 func (r *File) Parent() *File {
-	return NewFile(filepath.Dir(strings.TrimSuffix(r.url, "/")))
+	return NewFile(path.Dir(strings.TrimSuffix(r.url, "/")))
 }
 
 // Children returns the child files of the current directory
@@ -221,7 +221,7 @@ func (r *File) Permission() (*permission.Permission, error) {
 		return r.permission, nil
 	}
 
-	if isDocPath(r.filepath) {
+	if isDocPath(r.URL()) {
 		r.permission = permission.Doc()
 		return r.permission, nil
 	}

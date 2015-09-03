@@ -66,7 +66,7 @@ Then simply run `go install` to install to system, or `go build` to build and ru
 
 If you have your [$GOPATH environment variable](http://golang.org/doc/code.html#GOPATH) setup already, then a simple `go get bitbucket.org/tshannon/freehold` will work.
 
-Note that if you build from source, and you change your dataDir value in the Settings file, make sure to move the applications folder to your new dataDir directory, so freehold can find the core and available applications when it starts up.
+Note that if you build from source, and you change your dataDir value in the Settings file, make sure to copy the `application` and `docs` folders to your new dataDir directory, so freehold can find the core applications, available applications and documentation when it starts up.
 
 
 Users and Permissions

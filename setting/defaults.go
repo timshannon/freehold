@@ -173,14 +173,20 @@ func init() {
 			Value: false, //I'm willing to reconsider this default
 		},
 	}
+
+}
+
+func setDatastoreTimeout() {
+	data.SetTimeout(time.Duration(Int("DatastoreFileTimeout")) * time.Second)
+}
+
+// InitSettings sets the initial settings values
+// for any settings with a SetFunc
+func InitSettings() {
 	//Initiate all settings with setFuncs
 	for _, v := range settingDefaults {
 		if v.setFunc != nil {
 			v.setFunc()
 		}
 	}
-}
-
-func setDatastoreTimeout() {
-	data.SetTimeout(time.Duration(Int("DatastoreFileTimeout")) * time.Second)
 }

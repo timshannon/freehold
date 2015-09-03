@@ -27,7 +27,7 @@ import (
 
 const (
 	//DS is the location of the application ds file
-	DS = "core/app.ds"
+	DS = "core" + string(os.PathSeparator) + "app.ds"
 )
 
 var (
@@ -136,8 +136,8 @@ func Install(file, owner string) (*App, error) {
 		return nil, fail.New("An app with the same ID is already installed", app)
 	}
 
-	installDir := path.Join(resource.AppDir, app.ID)
-	r, err := appFileReader(path.Join(resource.AvailableAppDir, file))
+	installDir := filepath.Join(resource.AppDir, app.ID)
+	r, err := appFileReader(filepath.Join(resource.AvailableAppDir, file))
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +148,7 @@ func Install(file, owner string) (*App, error) {
 		return nil, err
 	}
 	for _, f := range r.File {
-		res := &Resource{path.Join(installDir, f.Name)}
+		res := &Resource{filepath.Join(installDir, f.Name)}
 
 		if f.FileInfo().IsDir() {
 			err := os.Mkdir(res.Filepath, 0777)
@@ -164,7 +164,7 @@ func Install(file, owner string) (*App, error) {
 		fr, err := f.Open()
 		if err != nil {
 			log.Error(err)
-			return nil, fail.NewFromErr(ErrAppInvalid, filepath.Base(file))
+			return nil, fail.NewFromErr(ErrAppInvalid, path.Base(file))
 		}
 
 		defer fr.Close()
@@ -227,7 +227,7 @@ func Uninstall(appID string) error {
 		return err
 	}
 
-	err = os.RemoveAll(path.Join(resource.AppDir, appID))
+	err = os.RemoveAll(filepath.Join(resource.AppDir, appID))
 	if err != nil {
 		return err
 	}
@@ -284,7 +284,7 @@ func getAppsFromDir(dir string) (apps map[string]*App, failures []error, err err
 }
 
 func appInfoFromZip(file string) (*App, error) {
-	zippath := path.Join(resource.AvailableAppDir, file)
+	zippath := filepath.Join(resource.AvailableAppDir, file)
 	r, err := appFileReader(zippath)
 	if err != nil {
 		return nil, fail.NewFromErr(err, file)
@@ -297,14 +297,14 @@ func appInfoFromZip(file string) (*App, error) {
 			app.File = file
 			if err != nil {
 				if fail.IsFail(err) {
-					return nil, fail.NewFromErr(err, filepath.Base(zippath))
+					return nil, fail.NewFromErr(err, path.Base(zippath))
 				}
 				return nil, err
 			}
 			return app, nil
 		}
 	}
-	return nil, fail.NewFromErr(ErrAppInvalid, filepath.Base(zippath))
+	return nil, fail.NewFromErr(ErrAppInvalid, path.Base(zippath))
 }
 
 func appInfoFromJSONFile(f *zip.File) (*App, error) {
@@ -353,7 +353,7 @@ func appFileReader(zippath string) (*zip.ReadCloser, error) {
 
 	if err != nil {
 		log.Error(err)
-		return nil, fail.NewFromErr(ErrAppInvalid, filepath.Base(zippath))
+		return nil, fail.NewFromErr(ErrAppInvalid, path.Base(zippath))
 	}
 	return r, nil
 }
@@ -391,19 +391,19 @@ func PostAvailable(uri string) (string, error) {
 		filename = path.Base(u.Path)
 	}
 
-	if filepath.Ext(filename) != ".zip" {
+	if path.Ext(filename) != ".zip" {
 		filename += ".zip"
 	}
 
-	err = resource.WriteFile(r.Body, path.Join(resource.AvailableAppDir, filename), true, time.Time{})
+	err = resource.WriteFile(r.Body, filepath.Join(resource.AvailableAppDir, filename), true, time.Time{})
 	if err != nil {
-		os.Remove(path.Join(resource.AvailableAppDir, filename))
+		os.Remove(filepath.Join(resource.AvailableAppDir, filename))
 		return "", err
 	}
 
 	_, err = appInfoFromZip(filename)
 	if err != nil {
-		os.Remove(path.Join(resource.AvailableAppDir, filename))
+		os.Remove(filepath.Join(resource.AvailableAppDir, filename))
 		return "", err
 	}
 

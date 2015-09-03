@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -26,7 +27,7 @@ import (
 
 const (
 	// DS is the location of the token datastore
-	DS = "core/token.ds"
+	DS = "core" + string(os.PathSeparator) + "token.ds"
 )
 
 // ErrTokenLevel is when a token is created that grants more permissions than the requester has

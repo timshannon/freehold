@@ -5,7 +5,7 @@
 //Freehold ractive components 
 // for things like modals, navbar, file browser, etc
 
-
+Ractive.DEBUG = false;
 require(['rvc!modal'], function(Modal) {
     Ractive.components.modal = Modal;
 });

@@ -19,7 +19,7 @@
 		{{#authenticated}} 
 			<div class="btn-group navbar-right"> 
 				<button type="button" id="userButton" on-click="openUser" class="btn btn-default btn-primary navbar-btn" title="User Info for {{user.name}}"> 
-				<span class="glyphicon glyphicon-user"></span> {{user.name.split(" ")[0]}}</button> 
+				<span class="glyphicon glyphicon-user"></span> {{#if user}}{{user.name.split(" ")[0]}}{{/if}}</button> 
 				<button type="button" id="logoutButton" on-click="logout" class="btn btn-default navbar-btn">Log Out</button> 
 			</div> 
 		{{/authenticated}} 
@@ -126,8 +126,9 @@ component.exports = {
 			brand: "freehold",
 			authenticated: (fh.auth.type != "none"),
 			app: false,
-			user: {},
-			alerts: [],
+			username: "",
+			password: "",
+			rememberMe: false,
 	},
 	decorators: {
 		help: function (node) {
@@ -147,6 +148,8 @@ component.exports = {
 	},
 	onrender: function() {
 		var r = this;
+		r.set("alerts", []);
+		r.set("user", {});
 		if (r.get("authenticated")) {
 			fh.user.get(fh.auth.user)
 				.done(function(result) {
