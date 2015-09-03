@@ -1,7 +1,7 @@
 {
 	"id": "admin",
 	"name": "Admin Console",
-	"version": "0.2",
+	"version": "0.3",
 	"description": "Administrator's Console. For managing users, logs, and freehold settings.",
 	"author": "Tim Shannon - shannon.timothy@gmail.com",
 	"root": "/admin/v1/file/index.html",

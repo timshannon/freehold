@@ -212,11 +212,11 @@ $(document).ready(function() {
             rUsers.set("changePassword", false);
 
             var current = rUsers.get(event.keypath);
-current.user = event.index.i;
+            current.user = event.index.i;
 
             rUsers.set("current", current);
             rUsers.set("errors", null);
-			currentHasFolder();
+            currentHasFolder();
 
             $("#userModal").modal();
         },
@@ -667,13 +667,21 @@ current.user = event.index.i;
     }
 
     function currentHasFolder() {
-        var newUrl = fh.util.urlJoin("/v1/file/", rUsers.get("current.user"));
+        var newUrl = fh.util.urlJoin("/v1/file/");
         fh.properties.get(newUrl)
-            .done(function() {
-                rUsers.set("current.hasFolder", true);
+            .done(function(result) {
+                var files = result.data;
+                for (var i = 0; i < files.length; i++) {
+                    if (files[i].isDir && files[i].name === rUsers.get("current.user")) {
+                        rUsers.set("current.hasFolder", true);
+                        return;
+                    }
+                }
+                rUsers.set("current.hasFolder", false);
             })
             .fail(function() {
-                rUsers.set("current.hasFolder", false);
+                //hide the option to create a new folder
+                rUsers.set("current.hasFolder", true);
             });
 
     }
