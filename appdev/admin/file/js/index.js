@@ -226,13 +226,11 @@ $(document).ready(function() {
         "changeUser": function(event) {
             rUsers.set("mode", "change");
             rUsers.set("changePassword", false);
-            var user = {
-                user: event.index.i,
-                homeApp: event.context.homeApp,
-                name: event.context.name,
-                admin: event.context.admin
-            };
-            rUsers.set("current", user);
+
+            var current = rUsers.get(event.keypath);
+            current.user = event.index.i;
+
+            rUsers.set("current", current);
             rUsers.set("errors", null);
 
             $("#userModal").modal();
@@ -690,9 +688,9 @@ $(document).ready(function() {
         fh.backup.get(from.toJSON())
             .done(function(result) {
                 var backups = result.data;
-				if (!backups) {
-					return;
-				}
+                if (!backups) {
+                    return;
+                }
                 for (var i = 0; i < backups.length; i++) {
                     backups[i].when = new Date(backups[i].when).toLocaleString();
                     backups[i].fileName = backups[i].file.split("/").pop();
