@@ -17,12 +17,14 @@ import (
 	"bitbucket.org/tshannon/config"
 	"bitbucket.org/tshannon/freehold/cert"
 	"bitbucket.org/tshannon/freehold/log"
+	"bitbucket.org/tshannon/freehold/setting"
 	"bitbucket.org/tshannon/freehold/user"
 )
 
 const (
 	defaultCertFile = "cert.pem"
 	defaultKeyFile  = "key.pem"
+	freeholdVersion = "0.2"
 )
 
 var flagSelfSign = false
@@ -119,6 +121,22 @@ func main() {
 			}
 		}
 
+	}
+
+	setting.InitSettings() // must happen after datadir is set
+
+	if cfg.String("version", "") != freeholdVersion {
+		if !firstRun {
+			err = resetCorePermissions()
+			if err != nil {
+				halt("Error resetting core file permissions: " + err.Error())
+			}
+		}
+		cfg.SetValue("version", freeholdVersion)
+		err = cfg.Write()
+		if err != nil {
+			halt("Error writting settings file: " + err.Error())
+		}
 	}
 
 	tlsCFG := &tls.Config{MinVersion: minTLSVersion}

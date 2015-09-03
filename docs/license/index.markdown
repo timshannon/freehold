@@ -18,6 +18,7 @@ Attribution and Credits
 * [Go](http://golang.org) - The Go Authors - (BSD) http://golang.org/LICENSE 
 * [Ractive.js](http://www.ractivejs.org) - Rich Harris and contributors - (MIT) https://github.com/ractivejs/ractive/blob/dev/LICENSE.md
 * [require.js](http://requirejs.org/) - The Dojo Foundation - (MIT & BSD) https://github.com/jrburke/requirejs/blob/master/LICENSE
+* [boltdb](https://github.com/boltdb/bolt) - Ben Johnson - (MIT) https://github.com/boltdb/bolt/blob/master/LICENSE
 * [kv](https://github.com/cznic/kv) - Jan Mercl (cznic) - (BSD) https://github.com/cznic/kv/blob/master/LICENSE
 * [go-commonmark](https://github.com/rhinoman/go-commonmark) - James Adam - (BSD) https://github.com/rhinoman/go-commonmark/blob/master/LICENSE
 *	[cmark](https://github.com/jgm/cmark) - John MacFarlane - (BSD) - https://github.com/jgm/cmark/blob/master/COPYING

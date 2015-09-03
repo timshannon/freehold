@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -19,17 +20,17 @@ import (
 
 const (
 	// DocsDir is the path to the Documentation directory
-	DocsDir = "docs/"
+	DocsDir = "docs"
 	// FileDir is the path to where files will be stored
-	FileDir = "file/"
+	FileDir = "file"
 	// CoreDSDir is where the core datastore files will be stored
-	CoreDSDir = "core/"
+	CoreDSDir = "core"
 	// DatastoreDir is where user datastore files will be stored
-	DatastoreDir = "datastore/"
+	DatastoreDir = "datastore"
 	// AvailableAppDir is where new available application zip files are stored
-	AvailableAppDir = AppDir + "available/"
+	AvailableAppDir = AppDir + string(os.PathSeparator) + "available"
 	// AppDir are were installed applications are installed to
-	AppDir = "application/"
+	AppDir = "application"
 )
 
 const modifiedHeader = "Fh-Modified"
@@ -50,11 +51,11 @@ func urlPathToFile(urlPath string) string {
 	if !isVersion(root) {
 		//not a version prefix
 		if strings.ToLower(root) == "docs" {
-			return path.Join(DocsDir, respath)
+			return filepath.Join(DocsDir, filepath.FromSlash(respath))
 		}
 
 		//Is app path and root is app-id
-		return path.Join(AppDir, root, urlPathToFile(respath))
+		return filepath.Join(AppDir, root, urlPathToFile(respath))
 	}
 	return v1FilePath(respath)
 }
@@ -115,9 +116,9 @@ func v1FilePath(resourcePath string) string {
 	root, respath := splitRootAndPath(resourcePath)
 	switch strings.ToLower(root) {
 	case "file":
-		return path.Join(FileDir, respath)
+		return filepath.ToSlash(filepath.Join(FileDir, respath))
 	case "datastore":
-		return path.Join(DatastoreDir, respath)
+		return filepath.ToSlash(filepath.Join(DatastoreDir, respath))
 	case "properties":
 		return v1FilePath(respath)
 	default:
@@ -157,21 +158,21 @@ func resPathFromProperty(propertyPath string) string {
 }
 
 //WriteFile writes the contents of the reader buffered, and closes it
-func WriteFile(reader io.ReadCloser, filepath string, overwrite bool, modTime time.Time) error {
+func WriteFile(reader io.ReadCloser, filePath string, overwrite bool, modTime time.Time) error {
 	var newFile *os.File
 	var err error
 
 	defer reader.Close()
 
 	if overwrite {
-		newFile, err = os.Create(filepath)
+		newFile, err = os.Create(filePath)
 	} else {
-		newFile, err = os.OpenFile(filepath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
+		newFile, err = os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
 	}
 
 	if os.IsExist(err) {
 		//capturing is exists error so that too much info isn't exposed to end users
-		return fail.New("File already exists", path.Base(filepath))
+		return fail.New("File already exists", path.Base(filePath))
 	}
 	if err != nil {
 		return err
@@ -197,7 +198,7 @@ func WriteFile(reader io.ReadCloser, filepath string, overwrite bool, modTime ti
 		return err
 	}
 	if !modTime.IsZero() && !overwrite {
-		err = os.Chtimes(filepath, time.Now(), modTime)
+		err = os.Chtimes(filePath, time.Now(), modTime)
 		if err != nil {
 			return err
 		}

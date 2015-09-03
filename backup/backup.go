@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"io"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -19,7 +20,7 @@ import (
 )
 
 // DS is the path to the backup datastore file
-const DS = resource.CoreDSDir + "backup.ds"
+const DS = resource.CoreDSDir + string(os.PathSeparator) + "backup.ds"
 
 // Backup is the structure of a freehold backup
 type Backup struct {
@@ -91,7 +92,7 @@ func New(backupFile *resource.File, datastores []string, who string) error {
 		}
 	} else {
 		for i := range datastores {
-			if strings.ToLower(filepath.Ext(datastores[i])) != ".ds" {
+			if strings.ToLower(path.Ext(datastores[i])) != ".ds" {
 				datastores[i] += ".ds"
 			}
 		}

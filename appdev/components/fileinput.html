@@ -10,7 +10,6 @@
 component.exports = {
 	data: {
 		accept: "",
-		files:[],
 	},
 	decorators: {
 		fileInput: function (node) {
@@ -29,6 +28,7 @@ component.exports = {
 	onrender: function() {
 		var r = this;
 
+		r.set("files", []);
 		r.on({
 			"selectFiles": function(event) {
 				var input = r.get("inputNode");

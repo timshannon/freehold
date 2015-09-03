@@ -690,6 +690,9 @@ $(document).ready(function() {
         fh.backup.get(from.toJSON())
             .done(function(result) {
                 var backups = result.data;
+				if (!backups) {
+					return;
+				}
                 for (var i = 0; i < backups.length; i++) {
                     backups[i].when = new Date(backups[i].when).toLocaleString();
                     backups[i].fileName = backups[i].file.split("/").pop();

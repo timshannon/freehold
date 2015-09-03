@@ -7,6 +7,7 @@
 		<link href="/mindmap/v1/file/css/mapjs-default-styles.css" rel="stylesheet" media="screen"> 
 		<link href="/core/v1/file/css/font-awesome.min.css" rel="stylesheet" media="screen"> 
 		<link href="/mindmap/v1/file/css/index.css" rel="stylesheet" media="screen"> 
+		<link rel="shortcut icon" href="/core/v1/file/images/favicon.ico">
 	</head>
 <body>
 <div id="ractives"></div>
@@ -168,7 +169,7 @@
 
 <colorpicker showPalette="true" value="{{nodeColor}}"></colorpicker>
 
-<!-- {{>cmEdit}} -->
+{{#partial cmEdit}}
 <div class="cm-editor">
  <!-- Nav tabs -->
   <ul id="cmEditorTabs" class="nav nav-tabs" role="tablist">
@@ -201,8 +202,7 @@
 		</div>
   </div>
 </div>
-
-<!-- {{/cmEdit}} -->
+{{/partial}}
 
 <div id="contextMenu">
 <ul class="dropdown-menu" role="menu">

@@ -5,9 +5,8 @@
 package main
 
 import (
-	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 
 	"bitbucket.org/tshannon/freehold/app"
 	"bitbucket.org/tshannon/freehold/fail"
@@ -49,19 +48,16 @@ func makeFirstAdmin(username, password string) error {
 		Password: password,
 		Admin:    true,
 	}
-	fmt.Println("before user")
 	err = user.New(username, admin)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("before setup core")
 	err = setupCore(username)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("before setup home")
 	err = setupHome(username)
 	if err != nil {
 		return err
@@ -79,12 +75,20 @@ func setupHome(owner string) error {
 // setupCore sets the initial starting permissions for all necessary core resources
 func setupCore(owner string) error {
 	//core files
-	return recurseSetPermissionOnFolder("application/core/file/", &permission.Permission{
+	return recurseSetPermissionOnFolder(filepath.ToSlash("application/core/file/"), &permission.Permission{
 		Owner:   owner,
 		Public:  permission.Read,
 		Friend:  permission.Read,
 		Private: permission.Read + permission.Write,
 	})
+}
+
+func resetCorePermissions() error {
+	p, err := permission.Get(&app.Resource{filepath.ToSlash("application/core/file/public.html")})
+	if err != nil {
+		return err
+	}
+	return setupCore(p.Owner)
 }
 
 func recurseSetPermissionOnFolder(filePath string, prm *permission.Permission) error {
@@ -106,7 +110,7 @@ func recurseSetPermissionOnFolder(filePath string, prm *permission.Permission) e
 	}
 
 	for i := range files {
-		child := path.Join(filePath, files[i].Name())
+		child := filepath.Join(filePath, files[i].Name())
 		if files[i].IsDir() {
 			err = recurseSetPermissionOnFolder(child, prm)
 			if err != nil {
