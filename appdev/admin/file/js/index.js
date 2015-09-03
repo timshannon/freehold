@@ -106,32 +106,16 @@ $(document).ready(function() {
 
     });
 
-    fh.settings.get("DefaultHomeApp")
-        .done(function(result) {
-            defaultHome = result.data.value;
-        })
-        .fail(function(result) {
-            result = result.responseJSON;
-            setError(result.message);
-        });
+fh.application.installed()
+            .done(function(result) {
+                rUsers.set("apps", result.data);
+            })
+            .fail(function(result) {
+                result = result.responseJSON;
+                setError(result.message);
+            });
 
-    fh.settings.get("MinPasswordLength")
-        .done(function(result) {
-            minPassLength = result.data.value;
-        })
-        .fail(function(result) {
-            result = result.responseJSON;
-            setError(result.message);
-        });
 
-    fh.application.installed()
-        .done(function(result) {
-            rUsers.set("apps", result.data);
-        })
-        .fail(function(result) {
-            result = result.responseJSON;
-            setError(result.message);
-        });
 
     loadLogs();
     loadUsers();
@@ -569,6 +553,26 @@ $(document).ready(function() {
                 result = result.responseJSON;
                 setError(result.message);
             });
+
+        fh.settings.get("DefaultHomeApp")
+            .done(function(result) {
+                defaultHome = result.data.value;
+            })
+            .fail(function(result) {
+                result = result.responseJSON;
+                setError(result.message);
+            });
+
+        fh.settings.get("MinPasswordLength")
+            .done(function(result) {
+                minPassLength = result.data.value;
+            })
+            .fail(function(result) {
+                result = result.responseJSON;
+                setError(result.message);
+            });
+
+        
     }
 
     function filterSettings() {
